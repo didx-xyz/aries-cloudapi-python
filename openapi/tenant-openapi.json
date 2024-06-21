@@ -3,14 +3,14 @@
   "info": {
     "title": "CloudAPI-Tenant",
     "description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for\nreal-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish\na WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the\nability to subscribe by topic, or to any wallet in their group.\n\nOur WebSocket endpoints are as follows:\n\n1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.\n\n2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook\nevents for a specific wallet ID.\n\n3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.\n\n4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.\n`connections`, `credentials`, `proofs`, `endorsements`).\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information\nabout the available topics.\n",
-    "version": "0.11.0"
+    "version": "0.12.1"
   },
   "paths": {
     "/v1/connections/create-invitation": {
       "post": {
         "tags": ["connections"],
-        "summary": "Create Invitation",
-        "description": "Create connection invitation.",
+        "summary": "Create a Connection Invitation",
+        "description": "Create connection invitation\n---\nThis endpoint creates an invitation object for establishing a connection with another tenant.\n\nFor every invitation that is created, there will be a corresponding connection record with a state\n`invitation-sent`. Once this invitation is accepted, the connection record will transition to a state `completed`.\n\nIf `multi_use` is set to true, the invitation can be re-used and accepted by multiple tenants.\n\nCreating a multi-use invitation will create a connection record with `invitation_mode: \"multi\"`\n(instead of `\"once\"`), and this connection record will remain in a state `invitation-sent`, until it is deleted.\nEvery time a multi-use invitation is accepted, a new connection record will be created with state `completed`.\n\nThe `use_public_did` parameter determines whether to create an invitation using your public DID.\nThis of course requires that you have a public DID in your wallet, which by default is only true for issuers.\nIf `use_public_did` is set to False (default behaviour), then a random DID will be generated for this invite.\n\nRequest Body:\n---\n    body: CreateInvitation\n        alias: str (Optional)\n            An alias for the connection invitation, which will appear as the alias in the connection record.\n        multi_use: bool (default: False)\n            Whether the invitation can be used multiple times.\n        use_public_did: bool (default: False)\n            Whether to use a public did for the invitation.\n\nReturns:\n---\n    InvitationResult\n        Contains an invitation object, an invitation url, and a connection id for this invite.",
         "operationId": "create_invitation_v1_connections_create_invitation_post",
         "requestBody": {
           "content": {
@@ -38,8 +38,8 @@
     "/v1/connections/accept-invitation": {
       "post": {
         "tags": ["connections"],
-        "summary": "Accept Invitation",
-        "description": "Accept connection invitation.\n\nParameters:\n------------\ninvitation: AcceptInvitation\n    the invitation object obtained from create_invitation.",
+        "summary": "Accept a Connection Invitation",
+        "description": "Accept connection invitation\n---\nTenants can use this endpoint to accept a connection invitation.\n\nThe invitation object is obtained from an InvitationResult (the response from creating a connection invitation).\n\nThe `invitation_url` in the InvitationResult can also be used to obtain an invitation; there is a base64 encoded\nstring after the \"?oob=\" parameter in the url, and this can be decoded to obtain the invitation object.\n\nA webhook event will be emitted for the other party, on topic `connections`.\nTheir record for the connection will now be in state `completed`.\n\nRequest Body:\n---\n    body: AcceptInvitation\n        alias: str (Optional)\n            Alias for the connection invitation.\n        invitation: ConnectionInvitation\n            The invitation object obtained from an InvitationResult, or decoded from an invitation_url.\n\nReturns:\n---\n    Connection\n        The record of your new connection",
         "operationId": "accept_invitation_v1_connections_accept_invitation_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AcceptInvitation" } } },
@@ -61,8 +61,8 @@
     "/v1/connections": {
       "get": {
         "tags": ["connections"],
-        "summary": "Get Connections",
-        "description": "Retrieve list of connections.\n\nParameters:\n-----------\n    alias: Optional[str]\n    connection_protocol: Optional[Protocol]: \"connections/1.0\", \"didexchange/1.0\"\n    invitation_key: Optional[str]\n    invitation_msg_id: Optional[str]\n    my_did: Optional[str]\n    state: Optional[State]: \"active\", \"response\", \"request\", \"start\",\n                            \"completed\", \"init\", \"error\", \"invitation\", \"abandoned\"\n    their_did: Optional[str]\n    their_public_did: Optional[str]\n    their_role: Optional[Role]: \"invitee\", \"requester\", \"inviter\", \"responder\"\n\nReturns:\n---------\n    List[Connection]\n        A list of connection objects.",
+        "summary": "Fetch Connection Records",
+        "description": "Fetch a list of connection records\n---\nThe records contain information about connections with other tenants, such as the state of the connection,\nthe alias of the connection, the label and the did of the other party, and other metadata.\n\nThe following query parameters can be used to filter the connection records to fetch.\n\nParameters (Optional):\n---\n    alias: str\n    connection_protocol: Protocol: \"connections/1.0\", \"didexchange/1.0\"\n    invitation_key: str\n    invitation_msg_id: str\n    my_did: str\n    state: State: \"active\", \"response\", \"request\", \"start\", \"completed\", \"init\", \"error\", \"invitation\", \"abandoned\"\n    their_did: str\n    their_public_did: str\n    their_role: Role: \"invitee\", \"requester\", \"inviter\", \"responder\"\n\nReturns:\n---\n    List[Connection]\n        A list of connection records",
         "operationId": "get_connections_v1_connections_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -172,8 +172,8 @@
     "/v1/connections/{connection_id}": {
       "get": {
         "tags": ["connections"],
-        "summary": "Get Connection By Id",
-        "description": "Retrieve connection by id.\n\nParameters:\n-----------\nconnection_id: str\n\nReturns:\n---------\nConnection.\n    A connection object.",
+        "summary": "Fetch a Connection Record",
+        "description": "Fetch a connection record by id\n---\nA connection record contains information about a connection with other tenants, such as the state of the connection,\nthe alias of the connection, the label and the did of the other party, and other metadata.\n\nParameters:\n---\n    connection_id: str\n        The identifier of the connection record that you want to fetch\n\nReturns:\n---\n    Connection\n        The connection record",
         "operationId": "get_connection_by_id_v1_connections__connection_id__get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -197,8 +197,8 @@
       },
       "delete": {
         "tags": ["connections"],
-        "summary": "Delete Connection By Id",
-        "description": "Delete connection by id.\n\nParameters:\n-----------\nconnection_id: str",
+        "summary": "Delete a Connection Record",
+        "description": "Delete connection record by id\n---\nThis endpoint deletes a connection record by id.\n\nThe other party will still have their record of the connection, but it will become unusable.\n\nParameters:\n---\n    connection_id: str\n        The identifier of the connection record that you want to delete\n\nReturns:\n---\n    status_code: 204",
         "operationId": "delete_connection_by_id_v1_connections__connection_id__delete",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -210,7 +210,103 @@
           }
         ],
         "responses": {
-          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/v1/definitions/schemas": {
+      "post": {
+        "tags": ["definitions"],
+        "summary": "Create a new Schema",
+        "description": "Create and publish a new schema to the ledger\n---\n**NB**: Only governance can create schemas.\n\nA schema is used to create credential definitions, which is used for issuing credentials.\nThe schema defines the attributes that can exist in that credential.\n\nWhen a schema is created, it is published to the ledger and written to our public trust registry,\nso that everyone in the ecosystem can view schemas that are valid and available.\n\nRequest Body:\n---\n    body: CreateSchema\n        name: str\n            The name of the schema.\n        version: str\n            The version of the schema.\n        attribute_names: List[str]\n            The attribute names of the schema.\n\nReturns:\n---\n    CredentialSchema\n        The created schema object",
+        "operationId": "create_schema_v1_definitions_schemas_post",
+        "security": [{ "APIKeyHeader": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateSchema" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialSchema" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
+      "get": {
+        "tags": ["definitions"],
+        "summary": "Get Created Schemas",
+        "description": "Get created schemas\n---\nAll tenants can call this endpoint to view available schemas.\n\nIf governance calls this endpoint, it will return all the schemas created by governance\n(whether the schemas are on the trust registry or not).\n\nIf tenants call this endpoint, it will return all schemas on the trust registry.\nThe difference between this endpoint and the public trust registry endpoint, is that this response includes\nthe attribute information of the schemas.\n\nResults can be filtered by the parameters listed below.\n\nParameters (Optional):\n---\n    schema_id: str\n    schema_issuer_did: str\n    schema_name: str\n    schema_version: str\n\nReturns:\n---\n    List[CredentialSchema]\n        A list of created schemas",
+        "operationId": "get_schemas_v1_definitions_schemas_get",
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          {
+            "name": "schema_id",
+            "in": "query",
+            "required": false,
+            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Id" }
+          },
+          {
+            "name": "schema_issuer_did",
+            "in": "query",
+            "required": false,
+            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Issuer Did" }
+          },
+          {
+            "name": "schema_name",
+            "in": "query",
+            "required": false,
+            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Name" }
+          },
+          {
+            "name": "schema_version",
+            "in": "query",
+            "required": false,
+            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Version" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CredentialSchema" },
+                  "title": "Response Get Schemas V1 Definitions Schemas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/v1/definitions/schemas/{schema_id}": {
+      "get": {
+        "tags": ["definitions"],
+        "summary": "Get a Schema",
+        "description": "Retrieve schema by id\n---\nThis endpoint fetches a schema from the ledger, using the schema_id.\n\nAny tenant can call this endpoint to retrieve a schema.\nThis endpoint will list all the attributes of the schema.\n\nParameters:\n---\n    schema_id: str\n        schema id\n\nReturns:\n---\n    CredentialSchema\n        The schema object",
+        "operationId": "get_schema_v1_definitions_schemas__schema_id__get",
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          { "name": "schema_id", "in": "path", "required": true, "schema": { "type": "string", "title": "Schema Id" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialSchema" } } }
+          },
           "422": {
             "description": "Validation Error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
@@ -219,10 +315,31 @@
       }
     },
     "/v1/definitions/credentials": {
+      "post": {
+        "tags": ["definitions"],
+        "summary": "Create a new Credential Definition",
+        "description": "Create a credential definition\n---\nOnly issuers can create credential definitions.\n\nA credential definition essentially builds off a schema, which defines the attributes that can belong to a\ncredential, and it specifies whether credentials using this definition are revocable or not.\n\n**NB**: If revocation is requested (`\"support_revocation\": true`), then revocation registries will be created.\nThe creation of these revocation registries can take up to one minute.\n\nRequest Body:\n---\n    body: CreateCredentialDefinition\n        schema_id: str\n            The id of the schema to use for this credential definition.\n        tag: str\n            The label to use for the credential definition.\n        support_revocation: bool\n            Whether you want credentials using this definition to be revocable or not\n\nReturns:\n---\n    CredentialDefinition\n        The created credential definition",
+        "operationId": "create_credential_definition_v1_definitions_credentials_post",
+        "security": [{ "APIKeyHeader": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCredentialDefinition" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialDefinition" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
       "get": {
         "tags": ["definitions"],
-        "summary": "Get Credential Definitions",
-        "description": "Get agent-created credential definitions\n\nParameters:\n---\n    issuer_did: Optional[str]\n    credential_definition_id: Optional[str]\n    schema_id: Optional[str]\n    schema_issuer_id: Optional[str]\n    schema_version: Optional[str]\n\nReturns:\n---\n    Created credential definitions",
+        "summary": "Get Created Credential Definitions",
+        "description": "Get credential definitions created by the tenant\n---\nThis endpoint returns all credential definitions created by the tenant. Only issuers can create\ncredential definitions, and so only issuers will get results from this endpoint.\n\nThe results can be filtered by the parameters listed below.\n\nParameters (Optional):\n---\n    issuer_did: str\n    credential_definition_id: str\n    schema_id: str\n    schema_issuer_id: str\n    schema_version: str\n\nReturns:\n---\n    List[CredentialDefinition]\n        A list of created credential definitions",
         "operationId": "get_credential_definitions_v1_definitions_credentials_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -281,34 +398,13 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
           }
         }
-      },
-      "post": {
-        "tags": ["definitions"],
-        "summary": "Create Credential Definition",
-        "description": "Create a credential definition.\n\nIf revocation is supported (\"support_revocation\": true), revocation registries will be created.\n\n**NB**: The creation of these revocation registries can take up to one minute.\n\nIt is recommended to use the max (default) revocation registry size of 32767,\nas this will allow for minimal ledger writes (lower cost).\n\nParameters:\n-----------\n    credential_definition: CreateCredentialDefinition\n        Payload for creating a credential definition.\n\nReturns:\n--------\n    Credential Definition",
-        "operationId": "create_credential_definition_v1_definitions_credentials_post",
-        "security": [{ "APIKeyHeader": [] }],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCredentialDefinition" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialDefinition" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
       }
     },
     "/v1/definitions/credentials/{credential_definition_id}": {
       "get": {
         "tags": ["definitions"],
-        "summary": "Get Credential Definition By Id",
-        "description": "Get credential definition by id.\n\nParameters:\n-----------\n    credential_definition_id: str\n        credential definition id",
+        "summary": "Get a Credential Definition",
+        "description": "Get credential definition by id\n---\nThis endpoint returns information for a credential definition.\n\nAnyone can call this, whether they created the requested credential definition or not.\nPractically it will just reveal the schema that was used for the credential definition.\n\nParameters:\n---\n    credential_definition_id: str\n        credential definition id\n\nReturns:\n---\n    CredentialDefinition\n        The credential definition",
         "operationId": "get_credential_definition_by_id_v1_definitions_credentials__credential_definition_id__get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -331,51 +427,21 @@
         }
       }
     },
-    "/v1/definitions/schemas": {
-      "get": {
-        "tags": ["definitions"],
-        "summary": "Get Schemas",
-        "description": "Retrieve schemas that the current agent created.\n\nParameters:\n-----------\n    schema_id: str (Optional)\n    schema_issuer_did: str (Optional)\n    schema_name: str (Optional)\n    schema_version: str (Optional)\n\nReturns:\n--------\n    son response with created schemas from ledger.",
-        "operationId": "get_schemas_v1_definitions_schemas_get",
+    "/v1/issuer/credentials": {
+      "post": {
+        "tags": ["issuer"],
+        "summary": "Send Holder a Credential",
+        "description": "Create and send a credential, automating the issuer-side flow\n---\nNB: Only a tenant with the issuer role can send credentials.\n\nWhen creating a credential, the credential type must be one of `indy` or `ld_proof`.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"connection_id\": \"string\", <-- The issuer's reference to the connection they want to submit the credential to.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nSetting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.\nThe default behaviour is to only save exchange records while they are in pending state.\n\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: SendCredential\n        The payload for sending a credential\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
+        "operationId": "send_credential_v1_issuer_credentials_post",
         "security": [{ "APIKeyHeader": [] }],
-        "parameters": [
-          {
-            "name": "schema_id",
-            "in": "query",
-            "required": false,
-            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Id" }
-          },
-          {
-            "name": "schema_issuer_did",
-            "in": "query",
-            "required": false,
-            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Issuer Did" }
-          },
-          {
-            "name": "schema_name",
-            "in": "query",
-            "required": false,
-            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Name" }
-          },
-          {
-            "name": "schema_version",
-            "in": "query",
-            "required": false,
-            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Version" }
-          }
-        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendCredential" } } }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/CredentialSchema" },
-                  "title": "Response Get Schemas V1 Definitions Schemas Get"
-                }
-              }
-            }
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
           },
           "422": {
             "description": "Validation Error",
@@ -383,55 +449,10 @@
           }
         }
       },
-      "post": {
-        "tags": ["definitions"],
-        "summary": "Create Schema",
-        "description": "Create a new schema.\n\nParameters:\n------------\n    schema: CreateSchema\n        Payload for creating a schema.\n\nReturns:\n--------\n    The response object from creating a schema.",
-        "operationId": "create_schema_v1_definitions_schemas_post",
-        "security": [{ "APIKeyHeader": [] }],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateSchema" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialSchema" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
-      }
-    },
-    "/v1/definitions/schemas/{schema_id}": {
-      "get": {
-        "tags": ["definitions"],
-        "summary": "Get Schema",
-        "description": "Retrieve schema by id.\n\nParameters:\n-----------\n    schema_id: str\n        schema id",
-        "operationId": "get_schema_v1_definitions_schemas__schema_id__get",
-        "security": [{ "APIKeyHeader": [] }],
-        "parameters": [
-          { "name": "schema_id", "in": "path", "required": true, "schema": { "type": "string", "title": "Schema Id" } }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialSchema" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
-      }
-    },
-    "/v1/issuer/credentials": {
       "get": {
         "tags": ["issuer"],
-        "summary": "Get Credentials",
-        "description": "Get a list of credential records.\n\nParameters:\n------------\n    connection_id: str (Optional)\n    role: Role (Optional): \"issuer\", \"holder\"\n    state: State (Optional): \"proposal-sent\", \"proposal-received\", \"offer-sent\", \"offer-received\",\n                             \"request-sent\", \"request-received\", \"credential-issued\", \"credential-received\",\n                             \"credential-revoked\",\"abandoned\", \"done\"\n    thread_id: UUID (Optional)\nReturns:\n--------\n    payload: List[CredentialExchange]\n        A list of credential exchange records",
+        "summary": "Fetch Credential Exchange Records",
+        "description": "Get a list of credential exchange records\n---\nBoth holders and issuers can call this endpoint, because they each have their own records of a credential exchange.\n\nThese records contain information about the credentials issued to a holder, such as the current state of the\nexchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received\nfrom (if a holder). Each record in the list is related to a single credential exchange flow.\n\nNB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.\nThe `thread_id` is the only record attribute that will be the same for the holder and the issuer.\n\nAn exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),\nunless the `save_exchange_record` was set to true.\n\nThe following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.\n\nParameters:\n---\n    connection_id: str (Optional)\n    role: Role (Optional): \"issuer\", \"holder\"\n    state: State (Optional): \"proposal-sent\", \"proposal-received\", \"offer-sent\", \"offer-received\",\n                             \"request-sent\", \"request-received\", \"credential-issued\", \"credential-received\",\n                             \"credential-revoked\", \"abandoned\", \"done\"\n    thread_id: UUID (Optional)\n\nReturns:\n---\n    List[CredentialExchange]\n        A list of credential exchange records",
         "operationId": "get_credentials_v1_issuer_credentials_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -503,61 +524,13 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
           }
         }
-      },
-      "post": {
-        "tags": ["issuer"],
-        "summary": "Send Credential",
-        "description": "Create and send a credential. Automating the entire flow.\n\nParameters:\n------------\n    credential: Credential\n        payload for sending a credential\n\nReturns:\n--------\n    payload: CredentialExchange\n        The response object from sending a credential\n    status_code: 200",
-        "operationId": "send_credential_v1_issuer_credentials_post",
-        "security": [{ "APIKeyHeader": [] }],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendCredential" } } }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
-      }
-    },
-    "/v1/issuer/credentials/{credential_id}": {
-      "get": {
-        "tags": ["issuer"],
-        "summary": "Get Credential",
-        "description": "Get a credential by credential id.\n\nParameters:\n-----------\n    credential_id: str\n        credential identifier\n\nReturns:\n--------\n    payload: CredentialExchange\n        The credential exchange record",
-        "operationId": "get_credential_v1_issuer_credentials__credential_id__get",
-        "security": [{ "APIKeyHeader": [] }],
-        "parameters": [
-          {
-            "name": "credential_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Credential Id" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        }
       }
     },
     "/v1/issuer/credentials/create-offer": {
       "post": {
         "tags": ["issuer"],
-        "summary": "Create Offer",
-        "description": "Create a credential offer not bound to any connection.\n\nParameters:\n------------\n    credential: Credential\n        payload for sending a credential\n\nReturns:\n--------\n    The response object from sending a credential",
+        "summary": "Create a Credential Offer (not bound to a connection)",
+        "description": "Create a credential offer, not bound to any connection\n---\nNB: Only a tenant with the issuer role can create credential offers.\n\nThis endpoint takes the same body as the send credential endpoint, but without a connection id. This\nmeans the credential will not be sent, but it will do the initial step of creating a credential exchange record,\nwhich the issuer can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and issuer.\n\nThe credential type must be one of indy or ld_proof.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: CreateOffer\n        The payload for creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
         "operationId": "create_offer_v1_issuer_credentials_create_offer_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOffer" } } },
@@ -576,11 +549,91 @@
         "security": [{ "APIKeyHeader": [] }]
       }
     },
+    "/v1/issuer/credentials/{credential_exchange_id}/request": {
+      "post": {
+        "tags": ["issuer"],
+        "summary": "Accept a Credential Offer",
+        "description": "Sends a request to accept a credential offer\n---\nThe holder uses this endpoint to accept an offer from an issuer.\n\nIn technical terms, when a holder has a credential exchange record with a state 'offer-received', then they can use\nthis endpoint to accept that credential offer, and store the credential in their wallet.\n\nParameters:\n---\n    credential_exchange_id: str\n        The holder's reference to the credential exchange that they want to accept\n\nReturns:\n---\n    CredentialExchange\n        An updated record of this credential exchange",
+        "operationId": "request_credential_v1_issuer_credentials__credential_exchange_id__request_post",
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          {
+            "name": "credential_exchange_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Credential Exchange Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/v1/issuer/credentials/{credential_exchange_id}/store": {
+      "post": {
+        "tags": ["issuer"],
+        "summary": "Store a Received Credential in Wallet",
+        "description": "NB: Deprecated because credentials are automatically stored in wallet after they are accepted\n---\n\nStore a credential\n---\nStore a credential by providing the credential exchange id.\nThe credential exchange id is the id of the credential exchange record, not the credential itself.\n\nThe holder only needs to call this endpoint if the holder receives a credential out of band\n\nThe holder can store the credential in their wallet after receiving it from the issuer.\n\nParameters:\n---\n    credential_exchange_id: str\n        credential exchange record identifier\n\nReturns:\n---\n    CredentialExchange\n        An updated record of this credential exchange",
+        "operationId": "store_credential_v1_issuer_credentials__credential_exchange_id__store_post",
+        "deprecated": true,
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          {
+            "name": "credential_exchange_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Credential Exchange Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
     "/v1/issuer/credentials/{credential_exchange_id}": {
+      "get": {
+        "tags": ["issuer"],
+        "summary": "Fetch a single Credential Exchange Record",
+        "description": "Get a credential exchange record by credential id\n---\nBoth holders and issuers can call this endpoint, because they each have their own records of a credential exchange.\n\nThese records contain information about the credentials issued to a holder, such as the current state of the\nexchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received\nfrom (if a holder).\n\nNB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.\nThe `thread_id` is the only record attribute that will be the same for the holder and the issuer.\n\nAn exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),\nunless the `save_exchange_record` was set to true.\n\nThe following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.\n\nParameters:\n---\n    credential_exchange_id: str\n        The identifier of the credential exchange record that you want to fetch\n\nReturns:\n---\n    CredentialExchange\n        The credential exchange record",
+        "operationId": "get_credential_v1_issuer_credentials__credential_exchange_id__get",
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          {
+            "name": "credential_exchange_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Credential Exchange Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
       "delete": {
         "tags": ["issuer"],
-        "summary": "Remove Credential Exchange Record",
-        "description": "Remove a credential exchange record.\n\nParameters:\n-----------\n    credential_exchange_id: str\n        credential exchange record identifier\n\nReturns:\n--------\n    payload: None\n    status_code: 204",
+        "summary": "Delete an Exchange Record",
+        "description": "Delete a credential exchange record\n---\nThis will remove a specific credential exchange from your storage records.\n\nParameters:\n---\n    credential_exchange_id: str\n        The identifier of the credential exchange record that you want to delete\n\nReturns:\n---\n    status_code: 204",
         "operationId": "remove_credential_exchange_record_v1_issuer_credentials__credential_exchange_id__delete",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -603,8 +656,8 @@
     "/v1/issuer/credentials/revoke": {
       "post": {
         "tags": ["issuer"],
-        "summary": "Revoke Credential",
-        "description": "Revoke a credential.\n\nParameters:\n-----------\n    credential_exchange_id: str\n        The credential exchange id\n\nReturns:\n--------\n    payload: None\n    status_code: 204",
+        "summary": "Revoke a Credential (if revocable)",
+        "description": "Revoke a credential\n---\nRevoke a credential by providing the identifier of the exchange.\n\nIf an issuer is going to revoke more than one credential, it is recommended to set the\n'auto_publish_on_ledger' field to False (default), and then batch publish the revocations using\nthe 'publish-revocations' endpoint.\n\nBy batching the revocations, the issuer can save on transaction fees related to\npublishing revocations to the ledger.\n\nRequest Body:\n---\n    body: RevokeCredential\n        - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.\n        - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or\n            (default, False) mark it pending\n\nReturns:\n---\n    status_code: 204",
         "operationId": "revoke_credential_v1_issuer_credentials_revoke_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RevokeCredential" } } },
@@ -620,58 +673,11 @@
         "security": [{ "APIKeyHeader": [] }]
       }
     },
-    "/v1/issuer/credentials/publish-revocations": {
-      "post": {
-        "tags": ["issuer"],
-        "summary": "Publish Revocations",
-        "description": "Write batch of pending revocations to ledger.\n\n    If no revocation registry id is provided, all pending revocations\n    will be published.\n\n    If no credential revocation id is provided, all pending revocations\n    for the given revocation registry id will be published.\n\nParameters:\n-----------\n    publish_request: PublishRevocationsRequest\n        An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be published. Providing an empty list for a registry ID instructs the system to\n        publish all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be published.\n\nReturns:\n--------\n    payload: None\n    status_code: 204",
-        "operationId": "publish_revocations_v1_issuer_credentials_publish_revocations_post",
-        "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublishRevocationsRequest" } } },
-          "required": true
-        },
-        "responses": {
-          "204": { "description": "Successful Response" },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        },
-        "security": [{ "APIKeyHeader": [] }]
-      }
-    },
-    "/v1/issuer/credentials/clear-pending-revocations": {
-      "post": {
-        "tags": ["issuer"],
-        "summary": "Clear Pending Revocations",
-        "description": "Clear pending revocations.\n\n    If no revocation registry id is provided, all pending revocations\n    will be cleared.\n\n    If no credential revocation id is provided, all pending revocations\n    for the given revocation registry id will be cleared.\n\nParameters:\n-----------\n    clear_pending_request: ClearPendingRevocationsRequest\n        An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to\n        clear all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be cleared.\n\nReturns:\n--------\n    payload: ClearPendingRevocationsResult\n        The revocations that are still pending after the clear request is performed",
-        "operationId": "clear_pending_revocations_v1_issuer_credentials_clear_pending_revocations_post",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ClearPendingRevocationsRequest" } }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ClearPendingRevocationsResult" } }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        },
-        "security": [{ "APIKeyHeader": [] }]
-      }
-    },
     "/v1/issuer/credentials/revocation/record": {
       "get": {
         "tags": ["issuer"],
-        "summary": "Get Credential Revocation Record",
-        "description": "Get a credential revocation record.\n\nParameters:\n-----------\n    credential_exchange_id: str\n        The credential exchange id\n    credential_revocation_id: str\n        The credential revocation id\n    revocation_registry_id: str\n        The revocation registry id\n\nReturns:\n--------\n    payload: IssuerCredRevRecord\n        The credential revocation record\n\nRaises:\n-------\n    CloudApiException: 400\n        If credential_exchange_id is not provided BOTH the credential_revocation_id\n        and revocation_registry_id MUST be provided.",
+        "summary": "Fetch a Revocation Record",
+        "description": "Get a credential revocation record\n---\nFetch a credential revocation record by providing the credential exchange id.\nRecords can also be fetched by providing the credential revocation id and revocation registry id.\n\nThe record is the payload of the webhook event on topic 'issuer_cred_rev', and contains the credential's revocation\nstatus and other metadata.\n\nThe revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found\nin this record if you have the credential exchange id.\n\nParameters:\n---\n    credential_exchange_id: str\n    credential_revocation_id: str\n    revocation_registry_id: str\n\nReturns:\n---\n    IssuerCredRevRecord\n        The credential revocation record\n\nRaises:\n---\n    CloudApiException: 400\n        If credential_exchange_id is not provided, both credential_revocation_id and revocation_registry_id must be.",
         "operationId": "get_credential_revocation_record_v1_issuer_credentials_revocation_record_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -706,58 +712,51 @@
         }
       }
     },
-    "/v1/issuer/credentials/{credential_id}/request": {
+    "/v1/issuer/credentials/publish-revocations": {
       "post": {
         "tags": ["issuer"],
-        "summary": "Request Credential",
-        "description": "Send a credential request.\n\nParameters:\n-----------\n    credential_id: str\n        the credential id",
-        "operationId": "request_credential_v1_issuer_credentials__credential_id__request_post",
-        "security": [{ "APIKeyHeader": [] }],
-        "parameters": [
-          {
-            "name": "credential_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Credential Id" }
-          }
-        ],
+        "summary": "Publish Pending Revocations",
+        "description": "Write pending revocations to the ledger\n---\nRevocations that are in a pending state can be published to the ledger.\n\nThe endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of\nrevocation registry IDs to credential revocation IDs, to allow publishing individual credentials.\n\nIf no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),\nthen all pending revocations will be published.\n\nIf no credential revocation id is provided under a given revocation registry id, then all pending revocations for\nthe given revocation registry id will be published.\n\nWhere to find the revocation registry id and credential revocation id:\nWhen issuing a credential, against a credential definition that supports revocation,\nthe issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain\nthe credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and\nthe revocation registry id (rev_reg_id).\n\nRequest Body:\n---\n    publish_request: PublishRevocationsRequest\n        An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be published. Providing an empty list for a registry ID instructs the system to\n        publish all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be published.\n\nReturns:\n---\n    status_code: 204",
+        "operationId": "publish_revocations_v1_issuer_credentials_publish_revocations_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublishRevocationsRequest" } } },
+          "required": true
+        },
         "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
-          },
+          "204": { "description": "Successful Response" },
           "422": {
             "description": "Validation Error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
           }
-        }
+        },
+        "security": [{ "APIKeyHeader": [] }]
       }
     },
-    "/v1/issuer/credentials/{credential_id}/store": {
+    "/v1/issuer/credentials/clear-pending-revocations": {
       "post": {
         "tags": ["issuer"],
-        "summary": "Store Credential",
-        "description": "Store a credential.\n\nParameters:\n-----------\n    credential_id: str\n        credential identifier",
-        "operationId": "store_credential_v1_issuer_credentials__credential_id__store_post",
-        "security": [{ "APIKeyHeader": [] }],
-        "parameters": [
-          {
-            "name": "credential_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "title": "Credential Id" }
-          }
-        ],
+        "summary": "Clear Pending Revocations",
+        "description": "Clear pending revocations\n---\nRevocations that are in a pending state can be cleared, such that they are no longer set to be revoked.\n\nThe endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of\nrevocation registry IDs to credential revocation IDs, to allow clearing individual credentials.\n\nIf no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),\nthen all pending revocations will be cleared.\n\nIf no credential revocation id is provided under a given revocation registry id, then all pending revocations for\nthe given revocation registry id will be cleared.\n\nWhere to find the revocation registry id and credential revocation id:\nWhen issuing a credential, against a credential definition that supports revocation,\nthe issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain\nthe credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and\nthe revocation registry id (rev_reg_id).\n\nRequest Body:\n---\n    clear_pending_request: ClearPendingRevocationsRequest\n        An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to\n        clear all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be cleared.\n\nReturns:\n---\n    ClearPendingRevocationsResult\n        The revocations that are still pending after the clear request is performed",
+        "operationId": "clear_pending_revocations_v1_issuer_credentials_clear_pending_revocations_post",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ClearPendingRevocationsRequest" } }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CredentialExchange" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ClearPendingRevocationsResult" } }
+            }
           },
           "422": {
             "description": "Validation Error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
           }
-        }
+        },
+        "security": [{ "APIKeyHeader": [] }]
       }
     },
     "/v1/jsonld/sign": {
@@ -806,8 +805,8 @@
     "/v1/messaging/send-message": {
       "post": {
         "tags": ["messaging"],
-        "summary": "Send Messages",
-        "description": "Send basic message.\n\nParameters:\n-----------\nmessage: Message\n    payload for sending a message\n\nReturns:\n---------\nThe response object obtained when sending a message.",
+        "summary": "Send a Message",
+        "description": "Send basic message\n---\n\nSend a message to a tenant via a connection. The other tenant will receive\nthe message on topic `basic-message` for their webhook events.\n\nSee the Aries\n[Basic Message Protocol](https://github.com/hyperledger/aries-rfcs/blob/main/features/0095-basic-message/README.md)\nfor more information.\n\nRequest body:\n---\n    message: Message\n        connection_id: str\n            Connection ID of the connection to send the message to.\n        content: str\n            The message to send.\n\nReturns:\n---\n    Status code 204",
         "operationId": "send_messages_v1_messaging_send_message_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } },
@@ -827,7 +826,7 @@
       "post": {
         "tags": ["messaging"],
         "summary": "Send Trust Ping",
-        "description": "Trust ping\n\nParameters:\n-----------\ntrustping_msg : TrustPingMsg\n    payload for sending a trust ping\n\nReturns:\n--------\nThe response object obtained when sending a trust ping.",
+        "description": "Send trust ping\n---\nSend a trust ping to a connection to ensure that the connection is active and ready.\n\nSee the Aries\n[Trust Ping Protocol](https://github.com/hyperledger/aries-rfcs/blob/main/features/0048-trust-ping/README.md)\nfor more information.\n\nRequest body:\n---\n    TrustPingMsg :\n        connection_id: str\n            Connection ID of the connection to send the trust ping to.\n        comment: str\n            Comment to include in the trust ping.\n\nReturns:\n---\n    PingRequestResponse\n        thread_id: str\n            Thread ID of the ping message",
         "operationId": "send_trust_ping_v1_messaging_trust_ping_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TrustPingMsg" } } },
@@ -849,8 +848,8 @@
     "/v1/oob/create-invitation": {
       "post": {
         "tags": ["out-of-band"],
-        "summary": "Create Oob Invitation",
-        "description": "Create connection invitation out-of-band.",
+        "summary": "Create OOB Invitation",
+        "description": "Create an out-of-band invitation\n---\n\nThe attachment field is used to include a credential offer or a proof request in the invitation.\nThe attachment ID is the credential exchange ID or proof request ID.\nThe attachment type is either `\"credential-offer\"` or `\"present-proof\"`.\n\nThe multi_use field is used to determine if the invitation can be used multiple times by different tenants.\nThe `use_public_did` field should only be set true, if a tenant with a public DID is creating\na connection invitation, then the invitation will use the tenants public did to create the connection invitation\ni.e. the tenant accepting the invitation will connect via public did of tenant that created invitation\n\n`multi_use` can't be set to `true` if an `attachment` is provided,\nas a proof request or credential offer should be sent to one tenant.\n\nRequest body:\n---\n    body:CreateOobInvitation\n        alias: Optional[str]\n        multi_use: bool (default false)\n        use_public_did: bool (default false)\n        attachments: Optional[List[Attachment]]\n        create_connection: Optional[bool]\n\nReturns:\n---\n    InvitationRecord\n        The invitation record",
         "operationId": "create_oob_invitation_v1_oob_create_invitation_post",
         "requestBody": {
           "content": {
@@ -878,8 +877,8 @@
     "/v1/oob/accept-invitation": {
       "post": {
         "tags": ["out-of-band"],
-        "summary": "Accept Oob Invitation",
-        "description": "Receive out-of-band invitation.",
+        "summary": "Accept OOB Invitation",
+        "description": "Accept out-of-band invitation\n---\n\nAs with the accept connection invitation endpoint, the invitation object from the create-invitation endpoint\nis passed to this endpoint.\n\nThe `invitation_url` in the InvitationRecord can also be used to obtain an invitation; there is a base64 encoded\nstring after the \"?oob=\" parameter in the url, and this can be decoded to obtain the invitation object.\n\nRequest body:\n---\n    body: AcceptOobInvitation\n        alias: Optional[str]\n        use_existing_connection: Optional[bool]\n        invitation: InvitationMessage\n\nReturns:\n---\n    OobRecord\n        The out-of-band record",
         "operationId": "accept_oob_invitation_v1_oob_accept_invitation_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AcceptOobInvitation" } } },
@@ -901,8 +900,8 @@
     "/v1/oob/connect-public-did": {
       "post": {
         "tags": ["out-of-band"],
-        "summary": "Connect To Public Did",
-        "description": "Connect using public DID as implicit invitation.\n\nParameters:\n---\ntheir_public_did: str\n    Public DID of target entity\n\nbody: Optional[CreateConnFromDIDRequest]\n    Additional request info\n\nReturns:\n---\nConnection\n    The connection record",
+        "summary": "Connect with Public DID",
+        "description": "Connect using public DID as implicit invitation\n---\n\nA connection will automatically be established with the public DID.\n\nRequest body:\n---\n    body: ConnectToPublicDid\n        public_did: str\n\nReturns:\n---\n    Connection\n        The connection record",
         "operationId": "connect_to_public_did_v1_oob_connect_public_did_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ConnectToPublicDid" } } },
@@ -921,34 +920,11 @@
         "security": [{ "APIKeyHeader": [] }]
       }
     },
-    "/v1/verifier/create-request": {
-      "post": {
-        "tags": ["verifier"],
-        "summary": "Create Proof Request",
-        "description": "Create proof request.\n\nParameters:\n-----------\nbody: CreateProofRequest\n    The proof request object\n\nReturns:\n--------\npresentation_exchange: PresentationExchange\n    The presentation exchange record",
-        "operationId": "create_proof_request_v1_verifier_create_request_post",
-        "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateProofRequest" } } },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PresentationExchange" } } }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
-          }
-        },
-        "security": [{ "APIKeyHeader": [] }]
-      }
-    },
     "/v1/verifier/send-request": {
       "post": {
         "tags": ["verifier"],
-        "summary": "Send Proof Request",
-        "description": "Send proof request.\n\nParameters:\n-----------\nbody: SendProofRequest\n    The proof request object\n\nReturns:\n--------\npresentation_exchange: PresentationExchange\n    The presentation exchange record",
+        "summary": "Send a Proof Request to a connection",
+        "description": "Send proof request\n---\nNB: Only a tenant with the verifier role can send a proof request.\n\nThe verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n        \"connection_id\": \"string\", <-- The verifier's reference to the connection to send this proof request to\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: SendProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
         "operationId": "send_proof_request_v1_verifier_send_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendProofRequest" } } },
@@ -967,11 +943,34 @@
         "security": [{ "APIKeyHeader": [] }]
       }
     },
+    "/v1/verifier/create-request": {
+      "post": {
+        "tags": ["verifier"],
+        "summary": "Create a Proof Request (not bound to a connection)",
+        "description": "Creates a presentation request that is not bound to any specific proposal or connection\n---\nThis endpoint is used to create a proof request that is not bound to a connection. This means the proof request is\nnot sent directly, but it will do the initial step of creating a proof exchange record,\nwhich the verifier can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and verifier.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
+        "operationId": "create_proof_request_v1_verifier_create_request_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateProofRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PresentationExchange" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        },
+        "security": [{ "APIKeyHeader": [] }]
+      }
+    },
     "/v1/verifier/accept-request": {
       "post": {
         "tags": ["verifier"],
-        "summary": "Accept Proof Request",
-        "description": "Accept proof request.\n\nParameters:\n-----------\nbody: AcceptProofRequest\n    The proof request object\n\nReturns:\n--------\npresentation_exchange: PresentationExchange\n    The presentation exchange record",
+        "summary": "Accept a Proof Request",
+        "description": "Accept proof request\n---\nA prover uses this endpoint to respond to a proof request, by sending a presentation to the verifier.\n\nAn Indy presentation contains a mapping of the requested attributes to the wallet credential id of the prover.\n\nExample:\n```json\n{\n    \"indy_presentation_spec\": {\n        \"requested_attributes\": {\n            \"surname\": {\n                \"cred_id\": \"10e6b03f-2b60-431a-9634-731594423120\",\n                \"revealed\": true\n            },\n            \"name\": {\n                \"cred_id\": \"10e6b03f-2b60-431a-9634-731594423120\",\n                \"revealed\": true\n            },\n            \"age\": {\n                \"cred_id\": \"10e6b03f-2b60-431a-9634-731594423120\",\n                \"revealed\": true\n            }\n        }\n    }\n}\n```\n\nIn the context of the holder's wallet, the `cred_id` is called the `referent`.\n\nThe `revealed` parameter indicates whether the holder wants to reveal the attribute value to the verifier or not.\n\nRequest Body:\n---\n    body: AcceptProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The prover's updated presentation exchange record after responding to the proof request.",
         "operationId": "accept_proof_request_v1_verifier_accept_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AcceptProofRequest" } } },
@@ -993,8 +992,8 @@
     "/v1/verifier/reject-request": {
       "post": {
         "tags": ["verifier"],
-        "summary": "Reject Proof Request",
-        "description": "Reject proof request.\n\nParameters:\n-----------\nbody: RejectProofRequest\n    The proof request object\n\nReturns:\n--------\nNone",
+        "summary": "Reject a Proof Request",
+        "description": "Reject proof request\n---\nA prover uses this endpoint to notify the verifier that they cannot or refuse to respond to a proof request.\n\nThe prover provides the proof ID of the request that they want to reject, and a message (`problem_report`) that\nwill display in the verifier's presentation exchange record as the rejection message.\n\nRequest Body:\n---\n    body: RejectProofRequest\n        proof_id: str\n            The proof id of the presentation request that is being rejected\n        problem_report: str\n            A message to inform the verifier why their proof request is rejected\n        delete_proof_record: bool (default: False)\n            Can be set to true if the prover wishes to delete their record of the rejected presentation exchange.\n\nReturns:\n---\n    status_code: 204",
         "operationId": "reject_proof_request_v1_verifier_reject_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RejectProofRequest" } } },
@@ -1013,8 +1012,8 @@
     "/v1/verifier/proofs": {
       "get": {
         "tags": ["verifier"],
-        "summary": "Get Proof Records",
-        "description": "Get all proof records\n\nParameters:\n----------\n    connection_id: Optional[str]\n    role: Optional[Role]: \"prover\", \"verifier\"\n    state: Optional[State]: \"abandoned\", \"done\", \"presentation-received\",\n                            \"presentation-sent\", \"proposal-received\", \"proposal-sent\",\n                            \"request-received\", \"request-sent\"\n    thread_id: Optional[UUID]\n\nReturns:\n--------\npresentation_exchange_list: [PresentationExchange]\n    The list of presentation exchange records",
+        "summary": "Get Presentation Exchange Records",
+        "description": "Get all presentation exchange records for this tenant\n---\nThese records contains information about proof requests and presentations.\n\nThe results can be filtered by connection_id, role, state, and thread_id.\n\nParameters (Optional):\n---\n    connection_id: str\n    role: Role: \"prover\", \"verifier\"\n    state: State: \"presentation-received\", \"presentation-sent\", \"proposal-received\", \"proposal-sent\",\n                    \"request-received\", \"request-sent\", \"abandoned\", \"done\"\n    thread_id: UUID\n\nReturns:\n---\n    List[PresentationExchange]\n        The list of presentation exchange records",
         "operationId": "get_proof_records_v1_verifier_proofs_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -1088,8 +1087,8 @@
     "/v1/verifier/proofs/{proof_id}": {
       "get": {
         "tags": ["verifier"],
-        "summary": "Get Proof Record",
-        "description": "Get a specific proof record\n\nParameters:\n----------\nproof_id: str\n    The proof ID\n\nReturns:\n--------\npresentation_exchange_record: PresentationExchange\n    The of presentation exchange record for the proof ID",
+        "summary": "Get a Presentation Exchange Record",
+        "description": "Get a specific presentation exchange record\n---\nThis fetches a specific presentation exchange record by providing the proof ID.\n\nParameters:\n---\n    proof_id: str\n        The proof ID for the presentation request of interest\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for the proof ID",
         "operationId": "get_proof_record_v1_verifier_proofs__proof_id__get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -1108,8 +1107,8 @@
       },
       "delete": {
         "tags": ["verifier"],
-        "summary": "Delete Proof",
-        "description": "Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')\n\nParameters:\n----------\nproof_id: str\n    The proof ID - starting with v1- or v2-\n\nReturns:\n--------\nNone",
+        "summary": "Delete a Presentation Exchange Record",
+        "description": "Delete a presentation exchange record\n---\nThis will remove a specific presentation exchange from your storage records.\n\nParameters:\n---\n    proof_id: str\n        The identifier of the presentation exchange record that you want to delete\n\nReturns:\n---\n    status_code: 204",
         "operationId": "delete_proof_v1_verifier_proofs__proof_id__delete",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -1127,8 +1126,8 @@
     "/v1/verifier/proofs/{proof_id}/credentials": {
       "get": {
         "tags": ["verifier"],
-        "summary": "Get Credentials By Proof Id",
-        "description": "Get matching credentials for presentation exchange\n\nParameters:\n----------\nproof_id: str\n     The proof ID\n\nReturns:\n--------\npresentation_exchange_list: [IndyCredPrecis]\n    The list of Indy presentation credentials",
+        "summary": "Get Matching Credentials for a Proof",
+        "description": "Get matching credentials for a presentation exchange\n---\nThis endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.\n\nThe `presentation_referents` field indicates which of the fields in the proof request that credential satisfies.\n\nParameters:\n---\n    proof_id: str\n        The relevant proof exchange ID for the prover\n\nReturns:\n---\n    List[IndyCredPrecis]\n        A list of applicable Indy credentials",
         "operationId": "get_credentials_by_proof_id_v1_verifier_proofs__proof_id__credentials_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
@@ -2358,29 +2357,23 @@
       },
       "CreateCredentialDefinition": {
         "properties": {
-          "tag": { "type": "string", "title": "Tag", "examples": ["default"] },
           "schema_id": {
             "type": "string",
             "title": "Schema Id",
             "examples": ["CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3"]
           },
-          "support_revocation": { "type": "boolean", "title": "Support Revocation", "default": false },
-          "revocation_registry_size": {
-            "type": "integer",
-            "title": "Revocation Registry Size",
-            "description": "If revocation support is requested, this specifies the maximum number of revocations to be stored by the registry. Default value is equal to the maximum: 32767.",
-            "default": 32767
-          }
+          "tag": { "type": "string", "title": "Tag", "examples": ["default"] },
+          "support_revocation": { "type": "boolean", "title": "Support Revocation", "default": false }
         },
         "type": "object",
-        "required": ["tag", "schema_id"],
+        "required": ["schema_id", "tag"],
         "title": "CreateCredentialDefinition"
       },
       "CreateInvitation": {
         "properties": {
           "alias": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Alias" },
-          "multi_use": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Multi Use" },
-          "use_public_did": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Use Public Did" }
+          "multi_use": { "type": "boolean", "title": "Multi Use", "default": false },
+          "use_public_did": { "type": "boolean", "title": "Use Public Did", "default": false }
         },
         "type": "object",
         "title": "CreateInvitation"
@@ -2418,10 +2411,6 @@
             ],
             "title": "Attachments"
           },
-          "handshake_protocols": {
-            "anyOf": [{ "items": { "type": "string" }, "type": "array" }, { "type": "null" }],
-            "title": "Handshake Protocols"
-          },
           "create_connection": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Create Connection" }
         },
         "type": "object",
@@ -2434,7 +2423,6 @@
             "default": "v2"
           },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "trace": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Trace" },
           "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
@@ -2458,7 +2446,7 @@
             "items": { "type": "string" },
             "type": "array",
             "title": "Attribute Names",
-            "examples": [["speed"]]
+            "examples": [["name", "age"]]
           }
         },
         "type": "object",
@@ -2499,13 +2487,18 @@
             "title": "@Context",
             "description": "The JSON-LD context of the credential"
           },
+          "credentialStatus": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Credentialstatus" },
           "credentialSubject": { "type": "object", "title": "Credentialsubject" },
           "expirationDate": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Expirationdate",
             "description": "The expiration date"
           },
-          "id": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Id" },
+          "id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Id",
+            "description": "The ID of the credential"
+          },
           "issuanceDate": { "type": "string", "title": "Issuancedate", "description": "The issuance date" },
           "issuer": {
             "anyOf": [{ "type": "string" }, { "type": "object" }],
@@ -2554,7 +2547,8 @@
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Credential Definition Id"
           },
-          "credential_id": { "type": "string", "title": "Credential Id" },
+          "credential_id": { "type": "string", "title": "Credential Id", "deprecated": true },
+          "credential_exchange_id": { "type": "string", "title": "Credential Exchange Id" },
           "did": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Did" },
           "error_msg": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Error Msg" },
           "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion" },
@@ -2588,7 +2582,7 @@
           "updated_at": { "type": "string", "title": "Updated At" }
         },
         "type": "object",
-        "required": ["created_at", "credential_id", "protocol_version", "role", "updated_at"],
+        "required": ["created_at", "credential_id", "credential_exchange_id", "protocol_version", "role", "updated_at"],
         "title": "CredentialExchange"
       },
       "CredentialSchema": {
@@ -2600,7 +2594,7 @@
             "items": { "type": "string" },
             "type": "array",
             "title": "Attribute Names",
-            "examples": [["speed"]]
+            "examples": [["name", "age"]]
           }
         },
         "type": "object",
@@ -2623,33 +2617,34 @@
       "CredentialType": { "type": "string", "enum": ["indy", "jwt", "ld_proof"], "title": "CredentialType" },
       "DID": {
         "properties": {
-          "did": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Did",
-            "description": "DID of interest"
-          },
+          "did": { "type": "string", "title": "Did", "description": "DID of interest" },
           "key_type": {
-            "anyOf": [{ "type": "string", "enum": ["ed25519", "bls12381g2"] }, { "type": "null" }],
+            "type": "string",
+            "enum": ["ed25519", "bls12381g2"],
             "title": "Key Type",
             "description": "Key type associated with the DID"
           },
+          "metadata": {
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
+            "title": "Metadata",
+            "description": "Additional metadata associated with the DID"
+          },
           "method": {
-            "anyOf": [{ "type": "string", "enum": ["sov", "key"] }, { "type": "null" }],
+            "type": "string",
+            "enum": ["sov", "key"],
             "title": "Method",
             "description": "Did method associated with the DID"
           },
           "posture": {
-            "anyOf": [{ "type": "string", "enum": ["public", "posted", "wallet_only"] }, { "type": "null" }],
+            "type": "string",
+            "enum": ["public", "posted", "wallet_only"],
             "title": "Posture",
             "description": "Whether DID is current public DID, posted to ledger but not current public DID, or local to the wallet"
           },
-          "verkey": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Verkey",
-            "description": "Public verification key"
-          }
+          "verkey": { "type": "string", "title": "Verkey", "description": "Public verification key" }
         },
         "type": "object",
+        "required": ["did", "key_type", "method", "posture", "verkey"],
         "title": "DID",
         "description": "DID"
       },
@@ -2903,10 +2898,7 @@
       },
       "IndyCredPrecis": {
         "properties": {
-          "cred_info": {
-            "anyOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }, { "type": "null" }],
-            "description": "Credential info"
-          },
+          "cred_info": { "allOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }], "description": "Credential info" },
           "interval": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocationInterval" }, { "type": "null" }],
             "description": "Non-revocation interval from presentation request"
@@ -2917,6 +2909,7 @@
           }
         },
         "type": "object",
+        "required": ["cred_info"],
         "title": "IndyCredPrecis",
         "description": "IndyCredPrecis"
       },
@@ -3670,19 +3663,12 @@
       },
       "InvitationResult": {
         "properties": {
-          "connection_id": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Connection Id",
-            "description": "Connection identifier"
-          },
-          "invitation": { "anyOf": [{ "$ref": "#/components/schemas/ConnectionInvitation" }, { "type": "null" }] },
-          "invitation_url": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Invitation Url",
-            "description": "Invitation URL"
-          }
+          "connection_id": { "type": "string", "title": "Connection Id", "description": "Connection identifier" },
+          "invitation": { "$ref": "#/components/schemas/ConnectionInvitation" },
+          "invitation_url": { "type": "string", "title": "Invitation Url", "description": "Invitation URL" }
         },
         "type": "object",
+        "required": ["connection_id", "invitation", "invitation_url"],
         "title": "InvitationResult",
         "description": "InvitationResult"
       },
@@ -3854,7 +3840,7 @@
             "description": "Detail of the JSON-LD Credential to be issued"
           },
           "options": {
-            "allOf": [{ "$ref": "#/components/schemas/LDProofVCDetailOptions" }],
+            "allOf": [{ "$ref": "#/components/schemas/LDProofVCOptions" }],
             "description": "Options for specifying how the linked data proof is created."
           }
         },
@@ -3863,7 +3849,7 @@
         "title": "LDProofVCDetail",
         "description": "LDProofVCDetail"
       },
-      "LDProofVCDetailOptions": {
+      "LDProofVCOptions": {
         "properties": {
           "challenge": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
@@ -3890,15 +3876,19 @@
             "description": "The proof purpose used for the proof. Should match proof purposes registered in the Linked Data Proofs Specification"
           },
           "proofType": {
-            "type": "string",
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Prooftype",
             "description": "The proof type used for the proof. Should match suites registered in the Linked Data Cryptographic Suite Registry"
+          },
+          "verificationMethod": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Verificationmethod",
+            "description": "The verification method to use for the proof. Should match a verification method in the wallet"
           }
         },
         "type": "object",
-        "required": ["proofType"],
-        "title": "LDProofVCDetailOptions",
-        "description": "LDProofVCDetailOptions"
+        "title": "LDProofVCOptions",
+        "description": "LDProofVCOptions"
       },
       "LinkedDataProof": {
         "properties": {
@@ -3979,6 +3969,11 @@
           "invitation": {
             "allOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }],
             "description": "Out of band invitation message"
+          },
+          "multi_use": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Multi Use",
+            "description": "Allow for multiple uses of the oob invitation"
           },
           "oob_id": { "type": "string", "title": "Oob Id", "description": "Oob record identifier" },
           "our_recipient_key": {
@@ -4193,15 +4188,7 @@
       "RevokeCredential": {
         "properties": {
           "credential_exchange_id": { "type": "string", "title": "Credential Exchange Id" },
-          "credential_definition_id": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
-            "title": "Credential Definition Id"
-          },
-          "auto_publish_on_ledger": {
-            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
-            "title": "Auto Publish On Ledger",
-            "default": false
-          }
+          "auto_publish_on_ledger": { "type": "boolean", "title": "Auto Publish On Ledger", "default": false }
         },
         "type": "object",
         "required": ["credential_exchange_id"],
@@ -4373,7 +4360,6 @@
             "default": "v2"
           },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "trace": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Trace" },
           "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
@@ -4394,7 +4380,8 @@
       "ServiceDecorator": {
         "properties": {
           "recipientKeys": {
-            "anyOf": [{ "items": { "type": "string" }, "type": "array" }, { "type": "null" }],
+            "items": { "type": "string" },
+            "type": "array",
             "title": "Recipientkeys",
             "description": "List of recipient keys"
           },
@@ -4404,12 +4391,13 @@
             "description": "List of routing keys"
           },
           "serviceEndpoint": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "type": "string",
             "title": "Serviceendpoint",
             "description": "Service endpoint at which to reach this agent"
           }
         },
         "type": "object",
+        "required": ["recipientKeys", "serviceEndpoint"],
         "title": "ServiceDecorator",
         "description": "ServiceDecorator"
       },

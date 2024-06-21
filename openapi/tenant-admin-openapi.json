@@ -3,9 +3,8 @@
   "info": {
     "title": "CloudAPI-Multitenant-Admin",
     "description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for\nreal-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish\na WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the\nability to subscribe by topic, or to any wallet in their group.\n\nOur WebSocket endpoints are as follows:\n\n1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.\n\n2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook\nevents for a specific wallet ID.\n\n3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.\n\n4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.\n`connections`, `credentials`, `proofs`, `endorsements`).\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information\nabout the available topics.\n",
-    "version": "0.11.0"
+    "version": "0.12.1"
   },
-  "servers": [{ "url": "/tenant-admin" }],
   "paths": {
     "/v1/tenants": {
       "post": {

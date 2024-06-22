@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 from logging import Logger
 from typing import List, Optional
 

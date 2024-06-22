@@ -38,10 +38,10 @@ from app.util.retry_method import coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
 
 
-async def create_schema_service(
-    logger: Logger,
-    aries_controller: AcaPyClient,
-    schema_request: SchemaSendRequest,
+@dataclass
+class ServiceDependencies:
+    logger: Logger
+    aries_controller: AcaPyClient
     schema: CreateSchema,
 ) -> CredentialSchema:
     """

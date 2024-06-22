@@ -298,6 +298,98 @@ async def schema_futures(
     return schemas
 
 
+class CredDefPublisher:
+    def __init__(self, deps: ServiceDependencies):
+        self.deps = deps
+
+    async def assert_public_did(self):
+        public_did = await acapy_wallet.assert_public_did(self.deps.aries_controller)
+        return public_did
+
+    async def check_endorser_connection(self):
+        endorser_connection = await handle_acapy_call(
+            logger=self.deps.logger,
+            acapy_call=self.deps.aries_controller.connection.get_connections,
+            alias=ACAPY_ENDORSER_ALIAS,
+        )
+        has_connections = len(endorser_connection.results) > 0
+
+        if not has_connections:
+            self.deps.logger.error(
+                "Failed to create credential definition supporting revocation: no endorser connection found. "
+                "Issuer attempted to create a credential definition with support for revocation but does not "
+                "have an active connection with an endorser, which is required for this operation."
+            )
+
+            raise CloudApiException(
+                "Credential definition creation failed: An active endorser connection is required "
+                "to support revocation. Please establish a connection with an endorser and try again."
+            )
+
+    async def publish_credential_definition(self, request_body):
+        try:
+            result = await handle_acapy_call(
+                logger=self.deps.logger,
+                acapy_call=self.deps.aries_controller.credential_definition.publish_cred_def,
+                body=request_body,
+            )
+
+        except CloudApiException as e:
+            self.deps.logger.warning(
+                "An Exception was caught while publishing credential definition: `{}` `{}`",
+                e.detail,
+                e.status_code,
+            )
+            if "already exists" in e.detail:
+                raise CloudApiException(status_code=409, detail=e.detail) from e
+            else:
+                raise CloudApiException(
+                    detail=f"Error while creating credential definition: {e.detail}",
+                    status_code=e.status_code,
+                ) from e
+
+        return result
+
+    async def wait_for_transaction_ack(self, transaction_id):
+        self.deps.logger.debug(
+            "The publish credential definition response provides a transaction id. "
+            "Waiting for transaction to be in state `transaction_acked`"
+        )
+        try:
+            # Wait for transaction to be acknowledged and written to the ledger
+            await coroutine_with_retry_until_value(
+                coroutine_func=self.deps.aries_controller.endorse_transaction.get_transaction,
+                args=(transaction_id,),
+                field_name="state",
+                expected_value="transaction_acked",
+                logger=self.deps.logger,
+                max_attempts=10,
+                retry_delay=2,
+            )
+        except asyncio.TimeoutError as e:
+            raise CloudApiException(
+                "Timeout waiting for endorser to accept the endorsement request.",
+                504,
+            ) from e
+        self.deps.logger.debug("Transaction has been acknowledged by the endorser")
+
+    async def wait_for_revocation_registry(self, credential_definition_id):
+        try:
+            self.deps.logger.debug("Waiting for revocation registry creation")
+            await asyncio.wait_for(
+                wait_for_active_registry(
+                    self.deps.aries_controller, credential_definition_id
+                ),
+                timeout=REGISTRY_CREATION_TIMEOUT,
+            )
+        except asyncio.TimeoutError as e:
+            self.deps.logger.error("Timeout waiting for revocation registry creation.")
+            raise CloudApiException(
+                "Timeout waiting for revocation registry creation.",
+                504,
+            ) from e
+
+
 async def create_cred_def(
     logger: Logger,
     aries_controller: AcaPyClient,

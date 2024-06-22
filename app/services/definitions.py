@@ -159,9 +159,41 @@ class SchemaRegistrar:
             else:
                 raise error
 
+
+async def create_schema_service(
+    logger: Logger,
+    aries_controller: AcaPyClient,
+    schema_request: SchemaSendRequest,
+    schema: CreateSchema,
+) -> CredentialSchema:
+    """
+    Create a schema and register it in the trust registry
+    """
+    deps = ServiceDependencies(logger, aries_controller)
+    publisher = SchemaPublisher(deps)
+    registrar = SchemaRegistrar(deps)
+
+    try:
+        result = await publisher.publish_schema(schema_request)
+    except CloudApiException as e:
+        if "already exist" in e.detail and e.status_code == 400:
+            result = await publisher.handle_existing_schema(schema)
+        else:
+            logger.warning(
+                f"An unhandled Exception was caught while publishing schema: {e.detail}"
+            )
+            raise CloudApiException("Error while creating schema.") from e
+
+    if result.sent and result.sent.schema_id:
+        await registrar.register_schema(result.sent.schema_id)
+    else:
+        logger.error("No SchemaSendResult in `publish_schema` response.")
+        raise CloudApiException(
+            "An unexpected error occurred: could not publish schema."
+        )
+
     result = credential_schema_from_acapy(result.sent.var_schema)
     logger.info("Successfully published and registered schema.")
-
     return result
 
 

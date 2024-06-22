@@ -133,39 +133,31 @@ class SchemaPublisher:
             )
             return result
 
-        else:
-            logger.warning(
-                "An unhandled Exception was caught while publishing schema. The error message is: '{}'.",
-                e.detail,
-            )
-            raise CloudApiException("Error while creating schema.") from e
 
-    # Register the schema in the trust registry
-    try:
-        if result.sent and result.sent.schema_id:
-            logger.debug("Registering schema after successful publish to ledger")
-            await register_schema(schema_id=result.sent.schema_id)
-        else:
-            logger.error("No SchemaSendResult in `publish_schema` response.")
-            raise CloudApiException(
-                "An unexpected error occurred: could not publish schema."
+class SchemaRegistrar:
+    def __init__(self, deps: ServiceDependencies):
+        self.deps = deps
+
+    async def register_schema(self, schema_id: str):
+        self.deps.logger.debug("Registering schema after successful publish to ledger")
+        try:
+            await register_schema(schema_id=schema_id)
+        except TrustRegistryException as error:
+            # If status_code is 405 it means the schema already exists in the trust registry
+            # That's okay, because we've achieved our intended result:
+            #   make sure the schema is registered in the trust registry
+            self.deps.logger.info(
+                "Caught TrustRegistryException when registering schema. "
+                "Got status code {} with message `{}`",
+                error.status_code,
+                error.detail,
             )
-    except TrustRegistryException as error:
-        # If status_code is 405 it means the schema already exists in the trust registry
-        # That's okay, because we've achieved our intended result:
-        #   make sure the schema is registered in the trust registry
-        logger.info(
-            "Caught TrustRegistryException when registering schema. "
-            "Got status code {} with message `{}`",
-            error.status_code,
-            error.detail,
-        )
-        if error.status_code == 405:
-            logger.info(
-                "Status code 405 indicates schema is already registered, so we can continue"
-            )
-        else:
-            raise error
+            if error.status_code == 405:
+                self.deps.logger.info(
+                    "Status code 405 indicates schema is already registered, so we can continue"
+                )
+            else:
+                raise error
 
     result = credential_schema_from_acapy(result.sent.var_schema)
     logger.info("Successfully published and registered schema.")

@@ -399,11 +399,12 @@ async def create_cred_def(
     """
     Create a credential definition
     """
+    deps = ServiceDependencies(logger, aries_controller)
+    publisher = CredDefPublisher(deps)
 
-    # Assert the agent has a public did
-    logger.debug("Asserting client has public DID")
     try:
-        public_did = await acapy_wallet.assert_public_did(aries_controller)
+        logger.debug("Asserting client has public DID")
+        public_did = await publisher.assert_public_did()
     except CloudApiException as e:
         log_message = f"Asserting public DID failed: {e}"
 
@@ -422,31 +423,11 @@ async def create_cred_def(
             )
         raise CloudApiException(client_error_message, e.status_code) from e
 
-    # Make sure we are allowed to issue this schema according to trust registry rules
-    logger.debug("Asserting client is a valid issuer")
     await assert_valid_issuer(public_did, credential_definition.schema_id)
 
     if support_revocation:
-        endorser_connection = await handle_acapy_call(
-            logger=logger,
-            acapy_call=aries_controller.connection.get_connections,
-            alias=ACAPY_ENDORSER_ALIAS,
-        )
-        has_connections = len(endorser_connection.results) > 0
+        await publisher.check_endorser_connection()
 
-        if not has_connections:
-            logger.error(
-                "Failed to create credential definition supporting revocation: no endorser connection found. "
-                "Issuer attempted to create a credential definition with support for revocation but does not "
-                "have an active connection with an endorser, which is required for this operation."
-            )
-
-            raise CloudApiException(
-                "Credential definition creation failed: An active endorser connection is required "
-                "to support revocation. Please establish a connection with an endorser and try again."
-            )
-
-    logger.debug("Publishing credential definition")
     request_body = handle_model_with_validation(
         logger=logger,
         model_class=CredentialDefinitionSendRequest,
@@ -455,65 +436,15 @@ async def create_cred_def(
         tag=credential_definition.tag,
         revocation_registry_size=32767,
     )
-    try:
-        result = await handle_acapy_call(
-            logger=logger,
-            acapy_call=aries_controller.credential_definition.publish_cred_def,
-            body=request_body,
-        )
-        credential_definition_id = result.sent.credential_definition_id
-    except CloudApiException as e:
-        logger.warning(
-            "An Exception was caught while publishing credential definition: `{}` `{}`",
-            e.detail,
-            e.status_code,
-        )
-        if "already exists" in e.detail:
-            raise CloudApiException(status_code=409, detail=e.detail) from e
-        else:
-            raise CloudApiException(
-                detail=f"Error while creating credential definition: {e.detail}",
-                status_code=e.status_code,
-            ) from e
 
-    # Wait for cred_def transaction to be acknowledged
+    result = await publisher.publish_credential_definition(request_body)
+    credential_definition_id = result.sent.credential_definition_id
+
     if result.txn and result.txn.transaction_id:
-        logger.debug(
-            "The publish credential definition response provides a transaction id. "
-            "Waiting for transaction to be in state `transaction_acked`"
-        )
-        try:
-            # Wait for transaction to be acknowledged and written to the ledger
-            await coroutine_with_retry_until_value(
-                coroutine_func=aries_controller.endorse_transaction.get_transaction,
-                args=(result.txn.transaction_id,),
-                field_name="state",
-                expected_value="transaction_acked",
-                logger=logger,
-                max_attempts=10,
-                retry_delay=2,
-            )
-        except asyncio.TimeoutError as e:
-            raise CloudApiException(
-                "Timeout waiting for endorser to accept the endorsement request.",
-                504,
-            ) from e
-        logger.debug("Transaction has been acknowledged by the endorser")
+        await publisher.wait_for_transaction_ack(result.txn.transaction_id)
 
-    # Wait for revocation registry creation
     if support_revocation:
-        try:
-            logger.debug("Waiting for revocation registry creation")
-            await asyncio.wait_for(
-                wait_for_active_registry(aries_controller, credential_definition_id),
-                timeout=REGISTRY_CREATION_TIMEOUT,
-            )
-        except asyncio.TimeoutError as e:
-            logger.error("Timeout waiting for revocation registry creation.")
-            raise CloudApiException(
-                "Timeout waiting for revocation registry creation.",
-                504,
-            ) from e
+        await publisher.wait_for_revocation_registry(credential_definition_id)
 
     return credential_definition_id
 

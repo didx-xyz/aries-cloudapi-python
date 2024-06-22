@@ -305,7 +305,9 @@ class CredDefPublisher:
     async def assert_public_did(self):
         try:
             self.deps.logger.debug("Asserting client has public DID")
-            public_did = await acapy_wallet.assert_public_did(self.deps.aries_controller)
+            public_did = await acapy_wallet.assert_public_did(
+                self.deps.aries_controller
+            )
         except CloudApiException as e:
             log_message = f"Asserting public DID failed: {e}"
 

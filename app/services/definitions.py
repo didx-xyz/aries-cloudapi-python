@@ -42,85 +42,80 @@ from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
 class ServiceDependencies:
     logger: Logger
     aries_controller: AcaPyClient
-    schema: CreateSchema,
-) -> CredentialSchema:
-    """
-    Create a schema and register it in the trust registry
-    """
-    try:
-        logger.info("Publishing schema as governance")
+
+
+class SchemaPublisher:
+    def __init__(self, deps: ServiceDependencies):
+        self.deps = deps
+
+    async def publish_schema(self, schema_request: SchemaSendRequest):
         result = await handle_acapy_call(
-            logger=logger,
-            acapy_call=aries_controller.schema.publish_schema,
+            logger=self.deps.logger,
+            acapy_call=self.deps.aries_controller.schema.publish_schema,
             body=schema_request,
             create_transaction_for_endorser=False,
         )
+        return result
 
-    except CloudApiException as e:
-        logger.info(
-            "An Exception was caught while trying to publish schema: `{}`",
-            e.detail,
+    async def handle_existing_schema(self, schema: CreateSchema):
+        self.deps.logger.info("Handling case of schema already existing on ledger")
+        self.deps.logger.debug("Fetching public DID for governance controller")
+        pub_did = await handle_acapy_call(
+            logger=self.deps.logger,
+            acapy_call=self.deps.aries_controller.wallet.get_public_did,
         )
 
-        if e.status_code == 400 and "already exist" in e.detail:
-            logger.info("Handling case of schema already existing on ledger")
-            logger.debug("Fetching public DID for governance controller")
-            pub_did = await handle_acapy_call(
-                logger=logger,
-                acapy_call=aries_controller.wallet.get_public_did,
-            )
+        _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
+        self.deps.logger.debug(
+            "Fetching schema id `{}` which is associated with request",
+            _schema_id,
+        )
 
-            _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
-            logger.debug(
-                "Fetching schema id `{}` which is associated with request",
-                _schema_id,
-            )
-            _schema: SchemaGetResult = await handle_acapy_call(
-                logger=logger,
-                acapy_call=aries_controller.schema.get_schema,
-                schema_id=_schema_id,
-            )
+        _schema: SchemaGetResult = await handle_acapy_call(
+            logger=self.deps.logger,
+            acapy_call=self.deps.aries_controller.schema.get_schema,
+            schema_id=_schema_id,
+        )
 
-            # Edge case where the governance agent has changed its public did
-            # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
-            # will not be correct due to different public did.
-            if _schema.var_schema is None:
-                logger.debug(
-                    "Schema not found. Governance agent may have changed public DID. "
-                    "Fetching schemas created by governance agent with request name and version"
+        # Edge case where the governance agent has changed its public did
+        # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
+        # will not be correct due to different public did.
+        if _schema.var_schema is None:
+            self.deps.logger.debug(
+                "Schema not found. Governance agent may have changed public DID. "
+                "Fetching schemas created by governance agent with request name and version"
+            )
+            schemas_created_ids = await handle_acapy_call(
+                logger=self.deps.logger,
+                acapy_call=self.deps.aries_controller.schema.get_created_schemas,
+                schema_name=schema.name,
+                schema_version=schema.version,
+            )
+            self.deps.logger.debug("Getting schemas associated with fetched ids")
+            schemas: List[SchemaGetResult] = [
+                await handle_acapy_call(
+                    logger=self.deps.logger,
+                    acapy_call=self.deps.aries_controller.schema.get_schema,
+                    schema_id=schema_id,
                 )
-                schemas_created_ids = await handle_acapy_call(
-                    logger=logger,
-                    acapy_call=aries_controller.schema.get_created_schemas,
-                    schema_name=schema.name,
-                    schema_version=schema.version,
-                )
-                logger.debug("Getting schemas associated with fetched ids")
-                schemas: List[SchemaGetResult] = [
-                    await handle_acapy_call(
-                        logger=logger,
-                        acapy_call=aries_controller.schema.get_schema,
-                        schema_id=schema_id,
+                for schema_id in schemas_created_ids.schema_ids
+                if schema_id
+            ]
+
+            if schemas:
+                if len(schemas) > 1:
+                    raise CloudApiException(  # pylint: disable=W0707
+                        f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                        + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
+                        409,
                     )
-                    for schema_id in schemas_created_ids.schema_ids
-                    if schema_id
-                ]
-
-                if schemas:
-                    if len(schemas) > 1:
-                        raise CloudApiException(  # pylint: disable=W0707
-                            f"Multiple schemas with name {schema.name} and version {schema.version} exist."
-                            + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
-                            409,
-                        )
-
-                    logger.debug("Using updated schema id with new DID")
-                    _schema: SchemaGetResult = schemas[0]
-                else:
-                    # if schema already exists, we should at least fetch 1, so this should never happen
-                    raise CloudApiException(
-                        "Could not publish schema.", 500
-                    )  # pylint: disable=W0707
+                self.deps.logger.debug("Using updated schema id with new DID")
+                _schema: SchemaGetResult = schemas[0]
+            else:
+                # if schema already exists, we should at least fetch 1, so this should never happen
+                raise CloudApiException(
+                    "Could not publish schema.", 500
+                )  # pylint: disable=W0707
 
             # Schema exists with different attributes
             if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
@@ -132,7 +127,7 @@ class ServiceDependencies:
                 )  # pylint: disable=W0707
 
             result = credential_schema_from_acapy(_schema.var_schema)
-            logger.info(
+            self.deps.logger.info(
                 "Schema already exists on ledger. Returning schema definition: `{}`.",
                 result,
             )

@@ -303,7 +303,26 @@ class CredDefPublisher:
         self.deps = deps
 
     async def assert_public_did(self):
-        public_did = await acapy_wallet.assert_public_did(self.deps.aries_controller)
+        try:
+            self.deps.logger.debug("Asserting client has public DID")
+            public_did = await acapy_wallet.assert_public_did(self.deps.aries_controller)
+        except CloudApiException as e:
+            log_message = f"Asserting public DID failed: {e}"
+
+            if e.status_code == 403:
+                self.deps.logger.info(log_message)
+                client_error_message = (
+                    "Wallet making this request has no public DID. "
+                    "Only issuers with a public DID can make this request."
+                )
+
+            else:
+                self.deps.logger.error(log_message)
+                client_error_message = (
+                    "Something went wrong while asserting if request is from a valid issuer. "
+                    "Please try again."
+                )
+            raise CloudApiException(client_error_message, e.status_code) from e
         return public_did
 
     async def check_endorser_connection(self):
@@ -402,26 +421,7 @@ async def create_cred_def(
     deps = ServiceDependencies(logger, aries_controller)
     publisher = CredDefPublisher(deps)
 
-    try:
-        logger.debug("Asserting client has public DID")
-        public_did = await publisher.assert_public_did()
-    except CloudApiException as e:
-        log_message = f"Asserting public DID failed: {e}"
-
-        if e.status_code == 403:
-            logger.info(log_message)
-            client_error_message = (
-                "Wallet making this request has no public DID. "
-                "Only issuers with a public DID can make this request."
-            )
-
-        else:
-            logger.error(log_message)
-            client_error_message = (
-                "Something went wrong while asserting if request is from a valid issuer. "
-                "Please try again."
-            )
-        raise CloudApiException(client_error_message, e.status_code) from e
+    public_did = await publisher.assert_public_did()
 
     await assert_valid_issuer(public_did, credential_definition.schema_id)
 

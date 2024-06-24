@@ -85,7 +85,6 @@ async def create_schema(
     )
     async with get_governance_controller(governance_auth) as aries_controller:
         schema_response = await create_schema_service(
-            logger=bound_logger,
             aries_controller=aries_controller,
             schema_request=schema_send_request,
             schema=schema,
@@ -141,11 +140,11 @@ async def get_schemas(
             "schema_version": schema_version,
         }
     )
+    bound_logger.info("GET request received: Get created schemas")
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
             schemas = await get_schemas_tenant(
-                logger=bound_logger,
                 aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,
@@ -155,7 +154,6 @@ async def get_schemas(
 
         else:  # Governance is calling the endpoint
             schemas = await get_schemas_governance(
-                logger=bound_logger,
                 aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,
@@ -265,7 +263,6 @@ async def create_credential_definition(
 
     async with client_from_auth(auth) as aries_controller:
         credential_definition_id = await create_cred_def(
-            logger=bound_logger,
             aries_controller=aries_controller,
             credential_definition=credential_definition,
             support_revocation=support_revocation,
@@ -339,7 +336,6 @@ async def get_credential_definitions(
     # Get all created credential definition ids that match the filter
     async with client_from_auth(auth) as aries_controller:
         credential_definitions = await get_cred_defs(
-            logger=bound_logger,
             aries_controller=aries_controller,
             issuer_did=issuer_did,
             credential_definition_id=credential_definition_id,

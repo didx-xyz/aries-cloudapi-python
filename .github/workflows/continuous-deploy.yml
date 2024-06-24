@@ -289,6 +289,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: coverage-files
+          pattern: 'coverage-*'
       - name: Move coverage files to top-level directory
         run: |
           for dir in coverage-files/coverage-files-*; do

@@ -136,7 +136,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push Docker images
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
@@ -289,6 +289,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: coverage-files
+          pattern: 'coverage-*'
       - name: Move coverage files to top-level directory
         run: |
           for dir in coverage-files/coverage-files-*; do

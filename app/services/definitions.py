@@ -36,6 +36,9 @@ from app.util.definitions import (
 )
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
+from shared.log_config import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -161,7 +164,6 @@ class SchemaRegistrar:
 
 
 async def create_schema_service(
-    logger: Logger,
     aries_controller: AcaPyClient,
     schema_request: SchemaSendRequest,
     schema: CreateSchema,
@@ -169,7 +171,9 @@ async def create_schema_service(
     """
     Create a schema and register it in the trust registry
     """
-    deps = ServiceDependencies(logger, aries_controller)
+    bound_logger = logger.bind(body=schema)
+
+    deps = ServiceDependencies(bound_logger, aries_controller)
     publisher = SchemaPublisher(deps)
     registrar = SchemaRegistrar(deps)
 
@@ -179,7 +183,7 @@ async def create_schema_service(
         if "already exist" in e.detail and e.status_code == 400:
             result = await publisher.handle_existing_schema(schema)
         else:
-            logger.warning(
+            bound_logger.warning(
                 f"An unhandled Exception was caught while publishing schema: {e.detail}"
             )
             raise CloudApiException("Error while creating schema.") from e
@@ -187,18 +191,17 @@ async def create_schema_service(
     if result.sent and result.sent.schema_id:
         await registrar.register_schema(result.sent.schema_id)
     else:
-        logger.error("No SchemaSendResult in `publish_schema` response.")
+        bound_logger.error("No SchemaSendResult in `publish_schema` response.")
         raise CloudApiException(
             "An unexpected error occurred: could not publish schema."
         )
 
     result = credential_schema_from_acapy(result.sent.var_schema)
-    logger.info("Successfully published and registered schema.")
+    bound_logger.info("Successfully published and registered schema.")
     return result
 
 
 async def get_schemas_tenant(
-    logger: Logger,
     aries_controller: AcaPyClient,
     schema_id: Optional[str],
     schema_issuer_did: Optional[str],
@@ -208,7 +211,15 @@ async def get_schemas_tenant(
     """
     Allows tenants to get all schemas created
     """
-    logger.info("GET request received: Get created schemas")
+    bound_logger = logger.bind(
+        body={
+            "schema_id": schema_id,
+            "schema_issuer_did": schema_issuer_did,
+            "schema_name": schema_name,
+            "schema_version": schema_version,
+        }
+    )
+    bound_logger.debug("Fetching schemas from trust registry")
 
     if not schema_id:  # client is not filtering by schema_id, fetch all
         trust_registry_schemas = await get_trust_registry_schemas()
@@ -217,7 +228,8 @@ async def get_schemas_tenant(
 
     schema_ids = [schema.id for schema in trust_registry_schemas]
 
-    schemas = await schema_futures(logger, schema_ids, aries_controller)
+    bound_logger.debug("Getting schemas associated with fetched ids")
+    schemas = await schema_futures(schema_ids, aries_controller)
 
     if schema_issuer_did:
         schemas = [
@@ -232,7 +244,6 @@ async def get_schemas_tenant(
 
 
 async def get_schemas_governance(
-    logger: Logger,
     aries_controller: AcaPyClient,
     schema_id: Optional[str],
     schema_issuer_did: Optional[str],
@@ -242,11 +253,18 @@ async def get_schemas_governance(
     """
     Governance agents gets all schemas created by itself
     """
-    logger.info("GET request received: Get schemas created by governance client")
+    bound_logger = logger.bind(
+        body={
+            "schema_id": schema_id,
+            "schema_issuer_did": schema_issuer_did,
+            "schema_name": schema_name,
+            "schema_version": schema_version,
+        }
+    )
     # Get all created schema ids that match the filter
-    logger.debug("Fetching created schemas")
+    bound_logger.debug("Fetching created schemas")
     response = await handle_acapy_call(
-        logger=logger,
+        logger=bound_logger,
         acapy_call=aries_controller.schema.get_created_schemas,
         schema_id=schema_id,
         schema_issuer_did=schema_issuer_did,
@@ -257,17 +275,19 @@ async def get_schemas_governance(
     # Initiate retrieving all schemas
     schema_ids = response.schema_ids or []
 
-    schemas = await schema_futures(logger, schema_ids, aries_controller)
+    bound_logger.debug("Getting schemas associated with fetched ids")
+    schemas = await schema_futures(schema_ids, aries_controller)
 
     return schemas
 
 
 async def schema_futures(
-    logger: Logger, schema_ids: List[str], aries_controller: AcaPyClient
+    schema_ids: List[str], aries_controller: AcaPyClient
 ) -> List[CredentialSchema]:
     """
     Get schemas with attributes from schema ids
     """
+    logger.debug("Fetching schemas from schema ids")
     # We now have schema_ids; the following logic is the same whether called by governance or tenant.
     # Now fetch relevant schemas from ledger:
     get_schema_futures = [
@@ -412,7 +432,6 @@ class CredDefPublisher:
 
 
 async def create_cred_def(
-    logger: Logger,
     aries_controller: AcaPyClient,
     credential_definition: CreateCredentialDefinition,
     support_revocation: bool,
@@ -420,7 +439,14 @@ async def create_cred_def(
     """
     Create a credential definition
     """
-    deps = ServiceDependencies(logger, aries_controller)
+    bound_logger = logger.bind(
+        body={
+            "schema_id": credential_definition.schema_id,
+            "tag": credential_definition.tag,
+            "support_revocation": credential_definition.support_revocation,
+        }
+    )
+    deps = ServiceDependencies(bound_logger, aries_controller)
     publisher = CredDefPublisher(deps)
 
     public_did = await publisher.assert_public_did()
@@ -452,7 +478,6 @@ async def create_cred_def(
 
 
 async def get_cred_defs(
-    logger: Logger,
     aries_controller: AcaPyClient,
     issuer_did: Optional[str],
     credential_definition_id: Optional[str],
@@ -464,10 +489,20 @@ async def get_cred_defs(
     """
     Get credential definitions
     """
+    bound_logger = logger.bind(
+        body={
+            "issuer_did": issuer_did,
+            "credential_definition_id": credential_definition_id,
+            "schema_id": schema_id,
+            "schema_issuer_did": schema_issuer_did,
+            "schema_name": schema_name,
+            "schema_version": schema_version,
+        }
+    )
+    bound_logger.debug("Getting created credential definitions")
 
-    logger.debug("Getting created credential definitions")
     response = await handle_acapy_call(
-        logger=logger,
+        logger=bound_logger,
         acapy_call=aries_controller.credential_definition.get_created_cred_defs,
         issuer_did=issuer_did,
         cred_def_id=credential_definition_id,
@@ -481,7 +516,7 @@ async def get_cred_defs(
     credential_definition_ids = response.credential_definition_ids or []
     get_credential_definition_futures = [
         handle_acapy_call(
-            logger=logger,
+            logger=bound_logger,
             acapy_call=aries_controller.credential_definition.get_cred_def,
             cred_def_id=credential_definition_id,
         )
@@ -491,12 +526,12 @@ async def get_cred_defs(
     # Wait for completion of retrieval and transform all credential definitions
     # into response model (if a credential definition was returned)
     if get_credential_definition_futures:
-        logger.debug("Getting definitions from fetched credential ids")
+        bound_logger.debug("Getting definitions from fetched credential ids")
         credential_definition_results = await asyncio.gather(
             *get_credential_definition_futures
         )
     else:
-        logger.debug("No definition ids returned")
+        bound_logger.debug("No definition ids returned")
         credential_definition_results = []
 
     credential_definitions = [

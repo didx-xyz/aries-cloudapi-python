@@ -19,12 +19,12 @@ from app.models.definitions import (
     CredentialDefinition,
     CredentialSchema,
 )
-from app.services.definitions import (
+from app.services.definitions.definitions import (
     create_cred_def,
     create_schema_service,
     get_cred_defs,
-    get_schemas_governance,
-    get_schemas_tenant,
+    get_schemas_as_governance,
+    get_schemas_as_tenant,
 )
 from app.util.definitions import (
     credential_definition_from_acapy,
@@ -144,7 +144,7 @@ async def get_schemas(
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
-            schemas = await get_schemas_tenant(
+            schemas = await get_schemas_as_tenant(
                 aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,
@@ -153,7 +153,7 @@ async def get_schemas(
             )
 
         else:  # Governance is calling the endpoint
-            schemas = await get_schemas_governance(
+            schemas = await get_schemas_as_governance(
                 aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,

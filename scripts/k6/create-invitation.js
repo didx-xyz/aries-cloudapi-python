@@ -3,6 +3,7 @@ import { SharedArray } from 'k6/data';
 import { getBearerToken } from './auth.js';
 import { Trend, Counter } from 'k6/metrics';
 import file from 'k6/x/file';
+import sleep from 'k6';
 // import exec from 'k6/execution';
 import {
   createTenant,
@@ -23,6 +24,7 @@ import {
 
 const vus = parseInt(__ENV.VUS);
 const iterations = parseInt(__ENV.ITERATIONS);
+const issuerPrefix = __ENV.ISSUER_PREFIX;
 
 export let options = {
   scenarios: {
@@ -30,7 +32,7 @@ export let options = {
       executor: 'per-vu-iterations',
       vus: vus,
       iterations: iterations,
-      maxDuration: '120s',
+      maxDuration: '24h',
     },
   },
   setupTimeout: '120s', // Increase the setup timeout to 120 seconds
@@ -39,31 +41,36 @@ export let options = {
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     'http_req_duration{scenario:default}': [`max>=0`],
     'http_reqs{scenario:default}': ['count >= 0'],
+    'http_reqs{my_custom_tag:specific_function}': ['count>=0'],
     'iteration_duration{scenario:default}': ['max>=0'],
-    'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    'specific_function_reqs{scenario:default}': ['count>=0'],
+    // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
+    // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
+  },
+  tags: {
+    test_run_id: 'phased-issuance',
+    test_phase: 'create-invitation',
   },
 };
 
-const specificFunctionReqs = new Counter('specific_function_reqs');
+const testFunctionReqs = new Counter('test_function_reqs');
 const mainIterationDuration = new Trend('main_iteration_duration');
 
 const inputFilepath = 'output/create-holders.json';
 const data = open(inputFilepath, 'r');
 const outputFilepath = 'output/create-invitation.json';
 
-// // Seed data: Generating a list of options.iterations unique wallet names
-// const wallets = new SharedArray('wallets', function() {
-//   const walletsArray = [];
-//   for (let i = 0; i < options.iterations; i++) {
-//     walletsArray.push({
-//       wallet_label: `xxkk6 holder ${i}`,
-//       wallet_name: `xxkk6_wallet_${i}`
-//     });
-//   }
-//   return walletsArray;
-// });
+// Seed data: Generating a list of options.iterations unique wallet names
+const wallets = new SharedArray('wallets', function() {
+  const walletsArray = [];
+  for (let i = 0; i < options.iterations; i++) {
+    walletsArray.push({
+      wallet_label: `xxkk6 holder ${i}`,
+      wallet_name: `xxkk6_wallet_${i}`
+    });
+  }
+  return walletsArray;
+});
 
 const numIssuers = 1;
 let issuers = [];
@@ -83,7 +90,7 @@ export function setup() {
   file.writeString(outputFilepath, '');
 
   for (let i = 0; i < numIssuers; i++) {
-    const walletName = `k6issuer_${i}`;
+    const walletName = `${issuerPrefix}_${i}`;
     const credDefTag = walletName;
 
     let issuerAccessToken;
@@ -158,7 +165,13 @@ function getWalletIndex(vu, iter) {
   return walletIndex;
 }
 
+const vuStartTimes = {};
+const vuEndTimes = {};
+
 export default function(data) {
+  if (__ITER === 0) {
+    vuStartTimes[__VU] = Date.now();
+  }
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
@@ -214,25 +227,10 @@ export default function(data) {
     },
   });
 
-  specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  // testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 
-  // holders.push({
-  //   wallet_label: wallet.wallet_label,
-  //   wallet_name: wallet.wallet_name,
-  //   wallet_id: wallet.wallet_id,
-  //   access_token: wallet.access_token,
-  //   connection_id: holderInvitationConnectionId,
-  //   issuer_connection_id: issuerConnectionId,
-  // });
-  // console.log('Holder added to array:', holders[holders.length - 1]);
+  testFunctionReqs.add(1);
 
-  // // Write holders array to file
-  // const filepath = 'holders.json';
-  // const output = JSON.stringify(holders);
-  // file.writeString(filepath, output);
-
-  // console.log('Writing xxxxxxxxxxxx:', output);
-  // Store the holder data in exec.vu.tags as a JSON string
   const holderData = JSON.stringify({
     wallet_label: wallet.wallet_label,
     wallet_name: wallet.wallet_name,
@@ -245,29 +243,17 @@ export default function(data) {
 
   const end = Date.now();
   const duration = end - start;
-  console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
+  // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
   mainIterationDuration.add(duration);
 }
 
+
+
 export function teardown(data) {
+  vuEndTimes[__VU] = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
   const holders = data.holders;
-
-  // console.log('I CAN STILL READ:', holders[holders.length - 1]);
-
-  // const filepath = 'holders.json';
-
-  // // Convert the holders array to a JSON string
-  // const output = JSON.stringify(holders);
-
-  // Write the JSON string to the file
-  // try {
-  //   file.writeString(filepath, output);
-  //   console.log('Holders array written to file:', filepath);
-  // } catch (error) {
-  //   console.error('Error writing holders array to file:', error);
-  // }
 
   if (__ENV.SKIP_DELETE_ISSUERS !== 'true') {
     for (const issuer of issuers) {

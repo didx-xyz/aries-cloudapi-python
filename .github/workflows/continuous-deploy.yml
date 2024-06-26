@@ -896,7 +896,7 @@ jobs:
 
       - name: Run k6
         run: |
-          docker run -t --rm \
+          docker run --rm \
             -v $(pwd)/scripts/k6:/scripts \
             -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
             -e CLIENT_ID=${{ secrets.CLIENT_ID }} \

@@ -34,6 +34,7 @@ from app.util.definitions import (
     credential_schema_from_acapy,
 )
 from app.util.transaction_acked import wait_for_transaction_ack
+from shared.constants import GOVERNANCE_AGENT_URL
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -139,6 +140,9 @@ async def get_schemas_as_governance(
         }
     )
 
+    logger.debug("Asserting governance agent is host being called")
+    assert aries_controller.configuration.host == GOVERNANCE_AGENT_URL
+    
     # Get all created schema ids that match the filter
     bound_logger.debug("Fetching created schemas")
     response = await handle_acapy_call(

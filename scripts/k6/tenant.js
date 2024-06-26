@@ -2,7 +2,7 @@ import http from 'k6/http';
 import sse from "k6/x/sse"
 import { check } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
-import { sleep } from 'k6';
+// import { sleep } from 'k6';
 
 // let customDuration = new Trend('custom_duration', true);
 
@@ -30,19 +30,19 @@ export function createTenant(bearerToken, wallet) {
   };
 
   let response = http.post(url, payload, params);
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status == 200 ) {
     // Request was successful
-    const { wallet_id: walletId, access_token: accessToken } = JSON.parse(response.body);
-    // Store walletId and accessToken for the current VU and iteration
-    const vuKey = `vu_${__VU}`;
-    const iterKey = `iter_${__ITER}`;
-    if (!global[vuKey]) {
-      global[vuKey] = {};
-    }
-    global[vuKey][iterKey] = {
-      walletId: walletId,
-      accessToken: accessToken
-    };
+    // const { wallet_id: walletId, access_token: accessToken } = JSON.parse(response.body);
+    // // Store walletId and accessToken for the current VU and iteration
+    // const vuKey = `vu_${__VU}`;
+    // const iterKey = `iter_${__ITER}`;
+    // if (!global[vuKey]) {
+    //   global[vuKey] = {};
+    // }
+    // global[vuKey][iterKey] = {
+    //   walletId: walletId,
+    //   accessToken: accessToken
+    // };
     return response;
   } else {
     // Request failed
@@ -79,6 +79,27 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
   } else {
     logError(response);
     console.warn(`Request failed for wallet_name ${walletName}`);
+    return null;
+  }
+}
+
+export function getTrustRegistryActor(walletName) {
+  const url = `${__ENV.CLOUDAPI_URL}/public/v1/trust-registry/actors?actor_name=${walletName}`;
+  const params = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  let response = http.get(url);
+  // console.log(`Respone: ${response}`)
+  if (response.status == 200) {
+    // Request was successful
+    // console.log(`Issuer found for actor_name ${walletName}`);
+    return response;
+  } else {
+    logError(response);
+    console.warn(`Issuer not on Trust Registry: actor_name ${walletName}`);
     return null;
   }
 }
@@ -235,7 +256,16 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
       "indy_credential_detail": {
         "credential_definition_id": credentialDefinitionId,
         "attributes": {
-          "speed":"9001"
+          "date_of_birth": "1986-09-29",
+          "id_number": "8698989898989",
+          "country_of_birth": "South Africa",
+          "citizen_status": "Citizen",
+          "date_of_issue": "2021-09-29",
+          "gender": "MALE",
+          "surname": "Doe",
+          "nationality": "South African",
+          "country_of_birth_iso_code": "ZA",
+          "names": "John James",
         }
       },
       "save_exchange_record": false,
@@ -292,7 +322,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
     // Construct the request body including the invitation object
     const requestBody = JSON.stringify({
       "tag": credDefTag,
-      "schema_id": "Bo9W24g9VmLCnWopu5LJJm:2:ritalin:0.1.0",
+      "schema_id": "Hd7nmadkMM7oayBNpkQJzU:2:load_pop:0.1.0",
       "support_revocation": true,
       "revocation_registry_size": 100
     });
@@ -456,3 +486,279 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
     throw new Error(`Failed to check credential definition existence`);
   }
 }
+
+export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/send-request`;
+  const params = {
+    headers: {
+      'x-api-key': issuerAccessToken,
+      'Content-Type': 'application/json'
+    }
+  };
+
+  try {
+    // Construct the request body including the invitation object
+    const requestBody = {
+      "type": "indy",
+      "indy_proof_request": {
+          "requested_attributes": {
+              "get_id_number": {"name": "id_number"}
+          },
+          "requested_predicates": {}
+      },
+      "save_exchange_record": true,
+      "comment": "string",
+      "protocol_version": "v2",
+      "connection_id": issuerConnectionId
+    };
+
+    let response = http.post(url, JSON.stringify(requestBody), params);
+    return response;
+  } catch (error) {
+    console.error(`Error accepting invitation: ${error.message}`);
+    throw error;
+  }
+}
+
+export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threadId) {
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/proofs/thread_id/${threadId}/request-received`;
+  const headers = {
+    'x-api-key': holderAccessToken,
+  };
+
+  let eventReceived = false;
+
+  const response = sse.open(sseUrl, {
+    headers: headers,
+    // tags: { 'k6_sse_tag': 'proof_request_received' },
+  }, function (client) {
+    client.on('event', function (event) {
+      // console.log(`event data=${event.data}`);
+      const eventData = JSON.parse(event.data);
+      if (eventData.topic === 'proofs' && eventData.payload.state === 'request-received') {
+        check(eventData, {
+          'Request received': (e) => e.payload.state === 'request-received',
+        });
+        eventReceived = true;
+        client.close();
+      }
+    });
+
+    client.on('error', function (e) {
+      console.log('An unexpected error occurred: ', e.error());
+      client.close();
+    });
+  });
+
+  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+
+  // Wait for the event to be received or a maximum duration
+  const maxDuration = 10000; // 10 seconds
+  const checkInterval = 1000; // 1 second
+  let elapsedTime = 0;
+
+  while (!eventReceived && elapsedTime < maxDuration) {
+    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
+    elapsedTime += checkInterval;
+    sleep(checkInterval);
+  }
+
+  return eventReceived;
+}
+
+export function getProofIdByThreadId(holderAccessToken, threadId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs?thread_id=${threadId}`;
+  const params = {
+    headers: {
+      'x-api-key': holderAccessToken,
+      'Content-Type': 'application/json'
+    }
+  };
+  // console.log(`holderAccessToken: ${holderAccessToken}`);
+  try {
+    let response = http.get(url, params);
+    // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
+    // Parse the response body
+    let responseData = JSON.parse(response.body);
+    // Iterate over the responseData array
+    for (let i = 0; i < responseData.length; i++) {
+      let obj = responseData[i];
+      // Check if the current object has a matching thread_id
+      if (obj.thread_id === threadId) {
+        // Return the credential_id if a match is found
+        return obj.proof_id;
+      }
+    }
+    // Throw an error if no match is found
+    throw new Error(`No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`);
+  } catch (error) {
+    console.error("Error in getProofId:", error);
+    throw error; // Re-throw the error to propagate it to the caller
+  }
+}
+
+export function getProofIdCredentials(holderAccessToken, proofId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs/${proofId}/credentials`;
+  const params = {
+    headers: {
+      'x-api-key': holderAccessToken,
+      'Content-Type': 'application/json'
+    }
+  };
+  // console.log(`holderAccessToken: ${holderAccessToken}`);
+  try {
+    let response = http.get(url, params);
+    // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
+    // Parse the response body
+    let responseData = JSON.parse(response.body);
+    // Iterate over the responseData array
+    for (let i = 0; i < responseData.length; i++) {
+      let obj = responseData[i];
+      // Check if the current object has a matching thread_id
+      let referent = obj.cred_info.referent;
+      return referent;
+    }
+    // Throw an error if no match is found
+    throw new Error(`No match found for proofId: ${proofId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`);
+  } catch (error) {
+    console.error("Error in getProofIdCredentials:", error);
+    throw error; // Re-throw the error to propagate it to the caller
+  }
+}
+
+// tenant/v1/verifier/accept-request
+export function acceptProofRequest(holderAccessToken, proofId, referent) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/accept-request`;
+  const params = {
+    headers: {
+      'x-api-key': holderAccessToken,
+      'Content-Type': 'application/json'
+    }
+  };
+  try {
+    // Construct the request body including the invitation object
+    const requestBody = {
+      "type": "indy",
+      "proof_id": proofId,
+      "indy_presentation_spec": {
+          "requested_attributes": {
+              "get_id_number": {
+                  "cred_id": referent,
+                  "revealed": true
+              }
+          },
+          "requested_predicates": {},
+          "self_attested_attributes": {}
+      },
+      "diff_presentation_spec": {}
+    };
+
+    let response = http.post(url, JSON.stringify(requestBody), params);
+    // console.log(`holderAccessToken: ${holderAccessToken}`);
+    // console.log(`Response body: ${response.body}`);
+    // console.log(`Referent: ${referent}`);
+    // console.log(`ProofId: ${proofId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error accepting invitation: ${error.message}`);
+    throw error;
+  }
+}
+
+export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThreadId) {
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${issuerWalletId}/proofs/thread_id/${proofThreadId}/done`;
+  const headers = {
+    'x-api-key': issuerAccessToken,
+  };
+
+  let eventReceived = false;
+
+  const response = sse.open(sseUrl, {
+    headers: headers,
+    tags: { 'k6_sse_tag': 'proof_done' },
+  }, function (client) {
+    client.on('event', function (event) {
+      // console.log(`event data=${event.data}`);
+      const eventData = JSON.parse(event.data);
+      if (eventData.topic === 'proofs' && eventData.payload.state === 'done') {
+        check(eventData, {
+          'Request received': (e) => e.payload.state === 'done',
+        });
+        eventReceived = true;
+        client.close();
+      }
+    });
+
+    client.on('error', function (e) {
+      console.log('An unexpected error occurred: ', e.error());
+      client.close();
+    });
+  });
+
+  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+
+  // Wait for the event to be received or a maximum duration
+  const maxDuration = 10000; // 10 seconds
+  const checkInterval = 1000; // 1 second
+  let elapsedTime = 0;
+
+  while (!eventReceived && elapsedTime < maxDuration) {
+    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
+    elapsedTime += checkInterval;
+    sleep(checkInterval);
+  }
+
+  return eventReceived;
+}
+
+export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs?thread_id=${proofThreadId}`;
+  const params = {
+    headers: {
+      'x-api-key': issuerAccessToken,
+      'Content-Type': 'application/json'
+    }
+  };
+  try {
+    // Construct the request body including the invitation object
+    const requestBody = {
+      "type": "indy",
+      "indy_proof_request": {
+          "requested_attributes": {
+              "get_id_number": {"name": "id_number"}
+          },
+          "requested_predicates": {}
+      },
+      "save_exchange_record": true,
+      "comment": "string",
+      "protocol_version": "v2",
+      "connection_id": issuerConnectionId
+    };
+    let response = http.get(url, params);
+    // console.log(`Response body: ${response.body}`);
+    // console.log(`IssuerAccessToken: ${issuerAccessToken}`);
+    // console.log(`IssuerConnectionId: ${issuerConnectionId}`);
+    // console.log(`ProofThreadId: ${proofThreadId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error accepting invitation: ${error.message}`);
+    throw error;
+  }
+}
+
+// {
+//   "name": "load_pop",
+//   "version": "0.1.0",
+//   "attribute_names": [
+//     "date_of_birth",
+//     "id_number",
+//     "country_of_birth",
+//     "citizen_status",
+//     "date_of_issue",
+//     "gender",
+//     "surname",
+//     "nationality",
+//     "country_of_birth_iso_code",
+//     "names"
+//   ]
+// }

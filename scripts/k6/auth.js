@@ -18,6 +18,7 @@ export function getBearerToken() {
     return bearerToken;
   } else {
     console.error("Error:", response.status_text);
+    console.error("Response body:", response.body);
     console.error("Error description:", response.json().error_description);
     throw new Error("Failed to obtain bearer token");
   }

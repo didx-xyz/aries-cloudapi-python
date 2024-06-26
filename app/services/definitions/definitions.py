@@ -142,7 +142,7 @@ async def get_schemas_as_governance(
 
     logger.debug("Asserting governance agent is host being called")
     assert aries_controller.configuration.host == GOVERNANCE_AGENT_URL
-    
+
     # Get all created schema ids that match the filter
     bound_logger.debug("Fetching created schemas")
     response = await handle_acapy_call(

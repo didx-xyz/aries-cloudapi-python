@@ -104,24 +104,3 @@ class SchemaPublisher:
             result,
         )
         return result
-
-    async def register_schema(self, schema_id: str) -> None:
-        self._logger.debug("Registering schema after successful publish to ledger")
-        try:
-            await register_schema(schema_id=schema_id)
-        except TrustRegistryException as error:
-            # If status_code is 405 it means the schema already exists in the trust registry
-            # That's okay, because we've achieved our intended result:
-            #   make sure the schema is registered in the trust registry
-            self._logger.info(
-                "Caught TrustRegistryException when registering schema. "
-                "Got status code {} with message `{}`",
-                error.status_code,
-                error.detail,
-            )
-            if error.status_code == 405:
-                self._logger.info(
-                    "Status code 405 indicates schema is already registered, so we can continue"
-                )
-            else:
-                raise error

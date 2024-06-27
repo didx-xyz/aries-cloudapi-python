@@ -33,7 +33,8 @@ connections_response = ConnectionList(
         {"state": "active"},
         {"my_did": "my_did"},
         {"their_did": "their_did"},
-        {"alias": "test_alias", "their_public_did": "their_public_did"},
+        {"alias": "test_alias", "their_public_did": "their_public_did", "limit": 10},
+        {"limit": 5, "offset": 5},
     ],
 )
 async def test_get_connections_success(params):
@@ -52,11 +53,19 @@ async def test_get_connections_success(params):
             mock_aries_controller
         )
 
+        # to fix Query objects not being comparable to expected
+        if "limit" not in params:
+            params["limit"] = 100
+        if "offset" not in params:
+            params["offset"] = 0
+
         response = await get_connections(auth="mocked_auth", **params)
 
         assert response == connections_response.results
 
         expected_params = {
+            "limit": params.get("limit") or 100,
+            "offset": params.get("offset") or 0,
             "alias": params.get("alias"),
             "connection_protocol": params.get("connection_protocol"),
             "invitation_key": params.get("invitation_key"),

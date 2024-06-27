@@ -145,7 +145,7 @@ async def get_schemas_as_governance(
     if aries_controller.configuration.host != GOVERNANCE_AGENT_URL:
         raise CloudApiException(
             "Only governance agents are allowed to access this endpoint.",
-            status_code=403
+            status_code=403,
         )
 
     # Get all created schema ids that match the filter

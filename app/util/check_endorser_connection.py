@@ -16,6 +16,7 @@ async def check_endorser_connection(aries_controller: AcaPyClient) -> bool:
         logger=logger,
         acapy_call=aries_controller.connection.get_connections,
         alias=ACAPY_ENDORSER_ALIAS,
+        state="completed",
     )
 
     has_connections = len(endorser_connection.results) > 0

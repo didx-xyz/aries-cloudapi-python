@@ -84,7 +84,7 @@ async def get_schemas_as_tenant(
     schema_version: Optional[str],
 ) -> List[CredentialSchema]:
     """
-    Allows tenants to get all schemas created
+    Allows tenants to get all schemas from trust registry
     """
     bound_logger = logger.bind(
         body={
@@ -171,11 +171,12 @@ async def get_schemas_by_id(
     schema_ids: List[str],
 ) -> List[CredentialSchema]:
     """
-    Get schemas with attributes from schema ids
+    Fetch schemas with attributes using schema IDs.
+    The following logic applies to both governance and tenant calls.
+    Retrieve the relevant schemas from the ledger:
     """
     logger.debug("Fetching schemas from schema ids")
-    # We now have schema_ids; the following logic is the same whether called by governance or tenant.
-    # Now fetch relevant schemas from ledger:
+
     get_schema_futures = [
         handle_acapy_call(
             logger=logger,

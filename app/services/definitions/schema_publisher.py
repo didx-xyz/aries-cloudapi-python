@@ -76,9 +76,7 @@ class SchemaPublisher:
 
             if not schemas:
                 # if schema already exists, we should at least fetch 1, so this should never happen
-                raise CloudApiException(
-                    "Could not publish schema.", 500
-                )
+                raise CloudApiException("Could not publish schema.", 500)
             if len(schemas) > 1:
                 raise CloudApiException(
                     f"Multiple schemas with name {schema.name} and version {schema.version} exist."

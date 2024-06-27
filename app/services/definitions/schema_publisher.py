@@ -18,7 +18,9 @@ class SchemaPublisher:
         self._logger = logger
         self._controller = controller
 
-    async def publish_schema(self, schema_request: SchemaSendRequest) -> TxnOrSchemaSendResult:
+    async def publish_schema(
+        self, schema_request: SchemaSendRequest
+    ) -> TxnOrSchemaSendResult:
         result = await handle_acapy_call(
             logger=self._logger,
             acapy_call=self._controller.schema.publish_schema,

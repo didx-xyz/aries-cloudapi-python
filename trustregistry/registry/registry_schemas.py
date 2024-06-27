@@ -46,7 +46,7 @@ async def register_schema(
         )
     except crud.SchemaAlreadyExistsException as e:
         bound_logger.info("Bad request: Schema already exists.")
-        raise HTTPException(status_code=405, detail="Schema already exists.") from e
+        raise HTTPException(status_code=409, detail="Schema already exists.") from e
 
     return create_schema_res
 

@@ -119,9 +119,7 @@ async def remove_schema_by_id(schema_id: str) -> None:
     bound_logger.info("Removing schema from trust registry")
     async with RichAsyncClient() as client:
         try:
-            await client.delete(
-                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-            )
+            await client.delete(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
         except HTTPException as e:
             bound_logger.error(
                 "Error removing schema. Got status code {} with message `{}`.",

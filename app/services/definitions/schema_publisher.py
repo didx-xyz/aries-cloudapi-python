@@ -109,7 +109,7 @@ class SchemaPublisher:
         )
         return result
 
-    async def register_schema(self, schema_id: str):
+    async def register_schema(self, schema_id: str) -> None:
         self._logger.debug("Registering schema after successful publish to ledger")
         try:
             await register_schema(schema_id=schema_id)

@@ -3,9 +3,9 @@ from typing import List
 
 from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest
 from aries_cloudcontroller.models.txn_or_schema_send_result import TxnOrSchemaSendResult
-from app.exceptions import CloudApiException, TrustRegistryException, handle_acapy_call
+
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CreateSchema, CredentialSchema
-from app.services.trust_registry.schemas import register_schema
 from app.util.definitions import credential_schema_from_acapy
 
 

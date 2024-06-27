@@ -72,24 +72,20 @@ class SchemaPublisher:
                 if schema_id
             ]
 
-            if schemas:
-                if len(schemas) > 1:
-                    raise CloudApiException(  # pylint: disable=W0707
-                        f"Multiple schemas with name {schema.name} and version {schema.version} exist."
-                        + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
-                        409,
-                    )
-                self._logger.debug("Using updated schema id with new DID")
-                _schema: SchemaGetResult = schemas[0]
-            else:
+            if not schemas:
                 # if schema already exists, we should at least fetch 1, so this should never happen
                 raise CloudApiException(
                     "Could not publish schema.", 500
-                )  # pylint: disable=W0707
-
-            # Schema exists with different attributes
-            if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
+                )
+            if len(schemas) > 1:
                 raise CloudApiException(
+                    f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                    f"These are: `{str(schemas_created_ids.schema_ids)}`.",
+                    409,
+                )
+            self._logger.debug("Using updated schema id with new DID")
+            _schema: SchemaGetResult = schemas[0]
+
         # Schema exists with different attributes
         if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
             error_message = (

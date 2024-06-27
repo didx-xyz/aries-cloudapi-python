@@ -374,15 +374,15 @@ services:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
       # # To run a forked version of the agent use commented out code below
-    #   context: https://github.com/ff137/aries-cloudagent-python.git#fix/publish-revocations-response
+    #   context: https://github.com/didx-xyz/aries-cloudagent-python.git#0.12.2b1
     #   dockerfile: docker/Dockerfile
     # user: root
     # entrypoint:
     #   - sh
     #   - -c
     #   - |
-    #     pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.12.1
-    #     pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-05-10#subdirectory=redis_events
+    #     pip3 install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@0.12.2b1
+    #     pip3 install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-06-26#subdirectory=redis_events
     #     aca-py start \
     #       -it http "0.0.0.0" "3020" \
     #       -e http://governance-multitenant-agent:3020 \

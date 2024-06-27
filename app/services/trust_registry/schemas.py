@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from fastapi import HTTPException
+
 from app.exceptions import TrustRegistryException
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
@@ -20,21 +22,21 @@ async def register_schema(schema_id: str) -> None:
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Registering schema on trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        schema_res = await client.post(
-            f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
-        )
-
-    if schema_res.is_error:
-        bound_logger.error(
-            "Error registering schema. Got status code {} with message `{}`.",
-            schema_res.status_code,
-            schema_res.text,
-        )
-        raise TrustRegistryException(
-            f"Error registering schema `{schema_id}`. Error: `{schema_res.text}`.",
-            schema_res.status_code,
-        )
+    async with RichAsyncClient() as client:
+        try:
+            await client.post(
+                f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
+            )
+        except HTTPException as e:
+            bound_logger.error(
+                "Error registering schema. Got status code {} with message `{}`.",
+                e.status_code,
+                e.detail,
+            )
+            raise TrustRegistryException(
+                f"Error registering schema `{schema_id}`. Error: `{e.detail}`.",
+                e.status_code,
+            )
 
     bound_logger.info("Successfully registered schema on trust registry.")
 
@@ -49,18 +51,18 @@ async def fetch_schemas() -> List[Schema]:
         A list of schemas
     """
     logger.info("Fetching all schemas from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
-
-    if schemas_res.is_error:
-        logger.error(
-            "Error fetching schemas. Got status code {} with message `{}`.",
-            schemas_res.status_code,
-            schemas_res.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
-        )
+    async with RichAsyncClient() as client:
+        try:
+            schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+        except HTTPException as e:
+            logger.error(
+                "Error fetching schemas. Got status code {} with message `{}`.",
+                e.status_code,
+                e.detail,
+            )
+            raise TrustRegistryException(
+                f"Unable to fetch schemas: `{e.detail}`.", e.status_code
+            )
 
     result = [Schema.model_validate(schema) for schema in schemas_res.json()]
     logger.info("Successfully fetched schemas from trust registry.")
@@ -79,24 +81,25 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Fetching schema from trust registry")
 
-    async with RichAsyncClient(raise_status_error=False) as client:
-        schema_response = await client.get(
-            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-        )
-
-    if schema_response.status_code == 404:
-        bound_logger.info("Bad request: Schema not found.")
-        return None
-    if schema_response.is_error:
-        logger.error(
-            "Error fetching schema. Got status code {} with message `{}`.",
-            schema_response.status_code,
-            schema_response.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to fetch schema: `{schema_response.text}`.",
-            schema_response.status_code,
-        )
+    async with RichAsyncClient() as client:
+        try:
+            schema_response = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+            )
+        except HTTPException as e:
+            if e.status_code == 404:
+                bound_logger.info("Bad request: Schema not found.")
+                return None
+            else:
+                bound_logger.error(
+                    "Error fetching schema. Got status code {} with message `{}`.",
+                    e.status_code,
+                    e.detail,
+                )
+                raise TrustRegistryException(
+                    f"Unable to fetch schema: `{e.detail}`.",
+                    e.status_code,
+                )
 
     result = Schema.model_validate(schema_response.json())
     logger.info("Successfully fetched schema from trust registry.")
@@ -114,20 +117,20 @@ async def remove_schema_by_id(schema_id: str) -> None:
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Removing schema from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        remove_response = await client.delete(
-            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-        )
-
-    if remove_response.is_error:
-        bound_logger.error(
-            "Error removing schema. Got status code {} with message `{}`.",
-            remove_response.status_code,
-            remove_response.text,
-        )
-        raise TrustRegistryException(
-            f"Error removing schema from trust registry: `{remove_response.text}`.",
-            remove_response.status_code,
-        )
+    async with RichAsyncClient() as client:
+        try:
+            await client.delete(
+                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+            )
+        except HTTPException as e:
+            bound_logger.error(
+                "Error removing schema. Got status code {} with message `{}`.",
+                e.status_code,
+                e.detail,
+            )
+            raise TrustRegistryException(
+                f"Error removing schema from trust registry: `{e.detail}`.",
+                e.status_code,
+            )
 
     bound_logger.info("Successfully removed schema from trust registry.")

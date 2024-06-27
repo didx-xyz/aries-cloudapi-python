@@ -13,6 +13,7 @@ from app.dependencies.auth import (
 )
 from app.dependencies.role import Role
 from app.exceptions import handle_acapy_call, handle_model_with_validation
+from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -153,13 +154,20 @@ async def get_schemas(
             )
 
         else:  # Governance is calling the endpoint
-            schemas = await get_schemas_as_governance(
-                aries_controller=aries_controller,
-                schema_id=schema_id,
-                schema_issuer_did=schema_issuer_did,
-                schema_name=schema_name,
-                schema_version=schema_version,
-            )
+            try:
+                schemas = await get_schemas_as_governance(
+                    aries_controller=aries_controller,
+                    schema_id=schema_id,
+                    schema_issuer_did=schema_issuer_did,
+                    schema_name=schema_name,
+                    schema_version=schema_version,
+                )
+            except CloudApiException as e:
+                bound_logger.error("Failed to get schemas. Error: {}", e)
+                raise HTTPException(
+                    status_code=e.status_code,
+                    detail=e.detail,
+                )
 
     if schemas:
         bound_logger.info("Successfully fetched schemas.")

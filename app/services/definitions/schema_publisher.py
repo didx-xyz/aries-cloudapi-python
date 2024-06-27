@@ -90,18 +90,24 @@ class SchemaPublisher:
             # Schema exists with different attributes
             if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
                 raise CloudApiException(
-                    "Error creating schema: Schema already exists with different attribute names."
-                    + f"Given: `{str(set(_schema.var_schema.attr_names))}`. "
-                    f"Found: `{str(set(schema.attribute_names))}`.",
-                    409,
-                )  # pylint: disable=W0707
-
-            result = credential_schema_from_acapy(_schema.var_schema)
-            self._logger.info(
-                "Schema already exists on ledger. Returning schema definition: `{}`.",
-                result,
+        # Schema exists with different attributes
+        if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
+            error_message = (
+                "Error creating schema: Schema already exists with different attribute names. "
+                f"Given: `{str(set(schema.attribute_names))}`. "
+                f"Found: `{str(set(_schema.var_schema.attr_names))}`."
             )
-            return result
+            raise CloudApiException(
+                error_message,
+                409,
+            )
+
+        result = credential_schema_from_acapy(_schema.var_schema)
+        self._logger.info(
+            "Schema already exists on ledger. Returning schema definition: `{}`.",
+            result,
+        )
+        return result
 
     async def register_schema(self, schema_id: str):
         self._logger.debug("Registering schema after successful publish to ledger")

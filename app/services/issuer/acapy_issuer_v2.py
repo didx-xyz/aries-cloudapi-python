@@ -199,6 +199,8 @@ class IssuerV2(Issuer):
     async def get_records(
         cls,
         controller: AcaPyClient,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
         connection_id: Optional[str] = None,
         role: Optional[str] = None,
         state: Optional[str] = None,
@@ -209,6 +211,8 @@ class IssuerV2(Issuer):
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.issue_credential_v2_0.get_records,
+            limit=limit,
+            offset=offset,
             connection_id=connection_id,
             role=role,
             state=state,

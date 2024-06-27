@@ -9,7 +9,9 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 
-async def wait_for_transaction_ack(aries_controller: AcaPyClient, transaction_id: str) -> None:
+async def wait_for_transaction_ack(
+    aries_controller: AcaPyClient, transaction_id: str
+) -> None:
     """
     Wait for the transaction to be acknowledged by the endorser.
     """

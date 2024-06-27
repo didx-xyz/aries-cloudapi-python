@@ -167,7 +167,7 @@ async def get_schemas(
                 raise HTTPException(
                     status_code=e.status_code,
                     detail=e.detail,
-                )
+                ) from e
 
     if schemas:
         bound_logger.info("Successfully fetched schemas.")

@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from aries_cloudcontroller import IndyCredPrecis
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
@@ -19,6 +19,7 @@ from app.util.acapy_verifier_utils import (
     assert_valid_verifier,
     get_verifier_by_version,
 )
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from shared.log_config import get_logger
 from shared.models.presentation_exchange import (
     PresentationExchange,
@@ -324,8 +325,8 @@ async def reject_proof_request(
     response_model=List[PresentationExchange],
 )
 async def get_proof_records(
-    limit: Optional[int] = Query(100, description="Number of results to return"),
-    offset: Optional[int] = Query(0, description="Offset for pagination"),
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
@@ -341,6 +342,8 @@ async def get_proof_records(
 
     Parameters (Optional):
     ---
+        limit: int: The maximum number of records to retrieve
+        offset: int: The offset to start retrieving records from
         connection_id: str
         role: Role: "prover", "verifier"
         state: State: "presentation-received", "presentation-sent", "proposal-received", "proposal-sent",

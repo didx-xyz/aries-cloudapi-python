@@ -27,6 +27,7 @@ from app.util.acapy_issuer_utils import (
     issuer_from_protocol_version,
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
 from shared.models.credential_exchange import (
@@ -333,8 +334,8 @@ async def store_credential(
     response_model=List[CredentialExchange],
 )
 async def get_credentials(
-    limit: Optional[int] = Query(100, description="Number of results to return"),
-    offset: Optional[int] = Query(0, description="Offset for pagination"),
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     connection_id: Optional[str] = Query(None),
     role: Optional[Role] = Query(None),
     state: Optional[State] = Query(None),
@@ -358,14 +359,16 @@ async def get_credentials(
 
     The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
 
-    Parameters:
+    Parameters (Optional):
     ---
-        connection_id: str (Optional)
-        role: Role (Optional): "issuer", "holder"
-        state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
+        limit: int - The maximum number of records to retrieve
+        offset: int - The offset to start retrieving records from
+        connection_id: str
+        role: Role: "issuer", "holder"
+        state: State: "proposal-sent", "proposal-received", "offer-sent", "offer-received",
                                  "request-sent", "request-received", "credential-issued", "credential-received",
                                  "credential-revoked", "abandoned", "done"
-        thread_id: UUID (Optional)
+        thread_id: UUID
 
     Returns:
     ---

@@ -33,6 +33,7 @@ from app.services.trust_registry.actors import (
     remove_actor_by_id,
 )
 from app.services.trust_registry.util.actor import assert_actor_name
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from app.util.tenants import (
     get_wallet_and_assert_valid_group,
     tenant_from_wallet_record,
@@ -304,8 +305,8 @@ async def get_tenant(
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = group_id_query,
-    limit: Optional[int] = Query(100, description="Number of results to return"),
-    offset: Optional[int] = Query(0, description="Offset for pagination"),
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name."""

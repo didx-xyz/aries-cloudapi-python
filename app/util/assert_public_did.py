@@ -23,7 +23,6 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
                 "Wallet making this request has no public DID. "
                 "Only issuers with a public DID can make this request."
             )
-
         else:
             logger.error(log_message)
             client_error_message = (

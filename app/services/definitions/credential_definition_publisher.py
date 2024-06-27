@@ -28,7 +28,6 @@ class CredentialDefinitionPublisher:
                     "Wallet making this request has no public DID. "
                     "Only issuers with a public DID can make this request."
                 )
-
             else:
                 self._logger.error(log_message)
                 client_error_message = (
@@ -49,7 +48,6 @@ class CredentialDefinitionPublisher:
                 "Issuer attempted to create a credential definition with support for revocation but does not "
                 "have an active connection with an endorser, which is required for this operation."
             )
-
             raise CloudApiException(
                 "Credential definition creation failed: An active endorser connection is required "
                 "to support revocation. Please establish a connection with an endorser and try again."
@@ -62,7 +60,6 @@ class CredentialDefinitionPublisher:
                 acapy_call=self._controller.credential_definition.publish_cred_def,
                 body=request_body,
             )
-
         except CloudApiException as e:
             self._logger.warning(
                 "An Exception was caught while publishing credential definition: `{}` `{}`",

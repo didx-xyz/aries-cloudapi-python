@@ -79,10 +79,10 @@ async def create_schema_service(
 
 async def get_schemas_as_tenant(
     aries_controller: AcaPyClient,
-    schema_id: Optional[str],
-    schema_issuer_did: Optional[str],
-    schema_name: Optional[str],
-    schema_version: Optional[str],
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
 ) -> List[CredentialSchema]:
     """
     Allows tenants to get all schemas from trust registry
@@ -124,10 +124,10 @@ async def get_schemas_as_tenant(
 
 async def get_schemas_as_governance(
     aries_controller: AcaPyClient,
-    schema_id: Optional[str],
-    schema_issuer_did: Optional[str],
-    schema_name: Optional[str],
-    schema_version: Optional[str],
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
 ) -> List[CredentialSchema]:
     """
     Governance agents gets all schemas created by itself
@@ -261,12 +261,12 @@ async def create_cred_def(
 
 async def get_cred_defs(
     aries_controller: AcaPyClient,
-    issuer_did: Optional[str],
-    credential_definition_id: Optional[str],
-    schema_id: Optional[str],
-    schema_issuer_did: Optional[str],
-    schema_name: Optional[str],
-    schema_version: Optional[str],
+    issuer_did: Optional[str] = None,
+    credential_definition_id: Optional[str] = None,
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
 ) -> List[CredentialDefinition]:
     """
     Get credential definitions

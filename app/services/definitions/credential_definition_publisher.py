@@ -67,8 +67,12 @@ class CredentialDefinitionPublisher:
                 e.status_code,
             )
             if "already exists" in e.detail:
+                self._logger.info("Credential definition already exists")
                 raise CloudApiException(status_code=409, detail=e.detail) from e
             else:
+                self._logger.error(
+                    "Error while creating credential definition: `{}`", e.detail
+                )
                 raise CloudApiException(
                     detail=f"Error while creating credential definition: {e.detail}",
                     status_code=e.status_code,

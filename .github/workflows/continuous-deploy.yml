@@ -788,7 +788,7 @@ jobs:
 
       - name: Pytest coverage comment
         if: steps.pytest.outcome == 'success'
-        uses: MishaKav/pytest-coverage-comment@v1.1.51
+        uses: MishaKav/pytest-coverage-comment@v1.1.52
         with:
           pytest-coverage-path: ./pytest/test_coverage.txt
           junitxml-path: ./pytest/test_output.xml
@@ -800,7 +800,7 @@ jobs:
 
       - name: Pytest coverage comment
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
-        uses: MishaKav/pytest-coverage-comment@v1.1.51
+        uses: MishaKav/pytest-coverage-comment@v1.1.52
         with:
           pytest-coverage-path: ./pytest-regression/test_coverage.txt
           junitxml-path: ./pytest-regression/test_output.xml

@@ -164,10 +164,7 @@ async def get_schemas(
                 )
             except CloudApiException as e:
                 bound_logger.error("Failed to get schemas. Error: {}", e)
-                raise HTTPException(
-                    status_code=e.status_code,
-                    detail=e.detail,
-                ) from e
+                raise
 
     if schemas:
         bound_logger.info("Successfully fetched schemas.")

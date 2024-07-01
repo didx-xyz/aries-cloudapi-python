@@ -10,11 +10,7 @@ from app.util.definitions import credential_schema_from_acapy
 
 
 class SchemaPublisher:
-    def __init__(
-        self,
-        controller: AcaPyClient,
-        logger: Logger,
-    ):
+    def __init__(self, controller: AcaPyClient, logger: Logger):
         self._logger = logger
         self._controller = controller
 
@@ -93,10 +89,7 @@ class SchemaPublisher:
                 f"Given: `{str(set(schema.attribute_names))}`. "
                 f"Found: `{str(set(_schema.var_schema.attr_names))}`."
             )
-            raise CloudApiException(
-                error_message,
-                409,
-            )
+            raise CloudApiException(error_message, 409)
 
         result = credential_schema_from_acapy(_schema.var_schema)
         self._logger.info(

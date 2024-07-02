@@ -21,9 +21,13 @@ from app.models.definitions import (
     CredentialSchema,
 )
 from app.services.definitions.definitions import (
-    create_cred_def,
-    create_schema_service,
-    get_cred_defs,
+    create_credential_definition as create_cred_def,
+)
+from app.services.definitions.definitions import create_schema as create_schema_service
+from app.services.definitions.definitions import (
+    get_credential_definitions as get_cred_defs,
+)
+from app.services.definitions.definitions import (
     get_schemas_as_governance,
     get_schemas_as_tenant,
 )

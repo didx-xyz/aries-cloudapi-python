@@ -77,17 +77,9 @@ async def create_schema(
     bound_logger = logger.bind(body=schema)
     bound_logger.info("POST request received: Create schema (publish and register)")
 
-    schema_send_request = handle_model_with_validation(
-        logger=bound_logger,
-        model_class=SchemaSendRequest,
-        attributes=schema.attribute_names,
-        schema_name=schema.name,
-        schema_version=schema.version,
-    )
     async with get_governance_controller(governance_auth) as aries_controller:
         schema_response = await create_schema_service(
             aries_controller=aries_controller,
-            schema_request=schema_send_request,
             schema=schema,
         )
     return schema_response

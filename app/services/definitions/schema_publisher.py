@@ -25,7 +25,9 @@ class SchemaPublisher:
         )
         return result
 
-    async def handle_existing_schema(self, schema: CreateSchema) -> CredentialSchema:
+    async def _handle_existing_schema(
+        self, schema: SchemaSendRequest
+    ) -> CredentialSchema:
         self._logger.info("Handling case of schema already existing on ledger")
         self._logger.debug("Fetching public DID for governance controller")
         pub_did = await handle_acapy_call(
@@ -33,7 +35,9 @@ class SchemaPublisher:
             acapy_call=self._controller.wallet.get_public_did,
         )
 
-        _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
+        _schema_id = (
+            f"{pub_did.result.did}:2:{schema.schema_name}:{schema.schema_version}"
+        )
         self._logger.debug(
             "Fetching schema id `{}` which is associated with request",
             _schema_id,
@@ -56,8 +60,8 @@ class SchemaPublisher:
             schemas_created_ids = await handle_acapy_call(
                 logger=self._logger,
                 acapy_call=self._controller.schema.get_created_schemas,
-                schema_name=schema.name,
-                schema_version=schema.version,
+                schema_name=schema.schema_name,
+                schema_version=schema.schema_version,
             )
             self._logger.debug("Getting schemas associated with fetched ids")
             schemas: List[SchemaGetResult] = [
@@ -75,7 +79,7 @@ class SchemaPublisher:
                 raise CloudApiException("Could not publish schema.", 500)
             if len(schemas) > 1:
                 raise CloudApiException(
-                    f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                    f"Multiple schemas with name {schema.schema_name} and version {schema.schema_version} exist."
                     f"These are: `{str(schemas_created_ids.schema_ids)}`.",
                     409,
                 )
@@ -83,10 +87,10 @@ class SchemaPublisher:
             _schema: SchemaGetResult = schemas[0]
 
         # Schema exists with different attributes
-        if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
+        if set(_schema.var_schema.attr_names) != set(schema.attributes):
             error_message = (
                 "Error creating schema: Schema already exists with different attribute names. "
-                f"Given: `{str(set(schema.attribute_names))}`. "
+                f"Given: `{str(set(schema.attributes))}`. "
                 f"Found: `{str(set(_schema.var_schema.attr_names))}`."
             )
             raise CloudApiException(error_message, 409)

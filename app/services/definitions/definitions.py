@@ -49,27 +49,24 @@ async def create_schema(
     Create a schema and register it in the trust registry
     """
     bound_logger = logger.bind(body=schema)
-
     publisher = SchemaPublisher(controller=aries_controller, logger=logger)
 
-    try:
-        result = await publisher.publish_schema(schema_request)
-    except CloudApiException as e:
-        if "already exist" in e.detail and e.status_code == 400:
-            result = await publisher.handle_existing_schema(schema)
-        else:
-            bound_logger.warning(
-                f"An unhandled Exception was caught while publishing schema: {e.detail}"
-            )
-            raise CloudApiException("Error while creating schema.") from e
-
-    if result.sent and result.sent.schema_id:
-        await register_schema(schema_id=result.sent.schema_id)
-    else:
-        bound_logger.error("No SchemaSendResult in `publish_schema` response.")
+    logger.debug("Asserting governance agent is host being called")
+    if aries_controller.configuration.host != GOVERNANCE_AGENT_URL:
         raise CloudApiException(
-            "An unexpected error occurred: could not publish schema."
+            "Only governance agents are allowed to access this endpoint.",
+            status_code=403,
         )
+
+    schema_request = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=SchemaSendRequest,
+        attributes=schema.attribute_names,
+        schema_name=schema.name,
+        schema_version=schema.version,
+    )
+
+    result = await publisher.publish_schema(schema_request)
 
     result = credential_schema_from_acapy(result.sent.var_schema)
     bound_logger.info("Successfully published and registered schema.")

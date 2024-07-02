@@ -41,7 +41,7 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 
-async def create_schema_service(
+async def create_schema(
     aries_controller: AcaPyClient,
     schema_request: SchemaSendRequest,
     schema: CreateSchema,
@@ -210,7 +210,7 @@ async def get_schemas_by_id(
     return schemas
 
 
-async def create_cred_def(
+async def create_credential_definition(
     aries_controller: AcaPyClient,
     credential_definition: CreateCredentialDefinition,
     support_revocation: bool,
@@ -259,7 +259,7 @@ async def create_cred_def(
     return credential_definition_id
 
 
-async def get_cred_defs(
+async def get_credential_definitions(
     aries_controller: AcaPyClient,
     issuer_did: Optional[str] = None,
     credential_definition_id: Optional[str] = None,

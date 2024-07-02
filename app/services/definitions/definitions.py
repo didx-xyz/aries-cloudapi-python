@@ -42,7 +42,6 @@ logger = get_logger(__name__)
 
 async def create_schema(
     aries_controller: AcaPyClient,
-    schema_request: SchemaSendRequest,
     schema: CreateSchema,
 ) -> CredentialSchema:
     """

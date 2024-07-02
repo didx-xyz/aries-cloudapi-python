@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import SchemaSendRequest
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import client_from_auth, get_governance_controller
@@ -12,7 +11,7 @@ from app.dependencies.auth import (
     acapy_auth_verified,
 )
 from app.dependencies.role import Role
-from app.exceptions import handle_acapy_call, handle_model_with_validation
+from app.exceptions import handle_acapy_call
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.definitions import (
     CreateCredentialDefinition,

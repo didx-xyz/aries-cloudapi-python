@@ -4,7 +4,6 @@ from logging import Logger
 from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions import CloudApiException, handle_acapy_call
-from app.services import acapy_wallet
 from app.services.revocation_registry import wait_for_active_registry
 from app.util.check_endorser_connection import check_endorser_connection
 from shared import REGISTRY_CREATION_TIMEOUT

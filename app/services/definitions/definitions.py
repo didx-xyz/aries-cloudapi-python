@@ -27,7 +27,6 @@ from app.services.definitions.credential_definition_publisher import (
     CredentialDefinitionPublisher,
 )
 from app.services.definitions.schema_publisher import SchemaPublisher
-from app.services.trust_registry.schemas import register_schema
 from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.assert_public_did import assert_public_did
 from app.util.definitions import (

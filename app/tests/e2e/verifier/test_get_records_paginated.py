@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from fastapi import HTTPException
 
@@ -35,15 +37,23 @@ async def test_get_presentation_exchange_records_paginated(
 
     # Test different limits
     for limit in range(1, num_presentation_requests_to_test + 2):
-        response = await acme_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs",
-            params={
-                "state": "request-sent",
-                "limit": limit,
-            },
-        )
-        proofs = response.json()
-        assert len(proofs) == min(limit, num_presentation_requests_to_test)
+        num_tries = 0
+        retry = True
+        while retry and num_tries < 5:  # Handle case where record doesn't exist yet
+            response = await acme_client.get(
+                f"{VERIFIER_BASE_PATH}/proofs",
+                params={
+                    "state": "request-sent",
+                    "limit": limit,
+                },
+            )
+            proofs = response.json()
+            if len(proofs) != min(limit, num_presentation_requests_to_test):
+                num_tries += 1
+                await asyncio.sleep(0.2)
+            else:
+                retry = False
+        assert not retry, f"Expected {limit} records, got {len(proofs)}: {proofs}"
 
     # Test offset greater than number of records
     response = await acme_client.get(

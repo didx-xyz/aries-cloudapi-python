@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 
 import pytest
@@ -249,7 +250,7 @@ async def test_get_connections_paginated(
     bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient
 ):
     num_connections_to_test = 5
-    test_alias = "test_pagination_alias"
+    test_alias = "test_pagination"
 
     bob_alice_connections: List[BobAliceConnect] = []
     for _ in range(num_connections_to_test):
@@ -260,15 +261,26 @@ async def test_get_connections_paginated(
 
     # Test different limits
     for limit in range(1, num_connections_to_test + 2):
-        response = await alice_member_client.get(
-            BASE_PATH,
-            params={
-                "alias": test_alias,
-                "limit": limit,
-            },
-        )
-        connections = response.json()
-        assert len(connections) == min(limit, num_connections_to_test)
+        num_tries = 0
+        retry = True
+        while retry and num_tries < 5:  # Handle case where record doesn't exist yet
+            response = await alice_member_client.get(
+                BASE_PATH,
+                params={
+                    "alias": test_alias,
+                    "limit": limit,
+                },
+            )
+
+            connections = response.json()
+            if len(connections) != min(limit, num_connections_to_test):
+                num_tries += 1
+                await asyncio.sleep(0.2)
+            else:
+                retry = False
+        assert (
+            not retry
+        ), f"Expected {limit} records, got {len(connections)}: {connections}"
 
     # Test offset greater than number of records
     response = await alice_member_client.get(

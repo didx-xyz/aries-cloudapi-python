@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from fastapi import HTTPException
 
@@ -14,11 +16,12 @@ async def test_get_credential_exchange_records_paginated(
     faber_and_alice_connection: FaberAliceConnect,
 ):
     num_credentials_to_test = 5
-    test_attributes = {"speed": "20", "name": "Alice", "age": "44"}
+    test_attributes = {"name": "Alice", "age": "44"}
 
     faber_cred_ex_ids = []
     # Create multiple credential exchanges
-    for _ in range(num_credentials_to_test):
+    for i in range(num_credentials_to_test):
+        test_attributes["speed"] = str(i)
         credential_v2 = {
             "protocol_version": "v2",
             "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -36,15 +39,25 @@ async def test_get_credential_exchange_records_paginated(
 
     # Test different limits
     for limit in range(1, num_credentials_to_test + 2):
-        response = await faber_client.get(
-            CREDENTIALS_BASE_PATH,
-            params={
-                "state": "offer-sent",
-                "limit": limit,
-            },
-        )
-        credentials = response.json()
-        assert len(credentials) == min(limit, num_credentials_to_test)
+        num_tries = 0
+        retry = True
+        while retry and num_tries < 5:  # Handle case where record doesn't exist yet
+            response = await faber_client.get(
+                CREDENTIALS_BASE_PATH,
+                params={
+                    "state": "offer-sent",
+                    "limit": limit,
+                },
+            )
+            credentials = response.json()
+            if len(credentials) != min(limit, num_credentials_to_test):
+                num_tries += 1
+                await asyncio.sleep(0.2)
+            else:
+                retry = False
+        assert (
+            not retry
+        ), f"Expected {limit} records, got {len(credentials)}: {credentials}"
 
     # Test offset greater than number of records
     response = await faber_client.get(

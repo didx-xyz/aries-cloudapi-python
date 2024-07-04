@@ -799,6 +799,10 @@ async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_wallets_paginated(tenant_admin_client: RichAsyncClient):
     num_wallets_to_test = 5
     test_group = "TestPaginationGroup"

@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
+import app.services.definitions.credential_definitions as cred_def_service
+import app.services.definitions.schemas as schemas_service
 from app.dependencies.acapy_clients import client_from_auth, get_governance_controller
 from app.dependencies.auth import (
     AcaPyAuth,
@@ -18,17 +20,6 @@ from app.models.definitions import (
     CreateSchema,
     CredentialDefinition,
     CredentialSchema,
-)
-from app.services.definitions.definitions import (
-    create_credential_definition as create_cred_def,
-)
-from app.services.definitions.definitions import create_schema as create_schema_service
-from app.services.definitions.definitions import (
-    get_credential_definitions as get_cred_defs,
-)
-from app.services.definitions.definitions import (
-    get_schemas_as_governance,
-    get_schemas_as_tenant,
 )
 from app.util.definitions import (
     credential_definition_from_acapy,
@@ -81,7 +72,7 @@ async def create_schema(
     bound_logger.info("POST request received: Create schema (publish and register)")
 
     async with get_governance_controller(governance_auth) as aries_controller:
-        schema_response = await create_schema_service(
+        schema_response = await schemas_service.create_schema(
             aries_controller=aries_controller,
             schema=schema,
         )
@@ -140,7 +131,7 @@ async def get_schemas(
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
-            schemas = await get_schemas_as_tenant(
+            schemas = await schemas_service.get_schemas_as_tenant(
                 aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,
@@ -150,7 +141,7 @@ async def get_schemas(
 
         else:  # Governance is calling the endpoint
             try:
-                schemas = await get_schemas_as_governance(
+                schemas = await schemas_service.get_schemas_as_governance(
                     aries_controller=aries_controller,
                     schema_id=schema_id,
                     schema_issuer_did=schema_issuer_did,
@@ -262,7 +253,7 @@ async def create_credential_definition(
     support_revocation = credential_definition.support_revocation
 
     async with client_from_auth(auth) as aries_controller:
-        credential_definition_id = await create_cred_def(
+        credential_definition_id = await cred_def_service.create_credential_definition(
             aries_controller=aries_controller,
             credential_definition=credential_definition,
             support_revocation=support_revocation,
@@ -335,7 +326,7 @@ async def get_credential_definitions(
 
     # Get all created credential definition ids that match the filter
     async with client_from_auth(auth) as aries_controller:
-        credential_definitions = await get_cred_defs(
+        credential_definitions = await cred_def_service.get_credential_definitions(
             aries_controller=aries_controller,
             issuer_did=issuer_did,
             credential_definition_id=credential_definition_id,

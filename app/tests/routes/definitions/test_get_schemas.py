@@ -29,7 +29,7 @@ schema_response = [
     "params, response, role",
     [
         ({}, schema_response, Role.GOVERNANCE),
-        ({},[], Role.TENANT),
+        ({}, [], Role.TENANT),
         (
             {"schema_id": "27aG25kMFticzJ8GHH87BB:2:Test_Schema_1:0.1.0"},
             [schema_response[0]],

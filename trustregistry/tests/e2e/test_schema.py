@@ -45,7 +45,7 @@ async def test_register_schema():
             f"{TRUST_REGISTRY_URL}/registry/schemas",
             json=payload,
         )
-        assert response.status_code == 405
+        assert response.status_code == 409
         assert "Schema already exists" in response.json()["detail"]
 
 

@@ -250,7 +250,7 @@ async def test_register_schema(
         json={"schema_id": schema_id},
     )
 
-    mock_async_client.post = AsyncMock(return_value=Response(500))
+    mock_async_client.post = AsyncMock(side_effect=HTTPException(500))
     with pytest.raises(TrustRegistryException):
         await register_schema(schema_id=schema_id)
 
@@ -319,7 +319,9 @@ async def test_remove_schema_by_id(
         TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
     )
 
-    mock_async_client.delete = AsyncMock(return_value=Response(500, text="The error"))
+    mock_async_client.delete = AsyncMock(
+        side_effect=HTTPException(status_code=500, detail="The error")
+    )
     with pytest.raises(
         TrustRegistryException, match="Error removing schema from trust registry"
     ):

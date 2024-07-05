@@ -57,7 +57,7 @@ async def test_register_schema_x():
             await registry_schemas.register_schema(schema_id)
 
         mock_crud.assert_called_once()
-        assert ex.value.status_code == 405
+        assert ex.value.status_code == 409
 
 
 @pytest.mark.anyio

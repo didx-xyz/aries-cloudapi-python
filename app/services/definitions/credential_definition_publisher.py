@@ -21,13 +21,15 @@ class CredentialDefinitionPublisher:
 
         if not has_connections:
             self._logger.error(
-                "Failed to create credential definition supporting revocation: no endorser connection found. "
-                "Issuer attempted to create a credential definition with support for revocation but does not "
-                "have an active connection with an endorser, which is required for this operation."
+                "Failed to create credential definition supporting revocation: "
+                "no endorser connection found. Issuer attempted to create a credential "
+                "definition with support for revocation but does not have an active "
+                "connection with an endorser, which is required for this operation."
             )
             raise CloudApiException(
-                "Credential definition creation failed: An active endorser connection is required "
-                "to support revocation. Please establish a connection with an endorser and try again."
+                "Credential definition creation failed: An active endorser connection "
+                "is required to support revocation. Please establish a connection with "
+                "an endorser and try again."
             )
 
     async def publish_credential_definition(self, request_body):
@@ -39,7 +41,7 @@ class CredentialDefinitionPublisher:
             )
         except CloudApiException as e:
             self._logger.warning(
-                "An Exception was caught while publishing credential definition: `{}` `{}`",
+                "An Exception was caught while publishing cred def: `{}` `{}`",
                 e.detail,
                 e.status_code,
             )

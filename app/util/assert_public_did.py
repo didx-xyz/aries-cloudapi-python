@@ -26,8 +26,8 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
         else:
             logger.error(log_message)
             client_error_message = (
-                "Something went wrong while asserting if request is from a valid issuer. "
-                "Please try again."
+                "Something went wrong while asserting if request is from a valid "
+                "issuer. Please try again."
             )
 
         raise CloudApiException(client_error_message, e.status_code) from e

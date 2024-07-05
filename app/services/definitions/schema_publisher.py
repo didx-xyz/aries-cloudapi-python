@@ -1,8 +1,12 @@
 from logging import Logger
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest
-from aries_cloudcontroller.models.txn_or_schema_send_result import TxnOrSchemaSendResult
+from aries_cloudcontroller import (
+    AcaPyClient,
+    SchemaGetResult,
+    SchemaSendRequest,
+    TxnOrSchemaSendResult,
+)
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CredentialSchema
@@ -30,7 +34,8 @@ class SchemaPublisher:
                 result = await self._handle_existing_schema(schema_request)
             else:
                 self._logger.warning(
-                    f"An unhandled Exception was caught while publishing schema: {e.detail}"
+                    "An unhandled Exception was caught while publishing schema: {}",
+                    e.detail,
                 )
                 raise CloudApiException("Error while creating schema.") from e
 
@@ -68,12 +73,12 @@ class SchemaPublisher:
         )
 
         # Edge case where the governance agent has changed its public did
-        # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
-        # will not be correct due to different public did.
+        # Then we need to retrieve the schema in a different way as constructing
+        # the schema ID the way above will not be correct due to different public did.
         if _schema.var_schema is None:
             self._logger.debug(
                 "Schema not found. Governance agent may have changed public DID. "
-                "Fetching schemas created by governance agent with request name and version"
+                "Fetching schemas created by governance with requested name and version"
             )
             schemas_created_ids = await handle_acapy_call(
                 logger=self._logger,
@@ -93,22 +98,22 @@ class SchemaPublisher:
             ]
 
             if not schemas:
-                # if schema already exists, we should at least fetch 1, so this should never happen
                 raise CloudApiException("Could not publish schema.", 500)
             if len(schemas) > 1:
-                raise CloudApiException(
-                    f"Multiple schemas with name {schema.schema_name} and version {schema.schema_version} exist."
-                    f"These are: `{str(schemas_created_ids.schema_ids)}`.",
-                    409,
+                error_message = (
+                    f"Multiple schemas with name {schema.schema_name} "
+                    f"and version {schema.schema_version} exist."
+                    f"These are: `{str(schemas_created_ids.schema_ids)}`."
                 )
+                raise CloudApiException(error_message, 409)
             self._logger.debug("Using updated schema id with new DID")
             _schema: SchemaGetResult = schemas[0]
 
         # Schema exists with different attributes
         if set(_schema.var_schema.attr_names) != set(schema.attributes):
             error_message = (
-                "Error creating schema: Schema already exists with different attribute names. "
-                f"Given: `{str(set(schema.attributes))}`. "
+                "Error creating schema: Schema already exists with different attribute "
+                f"names. Given: `{str(set(schema.attributes))}`. "
                 f"Found: `{str(set(_schema.var_schema.attr_names))}`."
             )
             raise CloudApiException(error_message, 409)

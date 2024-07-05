@@ -167,7 +167,7 @@ async def get_schemas_by_id(
         for schema_id in schema_ids
     ]
 
-    # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
+    # Wait for completion of futures
     if get_schema_futures:
         logger.debug("Fetching each of the created schemas")
         schema_results: List[SchemaGetResult] = await asyncio.gather(
@@ -177,6 +177,7 @@ async def get_schemas_by_id(
         logger.debug("No created schema ids returned")
         schema_results = []
 
+    # transform all schemas into response model (if schemas returned)
     schemas = [
         credential_schema_from_acapy(schema.var_schema)
         for schema in schema_results

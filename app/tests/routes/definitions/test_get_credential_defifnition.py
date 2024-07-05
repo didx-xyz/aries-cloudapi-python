@@ -41,7 +41,7 @@ async def test_get_credential_definitions_success(params, response):
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_get_client_controller, patch(
-        "app.routes.definitions.get_cred_defs"
+        "app.routes.definitions.cred_def_service.get_credential_definitions"
     ) as mock_get_credential_definitions:
 
         mock_get_credential_definitions.return_value = response
@@ -83,7 +83,7 @@ async def test_get_credential_definitions_fail_acapy_error(
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_get_client_controller, patch(
-        "app.routes.definitions.get_cred_defs"
+        "app.routes.definitions.cred_def_service.get_credential_definitions"
     ) as mock_get_credential_definitions:
 
         mock_get_credential_definitions.side_effect = CloudApiException(

@@ -62,9 +62,9 @@ async def test_get_schemas_success(params, response, role):
     mock_get_schemas_as_governance = AsyncMock()
 
     with patch("app.routes.definitions.client_from_auth") as mock_acapy_auth, patch(
-        "app.routes.definitions.get_schemas_as_tenant"
+        "app.routes.definitions.schemas_service.get_schemas_as_tenant"
     ) as mock_get_schemas_as_tenant, patch(
-        "app.routes.definitions.get_schemas_as_governance"
+        "app.routes.definitions.schemas_service.get_schemas_as_governance"
     ) as mock_get_schemas_as_governance:
 
         mock_acapy_auth.return_value.__aenter__.return_value = mock_aries_controller
@@ -108,9 +108,9 @@ async def test_get_schemas_failure(error_code, detail, role):
 
     mock_get_schemas_as_governance = AsyncMock()
     with patch("app.routes.definitions.client_from_auth") as mock_acapy_auth, patch(
-        "app.routes.definitions.get_schemas_as_tenant"
+        "app.routes.definitions.schemas_service.get_schemas_as_tenant"
     ) as mock_get_schemas_as_tenant, patch(
-        "app.routes.definitions.get_schemas_as_governance"
+        "app.routes.definitions.schemas_service.get_schemas_as_governance"
     ) as mock_get_schemas_as_governance:
         mock_get_schemas_as_tenant.side_effect = CloudApiException(
             status_code=error_code, detail=detail

@@ -30,7 +30,7 @@ async def test_create_credential_definition_success():
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_get_client_controller, patch(
-        "app.routes.definitions.create_cred_def"
+        "app.routes.definitions.cred_def_service.create_credential_definition"
     ) as mock_create_credential_definition, patch(
         "app.routes.definitions.coroutine_with_retry"
     ) as mock_coroutine_with_retry:
@@ -75,7 +75,7 @@ async def test_create_credential_definition_fail_acapy_error(
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_get_client_controller, patch(
-        "app.routes.definitions.create_cred_def"
+        "app.routes.definitions.cred_def_service.create_credential_definition"
     ) as mock_create_credential_definition:
 
         mock_get_client_controller.return_value.__aenter__.return_value = (

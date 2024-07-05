@@ -36,7 +36,8 @@ async def test_create_schema_success(request_body):
     with patch(
         "app.routes.definitions.get_governance_controller"
     ) as mock_get_governance_controller, patch(
-        "app.routes.definitions.schemas_service.create_schema", mock_create_schema_service
+        "app.routes.definitions.schemas_service.create_schema",
+        mock_create_schema_service,
     ):
         mock_get_governance_controller.return_value.__aenter__.return_value = (
             mock_aries_controller
@@ -70,7 +71,8 @@ async def test_create_schema_failure(expected_status_code, expected_detail):
     with patch(
         "app.routes.definitions.get_governance_controller"
     ) as mock_get_governance_controller, patch(
-        "app.routes.definitions.schemas_service.create_schema", mock_create_schema_service
+        "app.routes.definitions.schemas_service.create_schema",
+        mock_create_schema_service,
     ):
         mock_get_governance_controller.return_value.__aenter__.return_value = (
             mock_aries_controller

@@ -73,10 +73,10 @@ async def get_schemas_as_tenant(
     )
     bound_logger.debug("Fetching schemas from trust registry")
 
-    if not schema_id:  # client is not filtering by schema_id, fetch all
-        trust_registry_schemas = await get_trust_registry_schemas()
-    else:  # fetch specific id
+    if schema_id:  # fetch specific id
         trust_registry_schemas = [await get_trust_registry_schema_by_id(schema_id)]
+    else:  # client is not filtering by schema_id, fetch all
+        trust_registry_schemas = await get_trust_registry_schemas()
 
     schema_ids = [schema.id for schema in trust_registry_schemas]
 

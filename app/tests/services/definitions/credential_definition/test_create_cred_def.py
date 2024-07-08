@@ -1,9 +1,8 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinitionSendRequest,
-)
+from aries_cloudcontroller import AcaPyClient, CredentialDefinitionSendRequest
+
 from app.models.definitions import CreateCredentialDefinition
 from app.services.definitions.credential_definitions import create_credential_definition
 

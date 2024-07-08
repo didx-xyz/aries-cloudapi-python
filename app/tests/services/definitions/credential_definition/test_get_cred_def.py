@@ -1,12 +1,12 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from typing import List
 from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinitionsCreatedResult,
+    CredentialDefinition,
     CredentialDefinitionGetResult,
-    CredentialDefinition
+    CredentialDefinitionsCreatedResult,
 )
+
 from app.models.definitions import CredentialDefinition as CredDef
 from app.services.definitions.credential_definitions import get_credential_definitions
 
@@ -15,16 +15,23 @@ from app.services.definitions.credential_definitions import get_credential_defin
 async def test_get_credential_definitions_success():
     mock_aries_controller = AsyncMock()
 
-    mock_cred_def_ids = ["5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1", "5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2"]
+    mock_cred_def_ids = [
+        "5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1",
+        "5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2",
+    ]
     mock_cred_def_results = [
         CredentialDefinitionGetResult(
             credential_definition=CredentialDefinition(
-                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1", schema_id="schema_1", tag="tag_1"
+                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1",
+                schema_id="schema_1",
+                tag="tag_1",
             )
         ),
         CredentialDefinitionGetResult(
             credential_definition=CredentialDefinition(
-                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2", schema_id="schema_2", tag="tag_2"
+                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2",
+                schema_id="schema_2",
+                tag="tag_2",
             )
         ),
     ]
@@ -33,9 +40,7 @@ async def test_get_credential_definitions_success():
         "app.services.definitions.credential_definitions.handle_acapy_call"
     ) as mock_handle_acapy_call, patch(
         "app.services.definitions.credential_definitions.credential_definition_from_acapy",
-        side_effect=lambda x: CredDef(
-            id=x.id, schema_id=x.schema_id, tag=x.tag
-        ),
+        side_effect=lambda x: CredDef(id=x.id, schema_id=x.schema_id, tag=x.tag),
     ):
 
         mock_handle_acapy_call.side_effect = [
@@ -62,7 +67,9 @@ async def test_get_credential_definitions_with_filters():
     mock_cred_def_results = [
         CredentialDefinitionGetResult(
             credential_definition=CredentialDefinition(
-                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1", schema_id="schema_1", tag="tag_1"
+                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_1",
+                schema_id="schema_1",
+                tag="tag_1",
             )
         )
     ]
@@ -71,9 +78,7 @@ async def test_get_credential_definitions_with_filters():
         "app.services.definitions.credential_definitions.handle_acapy_call"
     ) as mock_handle_acapy_call, patch(
         "app.services.definitions.credential_definitions.credential_definition_from_acapy",
-        side_effect=lambda x: CredDef(
-            id=x.id, schema_id=x.schema_id, tag=x.tag
-        ),
+        side_effect=lambda x: CredDef(id=x.id, schema_id=x.schema_id, tag=x.tag),
     ):
 
         mock_handle_acapy_call.side_effect = [
@@ -123,7 +128,9 @@ async def test_get_credential_definitions_some_missing():
         CredentialDefinitionGetResult(credential_definition=None),
         CredentialDefinitionGetResult(
             credential_definition=CredentialDefinition(
-                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2", schema_id="schema_2", tag="tag_2"
+                id="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:tag_2",
+                schema_id="schema_2",
+                tag="tag_2",
             )
         ),
     ]
@@ -132,9 +139,7 @@ async def test_get_credential_definitions_some_missing():
         "app.services.definitions.credential_definitions.handle_acapy_call"
     ) as mock_handle_acapy_call, patch(
         "app.services.definitions.credential_definitions.credential_definition_from_acapy",
-        side_effect=lambda x: CredDef(
-            id=x.id, schema_id=x.schema_id, tag=x.tag
-        ),
+        side_effect=lambda x: CredDef(id=x.id, schema_id=x.schema_id, tag=x.tag),
     ):
 
         mock_handle_acapy_call.side_effect = [

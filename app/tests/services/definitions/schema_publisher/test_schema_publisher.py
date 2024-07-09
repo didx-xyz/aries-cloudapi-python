@@ -1,13 +1,14 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from aries_cloudcontroller import (
-    AcaPyClient,
-    SchemaSendRequest,
-    TxnOrSchemaSendResult,
-    SchemaGetResult,
-    SchemaSendResult,
     ModelSchema,
+    SchemaGetResult,
+    SchemaSendRequest,
+    SchemaSendResult,
+    TxnOrSchemaSendResult,
 )
+
 from app.exceptions import CloudApiException
 from app.models.definitions import CredentialSchema
 from app.services.definitions.schema_publisher import SchemaPublisher

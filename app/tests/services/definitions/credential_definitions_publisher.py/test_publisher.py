@@ -2,7 +2,6 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions import CloudApiException
 from app.services.definitions.credential_definition_publisher import (

@@ -3,13 +3,19 @@ import asyncio
 import pytest
 from fastapi import HTTPException
 
+from app.routes.issuer import router
 from app.tests.util.connections import FaberAliceConnect
+from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 
-CREDENTIALS_BASE_PATH = "/v1/issuer/credentials"
+CREDENTIALS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Temporarily skip; existing tests on dev don't clean up old records yet",
+)
 async def test_get_credential_exchange_records_paginated(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

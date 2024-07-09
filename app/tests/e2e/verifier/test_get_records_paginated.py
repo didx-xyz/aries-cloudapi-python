@@ -3,15 +3,21 @@ import asyncio
 import pytest
 from fastapi import HTTPException
 
+from app.routes.verifier import router
 from app.tests.services.verifier.utils import sample_indy_proof_request
 from app.tests.util.connections import AcmeAliceConnect
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
 from shared import RichAsyncClient
 
-VERIFIER_BASE_PATH = "/v1/verifier"
+VERIFIER_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Temporarily skip; existing tests on dev don't clean up old records yet",
+)
 async def test_get_presentation_exchange_records_paginated(
     acme_client: RichAsyncClient,
     credential_definition_id: str,

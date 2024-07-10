@@ -796,3 +796,67 @@ async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
 
         assert bad_name_response.status_code == 422
         assert "wallet_name" in bad_label_response.json()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("dry_run", [True, False])
+async def test_migrate_wallet_group(
+    tenant_admin_client: RichAsyncClient,
+    tenant_admin_acapy_client: AcaPyClient,
+    dry_run,
+):
+    old_group_id = "TestOldGroup"
+    new_group_id = "TestNewGroup"
+
+    for i in range(10):
+        await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={
+                "image_url": "https://image.ca",
+                "wallet_label": uuid4().hex,
+                "wallet_name": f"unique_wallet_name_{i}",
+                "group_id": old_group_id,
+            },
+        )
+
+    old_wallets = await tenant_admin_acapy_client.multitenancy.get_wallets(
+        group_id=old_group_id
+    )
+    assert len(old_wallets.results) == 10
+
+    await tenant_admin_client.patch(
+        f"{TENANTS_BASE_PATH}/migrate_wallet_group_ids",
+        params={
+            "old_group_id": old_group_id,
+            "new_group_id": new_group_id,
+            "dry_run": dry_run,
+        },
+    )
+
+    if not dry_run:
+        old_group_wallets = await tenant_admin_acapy_client.multitenancy.get_wallets(
+            group_id=old_group_id
+        )
+        assert not old_group_wallets.results, "Expecting no old group_ids"
+
+        new_wallets = await tenant_admin_acapy_client.multitenancy.get_wallets(
+            group_id=new_group_id
+        )
+        assert len(new_wallets.results) == 10
+
+        for wallet in new_wallets.results:
+            assert wallet.group_id == new_group_id
+    else:
+        unchanged_wallets = await tenant_admin_acapy_client.multitenancy.get_wallets(
+            group_id=old_group_id
+        )
+        assert len(unchanged_wallets.results) == 10
+
+        for wallet in unchanged_wallets.results:
+            assert wallet.group_id == old_group_id
+
+    for wallet in old_wallets.results:
+        delete_response = await tenant_admin_client.delete(
+            f"{TENANTS_BASE_PATH}/{wallet.wallet_id}"
+        )
+        assert delete_response.status_code == 200

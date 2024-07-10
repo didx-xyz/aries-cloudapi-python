@@ -1,9 +1,9 @@
 from secrets import token_urlsafe
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import CreateWalletTokenRequest
+from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -329,3 +329,81 @@ async def get_tenants(
     response = [tenant_from_wallet_record(record) for record in wallets_list]
     bound_logger.info("Successfully fetched wallets.")
     return response
+
+
+@router.patch("/migrate_wallet_group_ids", include_in_schema=False)
+async def migrate_group_ids(
+    old_group_id: str = Query(
+        default=None,
+        description="Old Group ID to migrate",
+    ),
+    new_group_id: str = Query(
+        default=None, description="New Group ID to change old group to"
+    ),
+    dry_run: bool = Query(default=True),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+) -> Dict[str, Any]:
+    """Migrate wallet group ids."""
+    bound_logger = logger.bind(
+        body={
+            "body": {"old_group_id": old_group_id, "new_group_id": new_group_id},
+        }
+    )
+    bound_logger.info("PUT request received: Migrate wallet group ids")
+
+    async with get_tenant_admin_controller(admin_auth) as admin_controller:
+        wallets = await handle_acapy_call(
+            logger=logger,
+            acapy_call=admin_controller.multitenancy.get_wallets,
+            group_id=old_group_id,
+        )
+
+        wallets_list = wallets.results
+
+        if not wallets_list:
+            logger.error("No wallets found for migration.")
+            return
+        else:
+            logger.info(f"Found {len(wallets_list)} wallets to migrate")
+
+        changes = {}
+        changes["num_wallets"] = len(wallets_list)
+        changes["to_change"] = {}
+
+        list_updated_tenants = []
+        for wallet in wallets_list:
+            wallet_id = wallet.wallet_id
+            this_wallet_group = wallet.group_id
+
+            assert (
+                this_wallet_group == old_group_id
+            ), f"Got wallet with group {this_wallet_group} instead of {old_group_id}"
+
+            changes["to_change"][wallet_id] = f"{old_group_id} to {new_group_id}"
+
+            if not dry_run:
+                logger.info(
+                    f"Changing group_id for tenant {wallet_id} "
+                    f"from {old_group_id} to {new_group_id}"
+                )
+                tenant_after_update = await handle_acapy_call(
+                    logger=logger,
+                    acapy_call=admin_controller.multitenancy.update_wallet,
+                    wallet_id=wallet_id,
+                    body=UpdateWalletRequest(group_id=new_group_id),
+                )
+                list_updated_tenants += (tenant_after_update,)
+            else:
+                logger.info(
+                    f"Dry run mode: would update wallet {wallet_id} from old group_id "
+                    f"{wallet.group_id}; will update to {new_group_id}."
+                )
+
+    if not dry_run:
+        changed_records = [
+            tenant_from_wallet_record(record) for record in list_updated_tenants
+        ]
+        changes["records_after_migration"] = changed_records
+        bound_logger.info(f"Successfully migrated {len(changed_records)} tenants.")
+
+    return changes

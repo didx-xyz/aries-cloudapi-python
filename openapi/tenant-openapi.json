@@ -2514,7 +2514,8 @@
             "type": "array",
             "title": "Type",
             "description": "The JSON-LD type of the credential"
-          }
+          },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "required": ["@context", "credentialSubject", "issuanceDate", "issuer", "type"],
@@ -2607,7 +2608,8 @@
             "type": "string",
             "title": "Type",
             "description": "Credential status method type to use for the credential. Should match status method registered in the Verifiable Credential Extension Registry"
-          }
+          },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "required": ["type"],
@@ -2785,7 +2787,8 @@
       "DIFProofRequest": {
         "properties": {
           "options": { "anyOf": [{ "$ref": "#/components/schemas/DIFOptions" }, { "type": "null" }] },
-          "presentation_definition": { "$ref": "#/components/schemas/PresentationDefinition" }
+          "presentation_definition": { "$ref": "#/components/schemas/PresentationDefinition" },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "required": ["presentation_definition"],
@@ -2922,6 +2925,25 @@
         "required": ["credential_definition_id", "attributes"],
         "title": "IndyCredential"
       },
+      "IndyEQProof": {
+        "properties": {
+          "a_prime": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "A Prime" },
+          "e": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "E" },
+          "m": {
+            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
+            "title": "M"
+          },
+          "m2": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "M2" },
+          "revealed_attrs": {
+            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
+            "title": "Revealed Attrs"
+          },
+          "v": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "V" }
+        },
+        "type": "object",
+        "title": "IndyEQProof",
+        "description": "IndyEQProof"
+      },
       "IndyGEProof": {
         "properties": {
           "alpha": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Alpha" },
@@ -2965,6 +2987,21 @@
         "type": "object",
         "title": "IndyGEProofPred",
         "description": "IndyGEProofPred"
+      },
+      "IndyNonRevocProof": {
+        "properties": {
+          "c_list": {
+            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
+            "title": "C List"
+          },
+          "x_list": {
+            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
+            "title": "X List"
+          }
+        },
+        "type": "object",
+        "title": "IndyNonRevocProof",
+        "description": "IndyNonRevocProof"
       },
       "IndyNonRevocationInterval": {
         "properties": {
@@ -3016,7 +3053,10 @@
       },
       "IndyPrimaryProof": {
         "properties": {
-          "eq_proof": { "anyOf": [{ "$ref": "#/components/schemas/IndyPrimaryProofEqProof" }, { "type": "null" }] },
+          "eq_proof": {
+            "anyOf": [{ "$ref": "#/components/schemas/IndyEQProof" }, { "type": "null" }],
+            "description": "Indy equality proof"
+          },
           "ge_proofs": {
             "anyOf": [{ "items": { "$ref": "#/components/schemas/IndyGEProof" }, "type": "array" }, { "type": "null" }],
             "title": "Ge Proofs",
@@ -3026,25 +3066,6 @@
         "type": "object",
         "title": "IndyPrimaryProof",
         "description": "IndyPrimaryProof"
-      },
-      "IndyPrimaryProofEqProof": {
-        "properties": {
-          "a_prime": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "A Prime" },
-          "e": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "E" },
-          "m": {
-            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
-            "title": "M"
-          },
-          "m2": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "M2" },
-          "revealed_attrs": {
-            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
-            "title": "Revealed Attrs"
-          },
-          "v": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "V" }
-        },
-        "type": "object",
-        "title": "IndyPrimaryProofEqProof",
-        "description": "Indy equality proof"
       },
       "IndyProof": {
         "properties": {
@@ -3138,7 +3159,8 @@
       "IndyProofProofProofsProof": {
         "properties": {
           "non_revoc_proof": {
-            "anyOf": [{ "$ref": "#/components/schemas/IndyProofProofProofsProofNonRevocProof" }, { "type": "null" }]
+            "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocProof" }, { "type": "null" }],
+            "description": "Indy non-revocation proof"
           },
           "primary_proof": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyPrimaryProof" }, { "type": "null" }],
@@ -3148,21 +3170,6 @@
         "type": "object",
         "title": "IndyProofProofProofsProof",
         "description": "IndyProofProofProofsProof"
-      },
-      "IndyProofProofProofsProofNonRevocProof": {
-        "properties": {
-          "c_list": {
-            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
-            "title": "C List"
-          },
-          "x_list": {
-            "anyOf": [{ "additionalProperties": { "type": "string" }, "type": "object" }, { "type": "null" }],
-            "title": "X List"
-          }
-        },
-        "type": "object",
-        "title": "IndyProofProofProofsProofNonRevocProof",
-        "description": "Indy non-revocation proof"
       },
       "IndyProofReqAttrSpec": {
         "properties": {
@@ -3842,7 +3849,8 @@
           "options": {
             "allOf": [{ "$ref": "#/components/schemas/LDProofVCOptions" }],
             "description": "Options for specifying how the linked data proof is created."
-          }
+          },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "required": ["credential", "options"],
@@ -3884,7 +3892,8 @@
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Verificationmethod",
             "description": "The verification method to use for the proof. Should match a verification method in the wallet"
-          }
+          },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "title": "LDProofVCOptions",
@@ -3932,7 +3941,8 @@
             "type": "string",
             "title": "Verificationmethod",
             "description": "Information used for proof verification"
-          }
+          },
+          "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
         "required": ["created", "proofPurpose", "type", "verificationMethod"],

@@ -46,7 +46,7 @@ async def test_check_endorser_connection_failure(publisher):
 
 
 @pytest.mark.anyio
-async def test_publish_credential_definition_success(publisher, mock_controller):
+async def test_publish_credential_definition_success(publisher):
     mock_request_body = MagicMock()
     mock_result = MagicMock()
 
@@ -59,7 +59,7 @@ async def test_publish_credential_definition_success(publisher, mock_controller)
 
 
 @pytest.mark.anyio
-async def test_publish_credential_definition_already_exists(publisher, mock_controller):
+async def test_publish_credential_definition_already_exists(publisher):
     mock_request_body = MagicMock()
 
     with patch(
@@ -73,7 +73,7 @@ async def test_publish_credential_definition_already_exists(publisher, mock_cont
 
 
 @pytest.mark.anyio
-async def test_publish_credential_definition_other_error(publisher, mock_controller):
+async def test_publish_credential_definition_other_error(publisher):
     mock_request_body = MagicMock()
 
     with patch(

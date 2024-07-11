@@ -3587,6 +3587,10 @@ components:
           type: array
           title: Type
           description: The JSON-LD type of the credential
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       required:
       - '@context'
@@ -3750,6 +3754,10 @@ components:
           description: Credential status method type to use for the credential. Should
             match status method registered in the Verifiable Credential Extension
             Registry
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       required:
       - type
@@ -3977,6 +3985,10 @@ components:
           - type: 'null'
         presentation_definition:
           $ref: '#/components/schemas/PresentationDefinition'
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       required:
       - presentation_definition
@@ -4163,6 +4175,45 @@ components:
       - credential_definition_id
       - attributes
       title: IndyCredential
+    IndyEQProof:
+      properties:
+        a_prime:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: A Prime
+        e:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: E
+        m:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: M
+        m2:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: M2
+        revealed_attrs:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Revealed Attrs
+        v:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: V
+      type: object
+      title: IndyEQProof
+      description: IndyEQProof
     IndyGEProof:
       properties:
         alpha:
@@ -4226,6 +4277,25 @@ components:
       type: object
       title: IndyGEProofPred
       description: IndyGEProofPred
+    IndyNonRevocProof:
+      properties:
+        c_list:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: C List
+        x_list:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: X List
+      type: object
+      title: IndyNonRevocProof
+      description: IndyNonRevocProof
     IndyNonRevocationInterval:
       properties:
         from:
@@ -4286,8 +4356,9 @@ components:
       properties:
         eq_proof:
           anyOf:
-          - $ref: '#/components/schemas/IndyPrimaryProofEqProof'
+          - $ref: '#/components/schemas/IndyEQProof'
           - type: 'null'
+          description: Indy equality proof
         ge_proofs:
           anyOf:
           - items:
@@ -4299,45 +4370,6 @@ components:
       type: object
       title: IndyPrimaryProof
       description: IndyPrimaryProof
-    IndyPrimaryProofEqProof:
-      properties:
-        a_prime:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: A Prime
-        e:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: E
-        m:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: M
-        m2:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: M2
-        revealed_attrs:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Revealed Attrs
-        v:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: V
-      type: object
-      title: IndyPrimaryProofEqProof
-      description: Indy equality proof
     IndyProof:
       properties:
         identifiers:
@@ -4435,8 +4467,9 @@ components:
       properties:
         non_revoc_proof:
           anyOf:
-          - $ref: '#/components/schemas/IndyProofProofProofsProofNonRevocProof'
+          - $ref: '#/components/schemas/IndyNonRevocProof'
           - type: 'null'
+          description: Indy non-revocation proof
         primary_proof:
           anyOf:
           - $ref: '#/components/schemas/IndyPrimaryProof'
@@ -4445,25 +4478,6 @@ components:
       type: object
       title: IndyProofProofProofsProof
       description: IndyProofProofProofsProof
-    IndyProofProofProofsProofNonRevocProof:
-      properties:
-        c_list:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: C List
-        x_list:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: X List
-      type: object
-      title: IndyProofProofProofsProofNonRevocProof
-      description: Indy non-revocation proof
     IndyProofReqAttrSpec:
       properties:
         name:
@@ -5296,6 +5310,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/LDProofVCOptions'
           description: Options for specifying how the linked data proof is created.
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       required:
       - credential
@@ -5352,6 +5370,10 @@ components:
           title: Verificationmethod
           description: The verification method to use for the proof. Should match
             a verification method in the wallet
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       title: LDProofVCOptions
       description: LDProofVCOptions
@@ -5406,6 +5428,10 @@ components:
           type: string
           title: Verificationmethod
           description: Information used for proof verification
+        additional_properties:
+          type: object
+          title: Additional Properties
+          default: {}
       type: object
       required:
       - created

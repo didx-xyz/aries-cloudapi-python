@@ -24,7 +24,7 @@ submodules=("app" "endorser" "trustregistry" "webhooks")
 # Install dependencies for each submodule
 for submodule in "${submodules[@]}"; do
   echo "Installing dependencies for $submodule..."
-  cd $submodule
+  cd "$submodule"
   poetry install
   cd ..
 done

@@ -24,7 +24,7 @@ submodules=("app" "endorser" "trustregistry" "webhooks")
 # Generate lock files for each submodule
 for submodule in "${submodules[@]}"; do
   echo "Generating lock file for $submodule..."
-  cd $submodule
+  cd "$submodule"
   poetry lock
   cd ..
 done

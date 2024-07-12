@@ -5,7 +5,6 @@ from aries_cloudcontroller import (
     AcaPyClient,
     SchemaGetResult,
     SchemaSendRequest,
-    TxnOrSchemaSendResult,
 )
 
 from app.exceptions import CloudApiException, handle_acapy_call

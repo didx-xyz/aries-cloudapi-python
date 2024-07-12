@@ -18,6 +18,9 @@ else
   echo "Poetry installed successfully."
 fi
 
+# Configure Poetry to not create virtual environments
+poetry config virtualenvs.create false
+
 # Array of submodules
 submodules=("app" "endorser" "trustregistry" "webhooks")
 

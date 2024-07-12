@@ -513,7 +513,7 @@ services:
       - /bin/sh
       - -c
       - |-
-        pytest --junitxml="/tests/outputs/test_output_$(date +'%Y-%m-%d_%H-%M-%S').xml"
+        poetry run pytest --junitxml="/tests/outputs/test_output_$(date +'%Y-%m-%d_%H-%M-%S').xml"
     environment:
       ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
       ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
@@ -547,7 +547,7 @@ services:
       - /bin/sh
       - -c
       - |-
-        ./test_runner.sh 5 pytest
+        ./test_runner.sh 5 poetry run pytest
     environment:
       ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
       ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey

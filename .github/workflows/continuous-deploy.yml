@@ -167,7 +167,7 @@ jobs:
         run: bash scripts/install_all_dependencies.sh
       - name: Run Pylint
         run: |
-          pylint app/ endorser/ shared/ trustregistry/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          poetry run pylint app/ endorser/ shared/ trustregistry/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
 
   test:
     if: github.event.pull_request.draft == false

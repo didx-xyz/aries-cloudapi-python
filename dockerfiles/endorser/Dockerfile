@@ -6,7 +6,11 @@ COPY shared /shared
 WORKDIR /endorser
 
 RUN pip install "poetry==1.8.3"
-RUN poetry install
+# Set Poetry's cache and virtualenvs path to a writable directory
+ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry
+RUN poetry config cache-dir $POETRY_CACHE_DIR && \
+  poetry config virtualenvs.path $POETRY_CACHE_DIR/virtualenvs && \
+  poetry install
 
 EXPOSE 3009
 

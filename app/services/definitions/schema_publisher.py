@@ -1,11 +1,7 @@
 from logging import Logger
 from typing import List
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    SchemaGetResult,
-    SchemaSendRequest,
-)
+from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CredentialSchema

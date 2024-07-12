@@ -47,6 +47,8 @@ class SchemaPublisher:
             raise CloudApiException(
                 "An unexpected error occurred: could not publish schema."
             )
+
+        result = credential_schema_from_acapy(result.sent.var_schema)
         return result
 
     async def _handle_existing_schema(

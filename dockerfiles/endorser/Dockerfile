@@ -12,4 +12,4 @@ EXPOSE 3009
 
 USER nobody
 
-CMD ["uvicorn", "endorser.main:app", "--reload", "--host", "0.0.0.0", "--port", "3009"]
+CMD ["poetry", "run", "uvicorn", "endorser.main:app", "--reload", "--host", "0.0.0.0", "--port", "3009"]

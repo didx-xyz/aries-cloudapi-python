@@ -32,6 +32,7 @@ class SchemaPublisher:
         except CloudApiException as e:
             if "already exist" in e.detail and e.status_code == 400:
                 result = await self._handle_existing_schema(schema_request)
+                return result
             else:
                 self._logger.warning(
                     "An unhandled Exception was caught while publishing schema: {}",

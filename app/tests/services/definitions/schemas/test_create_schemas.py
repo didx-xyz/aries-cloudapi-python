@@ -20,16 +20,11 @@ async def test_create_schema_success():
     mock_aries_controller.configuration.host = "http://governance-agent-url"
 
     mock_schema_publisher = AsyncMock()
-    mock_schema_publisher.publish_schema.return_value = TxnOrSchemaSendResult(
-        sent=SchemaSendResult(
-            schema_id="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0",
-            var_schema=ModelSchema(
-                id="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0",
-                name="test_schema",
-                version="0.3.0",
-                attr_names=["attr1", "attr2"],
-            ),
-        )
+    mock_schema_publisher.publish_schema.return_value = CredentialSchema(
+        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0",
+        name="test_schema",
+        version="0.3.0",
+        attribute_names=["attr1", "attr2"],
     )
 
     # Create a sample CreateSchema object

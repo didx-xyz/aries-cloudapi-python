@@ -21,7 +21,7 @@ class SchemaPublisher:
 
     async def publish_schema(
         self, schema_request: SchemaSendRequest
-    ) -> TxnOrSchemaSendResult:
+    ) -> CredentialSchema:
         try:
             result = await handle_acapy_call(
                 logger=self._logger,

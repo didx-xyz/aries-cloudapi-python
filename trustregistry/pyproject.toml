@@ -3,6 +3,7 @@ name = "cloudapi-trust-registry"
 version = "3.3.0"
 description = "Trust Registry submodule for cloudapi"
 authors = ["Mourits de Beer <ff137@proton.me>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"

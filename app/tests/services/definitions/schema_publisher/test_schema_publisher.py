@@ -43,6 +43,12 @@ async def test_publish_schema_success(publisher):
             ),
         )
     )
+    final_result = CredentialSchema(
+        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        name="test_schema",
+        version="1.0",
+        attribute_names=["attr1", "attr2"],
+    )
     with patch(
         "app.services.definitions.schema_publisher.handle_acapy_call",
         return_value=mock_result,
@@ -51,34 +57,34 @@ async def test_publish_schema_success(publisher):
     ) as mock_register_schema:
         result = await publisher.publish_schema(mock_schema_request)
 
-        assert result == mock_result
+        assert result == final_result
         mock_register_schema.assert_called_once_with(
             schema_id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0"
         )
 
 
-# @pytest.mark.anyio
-# async def test_publish_schema_already_exists(publisher):
-#     mock_schema_request = MagicMock(spec=SchemaSendRequest)
-#     mock_existing_schema = CredentialSchema(
-#         id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-#         name="test_schema",
-#         version="1.0",
-#         attribute_names=["attr1", "attr2"],
-#     )
+@pytest.mark.anyio
+async def test_publish_schema_already_exists(publisher):
+    mock_schema_request = MagicMock(spec=SchemaSendRequest)
+    mock_existing_schema = CredentialSchema(
+        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        name="test_schema",
+        version="1.0",
+        attribute_names=["attr1", "attr2"],
+    )
 
-#     with patch(
-#         "app.services.definitions.schema_publisher.handle_acapy_call",
-#         side_effect=[
-#             CloudApiException(detail="already exist", status_code=400),
-#             mock_existing_schema,
-#         ],
-#     ), patch.object(
-#         publisher, "_handle_existing_schema", return_value=mock_existing_schema
-#     ):
-#         result = await publisher.publish_schema(mock_schema_request)
+    with patch(
+        "app.services.definitions.schema_publisher.handle_acapy_call",
+        side_effect=[
+            CloudApiException(detail="already exist", status_code=400),
+            mock_existing_schema,
+        ],
+    ), patch.object(
+        publisher, "_handle_existing_schema", return_value=mock_existing_schema
+    ):
+        result = await publisher.publish_schema(mock_schema_request)
 
-#         assert result == mock_existing_schema
+        assert result == mock_existing_schema
 
 
 @pytest.mark.anyio

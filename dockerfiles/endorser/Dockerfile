@@ -5,7 +5,8 @@ COPY shared /shared
 
 WORKDIR /endorser
 
-RUN pip install --no-cache-dir -r requirements.txt --upgrade
+RUN pip install "poetry==1.8.3"
+RUN poetry install
 
 EXPOSE 3009
 

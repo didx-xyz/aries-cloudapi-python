@@ -240,52 +240,56 @@ async def test_handle_existing_schema_no_schemas_found(publisher):
         assert exc_info.value.status_code == 500
 
 
-# @pytest.mark.anyio
-# async def test_handle_existing_schema_multiple_schemas_found(publisher):
-#     mock_schema_request = MagicMock(spec=SchemaSendRequest)
-#     mock_schema_request.schema_name = "test_schema"
-#     mock_schema_request.schema_version = "1.0"
-#     mock_schema_request.attributes = ["attr1", "attr2"]
+@pytest.mark.anyio
+async def test_handle_existing_schema_multiple_schemas_found(publisher):
+    mock_schema_request = MagicMock(spec=SchemaSendRequest)
+    mock_schema_request.schema_name = "test_schema"
+    mock_schema_request.schema_version = "1.0"
+    mock_schema_request.attributes = ["attr1", "attr2"]
 
-#     mock_pub_did = MagicMock()
-#     mock_pub_did.result.did = "test_did"
+    mock_pub_did = MagicMock()
+    mock_pub_did.result.did = "test_did"
 
-#     mock_schema_none = MagicMock(spec=SchemaGetResult)
-#     mock_schema_none.var_schema = None
+    mock_schema_none = MagicMock(spec=SchemaGetResult)
+    mock_schema_none.var_schema = None
 
-#     mock_schemas_created_ids = MagicMock()
-#     mock_schemas_created_ids.schema_ids = ["CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0", "aeXh23fv8bp43VxFesQXC:2:test_schema:1.0"]
-#     mock_schemas = [
-#         SchemaGetResult(
-#             var_schema=ModelSchema(
-#                 id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-#                 name="test_schema",
-#                 version="1.0",
-#                 attr_names=["attr1", "attr2"],
-#             )
-#         ),
-#         SchemaGetResult(
-#             var_schema=ModelSchema(
-#                 id="aeXh23fv8bp43VxFesQXC:2:test_schema:1.0",
-#                 name="test_schema",
-#                 version="1.0",
-#                 attr_names=["attr3", "attr4"],
-#             )
-#         )
-#     ]
-#     with patch(
-#         "app.services.definitions.schema_publisher.handle_acapy_call",
-#         side_effect=[
-#             mock_pub_did,
-#             mock_schema_none,
-#             mock_schemas_created_ids,
-#         ],
-#     ):
-#         with pytest.raises(CloudApiException) as exc_info:
-#             await publisher._handle_existing_schema(mock_schema_request)
+    mock_schemas_created_ids = MagicMock()
+    mock_schemas_created_ids.schema_ids = [
+        "CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        "aeXh23fv8bp43VxFesQXC:2:test_schema:1.0",
+    ]
+    mock_schemas = [
+        SchemaGetResult(
+            var_schema=ModelSchema(
+                id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+                name="test_schema",
+                version="1.0",
+                attr_names=["attr1", "attr2"],
+            )
+        ),
+        SchemaGetResult(
+            var_schema=ModelSchema(
+                id="aeXh23fv8bp43VxFesQXC:2:test_schema:1.0",
+                name="test_schema",
+                version="1.0",
+                attr_names=["attr3", "attr4"],
+            )
+        ),
+    ]
+    with patch(
+        "app.services.definitions.schema_publisher.handle_acapy_call",
+        side_effect=[
+            mock_pub_did,
+            mock_schema_none,
+            mock_schemas_created_ids,
+            mock_schemas[0],
+            mock_schemas[1],
+        ],
+    ):
+        with pytest.raises(CloudApiException) as exc_info:
+            await publisher._handle_existing_schema(mock_schema_request)
 
-#         assert (
-#             str(exc_info.value)
-#             == "409: Multiple schemas with name test_schema and version 1.0 exist. These are: `['schema_id_1', 'schema_id_2']`."
-#         )
-#         assert exc_info.value.status_code == 409
+        assert str(exc_info.value).startswith(
+            "409: Multiple schemas with name test_schema"
+        )
+        assert exc_info.value.status_code == 409

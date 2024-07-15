@@ -44,13 +44,13 @@ schema_send_result = TxnOrSchemaSendResult(
     )
 )
 schema_get_result = SchemaGetResult(
-        var_schema=ModelSchema(
-            id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-            name="test_schema",
-            version="1.0",
-            attr_names=["attr1", "attr2"],
-        )
+    var_schema=ModelSchema(
+        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        name="test_schema",
+        version="1.0",
+        attr_names=["attr1", "attr2"],
     )
+)
 credential_schema = CredentialSchema(
     id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
     name="test_schema",

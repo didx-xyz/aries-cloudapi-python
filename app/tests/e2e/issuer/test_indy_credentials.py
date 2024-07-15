@@ -44,14 +44,14 @@ async def test_send_credential_oob(
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
+    cred_ex_id = data["credential_exchange_id"]
+
     invitation_response = await faber_client.post(
         OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
-            "attachments": [
-                {"id": data["credential_exchange_id"][3:], "type": "credential-offer"}
-            ],
+            "attachments": [{"id": cred_ex_id[3:], "type": "credential-offer"}],
         },
     )
     assert_that(invitation_response.status_code).is_equal_to(200)
@@ -77,6 +77,9 @@ async def test_send_credential_oob(
             "thread_id": thread_id,
         },
     )
+
+    # Clean up created offer
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio
@@ -109,14 +112,18 @@ async def test_send_credential(
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
+    cred_ex_id = data["credential_exchange_id"]
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_exchange_id": data["credential_exchange_id"],
+            "credential_exchange_id": cred_ex_id,
         },
     )
+
+    # Clean up created offer
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio
@@ -147,14 +154,18 @@ async def test_create_offer(
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
+    cred_ex_id = data["credential_exchange_id"]
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_exchange_id": data["credential_exchange_id"],
+            "credential_exchange_id": cred_ex_id,
         },
     )
+
+    # Clean up created offer
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio

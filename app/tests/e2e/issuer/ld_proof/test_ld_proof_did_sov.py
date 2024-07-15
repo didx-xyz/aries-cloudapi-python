@@ -132,6 +132,10 @@ async def test_send_jsonld_credential_sov(
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_exchange_id"]).starts_with("v2")
 
+    # Clean up created offer
+    cred_ex_id = data["credential_exchange_id"]
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+
 
 @pytest.mark.anyio
 async def test_send_jsonld_oob_sov(
@@ -190,6 +194,10 @@ async def test_send_jsonld_oob_sov(
         topic="credentials",
         state="offer-received",
     )
+
+    # Clean up created offer
+    cred_ex_id = data["credential_exchange_id"]
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio

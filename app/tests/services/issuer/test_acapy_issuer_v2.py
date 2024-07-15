@@ -102,6 +102,8 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
     v2_record = v2_credential_exchange_records[0]
 
     when(mock_agent_controller.issue_credential_v2_0).get_records(
+        limit=100,
+        offset=0,
         connection_id=v2_record.cred_ex_record.connection_id,
         role=v2_record.cred_ex_record.role,
         state=v2_record.cred_ex_record.state,
@@ -110,6 +112,8 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
 
     records = await IssuerV2.get_records(
         mock_agent_controller,
+        limit=100,
+        offset=0,
         connection_id=v2_record.cred_ex_record.connection_id,
         role=v2_record.cred_ex_record.role,
         state=v2_record.cred_ex_record.state,

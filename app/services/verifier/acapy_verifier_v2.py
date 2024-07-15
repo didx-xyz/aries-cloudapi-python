@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -201,6 +201,8 @@ class VerifierV2(Verifier):
     async def get_proof_records(
         cls,
         controller: AcaPyClient,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
         connection_id: str = None,
         role: str = None,
         state: str = None,
@@ -211,6 +213,8 @@ class VerifierV2(Verifier):
             presentation_exchange = await handle_acapy_call(
                 logger=logger,
                 acapy_call=controller.present_proof_v2_0.get_records,
+                limit=limit,
+                offset=offset,
                 connection_id=connection_id,
                 role=role,
                 state=state,

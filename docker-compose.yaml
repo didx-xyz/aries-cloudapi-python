@@ -373,8 +373,8 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
-      # # To run a forked version of the agent use commented out code below
-    #   context: https://github.com/didx-xyz/aries-cloudagent-python.git#0.12.2b1
+      # To run a forked version of the agent use commented out code below
+    #   context: https://github.com/didx-xyz/aries-cloudagent-python.git#0.12.2b2
     #   dockerfile: docker/Dockerfile
     # user: root
     # entrypoint:

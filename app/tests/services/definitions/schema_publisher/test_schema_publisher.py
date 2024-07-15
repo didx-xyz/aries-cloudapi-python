@@ -13,6 +13,8 @@ from app.exceptions import CloudApiException
 from app.models.definitions import CredentialSchema
 from app.services.definitions.schema_publisher import SchemaPublisher
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture
 def mock_logger():

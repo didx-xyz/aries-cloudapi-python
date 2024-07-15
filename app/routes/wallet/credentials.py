@@ -39,9 +39,6 @@ async def list_credentials(
 
         {"attr::age::value": "21"}
 
-    See more on WQL queries
-    [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html)
-
     Optional Parameters:
     ---
         count: str

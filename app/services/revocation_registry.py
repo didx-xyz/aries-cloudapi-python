@@ -159,7 +159,7 @@ async def revoke_credential(
 
 async def publish_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> Optional[str]:
+) -> TxnOrPublishRevocationsResult:
     """
         Publish pending revocations
 
@@ -203,7 +203,7 @@ async def publish_pending_revocations(
         "Successfully published pending revocations. Endorser transaction id: {}.",
         endorse_transaction_id,
     )
-    return endorse_transaction_id
+    return result
 
 
 async def clear_pending_revocations(

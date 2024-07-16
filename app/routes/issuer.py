@@ -650,7 +650,10 @@ async def publish_revocations(
 
     Returns:
     ---
-        status_code: 204
+        RevokedResponse:
+            revoked_cred_rev_ids:
+              The revocation registry indexes that were revoked.
+              Will be empty if there were no revocations to publish.
     """
     bound_logger = logger.bind(body=publish_request)
     bound_logger.debug("POST request received: Publish revocations")

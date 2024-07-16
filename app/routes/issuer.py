@@ -498,11 +498,11 @@ async def remove_credential_exchange_record(
     bound_logger.debug("Successfully deleted credential exchange record.")
 
 
-@router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
+@router.post("/revoke", summary="Revoke a Credential (if revocable)")
 async def revoke_credential(
     body: RevokeCredential,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
+) -> RevokedResponse:
     """
     Revoke a credential
     ---

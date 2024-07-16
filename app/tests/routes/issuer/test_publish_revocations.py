@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from aries_cloudcontroller import TxnOrPublishRevocationsResult
+
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.issuer import PublishRevocationsRequest
 from app.routes.issuer import publish_revocations

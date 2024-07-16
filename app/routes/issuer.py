@@ -694,9 +694,9 @@ async def publish_revocations(
 
     bound_logger.info("Successfully published revocations.")
     return RevokedResponse(
-        revoked_cred_rev_ids=result.txn.messages_attach[0]["data"]["json"][
-            "operation"
-        ]["value"]["revoked"]
+        revoked_cred_rev_ids=result.txn.messages_attach[0]["data"]["json"]["operation"][
+            "value"
+        ]["revoked"]
     )
 
 

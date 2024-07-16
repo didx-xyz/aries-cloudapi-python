@@ -534,13 +534,14 @@ async def revoke_credential(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Revoking credential")
-        await revocation_registry.revoke_credential(
+        result = await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
-    bound_logger.debug("Successfully revoked credential.")
+    bound_logger.info("Successfully revoked credential.")
+    return result
 
 
 @router.get(

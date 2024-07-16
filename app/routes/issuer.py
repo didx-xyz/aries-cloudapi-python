@@ -524,7 +524,10 @@ async def revoke_credential(
 
     Returns:
     ---
-        status_code: 204
+        RevokedResponse:
+            revoked_cred_rev_ids:
+              The revocation registry indexes that were revoked.
+              Will be empty if the revocation was marked as pending.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Revoke credential")

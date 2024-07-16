@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     PublishRevocations,
     RevokeRequest,
     RevRegResult,
+    TxnOrPublishRevocationsResult,
 )
 
 from app.exceptions import (
@@ -17,7 +18,7 @@ from app.exceptions import (
     handle_acapy_call,
     handle_model_with_validation,
 )
-from app.models.issuer import ClearPendingRevocationsResult
+from app.models.issuer import ClearPendingRevocationsResult, RevokedResponse
 from app.util.credentials import strip_protocol_prefix
 from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger

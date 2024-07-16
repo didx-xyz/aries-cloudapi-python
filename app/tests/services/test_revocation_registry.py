@@ -88,7 +88,7 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         auto_publish_to_ledger=False,
     )
 
-    assert revoke_credential_result is None
+    assert revoke_credential_result.revoked_cred_rev_ids == []
 
     # Fail
     error_msg = "dummy_message"

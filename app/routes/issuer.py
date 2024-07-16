@@ -16,6 +16,7 @@ from app.models.issuer import (
     PublishRevocationsRequest,
     RevokeCredential,
     SendCredential,
+    RevokedResponse,
 )
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id

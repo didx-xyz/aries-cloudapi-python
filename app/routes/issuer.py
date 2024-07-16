@@ -614,13 +614,11 @@ async def get_credential_revocation_record(
     return revocation_record
 
 
-@router.post(
-    "/publish-revocations", summary="Publish Pending Revocations", status_code=204
-)
+@router.post("/publish-revocations", summary="Publish Pending Revocations")
 async def publish_revocations(
     publish_request: PublishRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
+) -> RevokedResponse:
     """
     Write pending revocations to the ledger
     ---

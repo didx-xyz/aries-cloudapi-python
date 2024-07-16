@@ -104,7 +104,7 @@ async def revoke_credential(
         publish=auto_publish_to_ledger,
     )
     try:
-        await handle_acapy_call(
+        revoke_result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.revocation.revoke_credential,
             body=request_body,
@@ -145,7 +145,14 @@ async def revoke_credential(
                 "Please check the revocation record state and retry if not revoked."
             )
 
-    bound_logger.debug("Successfully revoked credential.")
+        if revoke_result["txn"] and revoke_result["txn"]["messages_attach"][0]:
+            bound_logger.info("Successfully revoked credential.")
+            return RevokedResponse(
+                revoked_cred_rev_ids=revoke_result["txn"]["messages_attach"][0]["data"][
+                    "json"
+                ]["operation"]["value"]["revoked"]
+            )
+    bound_logger.info("Successfully revoked credential.")
 
 
 async def publish_pending_revocations(

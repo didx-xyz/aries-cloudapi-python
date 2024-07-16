@@ -152,7 +152,9 @@ async def revoke_credential(
                     "json"
                 ]["operation"]["value"]["revoked"]
             )
+
     bound_logger.info("Successfully revoked credential.")
+    return RevokedResponse(revoked_cred_rev_ids=[])
 
 
 async def publish_pending_revocations(

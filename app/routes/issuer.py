@@ -660,11 +660,14 @@ async def publish_revocations(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Publishing revocations")
-        endorser_transaction_id = await revocation_registry.publish_pending_revocations(
+        result = await revocation_registry.publish_pending_revocations(
             controller=aries_controller,
             revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
         )
 
+        if not result:
+            bound_logger.debug("No revocations to publish.")
+            return RevokedResponse()
         if endorser_transaction_id:
             bound_logger.debug(
                 "Wait for publish complete on transaction id: {}",

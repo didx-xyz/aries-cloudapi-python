@@ -73,7 +73,7 @@ async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
     auto_publish_to_ledger: bool = False,
-) -> None:
+) -> RevokedResponse:
     """
         Revoke an issued credential
 

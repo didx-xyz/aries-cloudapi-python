@@ -98,3 +98,7 @@ class ClearPendingRevocationsResult(BaseModel):
             "The resulting revocations that are still pending after a clear-pending request has been completed."
         ),
     )
+
+
+class RevokedResponse(BaseModel):
+    revoked_cred_rev_ids: list[Optional[int]] = []

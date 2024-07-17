@@ -493,3 +493,38 @@ async def wait_for_active_registry(
         sleep_duration = 0.5  # Following sleeps should wait 0.5s before retry
 
     return active_registries
+
+
+async def get_pending_revocations(
+    controller: AcaPyClient, rev_reg_id: str
+) -> List[int]:
+    """
+    Get the pending revocations for a revocation registry.
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        rev_reg_id (str): The revocation registry ID.
+
+    Raises:
+        Exception: When the pending revocations could not be retrieved.
+
+    Returns:
+        pending_revocations (List[str]): The pending revocations.
+    """
+    bound_logger = logger.bind(body={"rev_reg_id": rev_reg_id})
+    bound_logger.info("Fetching pending revocations for a revocation registry")
+
+    try:
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.revocation.get_registry,
+            rev_reg_id=rev_reg_id,
+        )
+    except CloudApiException as e:
+        raise CloudApiException(
+            f"Failed to get pending revocations: {e.detail}", e.status_code
+        ) from e
+
+    pending_revocations = result.result.pending_pub
+    bound_logger.info("Successfully retrieved pending revocations.")
+    return pending_revocations

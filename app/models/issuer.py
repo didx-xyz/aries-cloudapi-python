@@ -123,3 +123,7 @@ class RevokedResponse(BaseModel):
 
         values["result"] = result
         return values
+
+
+class PendingRevocations(BaseModel):
+    pending_cred_rev_ids: list[Optional[int]] = []

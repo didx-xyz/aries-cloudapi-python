@@ -13,6 +13,7 @@ from app.models.issuer import (
     ClearPendingRevocationsResult,
     CreateOffer,
     CredentialType,
+    PendingRevocations,
     PublishRevocationsRequest,
     RevokeCredential,
     RevokedResponse,

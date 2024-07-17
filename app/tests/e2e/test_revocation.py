@@ -72,7 +72,7 @@ async def test_clear_pending_revokes(
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
-            json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
+            json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
         )
     assert exc.value.status_code == 404
 

@@ -751,3 +751,38 @@ async def clear_pending_revocations(
 
     bound_logger.debug("Successfully cleared pending revocations.")
     return response
+
+
+@router.get(
+    "/revocation/get-pending-revocations",
+    summary="Get Pending Revocations",
+)
+async def get_pending_revocations(
+    revocation_registry_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> PendingRevocations:
+    """
+    Get pending revocations
+    ---
+    Get the pending revocations for a given revocation registry ID.
+
+    Parameters:
+    ---
+        revocation_registry_id: str
+            The ID of the revocation registry for which to fetch pending revocations
+
+    Returns:
+    ---
+        Object
+    """
+    bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
+    bound_logger.info("GET request received: Get pending revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting pending revocations")
+        result = await revocation_registry.get_pending_revocations(
+            controller=aries_controller, rev_reg_id=revocation_registry_id
+        )
+
+    bound_logger.info("Successfully fetched pending revocations.")
+    return PendingRevocations(pending_cred_rev_ids=result)

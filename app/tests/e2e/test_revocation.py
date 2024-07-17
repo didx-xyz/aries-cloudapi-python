@@ -32,10 +32,11 @@ async def test_clear_pending_revokes(
     )
 
     rev_reg_id = revocation_record_response.json()["rev_reg_id"]
+    cred_rev_id = revocation_record_response.json()["cred_rev_id"]
 
     clear_revoke_response = await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
-        json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
+        json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
     )
     revocation_registry_credential_map = clear_revoke_response.json()[
         "revocation_registry_credential_map"

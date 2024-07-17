@@ -147,14 +147,10 @@ async def revoke_credential(
 
         if revoke_result["txn"] and revoke_result["txn"]["messages_attach"][0]:
             bound_logger.info("Successfully revoked credential.")
-            return RevokedResponse(
-                revoked_cred_rev_ids=revoke_result["txn"]["messages_attach"][0]["data"][
-                    "json"
-                ]["operation"]["value"]["revoked"]
-            )
+            return RevokedResponse.model_validate(revoke_result)
 
     bound_logger.info("Successfully revoked credential.")
-    return RevokedResponse(revoked_cred_rev_ids=[])
+    return RevokedResponse()
 
 
 async def publish_pending_revocations(

@@ -101,4 +101,25 @@ class ClearPendingRevocationsResult(BaseModel):
 
 
 class RevokedResponse(BaseModel):
-    revoked_cred_rev_ids: list[Optional[int]] = []
+    result: Dict[str, List[int]] = Field(
+        default_factory=dict,
+        description="A map of revocation registry IDs to lists of credential revocation IDs (as integers) that have been revoked. Can be empty.",
+    )
+
+    @root_validator(pre=True)
+    def extract_revoked_info(cls, values):
+        txn = values.get("txn", {})
+        messages_attach = txn.get("messages_attach", [])
+        result = {}
+
+        for attach in messages_attach:
+            data = attach.get("data", {}).get("json", {})
+            operation = data.get("operation", {})
+            revoc_reg_def_id = operation.get("revocRegDefId")
+            revoked = operation.get("value", {}).get("revoked", [])
+
+            if revoc_reg_def_id and revoked:
+                result[revoc_reg_def_id] = revoked
+
+        values["result"] = result
+        return values

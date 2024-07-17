@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, root_validator
 
 from shared.exceptions import CloudApiValueError
 from shared.models.protocol import IssueCredentialProtocolVersion

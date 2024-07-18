@@ -14,7 +14,7 @@ async def test_publish_revocations_success():
     mock_aries_controller = AsyncMock()
     mock_publish_revocations = AsyncMock(
         return_value=TxnOrPublishRevocationsResult(
-            txn={
+            txn={ #todo: reduce size or move out
                 "state": "request_sent",
                 "created_at": "2024-07-16T07:09:37.807261Z",
                 "updated_at": "2024-07-16T07:09:37.812035Z",

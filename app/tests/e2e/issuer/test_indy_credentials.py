@@ -308,4 +308,4 @@ async def test_revoke_credential(
     )
 
     assert response.status_code == 200
-    assert len(response.json()["revoked_cred_rev_ids"]) == 1
+    assert len(response.json()["cred_rev_ids_published"]) == 1

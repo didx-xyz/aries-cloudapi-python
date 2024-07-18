@@ -755,7 +755,7 @@ async def clear_pending_revocations(
 
 
 @router.get(
-    "/get-pending-revocations",
+    "/get-pending-revocations/{revocation_registry_id}",
     summary="Get Pending Revocations",
 )
 async def get_pending_revocations(

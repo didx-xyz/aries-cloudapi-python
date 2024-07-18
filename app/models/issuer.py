@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel, Field, ValidationInfo, field_validator, root_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
 from shared.models.protocol import IssueCredentialProtocolVersion
@@ -109,7 +109,7 @@ class RevokedResponse(BaseModel):
         ),
     )
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def extract_revoked_info(cls, values):
         txn = values.get("txn", {})
         messages_attach = txn.get("messages_attach", [])

@@ -755,7 +755,7 @@ async def clear_pending_revocations(
 
 
 @router.get(
-    "/revocation/get-pending-revocations",
+    "/get-pending-revocations",
     summary="Get Pending Revocations",
 )
 async def get_pending_revocations(
@@ -774,7 +774,8 @@ async def get_pending_revocations(
 
     Returns:
     ---
-        Object
+        PendingRevocations:
+            A list of cred_rev_ids pending revocation for a given revocation registry ID
     """
     bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
     bound_logger.info("GET request received: Get pending revocations")

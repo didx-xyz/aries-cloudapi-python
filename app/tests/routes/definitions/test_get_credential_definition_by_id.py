@@ -13,7 +13,7 @@ from app.models.definitions import CredentialSchema
 from app.routes.definitions import get_credential_definition_by_id
 
 cred_def_id = "J5Pvam9KqK8ZPQWtvhAxSx:3:CL:8:Epic"
-acapy_response = CredentialDefinitionGetResult(
+cred_def_acapy_result = CredentialDefinitionGetResult(
     credential_definition=CredentialDefinition(
         id=cred_def_id,
         tag="Epic",
@@ -37,7 +37,7 @@ final_response = CredentialDefinitionModel(
 async def test_get_credential_definition_by_id_success():
     mock_aries_controller = AsyncMock()
     mock_aries_controller.credential_definition.get_cred_def = AsyncMock(
-        return_value=acapy_response
+        return_value=cred_def_acapy_result
     )
     mock_get_schema = AsyncMock()
     with patch(

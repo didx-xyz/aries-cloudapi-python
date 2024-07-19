@@ -6,15 +6,15 @@ from app.exceptions import CloudApiException
 from app.models.definitions import CreateCredentialDefinition, CredentialDefinition
 from app.routes.definitions import create_credential_definition
 
+create_cred_def_body = CreateCredentialDefinition(
+    schema_id="mock_schema_id",
+    tag="mock_tag",
+    support_revocation=False,
+)
 cred_def_response = CredentialDefinition(
     id="mock_credential_definition_id",
     schema_id="mock_schema_id",
     tag="mock_tag",
-)
-create_payload = CreateCredentialDefinition(
-    schema_id="mock_schema_id",
-    tag="mock_tag",
-    support_revocation=False,
 )
 
 
@@ -42,12 +42,12 @@ async def test_create_credential_definition_success():
 
         response = await create_credential_definition(
             auth="mocked_auth",
-            credential_definition=create_payload,
+            credential_definition=create_cred_def_body,
         )
 
         mock_create_credential_definition.assert_called_once_with(
             aries_controller=mock_aries_controller,
-            credential_definition=create_payload,
+            credential_definition=create_cred_def_body,
             support_revocation=False,
         )
 
@@ -88,7 +88,7 @@ async def test_create_credential_definition_fail_acapy_error(
         with pytest.raises(CloudApiException) as exc:
             await create_credential_definition(
                 auth="mocked_auth",
-                credential_definition=create_payload,
+                credential_definition=create_cred_def_body,
             )
 
         assert exc.value.status_code == expected_status_code

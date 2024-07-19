@@ -8,6 +8,9 @@ from app.services.definitions.credential_definition_publisher import (
     CredentialDefinitionPublisher,
 )
 
+# pylint: disable=redefined-outer-name
+# because re-using fixtures in same module
+
 
 @pytest.fixture
 def mock_logger():

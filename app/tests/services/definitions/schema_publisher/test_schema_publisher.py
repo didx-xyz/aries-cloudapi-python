@@ -14,6 +14,9 @@ from app.models.definitions import CredentialSchema
 from app.services.definitions.schema_publisher import SchemaPublisher
 
 # pylint: disable=redefined-outer-name
+# because re-using fixtures in same module
+# pylint: disable=protected-access
+# because we are testing protected methods
 
 
 @pytest.fixture

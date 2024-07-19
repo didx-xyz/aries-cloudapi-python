@@ -48,7 +48,6 @@ async def create_schema(
 
     result = await publisher.publish_schema(schema_request)
 
-    result = credential_schema_from_acapy(result.sent.var_schema)
     bound_logger.info("Successfully published and registered schema.")
     return result
 

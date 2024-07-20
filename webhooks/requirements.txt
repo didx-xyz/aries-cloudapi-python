@@ -1,6 +1,6 @@
 aries-cloudcontroller==1.0.0rc4
 dependency-injector-fork~=4.42.1  # https://github.com/ets-labs/python-dependency-injector/pull/765#issuecomment-1915100744
-fastapi~=0.111.0
+fastapi~=0.111.1
 fastapi_websocket_pubsub~=0.3.8
 httpx~=0.27.0
 loguru~=0.7.2

@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13.0b3-slim
 
 COPY trustregistry /trustregistry
 COPY shared /shared

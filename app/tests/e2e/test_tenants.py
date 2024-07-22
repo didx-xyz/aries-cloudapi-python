@@ -796,3 +796,79 @@ async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
 
         assert bad_name_response.status_code == 422
         assert "wallet_name" in bad_label_response.json()
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
+async def test_get_wallets_paginated(tenant_admin_client: RichAsyncClient):
+    num_wallets_to_test = 5
+    test_group = "TestPaginationGroup"
+    wallet_names = []
+
+    # Create multiple wallets
+    for _ in range(num_wallets_to_test):
+        wallet_name = uuid4().hex
+        wallet_names.append(wallet_name)
+        response = await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={
+                "image_url": "https://image.ca",
+                "wallet_name": wallet_name,
+                "wallet_label": "test_wallet",
+                "group_id": test_group,
+            },
+        )
+
+    # Test different limits
+    for limit in range(1, num_wallets_to_test + 2):
+        response = await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}?limit={limit}&group_id={test_group}"
+        )
+        wallets = response.json()
+        assert len(wallets) == min(limit, num_wallets_to_test)
+
+    # Test offset greater than number of records
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}?limit=1&offset={num_wallets_to_test}&group_id={test_group}"
+    )
+    wallets = response.json()
+    assert len(wallets) == 0
+
+    # Test fetching unique records with pagination
+    # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
+    # prev_wallets = []
+    # for offset in range(num_wallets_to_test):
+    #     response = await tenant_admin_client.get(
+    #         f"{TENANTS_BASE_PATH}?limit=1&offset={offset}&group_id={test_group}"
+    #     )
+
+    #     wallets = response.json()
+    #     assert len(wallets) == 1
+
+    #     wallet = wallets[0]
+    #     assert wallet not in prev_wallets
+    #     prev_wallets.append(wallet)
+
+    # Test invalid limit and offset values
+    invalid_params = [
+        {"limit": -1},  # must be positive
+        {"offset": -1},  # must be positive
+        {"limit": 0},  # must be greater than 0
+        {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
+    ]
+
+    for params in invalid_params:
+        with pytest.raises(HTTPException) as exc:
+            await tenant_admin_client.get(TENANTS_BASE_PATH, params=params)
+        assert exc.value.status_code == 422
+
+    # Clean up wallets
+    for wallet_name in wallet_names:
+        response = await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}?wallet_name={wallet_name}&group_id={test_group}"
+        )
+        wallet_id = response.json()[0]["wallet_id"]
+        await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{wallet_id}")

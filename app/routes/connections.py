@@ -7,6 +7,7 @@ from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
 from app.models.connections import AcceptInvitation, CreateInvitation
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from shared.log_config import get_logger
 from shared.models.connection_record import (
     Connection,
@@ -134,6 +135,8 @@ async def accept_invitation(
 
 @router.get("", summary="Fetch Connection Records", response_model=List[Connection])
 async def get_connections(
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     alias: Optional[str] = None,
     connection_protocol: Optional[Protocol] = None,
     invitation_key: Optional[str] = None,
@@ -155,6 +158,8 @@ async def get_connections(
 
     Parameters (Optional):
     ---
+        limit: int - The maximum number of records to retrieve
+        offset: int - The offset to start retrieving records from
         alias: str
         connection_protocol: Protocol: "connections/1.0", "didexchange/1.0"
         invitation_key: str
@@ -176,6 +181,8 @@ async def get_connections(
         connections = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.connection.get_connections,
+            limit=limit,
+            offset=offset,
             alias=alias,
             connection_protocol=connection_protocol,
             invitation_key=invitation_key,

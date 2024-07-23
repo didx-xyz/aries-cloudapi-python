@@ -80,11 +80,11 @@ export function setup() {
 
   const holders = data.trim().split('\n').map(JSON.parse);
 
-  // Example usage of the loaded data
-  holders.forEach((holderData) => {
-    console.log(`Processing wallet ID: ${holderData.wallet_id}`);
-    // Your test logic here, e.g., make HTTP requests using the holderData
-  });
+  // // Example usage of the loaded data
+  // holders.forEach((holderData) => {
+  //   console.log(`Processing wallet ID: ${holderData.wallet_id}`);
+  //   // Your test logic here, e.g., make HTTP requests using the holderData
+  // });
 
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
@@ -182,11 +182,18 @@ export default function(data) {
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
 
-  const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  let sendProofRequestResponse;
+  try {
+    sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  } catch (error) {
+      // console.error(`Error creating credential: ${error.message}`);
+      sendProofRequestResponse = { status: 500, response: error.message };
+  }
   check(sendProofRequestResponse, {
-    "Credential created successfully": (r) => {
+    "Proof request sent successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while senf proof request: ${r.response}`);
+        throw new Error(`Unexpected response while sending proof request: ${r.response}`);
       }
       return true;
     }
@@ -228,7 +235,14 @@ export default function(data) {
     },
   });
 
-  const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+  // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+  let getProofResponse;
+  try {
+    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+  } catch (error) {
+      // console.error(`Error creating credential: ${error.message}`);
+      getProofResponse = { status: 500, response: error.message };
+  }
   check(getProofResponse, {
     'Proof received successfully': (r) => {
       if (r.status !== 200) {

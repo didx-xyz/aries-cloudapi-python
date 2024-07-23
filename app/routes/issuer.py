@@ -672,8 +672,8 @@ async def publish_revocations(
                     field_name="state",
                     expected_value="transaction_acked",
                     logger=bound_logger,
-                    max_attempts=10,
-                    retry_delay=2,
+                    max_attempts=30,
+                    retry_delay=1,
                 )
             except asyncio.TimeoutError as e:
                 raise CloudApiException(

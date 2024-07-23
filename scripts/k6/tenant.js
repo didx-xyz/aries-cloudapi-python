@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import sse from "k6/x/sse"
-import { check } from 'k6';
+import { check, sleep } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
 // import { sleep } from 'k6';
 
@@ -149,7 +149,7 @@ export function deleteTenant(bearerToken, walletId) {
     if (response.status === 200) {
       // Request was successful
       if (responseBody === 'null') {
-        console.log(`Wallet ${walletId} deleted successfully.`);
+        // console.log(`Wallet ${walletId} deleted successfully.`);
       } else {
         console.error(`Failed to delete wallet ${walletId}. Response body: ${responseBody}`);
       }
@@ -309,26 +309,28 @@ export function acceptCredential(holderAccessToken, credentialId) {
   }
 }
 
-export function createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag) {
+export function createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
       'x-api-key': issuerAccessToken
-    }
+    },
+    timeout: '120s'
   };
 
   try {
     // Construct the request body including the invitation object
     const requestBody = JSON.stringify({
       "tag": credDefTag,
-      "schema_id": "Hd7nmadkMM7oayBNpkQJzU:2:load_pop:0.1.0",
+      "schema_id": schemaId,
       "support_revocation": true,
       "revocation_registry_size": 100
     });
 
     let response = http.post(url, requestBody, params);
     console.log(`Response body: ${response.body}`);
+    console.log(`Request body: ${requestBody}`);
     return response;
   } catch (error) {
     console.error(`Error creating credential definition: ${error.message}`);
@@ -400,8 +402,8 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
   check(response, { 'SSE connection established': (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
-  const maxDuration = 10000; // 10 seconds
-  const checkInterval = 1000; // 1 second
+  const maxDuration = 10; // 10 seconds
+  const checkInterval = 1; // 1 second
   let elapsedTime = 0;
 
   while (!eventReceived && elapsedTime < maxDuration) {
@@ -445,9 +447,12 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
 
   check(response, { 'SSE connection established': (r) => r && r.status === 200 });
 
+  // Create random number between 1 and 3
+  // const random = Math.floor(Math.random() * 3) + 1;
+
   // Wait for the event to be received or a maximum duration
-  const maxDuration = 10000; // 10 seconds
-  const checkInterval = 1000; // 1 second
+  const maxDuration = 10; // 10 seconds
+  const checkInterval = 1; // 1 second
   let elapsedTime = 0;
 
   while (!eventReceived && elapsedTime < maxDuration) {
@@ -455,7 +460,11 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
     elapsedTime += checkInterval;
     sleep(checkInterval);
   }
-
+  // if number equals 1, sleep for 1 second
+  // if (random === 1) {
+  //   console.log("Sleeping for 1 second");
+  //   eventReceived = false
+  // }
   return eventReceived;
 }
 
@@ -553,8 +562,8 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
   check(response, { 'SSE connection established': (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
-  const maxDuration = 10000; // 10 seconds
-  const checkInterval = 1000; // 1 second
+  const maxDuration = 10; // 10 seconds
+  const checkInterval = 1; // 1 second
   let elapsedTime = 0;
 
   while (!eventReceived && elapsedTime < maxDuration) {
@@ -660,7 +669,7 @@ export function acceptProofRequest(holderAccessToken, proofId, referent) {
     // console.log(`ProofId: ${proofId}`);
     return response;
   } catch (error) {
-    console.error(`Error accepting invitation: ${error.message}`);
+    console.error(`Error accepting proof request: ${error.message}`);
     throw error;
   }
 }
@@ -698,8 +707,8 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
   check(response, { 'SSE connection established': (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
-  const maxDuration = 10000; // 10 seconds
-  const checkInterval = 1000; // 1 second
+  const maxDuration = 10; // 10 seconds
+  const checkInterval = 1; // 1 second
   let elapsedTime = 0;
 
   while (!eventReceived && elapsedTime < maxDuration) {
@@ -742,6 +751,43 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
     return response;
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
+    throw error;
+  }
+}
+
+export function createSchema(bearerToken, schemaName, schemaVersion) {
+  const url = `${__ENV.CLOUDAPI_URL}/governance/v1/definitions/schemas`;
+  const params = {
+    headers: {
+      'Authorization': `Bearer ${bearerToken}`,
+    },
+    timeout: '120s'
+  };
+
+  try {
+    // Construct the request body including the invitation object
+    const requestBody = JSON.stringify({
+      "name": schemaName,
+      "version": schemaVersion,
+      "attribute_names": [
+        "date_of_birth",
+        "id_number",
+        "country_of_birth",
+        "citizen_status",
+        "date_of_issue",
+        "gender",
+        "surname",
+        "nationality",
+        "country_of_birth_iso_code",
+        "names"
+      ]
+    });
+
+    let response = http.post(url, requestBody, params);
+    console.log(`Response body: ${response.body}`);
+    return response;
+  } catch (error) {
+    console.error(`Error creating schema: ${error.message}`);
     throw error;
   }
 }

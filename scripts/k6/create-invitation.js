@@ -81,11 +81,11 @@ export function setup() {
 
   const holders = data.trim().split('\n').map(JSON.parse);
 
-  // Example usage of the loaded data
-  holders.forEach((holderData) => {
-    console.log(`Processing wallet ID: ${holderData.wallet_id}`);
-    // Your test logic here, e.g., make HTTP requests using the holderData
-  });
+  // // Example usage of the loaded data
+  // holders.forEach((holderData) => {
+  //   console.log(`Processing wallet ID: ${holderData.wallet_id}`);
+  //   // Your test logic here, e.g., make HTTP requests using the holderData
+  // });
 
   file.writeString(outputFilepath, '');
 

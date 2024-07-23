@@ -77,7 +77,7 @@ export default function(data) {
         console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
         return false;
       } else {
-        console.log(`Deleted holder tenant ${walletId} successfully.`);
+        // console.log(`Deleted holder tenant ${walletId} successfully.`);
         return true;
       }
     }

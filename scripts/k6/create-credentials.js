@@ -77,11 +77,11 @@ export function setup() {
 
   const holders = data.trim().split('\n').map(JSON.parse);
 
-  // Example usage of the loaded data
-  holders.forEach((holderData) => {
-    console.log(`Processing wallet ID: ${holderData.wallet_id}`);
-    // Your test logic here, e.g., make HTTP requests using the holderData
-  });
+  // // Example usage of the loaded data
+  // holders.forEach((holderData) => {
+  //   console.log(`Processing wallet ID: ${holderData.wallet_id}`);
+  //   // Your test logic here, e.g., make HTTP requests using the holderData
+  // });
 
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
@@ -179,14 +179,32 @@ export default function(data) {
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
 
-  const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+  // const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+  // check(createCredentialResponse, {
+  //   "Credential created successfully": (r) => {
+  //     if (r.status !== 200) {
+  //       throw new Error(`Unexpected response while creating credential: ${r.response}`);
+  //     }
+  //     return true;
+  //   }
+  // });
+
+  let createCredentialResponse;
+  try {
+      createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+  } catch (error) {
+      // console.error(`Error creating credential: ${error.message}`);
+      createCredentialResponse = { status: 500, response: error.message };
+  }
+
   check(createCredentialResponse, {
-    "Credential created successfully": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response while creating credential: ${r.response}`);
+      "Credential created successfully": (r) => {
+          if (r.status !== 200) {
+              console.error(`Unexpected response while creating credential: ${r.response}`);
+              return false;
+          }
+          return true;
       }
-      return true;
-    }
   });
 
   const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);

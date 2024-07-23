@@ -1,6 +1,6 @@
 import { sleep, check } from 'k6';
 import { SharedArray } from 'k6/data';
-import { getBearerToken } from './auth.js';
+import { getBearerToken, getGovernanceBearerToken } from './auth.js';
 import { Trend, Counter } from 'k6/metrics';
 import file from 'k6/x/file';
 import {
@@ -9,21 +9,17 @@ import {
   getAccessTokenByWalletId,
   deleteTenant,
   createIssuerTenant,
-  createInvitation,
-  acceptInvitation,
-  createCredential,
-  acceptCredential,
   createCredentialDefinition,
-  getCredentialIdByThreadId,
-  waitForSSEEvent,
-  waitForSSEEventConnection,
-  getCredentialDefinitionId
+  getCredentialDefinitionId,
+  createSchema
 } from './tenant.js';
 
 const vus = parseInt(__ENV.VUS);
 const iterations = parseInt(__ENV.ITERATIONS);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const holderPrefix = __ENV.HOLDER_PREFIX;
+const schemaName = __ENV.SCHEMA_NAME;
+const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export let options = {
   scenarios: {
@@ -72,6 +68,7 @@ const filepath = 'output/create-holders.json';
 
 export function setup() {
   const bearerToken = getBearerToken();
+  const governanceBearerToken = getGovernanceBearerToken();
   const issuers = [];
 
   file.writeString(filepath, '');
@@ -79,6 +76,7 @@ export function setup() {
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
     const credDefTag = walletName;
+    // const schemaId = __ENV.SCHEMA_ID;
 
     let issuerAccessToken;
     let issuerWalletId
@@ -124,7 +122,15 @@ export function setup() {
       // console.error(`Response body: ${credentialDefinitionId.body}`);
     }
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag);
+    const createSchemaResponse = createSchema(governanceBearerToken, schemaName, schemaVersion);
+    check(createSchemaResponse, {
+      "Schema created successfully (or existed already)": (r) => r.status === 200
+    });
+    const { id: schemaId } = JSON.parse(createSchemaResponse.body);
+
+    console.log(`Schema ID: ${schemaId}`);
+
+    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId);
     check(createCredentialDefinitionResponse, {
       "Credential definition created successfully": (r) => r.status === 200
     });

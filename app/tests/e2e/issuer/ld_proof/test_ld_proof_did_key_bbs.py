@@ -113,7 +113,7 @@ async def test_send_jsonld_key_bbs(
     )
 
     # Check if Alice received the credential
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},
@@ -241,7 +241,7 @@ async def test_send_jsonld_request(
     )
     assert all(result), "An expected webhook event was not returned"
 
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},
@@ -309,7 +309,7 @@ async def test_issue_jsonld_bbs(
     )
     assert all(result), "An expected webhook event was not returned"
 
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},

@@ -1,4 +1,4 @@
-FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.12-1.0.0rc4
+FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.12-1.0.0rc5
 
 USER root
 # install redis-events plugin

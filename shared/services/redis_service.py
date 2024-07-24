@@ -180,22 +180,29 @@ class RedisService:
             A set of Redis keys that match the input pattern.
         """
         collected_keys = set()
+        cursor = 0  # Starting cursor value for SCAN
         self.logger.trace("Starting SCAN to fetch keys matching: {}", match_pattern)
 
         try:
-            _, keys = self.redis.scan(
-                cursor=0,
-                match=match_pattern,
-                count=count,
-                target_nodes=RedisCluster.PRIMARIES,
-            )
-            if keys:
-                collected_keys = set(key.decode("utf-8") for key in keys)
-                self.logger.debug(
-                    "Scanned {} event keys from Redis", len(collected_keys)
+            while True:  # Loop until the cursor returned by SCAN is '0'
+                next_cursor, keys = self.redis.scan(
+                    cursor=cursor,
+                    match=match_pattern,
+                    count=count,
+                    target_nodes=RedisCluster.PRIMARIES,
                 )
-            else:
-                self.logger.trace("No keys found matching pattern in this batch.")
+                if keys:
+                    collected_keys = set(key.decode("utf-8") for key in keys)
+                    self.logger.debug(
+                        "Scanned {} event keys from Redis", len(collected_keys)
+                    )
+                else:
+                    self.logger.trace("No keys found matching pattern in this batch.")
+
+                if all(c == 0 for c in next_cursor.values()):
+                    self.logger.debug("Completed SCAN for pattern: %s", match_pattern)
+                    break  # Exit the loop
+                cursor += 1
         except Exception:  # pylint: disable=W0718
             self.logger.exception(
                 "An exception occurred when scanning for keys from redis. Continuing..."

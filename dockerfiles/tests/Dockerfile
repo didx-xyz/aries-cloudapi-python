@@ -2,14 +2,21 @@ FROM python:3.12-slim
 
 WORKDIR /tests
 
-COPY requirements.dev.txt .
-COPY requirements.txt .
-COPY app/requirements.txt app/
-COPY endorser/requirements.txt endorser/
-COPY trustregistry/requirements.txt trustregistry/
-COPY webhooks/requirements.txt webhooks/
+# Copy the pyproject.toml for each submodule
+COPY app/pyproject.toml app/
+COPY endorser/pyproject.toml endorser/
+COPY trustregistry/pyproject.toml trustregistry/
+COPY webhooks/pyproject.toml webhooks/
 
-RUN pip install --no-cache-dir -r requirements.txt --upgrade
+# Copy the lock files for each submodule
+COPY app/poetry.lock app/
+COPY endorser/poetry.lock endorser/
+COPY trustregistry/poetry.lock trustregistry/
+COPY webhooks/poetry.lock webhooks/
+
+# Copy and run the install dependencies script
+COPY scripts/install_all_dependencies.sh .
+RUN bash install_all_dependencies.sh
 
 COPY . .
 

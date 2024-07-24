@@ -885,8 +885,8 @@ jobs:
         id: build_image
         uses: docker/build-push-action@v5
         with:
-          context: .  # Context is the root of the repository
-          file: ./scripts/k6/Dockerfile  # Dockerfile name
+          context: .
+          file: ./scripts/k6/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

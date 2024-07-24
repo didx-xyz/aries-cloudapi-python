@@ -20,7 +20,7 @@ pydantic = "~2.8.2"
 pyjwt = "~2.8.0"
 PyYAML = "~6.0"
 typing-extensions = "~4.12.0"
-uvicorn = { version = "~0.30.0", extras = ["standard"] }
+uvicorn = { version = "~0.30.3", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.4.0"

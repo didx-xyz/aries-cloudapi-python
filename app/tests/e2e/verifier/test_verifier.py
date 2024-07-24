@@ -67,6 +67,11 @@ async def test_send_proof_request(
     )
     assert alice_connection_event["protocol_version"] == protocol_version
 
+    # Clean up:
+    await acme_client.delete(
+        VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
+    )
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
@@ -394,6 +399,10 @@ async def test_get_proof_and_get_proofs(
     assert exc.value.status_code == 422
     assert len(json.loads(exc.value.detail)["detail"]) == 3
 
+    # Clean up:
+    for proof_id in proof_ids:
+        await acme_client.delete(VERIFIER_BASE_PATH + f"/proofs/{proof_id}")
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
@@ -459,6 +468,11 @@ async def test_get_credentials_for_request(
         in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"]
     ]
+
+    # Clean up:
+    await acme_client.delete(
+        VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
+    )
 
 
 @pytest.mark.anyio

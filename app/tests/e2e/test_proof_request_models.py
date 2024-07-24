@@ -17,11 +17,6 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.xfail(
-    raises=HTTPException,
-    strict=True,
-    reason="Assert version and name are required fields, despite being optional according to ACA-Py models",
-)
 @pytest.mark.parametrize(
     "name, version, protocol_version",
     [
@@ -64,7 +59,9 @@ async def test_proof_model_failures(
             auto_verify=True,
         )
 
-        await acme_acapy_client.present_proof_v1_0.send_request_free(body=request_body)
+        acme_exchange_v1 = await acme_acapy_client.present_proof_v1_0.send_request_free(
+            body=request_body
+        )
     else:
         request_body = V20PresSendRequestRequest(
             auto_remove=False,
@@ -86,7 +83,9 @@ async def test_proof_model_failures(
             auto_verify=True,
         )
 
-        await acme_acapy_client.present_proof_v2_0.send_request_free(body=request_body)
+        acme_exchange_v2 = await acme_acapy_client.present_proof_v2_0.send_request_free(
+            body=request_body
+        )
 
     await check_webhook_state(
         client=alice_member_client,
@@ -109,18 +108,30 @@ async def test_proof_model_failures(
     # Accept proof request. This call will fail because the proof request is missing
     # the required fields (name and version). The send proof request call are missing
     # the required fields (name and version) and the ACA-Py models do not enforce these
-    await alice_member_client.post(
-        f"{VERIFIER_BASE_PATH}/accept-request",
-        json={
-            "proof_id": alice_proof_exchange_id,
-            "type": "indy",
-            "indy_presentation_spec": {
-                "requested_attributes": {
-                    "THE_SPEED": {"cred_id": referent, "revealed": True}
+    with pytest.raises(HTTPException) as exc:
+        await alice_member_client.post(
+            f"{VERIFIER_BASE_PATH}/accept-request",
+            json={
+                "proof_id": alice_proof_exchange_id,
+                "type": "indy",
+                "indy_presentation_spec": {
+                    "requested_attributes": {
+                        "THE_SPEED": {"cred_id": referent, "revealed": True}
+                    },
+                    "requested_predicates": {},
+                    "self_attested_attributes": {},
                 },
-                "requested_predicates": {},
-                "self_attested_attributes": {},
+                "dif_presentation_spec": {},
             },
-            "dif_presentation_spec": {},
-        },
-    )
+        )
+        assert exc.value.status_code == 422
+
+    # Clean up:
+    if protocol_version == "v1":
+        await acme_acapy_client.present_proof_v1_0.delete_record(
+            acme_exchange_v1.presentation_exchange_id
+        )
+    if protocol_version == "v2":
+        await acme_acapy_client.present_proof_v2_0.delete_record(
+            acme_exchange_v2.pres_ex_id
+        )

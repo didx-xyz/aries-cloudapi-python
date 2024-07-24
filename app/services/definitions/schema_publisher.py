@@ -1,12 +1,7 @@
 from logging import Logger
 from typing import List
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    SchemaGetResult,
-    SchemaSendRequest,
-    TxnOrSchemaSendResult,
-)
+from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CredentialSchema
@@ -21,7 +16,7 @@ class SchemaPublisher:
 
     async def publish_schema(
         self, schema_request: SchemaSendRequest
-    ) -> TxnOrSchemaSendResult:
+    ) -> CredentialSchema:
         try:
             result = await handle_acapy_call(
                 logger=self._logger,
@@ -32,6 +27,7 @@ class SchemaPublisher:
         except CloudApiException as e:
             if "already exist" in e.detail and e.status_code == 400:
                 result = await self._handle_existing_schema(schema_request)
+                return result
             else:
                 self._logger.warning(
                     "An unhandled Exception was caught while publishing schema: {}",
@@ -46,6 +42,8 @@ class SchemaPublisher:
             raise CloudApiException(
                 "An unexpected error occurred: could not publish schema."
             )
+
+        result = credential_schema_from_acapy(result.sent.var_schema)
         return result
 
     async def _handle_existing_schema(

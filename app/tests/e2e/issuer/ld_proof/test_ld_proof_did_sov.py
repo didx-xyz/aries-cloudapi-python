@@ -115,7 +115,7 @@ async def test_send_jsonld_credential_sov(
     )
 
     # Check if Alice received the credential
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},
@@ -131,6 +131,10 @@ async def test_send_jsonld_credential_sov(
     assert_that(received_credential).has_state("offer-received")
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_exchange_id"]).starts_with("v2")
+
+    # Clean up created offer
+    cred_ex_id = data["credential_exchange_id"]
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio
@@ -191,6 +195,10 @@ async def test_send_jsonld_oob_sov(
         state="offer-received",
     )
 
+    # Clean up created offer
+    cred_ex_id = data["credential_exchange_id"]
+    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+
 
 @pytest.mark.anyio
 async def test_send_jsonld_request_sov(
@@ -232,7 +240,7 @@ async def test_send_jsonld_request_sov(
         state="offer-received",
     )
 
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},
@@ -302,7 +310,7 @@ async def test_issue_jsonld_sov(
         state="offer-received",
     )
 
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"thread_id": thread_id},

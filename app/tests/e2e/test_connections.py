@@ -1,4 +1,5 @@
-from typing import Optional
+import asyncio
+from typing import List, Optional
 
 import pytest
 from assertpy import assert_that
@@ -6,7 +7,7 @@ from fastapi import HTTPException
 
 from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
-from app.tests.util.connections import create_bob_alice_connection
+from app.tests.util.connections import BobAliceConnect, create_bob_alice_connection
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -242,3 +243,91 @@ async def test_bob_and_alice_connect(
 
     assert "completed" in alice_connection["state"]
     assert "completed" in bob_connection["state"]
+
+
+@pytest.mark.anyio
+async def test_get_connections_paginated(
+    bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient
+):
+    num_connections_to_test = 5
+    test_alias = "test_pagination"
+
+    bob_alice_connections: List[BobAliceConnect] = []
+    for _ in range(num_connections_to_test):
+        bob_and_alice_connection = await create_bob_alice_connection(
+            alice_member_client, bob_member_client, alias=test_alias
+        )
+        bob_alice_connections += (bob_and_alice_connection,)
+
+    # Test different limits
+    for limit in range(1, num_connections_to_test + 2):
+        num_tries = 0
+        retry = True
+        while retry and num_tries < 5:  # Handle case where record doesn't exist yet
+            response = await alice_member_client.get(
+                BASE_PATH,
+                params={
+                    "alias": test_alias,
+                    "limit": limit,
+                },
+            )
+
+            connections = response.json()
+            if len(connections) != min(limit, num_connections_to_test):
+                num_tries += 1
+                await asyncio.sleep(0.2)
+            else:
+                retry = False
+        assert (
+            not retry
+        ), f"Expected {limit} records, got {len(connections)}: {connections}"
+
+    # Test offset greater than number of records
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={
+            "alias": test_alias,
+            "limit": 1,
+            "offset": num_connections_to_test,
+        },
+    )
+    connections = response.json()
+    assert len(connections) == 0
+
+    # Test fetching unique records with pagination
+    # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
+    # prev_connections = []
+    # for offset in range(num_connections_to_test):
+    #     response = await alice_member_client.get(
+    #         BASE_PATH,
+    #         params={
+    #             "alias": test_alias,
+    #             "limit": 1,
+    #             "offset": offset,
+    #         },
+    #     )
+
+    #     connections = response.json()
+    #     assert len(connections) == 1
+
+    #     record = connections[0]
+    #     assert record not in prev_connections
+    #     prev_connections += (record,)
+
+    # Test invalid limit and offset values
+    invalid_params = [
+        {"limit": -1},  # must be positive
+        {"offset": -1},  # must be positive
+        {"limit": 0},  # must be greater than 0
+        {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
+    ]
+
+    for params in invalid_params:
+        with pytest.raises(HTTPException) as exc:
+            await alice_member_client.get(BASE_PATH, params=params)
+        assert exc.value.status_code == 422
+
+    # Clean up connections
+    for conn in bob_alice_connections:
+        await alice_member_client.delete(f"{BASE_PATH}/{conn.alice_connection_id}")
+        await bob_member_client.delete(f"{BASE_PATH}/{conn.bob_connection_id}")

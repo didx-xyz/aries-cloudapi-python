@@ -19,6 +19,7 @@ from app.util.acapy_verifier_utils import (
     assert_valid_verifier,
     get_verifier_by_version,
 )
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from shared.log_config import get_logger
 from shared.models.presentation_exchange import (
     PresentationExchange,
@@ -324,11 +325,13 @@ async def reject_proof_request(
     response_model=List[PresentationExchange],
 )
 async def get_proof_records(
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
     thread_id: Optional[UUID] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[PresentationExchange]:
     """
     Get all presentation exchange records for this tenant
@@ -339,6 +342,8 @@ async def get_proof_records(
 
     Parameters (Optional):
     ---
+        limit: int: The maximum number of records to retrieve
+        offset: int: The offset to start retrieving records from
         connection_id: str
         role: Role: "prover", "verifier"
         state: State: "presentation-received", "presentation-sent", "proposal-received", "proposal-sent",
@@ -358,6 +363,8 @@ async def get_proof_records(
             logger.debug("Fetching v1 proof records")
             v1_records = await VerifierFacade.V1.value.get_proof_records(
                 controller=aries_controller,
+                limit=limit,
+                offset=offset,
                 connection_id=connection_id,
                 role=role,
                 state=back_to_v1_presentation_state(state) if state else None,
@@ -366,6 +373,8 @@ async def get_proof_records(
             logger.debug("Fetching v2 proof records")
             v2_records = await VerifierFacade.V2.value.get_proof_records(
                 controller=aries_controller,
+                limit=limit,
+                offset=offset,
                 connection_id=connection_id,
                 role=role,
                 state=state,

@@ -2,7 +2,7 @@ FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.12-1.0.0rc4
 
 USER root
 # install redis-events plugin
-RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-07-11#subdirectory=redis_events
+RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-07-18#subdirectory=redis_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

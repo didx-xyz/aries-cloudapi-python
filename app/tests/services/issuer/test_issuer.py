@@ -98,6 +98,8 @@ async def test_get_credentials(
         to_async(v1_records_no_conn_id)
     ), when(IssuerV2).get_records(...).thenReturn(to_async(v2_records_no_conn_id)):
         result = await test_module.get_credentials(
+            limit=100,
+            offset=0,
             connection_id=None,
             state=None,
             thread_id=None,
@@ -109,6 +111,8 @@ async def test_get_credentials(
 
         verify(IssuerV1).get_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id=None,
             state=None,
             thread_id=None,
@@ -116,6 +120,8 @@ async def test_get_credentials(
         )
         verify(IssuerV2).get_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id=None,
             state=None,
             thread_id=None,
@@ -126,6 +132,8 @@ async def test_get_credentials(
         IssuerV2
     ).get_records(...).thenReturn(to_async(v2_records)):
         result = await test_module.get_credentials(
+            limit=100,
+            offset=0,
             connection_id="conn_id",
             role="issuer",
             state="done",
@@ -136,6 +144,8 @@ async def test_get_credentials(
         assert result == v1_records + v2_records
         verify(IssuerV1).get_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id="conn_id",
             role="issuer",
             state="credential_acked",
@@ -143,6 +153,8 @@ async def test_get_credentials(
         )
         verify(IssuerV2).get_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id="conn_id",
             role="issuer",
             state="done",

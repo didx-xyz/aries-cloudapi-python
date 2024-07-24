@@ -46,7 +46,7 @@ Without using `make`, you can run:
 Install the requirements:
 
 ```bash
-pip install -r requirements.txt
+bash scripts/install_all_dependencies.sh
 ```
 
 To start the containers and run the tests:

@@ -423,6 +423,8 @@ async def test_get_proof_records(
     # V1 and V2
     with when(VerifierV1).get_proof_records(
         controller=mock_agent_controller,
+        limit=100,
+        offset=0,
         connection_id=None,
         role=None,
         state=None,
@@ -431,6 +433,8 @@ async def test_get_proof_records(
         VerifierV2
     ).get_proof_records(
         controller=mock_agent_controller,
+        limit=100,
+        offset=0,
         connection_id=None,
         role=None,
         state=None,
@@ -440,6 +444,8 @@ async def test_get_proof_records(
     ):
         result = await test_module.get_proof_records(
             auth=mock_tenant_auth,
+            limit=100,
+            offset=0,
             connection_id=None,
             role=None,
             state=None,
@@ -452,6 +458,8 @@ async def test_get_proof_records(
         ]
         verify(VerifierV1).get_proof_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id=None,
             role=None,
             state=None,
@@ -459,6 +467,8 @@ async def test_get_proof_records(
         )
         verify(VerifierV2).get_proof_records(
             controller=mock_agent_controller,
+            limit=100,
+            offset=0,
             connection_id=None,
             role=None,
             state=None,

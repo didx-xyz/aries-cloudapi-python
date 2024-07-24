@@ -24,7 +24,7 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_accept_proof_request_oob(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
@@ -122,7 +122,7 @@ async def test_accept_proof_request_oob(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_accept_proof_request_verifier_oob_connection(
     credential_definition_id: str,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument

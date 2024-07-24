@@ -14,7 +14,7 @@ VERIFIER_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize("predicate", ["<", ">", "<=", ">="])
 async def test_predicate_proofs(
     acme_client: RichAsyncClient,

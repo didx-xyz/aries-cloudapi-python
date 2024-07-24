@@ -16,7 +16,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [False, True])
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

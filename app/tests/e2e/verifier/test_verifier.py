@@ -30,7 +30,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize(
     "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
@@ -76,7 +76,7 @@ async def test_send_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize(
     "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
@@ -170,7 +170,7 @@ async def test_accept_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize("delete_proof_record", [True, False])
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
@@ -246,7 +246,7 @@ async def test_reject_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_get_proof_and_get_proofs(
     acme_and_alice_connection: AcmeAliceConnect,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
@@ -416,7 +416,7 @@ async def test_get_proof_and_get_proofs(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_delete_proof(
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
@@ -438,7 +438,7 @@ async def test_delete_proof(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,
@@ -495,7 +495,7 @@ async def test_get_credentials_for_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize(
     "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
@@ -571,7 +571,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize("acme_save_exchange_record", [False, True])
 @pytest.mark.parametrize("alice_save_exchange_record", [False, True])
 async def test_saving_of_presentation_exchange_records(

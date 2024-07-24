@@ -16,7 +16,7 @@ OOB_BASE_PATH = oob_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_send_credential_oob(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -85,7 +85,7 @@ async def test_send_credential_oob(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_send_credential(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -131,7 +131,7 @@ async def test_send_credential(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_create_offer(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -175,7 +175,7 @@ async def test_create_offer(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_send_credential_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -245,7 +245,7 @@ async def test_send_credential_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,

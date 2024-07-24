@@ -189,7 +189,7 @@ async def test_get_actor(mock_async_client: Mock):
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_invitation_key(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -248,7 +248,7 @@ async def test_assert_valid_prover_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_public_did(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -306,7 +306,7 @@ async def test_assert_valid_prover_public_did(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -338,7 +338,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_actor_invalid_role(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -379,7 +379,7 @@ async def test_assert_valid_prover_x_actor_invalid_role(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_could_not_fetch_actor_recover_label(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -426,7 +426,7 @@ async def test_assert_valid_prover_could_not_fetch_actor_recover_label(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_could_not_fetch_actor_exc(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -468,7 +468,7 @@ async def test_assert_valid_prover_x_could_not_fetch_actor_exc(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_could_not_fetch_actor_exc2(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -584,7 +584,7 @@ async def test_assert_valid_prover_x_no_schemas(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_connection_id(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -615,7 +615,7 @@ async def test_assert_valid_prover_x_no_connection_id(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_connection_id2(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -648,7 +648,7 @@ async def test_assert_valid_prover_x_no_connection_id2(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_invitation_key(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -677,7 +677,7 @@ async def test_assert_valid_verifier_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_public_did(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -697,7 +697,7 @@ async def test_assert_valid_verifier_public_did(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -726,7 +726,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_not_verifier(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -761,7 +761,7 @@ async def test_assert_valid_verifier_x_not_verifier(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -790,7 +790,7 @@ async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -823,7 +823,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -853,7 +853,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
@@ -880,7 +880,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc4(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):

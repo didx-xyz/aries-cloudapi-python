@@ -18,3 +18,35 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+
+  # Maintain dependencies for the App submodule
+  - package-ecosystem: pip
+    directory: /app
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "07:00"
+
+  # Maintain dependencies for the Endorser submodule
+  - package-ecosystem: pip
+    directory: /endorser
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "07:00"
+
+  # Maintain dependencies for the Trust Registry submodule
+  - package-ecosystem: pip
+    directory: /trustregistry
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "07:00"
+
+  # Maintain dependencies for Webhooks Service submodule
+  - package-ecosystem: pip
+    directory: /webhooks
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "07:00"

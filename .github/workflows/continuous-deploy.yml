@@ -895,14 +895,16 @@ jobs:
             type=registry,ref=ghcr.io/${{ github.repository_owner }}/xk6:latest
           cache-to: type=gha,mode=max,scope=build-xk6
 
-      - name: Run k6
+      - name: Run k6 tests
         run: |
           docker run --rm \
-            -v $(pwd)/scripts/k6:/scripts \
-            -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
-            -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
-            -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
-            -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
-            -e SKIP_DELETE_ISSUERS=true \
-            ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
-            run /scripts/main.js
+          -v $(pwd)/scripts/k6:/scripts \
+          -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
+          -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
+          -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
+          -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
+          -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
+          -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
+          -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
+          ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
+          bash /scripts/run_tests.sh

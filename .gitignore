@@ -138,13 +138,13 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-secret.sh
 
 # Spyder project settings
 .spyderproject

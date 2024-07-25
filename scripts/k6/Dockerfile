@@ -16,5 +16,14 @@ FROM alpine:latest
 # Copy the built xk6 binary from the builder stage
 COPY --from=builder /usr/local/bin/xk6 /usr/local/bin/xk6
 
-# Set the entrypoint to xk6
-ENTRYPOINT ["/usr/local/bin/xk6"]
+# Install Tini
+RUN apk add --no-cache tini
+
+# Set the entrypoint to Tini
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Run your program under Tini
+CMD ["/usr/local/bin/xk6"]
+
+# # Set the entrypoint to xk6
+# ENTRYPOINT ["/usr/local/bin/xk6"]

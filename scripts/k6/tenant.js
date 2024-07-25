@@ -1,7 +1,7 @@
-import http from 'k6/http';
+import http from "k6/http";
 import sse from "k6/x/sse"
-import { check, sleep } from 'k6';
-import { Trend, Counter } from 'k6/metrics';
+import { check, sleep } from "k6";
+import { Trend, Counter } from "k6/metrics";
 // import { sleep } from 'k6';
 
 // let customDuration = new Trend('custom_duration', true);
@@ -24,8 +24,8 @@ export function createTenant(bearerToken, wallet) {
   });
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
-      'Content-Type': 'application/json'
+      "Authorization": `Bearer ${bearerToken}`,
+      "Content-Type": 'application/json'
     }
   };
 
@@ -48,7 +48,7 @@ export function createTenant(bearerToken, wallet) {
     // Request failed
     console.warn(`Request failed for VU: ${__VU}, ITER: ${__ITER}`);
     logError(response, payload);
-    throw new Error(`Failed to create tenant`);
+    throw new Error("Failed to create tenant");
   }
 }
 
@@ -69,7 +69,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
     if (Array.isArray(responseData) && responseData.length > 0) {
       const firstItem = responseData[0];
       // Safely access wallet_id without optional chaining
-      if (firstItem && firstItem.hasOwnProperty('wallet_id')) {
+      if (firstItem && firstItem.hasOwnProperty("wallet_id")) {
         return firstItem.wallet_id;
       }
     }
@@ -148,7 +148,7 @@ export function deleteTenant(bearerToken, walletId) {
 
     if (response.status === 200) {
       // Request was successful
-      if (responseBody === 'null') {
+      if (responseBody === "null") {
         // console.log(`Wallet ${walletId} deleted successfully.`);
       } else {
         console.error(`Failed to delete wallet ${walletId}. Response body: ${responseBody}`);
@@ -203,7 +203,7 @@ export function createInvitation(bearerToken, issuerAccessToken) {
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
-      'x-api-key': issuerAccessToken
+      "x-api-key": issuerAccessToken
     }
   };
 
@@ -220,7 +220,7 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/connections/accept-invitation`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
+      "x-api-key": holderAccessToken,
       'Content-Type': 'application/json'
     }
   };

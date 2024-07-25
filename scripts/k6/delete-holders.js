@@ -1,14 +1,14 @@
 /*global __ENV*/
 /*eslint no-undef: "error"*/
 
-import { sleep, check } from 'k6';
-import { SharedArray } from 'k6/data';
-import { getBearerToken } from './auth.js';
-import { Trend, Counter } from 'k6/metrics';
+import { sleep, check } from "k6";
+import { SharedArray } from "k6/data";
+import { getBearerToken } from "./auth.js";
+import { Trend, Counter } from "k6/metrics";
 import {
   getWalletIdByWalletName,
   deleteTenant,
-} from './tenant.js';
+} from "./tenant.js";
 
 const vus = parseInt(__ENV.VUS);
 const iterations = parseInt(__ENV.ITERATIONS);
@@ -17,31 +17,31 @@ const holderPrefix = __ENV.HOLDER_PREFIX;
 export let options = {
   scenarios: {
     default: {
-      executor: 'per-vu-iterations',
-      vus: vus,
-      iterations: iterations,
-      maxDuration: '120s',
+      executor: "per-vu-iterations",
+      vus,
+      iterations,
+      maxDuration: "120s",
     },
   },
-  setupTimeout: '180s', // Increase the setup timeout to 120 seconds
-  teardownTimeout: '120s', // Increase the teardown timeout to 120 seconds
+  setupTimeout: "180s", // Increase the setup timeout to 120 seconds
+  teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    'http_req_duration{scenario:default}': [`max>=0`],
-    'http_reqs{scenario:default}': ['count >= 0'],
-    'iteration_duration{scenario:default}': ['max>=0'],
-    'checks': ['rate==1']
+    "http_req_duration{scenario:default}": [`max>=0`],
+    "http_reqs{scenario:default}": ['count >= 0'],
+    "iteration_duration{scenario:default}": ['max>=0'],
+    "checks": ['rate==1']
   },
   tags: {
-    test_run_id: 'phased-issuance',
-    test_phase: 'delete-holders',
+    test_run_id: "phased-issuance",
+    test_phase: "delete-holders",
   },
 };
 
-const testFunctionReqs = new Counter('test_function_reqs');
+const testFunctionReqs = new Counter("test_function_reqs");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray('wallets', function() {
+const wallets = new SharedArray("wallets", function() {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
@@ -54,7 +54,7 @@ const wallets = new SharedArray('wallets', function() {
 
 const numIssuers = 1;
 let issuers = [];
-const filepath = 'output/create-holders.json';
+const filepath = "output/create-holders.json";
 
 export function setup() {
   const bearerToken = getBearerToken();

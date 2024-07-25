@@ -1,13 +1,12 @@
 /*global __ENV*/
 /*eslint no-undef: "error"*/
 
-import { check } from 'k6';
-import { SharedArray } from 'k6/data';
-import { getBearerToken } from './auth.js';
-import { Trend, Counter } from 'k6/metrics';
-import file from 'k6/x/file';
-import sleep from 'k6';
-// import exec from 'k6/execution';
+import { check } from "k6";
+import { SharedArray } from "k6/data";
+import { getBearerToken } from "./auth.js";
+import { Trend, Counter } from "k6/metrics";
+import file from "k6/x/file";
+import sleep from "k6";
 import {
   createTenant,
   getWalletIdByWalletName,
@@ -23,7 +22,7 @@ import {
   waitForSSEEvent,
   waitForSSEEventConnection,
   getCredentialDefinitionId
-} from './tenant.js';
+} from "./tenant.js";
 
 const vus = parseInt(__ENV.VUS);
 const iterations = parseInt(__ENV.ITERATIONS);
@@ -32,39 +31,39 @@ const issuerPrefix = __ENV.ISSUER_PREFIX;
 export let options = {
   scenarios: {
     default: {
-      executor: 'per-vu-iterations',
-      vus: vus,
-      iterations: iterations,
-      maxDuration: '24h',
+      executor: "per-vu-iterations",
+      vus,
+      iterations,
+      maxDuration: "24h",
     },
   },
-  setupTimeout: '120s', // Increase the setup timeout to 120 seconds
-  teardownTimeout: '120s', // Increase the teardown timeout to 120 seconds
+  setupTimeout: "120s", // Increase the setup timeout to 120 seconds
+  teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    'http_req_duration{scenario:default}': [`max>=0`],
-    'http_reqs{scenario:default}': ['count >= 0'],
-    'http_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    'iteration_duration{scenario:default}': ['max>=0'],
+    "http_req_duration{scenario:default}": [`max>=0`],
+    "http_reqs{scenario:default}": ['count >= 0'],
+    "http_reqs{my_custom_tag:specific_function}": ['count>=0'],
+    "iteration_duration{scenario:default}": ['max>=0'],
     // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
   },
   tags: {
-    test_run_id: 'phased-issuance',
-    test_phase: 'create-invitation',
+    test_run_id: "phased-issuance",
+    test_phase: "create-invitation",
   },
 };
 
-const testFunctionReqs = new Counter('test_function_reqs');
-const mainIterationDuration = new Trend('main_iteration_duration');
+const testFunctionReqs = new Counter("test_function_reqs");
+const mainIterationDuration = new Trend("main_iteration_duration");
 
-const inputFilepath = 'output/create-holders.json';
-const data = open(inputFilepath, 'r');
-const outputFilepath = 'output/create-invitation.json';
+const inputFilepath = "output/create-holders.json";
+const data = open(inputFilepath, "r");
+const outputFilepath = "output/create-invitation.json";
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray('wallets', function() {
+const wallets = new SharedArray("wallets", function() {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
@@ -82,7 +81,7 @@ export function setup() {
   const bearerToken = getBearerToken();
   const issuers = [];
 
-  const holders = data.trim().split('\n').map(JSON.parse);
+  const holders = data.trim().split("\n").map(JSON.parse);
 
   // // Example usage of the loaded data
   // holders.forEach((holderData) => {
@@ -90,7 +89,7 @@ export function setup() {
   //   // Your test logic here, e.g., make HTTP requests using the holderData
   // });
 
-  file.writeString(outputFilepath, '');
+  file.writeString(outputFilepath, "");
 
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
@@ -103,7 +102,7 @@ export function setup() {
     if (issuerWalletId !== null) {
       // Retrieve the access token using the wallet ID
       issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
-      if (typeof issuerAccessToken === 'string') {
+      if (typeof issuerAccessToken === "string") {
         // Access token retrieved successfully
         console.log(`Access token retrieved for wallet ID ${issuerWalletId}`);
       } else {
@@ -132,7 +131,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId: credentialDefinitionId
+        credentialDefinitionId
       });
       continue;
     } else {
@@ -222,9 +221,9 @@ export default function(data) {
 
   const waitForSSEEventConnectionResponse = waitForSSEEventConnection(wallet.access_token, wallet.wallet_id, holderInvitationConnectionId);
   check(waitForSSEEventConnectionResponse, {
-    'SSE Event received successfully: connection-ready': (r) => {
+    "SSE Event received successfully: connection-ready": (r) => {
       if (!r) {
-        throw new Error('SSE event was not received successfully');
+        throw new Error("SSE event was not received successfully");
       }
       return true;
     },

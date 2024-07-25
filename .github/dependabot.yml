@@ -18,6 +18,8 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+      groups:
+        python:
 
   # Maintain dependencies for the App submodule
   - package-ecosystem: pip
@@ -26,6 +28,8 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+      groups:
+        python:
 
   # Maintain dependencies for the Endorser submodule
   - package-ecosystem: pip
@@ -34,6 +38,8 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+      groups:
+        python:
 
   # Maintain dependencies for the Trust Registry submodule
   - package-ecosystem: pip
@@ -42,6 +48,8 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+      groups:
+        python:
 
   # Maintain dependencies for Webhooks Service submodule
   - package-ecosystem: pip
@@ -50,3 +58,5 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
+      groups:
+        python:

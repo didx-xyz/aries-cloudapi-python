@@ -9,7 +9,7 @@ run_test() {
         echo "Test $3 failed with exit code $exit_code"
         echo "Deleting Holders"
         xk6 run -e SKIP_DELETE_ISSUERS=true -e SKIP_DELETE_HOLDERS=false delete-holders.js
-        echo "Exiting with exit code $exit_code"
+        echo "Exiting with exit code $exit_code ..."
         exit $exit_code
     fi
 }

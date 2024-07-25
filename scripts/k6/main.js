@@ -1,7 +1,10 @@
-import { check } from 'k6';
-import { SharedArray } from 'k6/data';
-import { getBearerToken } from './auth.js';
-import { Trend, Counter } from 'k6/metrics';
+/*global __ENV*/
+/*eslint no-undef: "error"*/
+
+import { check } from "k6";
+import { SharedArray } from "k6/data";
+import { getBearerToken } from "./auth.js";
+import { Trend, Counter } from "k6/metrics";
 import {
   createTenant,
   getWalletIdByWalletName,
@@ -17,29 +20,29 @@ import {
   waitForSSEEvent,
   waitForSSEEventConnection,
   getCredentialDefinitionId
-} from './tenant.js';
+} from "./tenant.js";
 
 export let options = {
   vus: 2, // number of VUs to run
   iterations: 2, // total number of iterations (global)
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    'http_req_duration{scenario:default}': [`max>=0`],
-    'http_reqs{scenario:default}': ['count >= 0'],
-    'iteration_duration{scenario:default}': ['max>=0'],
-    'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    'specific_function_reqs{scenario:default}': ['count>=0'],
+    "http_req_duration{scenario:default}": [`max>=0`],
+    "http_reqs{scenario:default}": ['count >= 0'],
+    "iteration_duration{scenario:default}": ['max>=0'],
+    "specific_function_reqs{my_custom_tag:specific_function}": ['count>=0'],
+    "specific_function_reqs{scenario:default}": ['count>=0'],
   },
   tags: {
-    test_run_id: 'sequential-issuance',
+    test_run_id: "sequential-issuance",
   },
 };
 
-const specificFunctionReqs = new Counter('specific_function_reqs');
-const mainIterationDuration = new Trend('main_iteration_duration');
+const specificFunctionReqs = new Counter("specific_function_reqs");
+const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray('wallets', function() {
+const wallets = new SharedArray("wallets", function() {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
@@ -68,7 +71,7 @@ export function setup() {
     if (issuerWalletId !== null) {
       // Retrieve the access token using the wallet ID
       issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
-      if (typeof issuerAccessToken === 'string') {
+      if (typeof issuerAccessToken === "string") {
         // Access token retrieved successfully
         console.log(`Access token retrieved via wallet ID for ${issuerWalletId}`);
       } else {
@@ -97,7 +100,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId: credentialDefinitionId
+        credentialDefinitionId
       });
       continue;
     } else {
@@ -179,9 +182,9 @@ export default function(data) {
 
   const waitForSSEEventConnectionResponse = waitForSSEEventConnection(holderAccessToken, walletId, holderInvitationConnectionId);
   check(waitForSSEEventConnectionResponse, {
-    'SSE Event received successfully: connection-ready': (r) => {
+    "SSE Event received successfully: connection-ready": (r) => {
       if (!r) {
-        throw new Error('SSE event was not received successfully');
+        throw new Error("SSE event was not received successfully");
       }
       return true;
     },
@@ -201,7 +204,7 @@ export default function(data) {
 
   const waitForSSEEventResponse = waitForSSEEvent(holderAccessToken, walletId, threadId);
   check(waitForSSEEventResponse, {
-    'SSE Event received successfully: offer-received': (r) => {
+    "SSE Event received successfully: offer-received": (r) => {
       if (!r) {
         throw new Error('SSE event was not received successfully');
       }
@@ -221,7 +224,7 @@ export default function(data) {
     }
   });
 
-  specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  specificFunctionReqs.add(1, { my_custom_tag: "specific_function" });
 
   const end = Date.now();
   const duration = end - start;
@@ -233,7 +236,7 @@ export function teardown(data) {
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
 
-  if (__ENV.SKIP_DELETE_ISSUERS !== 'true') {
+  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
     for (const issuer of issuers) {
       const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
       check(deleteIssuerResponse, {
@@ -249,7 +252,7 @@ export function teardown(data) {
       });
     }
   } else {
-    console.log('Skipping deletion of issuer tenants.');
+    console.log("Skipping deletion of issuer tenants.");
   }
   // // Delete holder tenants
   for (const wallet of wallets) {

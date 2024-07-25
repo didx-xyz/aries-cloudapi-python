@@ -1,4 +1,7 @@
-import http from 'k6/http';
+/*global __ENV*/
+/*eslint no-undef: "error"*/
+
+import http from "k6/http";
 
 export function getBearerToken() {
   const url = `${__ENV.CLOUDAPI_URL}/${__ENV.OAUTH_ENDPOINT}`;

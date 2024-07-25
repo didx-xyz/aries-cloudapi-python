@@ -168,7 +168,7 @@ export default function(data) {
   const createTenantResponse = createTenant(bearerToken, wallet);
   check(createTenantResponse, {
     "Create Tenant Response status code is 200": (r) => {
-      if (r.status == 200) {
+      if (r.status !== 200) {
         throw new Error(`Unexpected response status: ${r.status}`);
       }
       return true;

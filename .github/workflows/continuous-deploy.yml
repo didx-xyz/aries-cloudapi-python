@@ -913,3 +913,4 @@ jobs:
           --workdir /scripts \
           ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
           /scripts/run_tests.sh
+        shell: bash

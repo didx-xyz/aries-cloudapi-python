@@ -1,7 +1,7 @@
-import { check, sleep } from 'k6';
-import { SharedArray } from 'k6/data';
-import { getBearerToken } from './auth.js';
-import { Trend, Counter } from 'k6/metrics';
+import { check, sleep } from "k6";
+import { SharedArray } from "k6/data";
+import { getBearerToken } from "./auth.js";
+import { Trend, Counter } from "k6/metrics";
 import {
   getWalletIdByWalletName,
   getAccessTokenByWalletId,
@@ -20,7 +20,7 @@ import {
   acceptProofRequest,
   waitForSSEProofDone,
   getProof,
-} from './tenant.js';
+} from "./tenant.js";
 
 const vus = parseInt(__ENV.VUS);
 const iterations = parseInt(__ENV.ITERATIONS);
@@ -30,33 +30,33 @@ const issuerPrefix = __ENV.ISSUER_PREFIX;
 export let options = {
   scenarios: {
     default: {
-      executor: 'per-vu-iterations',
-      vus: vus,
-      iterations: iterations,
-      maxDuration: '24h',
+      executor: "per-vu-iterations",
+      vus,
+      iterations,
+      maxDuration: "24h",
     },
   },
-  setupTimeout: '180s', // Increase the setup timeout to 120 seconds
-  teardownTimeout: '180s', // Increase the teardown timeout to 120 seconds
+  setupTimeout: "180s", // Increase the setup timeout to 120 seconds
+  teardownTimeout: "180s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    'http_req_duration{scenario:default}': [`max>=0`],
-    'http_reqs{scenario:default}': ['count >= 0'],
-    'iteration_duration{scenario:default}': ['max>=0'],
+    "http_req_duration{scenario:default}": [`max>=0`],
+    "http_reqs{scenario:default}": ['count >= 0'],
+    "iteration_duration{scenario:default}": ['max>=0'],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
-    test_run_id: 'phased-issuance',
-    test_phase: 'create-proofs',
+    test_run_id: "phased-issuance",
+    test_phase: "create-proofs",
   },
 };
 
-const inputFilepath = 'output/create-invitation.json';
-const data = open(inputFilepath, 'r');
+const inputFilepath = "output/create-invitation.json";
+const data = open(inputFilepath, "r");
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
-const testFunctionReqs = new Counter('test_function_reqs');
+const testFunctionReqs = new Counter("test_function_reqs");
 // const mainIterationDuration = new Trend('main_iteration_duration');
 
 // Seed data: Generating a list of options.iterations unique wallet names
@@ -78,7 +78,7 @@ export function setup() {
   const bearerToken = getBearerToken();
   const issuers = [];
 
-  const holders = data.trim().split('\n').map(JSON.parse);
+  const holders = data.trim().split("\n").map(JSON.parse);
 
   // // Example usage of the loaded data
   // holders.forEach((holderData) => {
@@ -97,7 +97,7 @@ export function setup() {
     if (issuerWalletId !== null) {
       // Retrieve the access token using the wallet ID
       issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
-      if (typeof issuerAccessToken === 'string') {
+      if (typeof issuerAccessToken === "string") {
         // Access token retrieved successfully
         console.log(`Access token retrieved for wallet ID ${issuerWalletId}`);
       } else {
@@ -126,7 +126,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId: credentialDefinitionId
+        credentialDefinitionId
       });
       continue;
     } else {
@@ -203,9 +203,9 @@ export default function(data) {
 
   const waitForSSEEventReceivedResponse = waitForSSEEventReceived(wallet.access_token, wallet.wallet_id, threadId);
   check(waitForSSEEventReceivedResponse, {
-    'SSE Event received successfully: request-recevied': (r) => {
+    "SSE Event received successfully: request-recevied": (r) => {
       if (!r) {
-        throw new Error('SSE event was not received successfully');
+        throw new Error("SSE event was not received successfully");
       }
       return true;
     },
@@ -217,7 +217,7 @@ export default function(data) {
 
   const acceptProofResponse = acceptProofRequest(wallet.access_token, proofId, referent);
   check(acceptProofResponse, {
-    'Proof accepted successfully': (r) => {
+    "Proof accepted successfully": (r) => {
       if (r.status !== 200) {
         throw new Error(`Unexpected response while accepting proof: ${r.response}`);
       }
@@ -227,9 +227,9 @@ export default function(data) {
 
   const waitForSSEProofDoneRequest = waitForSSEProofDone(issuer.accessToken, issuer.walletId, threadId);
   check(waitForSSEProofDoneRequest, {
-    'SSE Proof Request state: done': (r) => {
+    "SSE Proof Request state: done": (r) => {
       if (!r) {
-        throw new Error('SSE proof done was not successful');
+        throw new Error("SSE proof done was not successful");
       }
       return true;
     },
@@ -244,7 +244,7 @@ export default function(data) {
       getProofResponse = { status: 500, response: error.message };
   }
   check(getProofResponse, {
-    'Proof received successfully': (r) => {
+    "Proof received successfully": (r) => {
       if (r.status !== 200) {
         throw new Error(`Unexpected response while getting proof: ${r.response}`);
       }
@@ -262,7 +262,7 @@ export function teardown(data) {
 
   // console.log(__ENV.SKIP_DELETE_ISSUERS)
 
-  if (__ENV.SKIP_DELETE_ISSUERS !== 'true') {
+  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
     for (const issuer of issuers) {
       const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
       check(deleteIssuerResponse, {

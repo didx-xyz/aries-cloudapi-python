@@ -1,3 +1,6 @@
+/*global __ENV*/
+/*eslint no-undef: "error"*/
+
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { getBearerToken } from './auth.js';

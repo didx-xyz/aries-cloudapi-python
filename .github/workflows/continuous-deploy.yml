@@ -908,8 +908,7 @@ jobs:
           -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
           -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
           -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
-          --entrypoint /bin/sh \
           --workdir /scripts \
           ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
-          /scripts/run_tests.sh
+          /bin/sh /scripts/run_tests.sh
         shell: bash

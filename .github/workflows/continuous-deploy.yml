@@ -894,10 +894,13 @@ jobs:
             type=registry,ref=ghcr.io/${{ github.repository_owner }}/xk6:latest
           cache-to: type=gha,mode=max,scope=build-xk6
 
+      - name: Prepare output directory
+        run: mkdir -p ${{ github.workspace }}/scripts/k6/output && chmod 777 ${{ github.workspace }}/scripts/k6/output
+
       - name: Run k6 tests
         run: |
           docker run --rm \
-          -v $(pwd)/scripts/k6:/scripts \
+          -v ${{ github.workspace }}/scripts/k6:/scripts \
           -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
           -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
           -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
@@ -905,5 +908,7 @@ jobs:
           -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
           -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
           -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
+          --entrypoint /bin/sh \
+          --workdir /scripts \
           ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
-          bash /scripts/run_tests.sh
+          /scripts/run_tests.sh

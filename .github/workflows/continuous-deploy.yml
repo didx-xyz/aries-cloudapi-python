@@ -910,6 +910,7 @@ jobs:
           -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
           -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
           --workdir /scripts \
+          --entrypoint /bin/sh \
           ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
-          /bin/sh /scripts/run_tests.sh
+          /scripts/run_tests.sh
         shell: bash

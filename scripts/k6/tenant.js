@@ -347,7 +347,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
@@ -687,10 +687,10 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
   let eventReceived = false;
 
   const response = sse.open(sseUrl, {
-    headers: headers,
+    headers,
     tags: { "k6_sse_tag": "proof_done" },
   }, function (client) {
-    client.on('event', function (event) {
+    client.on("event", function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
       if (eventData.topic === "proofs" && eventData.payload.state === "done") {
@@ -700,8 +700,7 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
       }
     });
 
-    client.on("error", function (e) {      console.log('An unexpected error occurred: ', e.error());
-      client.close();
+    client.on("error", function (e) {      console.log("An unexpected error occurred: ", e.error());      client.close();
     });
   });
 

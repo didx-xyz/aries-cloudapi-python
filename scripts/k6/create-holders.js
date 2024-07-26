@@ -37,9 +37,9 @@ export let options = {
   teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": [`max>=0`],
-    "http_reqs{scenario:default}": ['count >= 0'],
-    "iteration_duration{scenario:default}": ['max>=0'],
+    "http_req_duration{scenario:default}": ["max>=0"],
+    "http_reqs{scenario:default}": ["count >= 0"],
+    "iteration_duration{scenario:default}": ["max>=0"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
@@ -144,7 +144,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId: credentialDefinitionId
+        credentialDefinitionId
       });
     } else {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
@@ -218,12 +218,11 @@ export function teardown(data) {
       });
     }
   } else {
-    console.log('Skipping deletion of issuer tenants.');
+    console.log("Skipping deletion of issuer tenants.");
   }
 
   // // Delete holder tenants
-  if (__ENV.SKIP_DELETE_HOLDERS !== 'true') {
-    for (const wallet of wallets) {
+  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {    for (const wallet of wallets) {
       const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
       check (deleteHolderResponse, {

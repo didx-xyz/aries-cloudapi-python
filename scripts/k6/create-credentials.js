@@ -1,4 +1,4 @@
-/* global __ENV */
+/* global __ENV, __ITER, __VU */
 /* eslint no-undef: "error" */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 

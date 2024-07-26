@@ -27,10 +27,10 @@ export let options = {
   teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": [`max>=0`],
-    "http_reqs{scenario:default}": ['count >= 0'],
-    "iteration_duration{scenario:default}": ['max>=0'],
-    "checks": ['rate==1']
+    "http_req_duration{scenario:default}": ["max>=0"],
+    "http_reqs{scenario:default}": ["count >= 0"],
+    "iteration_duration{scenario:default}": ["max>=0"],
+    "checks": ["rate==1"]
   },
   tags: {
     test_run_id: "phased-issuance",

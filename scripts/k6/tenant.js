@@ -25,7 +25,7 @@ export function createTenant(bearerToken, wallet) {
   const params = {
     headers: {
       "Authorization": `Bearer ${bearerToken}`,
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
 
@@ -56,8 +56,8 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants?wallet_name=${walletName}`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
-      'Content-Type': 'application/json'
+      "Authorization": `Bearer ${bearerToken}`,
+      "Content-Type": 'application/json'
     }
   };
 
@@ -245,7 +245,7 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
-      'x-api-key': issuerAccessToken
+      "x-api-key": issuerAccessToken
     }
   };
 
@@ -295,7 +295,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/${credentialId}/request`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
+      "x-api-key": holderAccessToken,
       'Content-Type': 'application/json'
     }
   };
@@ -316,7 +316,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
       'Authorization': `Bearer ${bearerToken}`,
       'x-api-key': issuerAccessToken
     },
-    timeout: '120s'
+    timeout: "120s"
   };
 
   try {

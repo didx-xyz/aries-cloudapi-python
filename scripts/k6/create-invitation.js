@@ -41,10 +41,10 @@ export let options = {
   teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": [`max>=0`],
-    "http_reqs{scenario:default}": ['count >= 0'],
-    "http_reqs{my_custom_tag:specific_function}": ['count>=0'],
-    "iteration_duration{scenario:default}": ['max>=0'],
+    "http_req_duration{scenario:default}": ["max>=0"],
+    "http_reqs{scenario:default}": ["count >= 0"],
+    "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
+    "iteration_duration{scenario:default}": ["max>=0"],
     // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
@@ -150,7 +150,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId: credentialDefinitionId
+        credentialDefinitionId
       });
     } else {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
@@ -241,7 +241,7 @@ export default function(data) {
     connection_id: holderInvitationConnectionId,
     issuer_connection_id: issuerConnectionId,
   });
-  file.appendString(outputFilepath, holderData + '\n');
+  file.appendString(outputFilepath, holderData + "\n");
 
   const end = Date.now();
   const duration = end - start;
@@ -257,7 +257,7 @@ export function teardown(data) {
   const issuers = data.issuers;
   const holders = data.holders;
 
-  if (__ENV.SKIP_DELETE_ISSUERS !== 'true') {
+  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
     for (const issuer of issuers) {
       const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
       check(deleteIssuerResponse, {
@@ -273,10 +273,10 @@ export function teardown(data) {
       });
     }
   } else {
-    console.log('Skipping deletion of issuer tenants.');
+    console.log("Skipping deletion of issuer tenants.");
   }
   // // Delete holder tenants
-  if (__ENV.SKIP_DELETE_HOLDERS !== 'true') {
+  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
     for (const wallet of holders) {
       const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
@@ -293,6 +293,6 @@ export function teardown(data) {
       });
     }
   } else {
-    console.log('Skipping deletion of holder tenants.');
+    console.log("Skipping deletion of holder tenants.");
   }
 }

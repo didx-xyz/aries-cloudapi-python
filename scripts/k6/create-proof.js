@@ -185,7 +185,6 @@ export default function(data) {
   // console.log(`isser.accessToken: ${issuer.accessToken}`);
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
-
   // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
   let sendProofRequestResponse;
   try {

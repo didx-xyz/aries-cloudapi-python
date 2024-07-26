@@ -11,7 +11,7 @@ RUN go install go.k6.io/xk6/cmd/xk6@latest && \
     --with github.com/phymbert/xk6-sse
 
 # Use a minimal base image for the final stage
-FROM alpine:latest
+FROM alpine:3.20
 
 # Copy the built xk6 binary from the builder stage
 COPY --from=builder /usr/local/bin/xk6 /usr/local/bin/xk6

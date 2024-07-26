@@ -538,6 +538,91 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+  test-eks:
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    name: Run Pytest on EKS
+    environment:
+      name: dev
+    needs:
+      - deploy
+    permissions:
+      id-token: write # Required to authenticate with AWS
+      contents: read # Required to clone this repository
+      checks: write # Required for action-junit-report
+      pull-requests: write # Required to comment on PRs for Pytest coverage comment
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 35
+
+    env:
+      TAILSCALE_VERSION: 1.68.1
+      HELMFILE_VERSION: v0.166.0
+      HELM_VERSION: v3.15.2
+      OUTPUT_FILE: test_output.xml
+      COVERAGE_FILE: test_coverage.txt
+      PYTEST_COMPLETIONS: 1
+
+    concurrency:
+      group: cicd-deploy
+      cancel-in-progress: false
+
+    outputs:
+      output: ${{ steps.updated_deployments.outputs.success }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.PAT }}" | gh auth login --with-token
+
+      - name: Set branch name
+        id: set_branch_name
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
+          fi
+
+      - name: Check if branch exists
+        id: check_branch
+        run: |
+          DEFAULT_BRANCH=master
+
+          if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
+            echo "branch_exists=true" >> $GITHUB_ENV
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          else
+            echo "branch_exists=false" >> $GITHUB_ENV
+            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout Charts
+        uses: actions/checkout@v4
+        with:
+          repository: didx-xyz/charts
+          token: ${{ secrets.PAT }}
+          path: charts
+          ref: ${{ env.branch_name }}
+
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1.6.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name cloudapi-dev
+
+      - uses: tailscale/github-action@main
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile run pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
@@ -839,9 +924,13 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-  load-test:
-    if: ${{ github.event.pull_request.draft }}
-    name: k6
+  k6:
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    name: K6
+    environment:
+      name: dev
+    needs:
+      - deploy
     permissions:
       id-token: write
       packages: write

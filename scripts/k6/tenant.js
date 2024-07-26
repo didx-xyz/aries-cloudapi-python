@@ -1,3 +1,7 @@
+/* global __ENV */
+/* eslint no-undef: "error" */
+/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+
 import http from "k6/http";
 import sse from "k6/x/sse"
 import { check, sleep } from "k6";

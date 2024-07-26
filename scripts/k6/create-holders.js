@@ -83,7 +83,7 @@ export function setup() {
     // const schemaId = __ENV.SCHEMA_ID;
 
     let issuerAccessToken;
-    let issuerWalletId
+    let issuerWalletId;
 
     issuerWalletId = getWalletIdByWalletName(bearerToken, walletName);
     if (issuerWalletId !== null) {

@@ -1,6 +1,6 @@
 /* global __ENV */
 /* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error"] }] */
+/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 import { check } from "k6";
 import { SharedArray } from "k6/data";
@@ -25,8 +25,8 @@ import {
   getCredentialDefinitionId
 } from "./tenant.js";
 
-const vus = parseInt(__ENV.VUS);
-const iterations = parseInt(__ENV.ITERATIONS);
+const vus = parseInt(__ENV.VUS, 10);
+const iterations = parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 
 export let options = {

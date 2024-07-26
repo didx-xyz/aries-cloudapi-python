@@ -11,8 +11,8 @@ import {
   deleteTenant,
 } from "./tenant.js";
 
-const vus = parseInt(__ENV.VUS);
-const iterations = parseInt(__ENV.ITERATIONS);
+const vus = parseInt(__ENV.VUS, 10);
+const iterations = parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
 
 export let options = {

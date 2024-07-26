@@ -300,7 +300,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
 
@@ -542,10 +542,10 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
   let eventReceived = false;
 
   const response = sse.open(sseUrl, {
-    headers: headers,
+    headers,
     // tags: { 'k6_sse_tag': 'proof_request_received' },
   }, function (client) {
-    client.on('event', function (event) {
+    client.on("event", function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
       if (eventData.topic === "proofs" && eventData.payload.state === "request-received") {
@@ -558,7 +558,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
     });
 
     client.on("error", function (e) {
-      console.log('An unexpected error occurred: ', e.error());
+      console.log("An unexpected error occurred: ", e.error());
       client.close();
     });
   });
@@ -700,8 +700,7 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
       }
     });
 
-    client.on('error', function (e) {
-      console.log('An unexpected error occurred: ', e.error());
+    client.on("error", function (e) {      console.log('An unexpected error occurred: ', e.error());
       client.close();
     });
   });

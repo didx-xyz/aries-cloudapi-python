@@ -57,7 +57,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
   const params = {
     headers: {
       "Authorization": `Bearer ${bearerToken}`,
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
 
@@ -87,7 +87,7 @@ export function getTrustRegistryActor(walletName) {
   const url = `${__ENV.CLOUDAPI_URL}/public/v1/trust-registry/actors?actor_name=${walletName}`;
   const params = {
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": 'application/json'
     }
   };
 
@@ -110,7 +110,7 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
 
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
     },
   };
 
@@ -314,7 +314,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
-      'x-api-key': issuerAccessToken
+      "x-api-key": issuerAccessToken
     },
     timeout: "120s"
   };
@@ -342,7 +342,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
+      "x-api-key": holderAccessToken,
       'Content-Type': 'application/json'
     }
   };
@@ -761,8 +761,7 @@ export function createSchema(bearerToken, schemaName, schemaVersion) {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
     },
-    timeout: '120s'
-  };
+    timeout: "120s"  };
 
   try {
     // Construct the request body including the invitation object

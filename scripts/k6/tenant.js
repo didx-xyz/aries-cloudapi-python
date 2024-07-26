@@ -1,9 +1,9 @@
-/* global __ENV */
+/* global __ENV, __ITER, __VU, console */
 /* eslint no-undef: "error" */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 import http from "k6/http";
-import sse from "k6/x/sse"
+import sse from "k6/x/sse";
 import { check, sleep } from "k6";
 import { Trend, Counter } from "k6/metrics";
 // import { sleep } from 'k6';
@@ -34,7 +34,7 @@ export function createTenant(bearerToken, wallet) {
   };
 
   let response = http.post(url, payload, params);
-  if (response.status == 200 ) {
+  if (response.status === 200 ) {
     // Request was successful
     // const { wallet_id: walletId, access_token: accessToken } = JSON.parse(response.body);
     // // Store walletId and accessToken for the current VU and iteration
@@ -91,13 +91,13 @@ export function getTrustRegistryActor(walletName) {
   const url = `${__ENV.CLOUDAPI_URL}/public/v1/trust-registry/actors?actor_name=${walletName}`;
   const params = {
     headers: {
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
 
   let response = http.get(url);
   // console.log(`Respone: ${response}`)
-  if (response.status == 200) {
+  if (response.status === 200) {
     // Request was successful
     // console.log(`Issuer found for actor_name ${walletName}`);
     return response;
@@ -142,7 +142,7 @@ export function deleteTenant(bearerToken, walletId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants/${walletId}`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
     },
   };
 
@@ -182,8 +182,8 @@ export function createIssuerTenant(bearerToken, walletName) {
   });
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
-      'Content-Type': 'application/json'
+      "Authorization": `Bearer ${bearerToken}`,
+      "Content-Type": 'application/json'
     }
   };
 
@@ -206,7 +206,7 @@ export function createInvitation(bearerToken, issuerAccessToken) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/connections/create-invitation`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
       "x-api-key": issuerAccessToken
     }
   };
@@ -225,7 +225,7 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      'Content-Type': 'application/json'
+      "Content-Type": 'application/json'
     }
   };
 
@@ -248,7 +248,7 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
       "x-api-key": issuerAccessToken
     }
   };
@@ -300,7 +300,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      'Content-Type': 'application/json'
+      "Content-Type": 'application/json'
     }
   };
 
@@ -308,7 +308,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
     let response = http.post(url, null, params);
     return response;
   } catch (error) {
-    console.error(`Error accepting credential: ${response}`);
+    console.error(`Error accepting credential: ${error.message}`);
     throw error;
   }
 }
@@ -317,7 +317,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
       "x-api-key": issuerAccessToken
     },
     timeout: "120s"
@@ -347,7 +347,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      'Content-Type': 'application/json'
+      "Content-Type": 'application/json'
     }
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
@@ -376,7 +376,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
 export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/credentials/thread_id/${threadId}/offer-received`;
   const headers = {
-    'x-api-key': holderAccessToken,
+    "x-api-key": holderAccessToken,
   };
 
   let eventReceived = false;
@@ -390,20 +390,20 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
       const eventData = JSON.parse(event.data);
       if (eventData.topic === 'credentials' && eventData.payload.state === 'offer-received') {
         check(eventData, {
-          'Event received': (e) => e.payload.state === 'offer-received',
+          "Event received": (e) => e.payload.state === 'offer-received',
         });
         eventReceived = true;
         client.close();
       }
     });
 
-    client.on('error', function (e) {
+    client.on("error", function (e) {
       console.log('An unexpected error occurred: ', e.error());
       client.close();
     });
   });
 
-  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+  check(response, { "SSE connection established": (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
   const maxDuration = 10; // 10 seconds
@@ -422,21 +422,21 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
 export function waitForSSEEventConnection(holderAccessToken, holderWalletId, invitationConnectionId) {
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/connections/connection_id/${invitationConnectionId}/completed`;
   const headers = {
-    'x-api-key': holderAccessToken,
+    "x-api-key": holderAccessToken,
   };
 
   let eventReceived = false;
 
   const response = sse.open(sseUrl, {
     headers: headers,
-    tags: { 'k6_sse_tag': 'connection_ready' },
+    tags: { "k6_sse_tag": 'connection_ready' },
   }, function (client) {
     client.on('event', function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
-      if (eventData.topic === 'connections' && eventData.payload.state === 'completed') {
+      if (eventData.topic === "connections" && eventData.payload.state === 'completed') {
         check(eventData, {
-          'Event received': (e) => e.payload.state === 'completed',
+          "Event received": (e) => e.payload.state === 'completed',
         });
         eventReceived = true;
         client.close();
@@ -449,7 +449,7 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
     });
   });
 
-  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+  check(response, { "SSE connection established": (r) => r && r.status === 200 });
 
   // Create random number between 1 and 3
   // const random = Math.floor(Math.random() * 3) + 1;
@@ -476,8 +476,8 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
-      'x-api-key': issuerAccessToken
+      "Authorization": `Bearer ${bearerToken}`,
+      "x-api-key": issuerAccessToken
     }
   };
 
@@ -504,8 +504,8 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/send-request`;
   const params = {
     headers: {
-      'x-api-key': issuerAccessToken,
-      'Content-Type': 'application/json'
+      "x-api-key": issuerAccessToken,
+      "Content-Type": 'application/json'
     }
   };
 
@@ -536,7 +536,7 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
 export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threadId) {
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/proofs/thread_id/${threadId}/request-received`;
   const headers = {
-    'x-api-key': holderAccessToken,
+    "x-api-key": holderAccessToken,
   };
 
   let eventReceived = false;
@@ -550,7 +550,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
       const eventData = JSON.parse(event.data);
       if (eventData.topic === 'proofs' && eventData.payload.state === 'request-received') {
         check(eventData, {
-          'Request received': (e) => e.payload.state === 'request-received',
+          "Request received": (e) => e.payload.state === 'request-received',
         });
         eventReceived = true;
         client.close();
@@ -563,7 +563,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
     });
   });
 
-  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+  check(response, { "SSE connection established": (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
   const maxDuration = 10; // 10 seconds
@@ -583,8 +583,8 @@ export function getProofIdByThreadId(holderAccessToken, threadId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs?thread_id=${threadId}`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
-      'Content-Type': 'application/json'
+      "x-api-key": holderAccessToken,
+      "Content-Type": 'application/json'
     }
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
@@ -614,8 +614,8 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs/${proofId}/credentials`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
-      'Content-Type': 'application/json'
+      "x-api-key": holderAccessToken,
+      "Content-Type": 'application/json'
     }
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
@@ -644,8 +644,8 @@ export function acceptProofRequest(holderAccessToken, proofId, referent) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/accept-request`;
   const params = {
     headers: {
-      'x-api-key': holderAccessToken,
-      'Content-Type': 'application/json'
+      "x-api-key": holderAccessToken,
+      "Content-Type": 'application/json'
     }
   };
   try {
@@ -681,7 +681,7 @@ export function acceptProofRequest(holderAccessToken, proofId, referent) {
 export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThreadId) {
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${issuerWalletId}/proofs/thread_id/${proofThreadId}/done`;
   const headers = {
-    'x-api-key': issuerAccessToken,
+    "x-api-key": issuerAccessToken,
   };
 
   let eventReceived = false;
@@ -708,7 +708,7 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
     });
   });
 
-  check(response, { 'SSE connection established': (r) => r && r.status === 200 });
+  check(response, { "SSE connection established": (r) => r && r.status === 200 });
 
   // Wait for the event to be received or a maximum duration
   const maxDuration = 10; // 10 seconds
@@ -728,8 +728,8 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/verifier/proofs?thread_id=${proofThreadId}`;
   const params = {
     headers: {
-      'x-api-key': issuerAccessToken,
-      'Content-Type': 'application/json'
+      "x-api-key": issuerAccessToken,
+      "Content-Type": 'application/json'
     }
   };
   try {
@@ -763,7 +763,7 @@ export function createSchema(bearerToken, schemaName, schemaVersion) {
   const url = `${__ENV.CLOUDAPI_URL}/governance/v1/definitions/schemas`;
   const params = {
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      "Authorization": `Bearer ${bearerToken}`,
     },
     timeout: "120s"  };
 

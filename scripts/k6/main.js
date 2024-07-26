@@ -1,4 +1,4 @@
-/* global __ENV */
+/* global __ENV, __ITER, __VU */
 /* eslint no-undef: "error" */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
@@ -66,7 +66,7 @@ export function setup() {
     const credDefTag = walletName;
 
     let issuerAccessToken;
-    let issuerWalletId
+    let issuerWalletId;
 
     issuerWalletId = getWalletIdByWalletName(bearerToken, walletName);
     if (issuerWalletId !== null) {

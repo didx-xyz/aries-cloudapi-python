@@ -202,7 +202,7 @@ export function teardown(data) {
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
 
-  console.log(__ENV.SKIP_DELETE_ISSUERS)
+  console.log(__ENV.SKIP_DELETE_ISSUERS);
 
   if (__ENV.SKIP_DELETE_ISSUERS !== "true") {    for (const issuer of issuers) {
       const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);

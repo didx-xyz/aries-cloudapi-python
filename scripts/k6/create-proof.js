@@ -95,7 +95,7 @@ export function setup() {
     const credDefTag = walletName;
 
     let issuerAccessToken;
-    let issuerWalletId
+    let issuerWalletId;
 
     issuerWalletId = getWalletIdByWalletName(bearerToken, walletName);
     if (issuerWalletId !== null) {

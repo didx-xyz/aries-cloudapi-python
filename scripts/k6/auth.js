@@ -1,5 +1,6 @@
-/*global __ENV*/
-/*eslint no-undef: "error"*/
+/* global __ENV */
+/* eslint no-undef: "error" */
+/* eslint no-console: ["error", { allow: ["warn", "error"] }] */
 
 import http from "k6/http";
 

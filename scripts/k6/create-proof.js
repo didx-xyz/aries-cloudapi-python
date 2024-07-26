@@ -1,3 +1,7 @@
+/* global __ENV */
+/* eslint no-undef: "error" */
+/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { getBearerToken } from "./auth.js";
@@ -122,7 +126,7 @@ export function setup() {
 
     const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
     if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
+      console.warn(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,

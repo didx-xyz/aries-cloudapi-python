@@ -1,5 +1,6 @@
-/*global __ENV*/
-/*eslint no-undef: "error"*/
+/* global __ENV */
+/* eslint no-undef: "error" */
+/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";

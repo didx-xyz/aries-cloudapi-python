@@ -225,7 +225,7 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
   const params = {
     headers: {
       "x-api-key": holderAccessToken,
-      "Content-Type": 'application/json'
+      "Content-Type": "application/json"
     }
   };
 
@@ -383,12 +383,12 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
 
   const response = sse.open(sseUrl, {
     headers,
-    tags: { "k6_sse_tag": 'credential_offer_received' },
+    tags: { "k6_sse_tag": "credential_offer_received" },
   }, function (client) {
     client.on("event", function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
-      if (eventData.topic === "credentials" && eventData.payload.state === 'offer-received') {
+      if (eventData.topic === "credentials" && eventData.payload.state === "offer-received") {
         check(eventData, {
           "Event received": (e) => e.payload.state === "offer-received",
         });
@@ -428,10 +428,10 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
   let eventReceived = false;
 
   const response = sse.open(sseUrl, {
-    headers: headers,
+    headers,
     tags: { "k6_sse_tag": "connection_ready" },
   }, function (client) {
-    client.on('event', function (event) {
+    client.on("event", function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
       if (eventData.topic === "connections" && eventData.payload.state === "completed") {
@@ -444,7 +444,7 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
     });
 
     client.on("error", function (e) {
-      console.log('An unexpected error occurred: ', e.error());
+      console.log("An unexpected error occurred: ", e.error());
       client.close();
     });
   });
@@ -548,7 +548,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
     client.on('event', function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
-      if (eventData.topic === "proofs" && eventData.payload.state === 'request-received') {
+      if (eventData.topic === "proofs" && eventData.payload.state === "request-received") {
         check(eventData, {
           "Request received": (e) => e.payload.state === "request-received",
         });
@@ -557,7 +557,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
       }
     });
 
-    client.on('error', function (e) {
+    client.on("error", function (e) {
       console.log('An unexpected error occurred: ', e.error());
       client.close();
     });
@@ -688,15 +688,14 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
 
   const response = sse.open(sseUrl, {
     headers: headers,
-    tags: { "k6_sse_tag": 'proof_done' },
+    tags: { "k6_sse_tag": "proof_done" },
   }, function (client) {
     client.on('event', function (event) {
       // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
-      if (eventData.topic === "proofs" && eventData.payload.state === 'done') {
+      if (eventData.topic === "proofs" && eventData.payload.state === "done") {
         check(eventData, {
-          "Request received": (e) => e.payload.state === 'done',        });
-        eventReceived = true;
+          "Request received": (e) => e.payload.state === "done",        });        eventReceived = true;
         client.close();
       }
     });

@@ -555,9 +555,9 @@ jobs:
     timeout-minutes: 35
 
     env:
-      TAILSCALE_VERSION: 1.68.1
+      TAILSCALE_VERSION: 1.70.0
       HELMFILE_VERSION: v0.166.0
-      HELM_VERSION: v3.15.2
+      HELM_VERSION: v3.15.3
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
       PYTEST_COMPLETIONS: 1
@@ -990,16 +990,16 @@ jobs:
       - name: Run k6 tests
         run: |
           docker run --rm \
-          -v ${{ github.workspace }}/scripts/k6:/scripts \
-          -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
-          -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
-          -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
-          -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
-          -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
-          -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
-          -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
-          --workdir /scripts \
-          --entrypoint /bin/sh \
-          ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
-          /scripts/run_tests.sh
+            -v ${{ github.workspace }}/scripts/k6:/scripts \
+            -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
+            -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
+            -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
+            -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
+            -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
+            -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
+            -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
+            --workdir /scripts \
+            --entrypoint /bin/sh \
+            ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
+            /scripts/run_tests.sh
         shell: bash

@@ -318,15 +318,12 @@ jobs:
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
     runs-on: ubuntu-latest
 
-    timeout-minutes: 35
+    timeout-minutes: 10
 
     env:
-      TAILSCALE_VERSION: 1.68.1
+      TAILSCALE_VERSION: 1.70.0
       HELMFILE_VERSION: v0.166.0
-      HELM_VERSION: v3.15.2
-      OUTPUT_FILE: test_output.xml
-      COVERAGE_FILE: test_coverage.txt
-      PYTEST_COMPLETIONS: 1
+      HELM_VERSION: v3.15.3
 
     concurrency:
       group: cicd-deploy
@@ -538,6 +535,92 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+  test-eks:
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    name: Run Pytest on EKS
+    environment:
+      name: dev
+    needs:
+      - build
+      - deploy
+    permissions:
+      id-token: write # Required to authenticate with AWS
+      contents: read # Required to clone this repository
+      checks: write # Required for action-junit-report
+      pull-requests: write # Required to comment on PRs for Pytest coverage comment
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    env:
+      TAILSCALE_VERSION: 1.70.0
+      HELMFILE_VERSION: v0.166.0
+      HELM_VERSION: v3.15.3
+      OUTPUT_FILE: test_output.xml
+      COVERAGE_FILE: test_coverage.txt
+      PYTEST_COMPLETIONS: 1
+
+    concurrency:
+      group: cicd-deploy
+      cancel-in-progress: false
+
+    outputs:
+      output: ${{ steps.updated_deployments.outputs.success }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.PAT }}" | gh auth login --with-token
+
+      - name: Set branch name
+        id: set_branch_name
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
+          fi
+
+      - name: Check if branch exists
+        id: check_branch
+        run: |
+          DEFAULT_BRANCH=master
+
+          if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
+            echo "branch_exists=true" >> $GITHUB_ENV
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          else
+            echo "branch_exists=false" >> $GITHUB_ENV
+            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout Charts
+        uses: actions/checkout@v4
+        with:
+          repository: didx-xyz/charts
+          token: ${{ secrets.PAT }}
+          path: charts
+          ref: ${{ env.branch_name }}
+
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1.6.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name cloudapi-dev
+
+      - uses: tailscale/github-action@main
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile run pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
@@ -839,3 +922,85 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+  k6:
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    name: K6
+    environment:
+      name: dev
+    needs:
+      - build
+      - deploy
+    permissions:
+      id-token: write
+      packages: write
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    concurrency:
+      group: cicd-build-xk6-${{ github.ref }}
+      cancel-in-progress: false
+
+    outputs:
+      image_version: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/xk6
+          tags: |
+            type=raw,value=latest,enable=${{ github.event.repository.default_branch == github.ref_name }}
+            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
+            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+            type=ref,event=branch,priority=600
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker images
+        id: build_image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./scripts/k6/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            type=gha,scope=build-xk6
+            type=registry,ref=ghcr.io/${{ github.repository_owner }}/xk6:latest
+          cache-to: type=gha,mode=max,scope=build-xk6
+
+      - name: Prepare output directory
+        run: mkdir -p ${{ github.workspace }}/scripts/k6/output && chmod 777 ${{ github.workspace }}/scripts/k6/output
+
+      - name: Run k6 tests
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/scripts/k6:/scripts \
+            -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
+            -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
+            -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
+            -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
+            -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
+            -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
+            -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
+            --workdir /scripts \
+            --entrypoint /bin/sh \
+            ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
+            /scripts/run_tests.sh
+        shell: bash

@@ -321,9 +321,9 @@ jobs:
     timeout-minutes: 10
 
     env:
-      TAILSCALE_VERSION: 1.68.1
+      TAILSCALE_VERSION: 1.70.0
       HELMFILE_VERSION: v0.166.0
-      HELM_VERSION: v3.15.2
+      HELM_VERSION: v3.15.3
 
     concurrency:
       group: cicd-deploy

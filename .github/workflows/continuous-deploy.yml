@@ -928,6 +928,7 @@ jobs:
     environment:
       name: dev
     needs:
+      - build
       - deploy
     permissions:
       id-token: write

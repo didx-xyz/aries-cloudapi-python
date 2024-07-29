@@ -324,9 +324,6 @@ jobs:
       TAILSCALE_VERSION: 1.68.1
       HELMFILE_VERSION: v0.166.0
       HELM_VERSION: v3.15.2
-      OUTPUT_FILE: test_output.xml
-      COVERAGE_FILE: test_coverage.txt
-      PYTEST_COMPLETIONS: 1
 
     concurrency:
       group: cicd-deploy
@@ -544,6 +541,7 @@ jobs:
     environment:
       name: dev
     needs:
+      - build
       - deploy
     permissions:
       id-token: write # Required to authenticate with AWS

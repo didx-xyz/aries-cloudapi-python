@@ -783,13 +783,35 @@ export function createSchema(bearerToken, schemaName, schemaVersion) {
     });
 
     let response = http.post(url, requestBody, params);
-    console.log(`Response body: ${response.body}`);
+    // console.log(`Response body: ${response.body}`);
     return response;
   } catch (error) {
     console.error(`Error creating schema: ${error.message}`);
     throw error;
   }
 }
+
+export function getSchema(bearerToken, schemaName, schemaVersion) {
+  const url = `${__ENV.CLOUDAPI_URL}/governance/v1/definitions/schemas?schema_name=${schemaName}&schema_version=${schemaVersion}`;
+  const params = {
+    headers: {
+      "Authorization": `Bearer ${bearerToken}`,
+    },
+  };
+
+  try {
+    let response = http.get(url, params);
+    // console.log(`Response XXX body: ${response.body}`);
+    return response;
+  }
+  catch (error) {
+    console.error(`Error getting schema: ${error.message}`);
+    throw error;
+  }
+}
+
+
+
 
 // {
 //   "name": "load_pop",

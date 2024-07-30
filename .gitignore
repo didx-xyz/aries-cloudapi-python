@@ -146,6 +146,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# k6 output
+scripts/k6/output
+
 # Spyder project settings
 .spyderproject
 .spyproject

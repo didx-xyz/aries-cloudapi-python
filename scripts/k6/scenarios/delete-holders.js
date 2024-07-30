@@ -4,12 +4,12 @@
 
 import { sleep, check } from "k6";
 import { SharedArray } from "k6/data";
-import { getBearerToken } from "./auth.js";
+import { getBearerToken } from "../libs/auth.js";
 import { Trend, Counter } from "k6/metrics";
 import {
   getWalletIdByWalletName,
   deleteTenant,
-} from "./tenant.js";
+} from "../libs/functions.js";
 
 const vus = parseInt(__ENV.VUS, 10);
 const iterations = parseInt(__ENV.ITERATIONS, 10);

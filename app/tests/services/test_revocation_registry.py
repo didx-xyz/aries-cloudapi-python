@@ -449,3 +449,49 @@ async def test_validate_rev_reg_ids_cred_rev_id_not_pending(
         )
 
     assert exc_info.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_get_pending_revocations_success(
+    mock_agent_controller: AcaPyClient,
+):
+    rev_reg_id="mocked_rev_reg_id",
+    # Mock successful response from ACA-Py
+    when(mock_agent_controller.revocation).get_registry(
+        rev_reg_id=rev_reg_id
+    ).thenReturn(
+        to_async(
+            RevRegResult(
+                result=IssuerRevRegRecord(
+                    rev_reg_id=rev_reg_id, max_cred_num=max_cred_num
+                )
+            )
+        )
+    )
+
+    result = await rg.get_pending_revocations(
+        controller=mock_agent_controller, rev_reg_id=rev_reg_id
+    )
+
+
+@pytest.mark.anyio
+async def test_get_pending_revocations_failure(
+    mock_agent_controller: AcaPyClient,
+):
+    error_message = "Failed to get revocation registry"
+    status_code = 500
+
+    rev_reg_id="mocked_rev_reg_id"
+    # Mock ApiException from ACA-Py
+    when(mock_agent_controller.revocation).get_registry(
+        rev_reg_id=rev_reg_id
+    ).thenRaise(ApiException(reason=error_message, status=status_code))
+
+    with pytest.raises(
+        CloudApiException, match=f"500: Failed to get pending revocations: {error_message}"
+    ) as exc_info:
+        await rg.get_pending_revocations(
+            controller=mock_agent_controller, rev_reg_id=rev_reg_id
+        )
+
+    assert exc_info.value.status_code == status_code

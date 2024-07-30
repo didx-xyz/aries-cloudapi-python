@@ -8,7 +8,6 @@ from aries_cloudcontroller.exceptions import (
 )
 from fastapi import HTTPException
 
-from app.models.issuer import PendingRevocations
 from app.routes.issuer import get_pending_revocations
 
 rev_reg_id = "mocked_rev_reg_id"

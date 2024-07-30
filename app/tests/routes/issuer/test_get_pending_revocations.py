@@ -1,17 +1,18 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi import HTTPException
 from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
     NotFoundException,
 )
+from fastapi import HTTPException
 
 from app.models.issuer import PendingRevocations
 from app.routes.issuer import get_pending_revocations
 
 rev_reg_id = "mocked_rev_reg_id"
+
 
 @pytest.mark.anyio
 async def test_get_pending_revocations_success():
@@ -26,7 +27,9 @@ async def test_get_pending_revocations_success():
             mock_aries_controller
         )
 
-        await get_pending_revocations(auth="mocked_auth", revocation_registry_id=rev_reg_id)
+        await get_pending_revocations(
+            auth="mocked_auth", revocation_registry_id=rev_reg_id
+        )
 
         mock_get_pending_revocations.assert_awaited_once_with(
             controller=mock_aries_controller, rev_reg_id=rev_reg_id
@@ -60,6 +63,8 @@ async def test_get_pending_revocations_fail_acapy_error(
             mock_aries_controller
         )
 
-        await get_pending_revocations(auth="mocked_auth", revocation_registry_id=rev_reg_id)
+        await get_pending_revocations(
+            auth="mocked_auth", revocation_registry_id=rev_reg_id
+        )
 
     assert exc.value.status_code == expected_status_code

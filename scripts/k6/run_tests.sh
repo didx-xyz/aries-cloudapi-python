@@ -8,16 +8,16 @@ run_test() {
     if [ $exit_code -ne 0 ]; then
         echo "Test $3 failed with exit code $exit_code"
         echo "Deleting Holders"
-        xk6 run -e SKIP_DELETE_ISSUERS=true -e SKIP_DELETE_HOLDERS=false delete-holders.js
+        xk6 run -e SKIP_DELETE_ISSUERS=true -e SKIP_DELETE_HOLDERS=false ./scenarios/delete-holders.js
         echo "Exiting with exit code $exit_code ..."
         exit $exit_code
     fi
 }
 
-run_test true true create-holders.js
-run_test true true create-invitation.js
-run_test true true create-credentials.js
-run_test true true create-proof.js
-run_test false false delete-holders.js
+run_test true true ./scenarios/create-holders.js
+run_test true true ./scenarios/create-invitation.js
+run_test true true ./scenarios/create-credentials.js
+run_test true true ./scenarios/create-proof.js
+run_test false false ./scenarios/delete-holders.js
 
 echo "All tests completed successfully"

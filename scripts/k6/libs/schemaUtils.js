@@ -1,6 +1,6 @@
 // schemaUtils.js
 
-import { getSchema, createSchema } from './tenant.js';
+import { getSchema, createSchema } from './functions.js';
 
 export function createSchemaIfNotExists(bearerToken, schemaName, schemaVersion) {
   const schemaExists = checkSchemaExists(bearerToken, schemaName, schemaVersion);

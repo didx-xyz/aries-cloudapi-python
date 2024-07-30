@@ -2,32 +2,27 @@
 /* eslint no-undef: "error" */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
-import { getBearerToken } from "./auth.js";
+import { getBearerToken } from "../libs/auth.js";
 import { Trend, Counter } from "k6/metrics";
-import file from "k6/x/file";
-import sleep from "k6";
 import {
-  createTenant,
   getWalletIdByWalletName,
   getAccessTokenByWalletId,
   deleteTenant,
   createIssuerTenant,
-  createInvitation,
-  acceptInvitation,
   createCredential,
   acceptCredential,
   createCredentialDefinition,
   getCredentialIdByThreadId,
   waitForSSEEvent,
-  waitForSSEEventConnection,
   getCredentialDefinitionId
-} from "./tenant.js";
+} from "../libs/functions.js";
 
 const vus = parseInt(__ENV.VUS, 10);
 const iterations = parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+
 
 export let options = {
   scenarios: {
@@ -38,42 +33,41 @@ export let options = {
       maxDuration: "24h",
     },
   },
-  setupTimeout: "120s", // Increase the setup timeout to 120 seconds
-  teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
+  setupTimeout: "180s", // Increase the setup timeout to 120 seconds
+  teardownTimeout: "180s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
-    "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
     "iteration_duration{scenario:default}": ["max>=0"],
-    // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    // 'test_function_reqs{scenario:default}': ['count>=0'],
-    // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
+    "checks": ["rate==1"],
+    // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
+    // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
     test_run_id: "phased-issuance",
-    test_phase: "create-invitation",
+    test_phase: "create-credentials",
   },
 };
 
-const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
-
-const inputFilepath = "output/create-holders.json";
+const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
-const outputFilepath = "output/create-invitation.json";
+
+// const specificFunctionReqs = new Counter('specific_function_reqs');
+const testFunctionReqs = new Counter("test_function_reqs");
+// const mainIterationDuration = new Trend('main_iteration_duration');
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function() {
-  const walletsArray = [];
-  for (let i = 0; i < options.iterations; i++) {
-    walletsArray.push({
-      wallet_label: `xxkk6 holder ${i}`,
-      wallet_name: `xxkk6_wallet_${i}`
-    });
-  }
-  return walletsArray;
-});
+// const wallets = new SharedArray('wallets', function() {
+//   const walletsArray = [];
+//   for (let i = 0; i < options.iterations; i++) {
+//     walletsArray.push({
+//       wallet_label: `xk6 holder ${i}`,
+//       wallet_name: `xk6_wallet_${i}`
+//     });
+//   }
+//   return walletsArray;
+// });
 
 const numIssuers = 1;
 let issuers = [];
@@ -89,8 +83,6 @@ export function setup() {
   //   console.log(`Processing wallet ID: ${holderData.wallet_id}`);
   //   // Your test logic here, e.g., make HTTP requests using the holderData
   // });
-
-  file.writeString(outputFilepath, "");
 
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
@@ -168,61 +160,63 @@ function getWalletIndex(vu, iter) {
   return walletIndex;
 }
 
-const vuStartTimes = {};
-const vuEndTimes = {};
+//random number between 0 and 100 (including 0 and 100 as options)
+function getRandomInt() {
+  return Math.floor(Math.random() * 101);
+}
 
 export default function(data) {
-  if (__ITER === 0) {
-    vuStartTimes[__VU] = Date.now();
-  }
-  const start = Date.now();
+  // const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
-
   const holders = data.holders;
+  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = holders[walletIndex];
-
 
   const issuerIndex = __ITER % numIssuers;
   const issuer = issuers[issuerIndex];
 
-  // const holderWalletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-  // check(holderWalletId, {
-  //   "Holder wallet ID is not null": (r) => r !== null
+  // console.log(`isser.accessToken: ${issuer.accessToken}`);
+  // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
+  // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
+
+  // const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+  // check(createCredentialResponse, {
+  //   "Credential created successfully": (r) => {
+  //     if (r.status !== 200) {
+  //       throw new Error(`Unexpected response while creating credential: ${r.response}`);
+  //     }
+  //     return true;
+  //   }
   // });
 
-  // const holderAccessToken = getAccessTokenByWalletId(bearerToken, holderWalletId);
-  // check(holderAccessToken, {
-  //   "Holder access token is not null": (r) => r !== null
-  // });
+  let createCredentialResponse;
+  try {
+      createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+  } catch (error) {
+      // console.error(`Error creating credential: ${error.message}`);
+      createCredentialResponse = { status: 500, response: error.message };
+  }
 
-  const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
-  check(createInvitationResponse, {
-    "Invitation created successfully": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response status while create invitation: ${r.status}`);
+  check(createCredentialResponse, {
+      "Credential created successfully": (r) => {
+          if (r.status !== 200) {
+              console.error(`Unexpected response while creating credential: ${r.response}`);
+              return false;
+          }
+          return true;
       }
-      return true;
-    }
-  });
-  const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
-
-  const acceptInvitationResponse = acceptInvitation(wallet.access_token, invitationObj);
-  check(acceptInvitationResponse, {
-    "Invitation accepted successfully": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting invitation: ${r.response}`);
-      }
-      return true;
-    }
   });
 
-  const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
+  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
 
-  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(wallet.access_token, wallet.wallet_id, holderInvitationConnectionId);
-  check(waitForSSEEventConnectionResponse, {
-    "SSE Event received successfully: connection-ready": (r) => {
+  // console.log(`Thread ID: ${threadId}`);
+  // console.log(`Holer access token: ${wallet.holder_access_token}`);
+  // console.log(`Wallet ID: ${wallet.wallet_id}`);
+
+  const waitForSSEEventResponse = waitForSSEEvent(wallet.access_token, wallet.wallet_id, threadId);
+  check(waitForSSEEventResponse, {
+    "SSE request received successfully: request-received": (r) => {
       if (!r) {
         throw new Error("SSE event was not received successfully");
       }
@@ -230,33 +224,34 @@ export default function(data) {
     },
   });
 
-  // testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  const credentialId = getCredentialIdByThreadId(wallet.access_token, threadId);
 
-  testFunctionReqs.add(1);
-
-  const holderData = JSON.stringify({
-    wallet_label: wallet.wallet_label,
-    wallet_name: wallet.wallet_name,
-    wallet_id: wallet.wallet_id,
-    access_token: wallet.access_token,
-    connection_id: holderInvitationConnectionId,
-    issuer_connection_id: issuerConnectionId,
+  const acceptCredentialResponse = acceptCredential(wallet.access_token, credentialId);
+  check(acceptCredentialResponse, {
+    "Credential accepted successfully": (r) => {
+      if (r.status !== 200) {
+        throw new Error(`Unexpected response while accepting credential: ${r.response}`);
+      }
+      return true;
+    }
   });
-  file.appendString(outputFilepath, holderData + "\n");
 
-  const end = Date.now();
-  const duration = end - start;
+  // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+
+  // const end = Date.now();
+  // const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
+  // mainIterationDuration.add(duration);
+  // sleep(1);
+  testFunctionReqs.add(1);
 }
 
-
-
 export function teardown(data) {
-  vuEndTimes[__VU] = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  const holders = data.holders;
+  const wallets = data.holders;
+
+  // console.log(__ENV.SKIP_DELETE_ISSUERS)
 
   if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
     for (const issuer of issuers) {
@@ -278,7 +273,7 @@ export function teardown(data) {
   }
   // // Delete holder tenants
   if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
-    for (const wallet of holders) {
+    for (const wallet of wallets) {
       const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
       check (deleteHolderResponse, {

@@ -4,24 +4,23 @@
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
-import { getBearerToken } from "./auth.js";
+import { getBearerToken } from "../libs/auth.js";
 import { Trend, Counter } from "k6/metrics";
 import {
-  createTenant,
   getWalletIdByWalletName,
   getAccessTokenByWalletId,
   deleteTenant,
   createIssuerTenant,
-  createInvitation,
-  acceptInvitation,
-  createCredential,
-  acceptCredential,
   createCredentialDefinition,
-  getCredentialIdByThreadId,
-  waitForSSEEvent,
-  waitForSSEEventConnection,
-  getCredentialDefinitionId
-} from "./tenant.js";
+  getCredentialDefinitionId,
+  getProofIdCredentials,
+  sendProofRequest,
+  waitForSSEEventReceived,
+  getProofIdByThreadId,
+  acceptProofRequest,
+  waitForSSEProofDone,
+  getProof,
+} from "../libs/functions.js";
 
 const vus = parseInt(__ENV.VUS, 10);
 const iterations = parseInt(__ENV.ITERATIONS, 10);
@@ -44,16 +43,17 @@ export let options = {
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
+    "checks": ["rate==1"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
     test_run_id: "phased-issuance",
-    test_phase: "create-credentials",
+    test_phase: "create-proofs",
   },
 };
 
-const inputFilepath = "output/create-invitation.json";
+const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
@@ -123,7 +123,7 @@ export function setup() {
 
     const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
     if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
+      console.warn(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
@@ -182,44 +182,28 @@ export default function(data) {
   // console.log(`isser.accessToken: ${issuer.accessToken}`);
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
-
-  // const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
-  // check(createCredentialResponse, {
-  //   "Credential created successfully": (r) => {
-  //     if (r.status !== 200) {
-  //       throw new Error(`Unexpected response while creating credential: ${r.response}`);
-  //     }
-  //     return true;
-  //   }
-  // });
-
-  let createCredentialResponse;
+  // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  let sendProofRequestResponse;
   try {
-      createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
+    sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
   } catch (error) {
       // console.error(`Error creating credential: ${error.message}`);
-      createCredentialResponse = { status: 500, response: error.message };
+      sendProofRequestResponse = { status: 500, response: error.message };
   }
-
-  check(createCredentialResponse, {
-      "Credential created successfully": (r) => {
-          if (r.status !== 200) {
-              console.error(`Unexpected response while creating credential: ${r.response}`);
-              return false;
-          }
-          return true;
+  check(sendProofRequestResponse, {
+    "Proof request sent successfully": (r) => {
+      if (r.status !== 200) {
+        throw new Error(`Unexpected response while sending proof request: ${r.response}`);
       }
+      return true;
+    }
   });
 
-  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
+  const { thread_id: threadId } = JSON.parse(sendProofRequestResponse.body);
 
-  // console.log(`Thread ID: ${threadId}`);
-  // console.log(`Holer access token: ${wallet.holder_access_token}`);
-  // console.log(`Wallet ID: ${wallet.wallet_id}`);
-
-  const waitForSSEEventResponse = waitForSSEEvent(wallet.access_token, wallet.wallet_id, threadId);
-  check(waitForSSEEventResponse, {
-    "SSE request received successfully: request-received": (r) => {
+  const waitForSSEEventReceivedResponse = waitForSSEEventReceived(wallet.access_token, wallet.wallet_id, threadId);
+  check(waitForSSEEventReceivedResponse, {
+    "SSE Event received successfully: request-recevied": (r) => {
       if (!r) {
         throw new Error("SSE event was not received successfully");
       }
@@ -227,25 +211,47 @@ export default function(data) {
     },
   });
 
-  const credentialId = getCredentialIdByThreadId(wallet.access_token, threadId);
+  // TODO: return object and add check for the response
+  const proofId = getProofIdByThreadId(wallet.access_token, threadId);
+  const referent = getProofIdCredentials(wallet.access_token, proofId);
 
-  const acceptCredentialResponse = acceptCredential(wallet.access_token, credentialId);
-  check(acceptCredentialResponse, {
-    "Credential accepted successfully": (r) => {
+  const acceptProofResponse = acceptProofRequest(wallet.access_token, proofId, referent);
+  check(acceptProofResponse, {
+    "Proof accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting credential: ${r.response}`);
+        throw new Error(`Unexpected response while accepting proof: ${r.response}`);
       }
       return true;
     }
   });
 
-  // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  const waitForSSEProofDoneRequest = waitForSSEProofDone(issuer.accessToken, issuer.walletId, threadId);
+  check(waitForSSEProofDoneRequest, {
+    "SSE Proof Request state: done": (r) => {
+      if (!r) {
+        throw new Error("SSE proof done was not successful");
+      }
+      return true;
+    },
+  });
 
-  // const end = Date.now();
-  // const duration = end - start;
-  // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  // mainIterationDuration.add(duration);
-  // sleep(1);
+  // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+  let getProofResponse;
+  try {
+    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+  } catch (error) {
+      // console.error(`Error creating credential: ${error.message}`);
+      getProofResponse = { status: 500, response: error.message };
+  }
+  check(getProofResponse, {
+    "Proof received successfully": (r) => {
+      if (r.status !== 200) {
+        throw new Error(`Unexpected response while getting proof: ${r.response}`);
+      }
+      return true;
+    },
+  });
+
   testFunctionReqs.add(1);
 }
 

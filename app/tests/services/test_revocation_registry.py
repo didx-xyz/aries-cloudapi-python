@@ -455,7 +455,7 @@ async def test_validate_rev_reg_ids_cred_rev_id_not_pending(
 async def test_get_pending_revocations_success(
     mock_agent_controller: AcaPyClient,
 ):
-    rev_reg_id="mocked_rev_reg_id",
+    rev_reg_id = ("mocked_rev_reg_id",)
     # Mock successful response from ACA-Py
     when(mock_agent_controller.revocation).get_registry(
         rev_reg_id=rev_reg_id
@@ -481,14 +481,15 @@ async def test_get_pending_revocations_failure(
     error_message = "Failed to get revocation registry"
     status_code = 500
 
-    rev_reg_id="mocked_rev_reg_id"
+    rev_reg_id = "mocked_rev_reg_id"
     # Mock ApiException from ACA-Py
     when(mock_agent_controller.revocation).get_registry(
         rev_reg_id=rev_reg_id
     ).thenRaise(ApiException(reason=error_message, status=status_code))
 
     with pytest.raises(
-        CloudApiException, match=f"500: Failed to get pending revocations: {error_message}"
+        CloudApiException,
+        match=f"500: Failed to get pending revocations: {error_message}",
     ) as exc_info:
         await rg.get_pending_revocations(
             controller=mock_agent_controller, rev_reg_id=rev_reg_id

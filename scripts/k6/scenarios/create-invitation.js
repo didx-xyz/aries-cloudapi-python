@@ -7,12 +7,11 @@ import { SharedArray } from "k6/data";
 import { getBearerToken } from "../libs/auth.js";
 import { Trend, Counter } from "k6/metrics";
 import file from "k6/x/file";
-import sleep from "k6";
+import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
+import { createIssuerIfNotExists } from '../libs/issuerUtils.js';
 import {
   getWalletIdByWalletName,
-  getAccessTokenByWalletId,
   deleteTenant,
-  createIssuerTenant,
   createInvitation,
   acceptInvitation,
   createCredentialDefinition,
@@ -92,35 +91,15 @@ export function setup() {
     const walletName = `${issuerPrefix}_${i}`;
     const credDefTag = walletName;
 
-    let issuerAccessToken;
-    let issuerWalletId;
-
-    issuerWalletId = getWalletIdByWalletName(bearerToken, walletName);
-    if (issuerWalletId !== null) {
-      // Retrieve the access token using the wallet ID
-      issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
-      if (typeof issuerAccessToken === "string") {
-        // Access token retrieved successfully
-        console.log(`Access token retrieved for wallet ID ${issuerWalletId}`);
-      } else {
-        console.error(`Failed to retrieve access token for wallet ID ${issuerWalletId}`);
-        console.error(`Response body: ${issuerAccessToken}`);
-        continue;
-      }
-    } else {
-      try {
-        const createIssuerTenantResponse = createIssuerTenant(bearerToken, walletName);
-        check(createIssuerTenantResponse, {
-          "Issuer tenant created successfully": (r) => r.status === 200
-        });
-        const tenantData = JSON.parse(createIssuerTenantResponse.body);
-        issuerWalletId = tenantData.wallet_id;
-        issuerAccessToken = tenantData.access_token;
-      } catch (error) {
-        console.error(`Error creating issuer tenant for ${walletName}:`, error);
-        continue;
-      }
+    const issuerData = createIssuerIfNotExists(bearerToken, walletName);
+    check(issuerData, {
+      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined
+    });
+    if (!issuerData) {
+      console.error(`Failed to create or retrieve issuer for ${walletName}`);
+      continue;
     }
+    const { issuerWalletId, issuerAccessToken } = issuerData;
 
     const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
     if (credentialDefinitionId) {
@@ -136,7 +115,12 @@ export function setup() {
       // console.error(`Response body: ${credentialDefinitionId.body}`);
     }
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag);
+    const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
+    check(schemaId, {
+      "Schema ID is not null": (id) => id !== null && id !== undefined
+    });
+
+    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId);
     check(createCredentialDefinitionResponse, {
       "Credential definition created successfully": (r) => r.status === 200
     });

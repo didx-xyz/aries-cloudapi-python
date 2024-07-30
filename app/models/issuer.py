@@ -110,6 +110,7 @@ class RevokedResponse(BaseModel):
     )
 
     @model_validator(mode="before")
+    @classmethod
     def extract_revoked_info(cls, values):
         txn = values.get("txn", {})
         messages_attach = txn.get("messages_attach", [])

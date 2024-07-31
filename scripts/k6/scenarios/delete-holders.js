@@ -8,11 +8,11 @@ import { Counter, Trend } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import { deleteTenant, getWalletIdByWalletName } from "../libs/functions.js";
 
-const vus = parseInt(__ENV.VUS, 10);
-const iterations = parseInt(__ENV.ITERATIONS, 10);
+const vus = Number.parseInt(__ENV.VUS, 10);
+const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
 
-export let options = {
+export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
@@ -40,7 +40,7 @@ export let options = {
 const testFunctionReqs = new Counter("test_function_reqs");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function () {
+const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
@@ -52,7 +52,7 @@ const wallets = new SharedArray("wallets", function () {
 });
 
 const numIssuers = 1;
-let issuers = [];
+const issuers = [];
 const filepath = "output/create-holders.json";
 
 export function setup() {
@@ -79,10 +79,9 @@ export default function (data) {
       if (r.status !== 200) {
         console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
         return false;
-      } else {
+      }
         // console.log(`Deleted holder tenant ${walletId} successfully.`);
         return true;
-      }
     },
   });
   testFunctionReqs.add(1);

@@ -22,11 +22,11 @@ import {
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
-const vus = parseInt(__ENV.VUS, 10);
-const iterations = parseInt(__ENV.ITERATIONS, 10);
+const vus = Number.parseInt(__ENV.VUS, 10);
+const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 
-export let options = {
+export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
@@ -73,7 +73,7 @@ const testFunctionReqs = new Counter("test_function_reqs");
 // });
 
 const numIssuers = 1;
-let issuers = [];
+const issuers = [];
 
 export function setup() {
   const bearerToken = getBearerToken();
@@ -110,10 +110,9 @@ export function setup() {
         credentialDefinitionId,
       });
       continue;
-    } else {
+    }
       console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
       // console.error(`Response body: ${credentialDefinitionId.body}`);
-    }
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
@@ -260,10 +259,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
             return true;
-          }
         },
       });
     }
@@ -280,10 +278,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted holder tenant ${walletId} successfully.`);
             return true;
-          }
         },
       });
     }

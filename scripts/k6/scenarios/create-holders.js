@@ -17,14 +17,14 @@ import {
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
-const vus = parseInt(__ENV.VUS, 10);
-const iterations = parseInt(__ENV.ITERATIONS, 10);
+const vus = Number.parseInt(__ENV.VUS, 10);
+const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const holderPrefix = __ENV.HOLDER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
 
-export let options = {
+export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
@@ -56,7 +56,7 @@ const testFunctionReqs = new Counter("test_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function () {
+const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
@@ -68,7 +68,7 @@ const wallets = new SharedArray("wallets", function () {
 });
 
 const numIssuers = 1;
-let issuers = [];
+const issuers = [];
 const filepath = "output/create-holders.json";
 
 export function setup() {
@@ -101,10 +101,9 @@ export function setup() {
         credentialDefinitionId,
       });
       continue;
-    } else {
+    }
       console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
       // console.error(`Response body: ${credentialDefinitionId.body}`);
-    }
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
@@ -170,7 +169,7 @@ export default function (data) {
     wallet_id: walletId,
     access_token: holderAccessToken,
   });
-  file.appendString(filepath, holderData + "\n");
+  file.appendString(filepath, `${holderData}\n`);
 
   const end = Date.now();
   const duration = end - start;
@@ -194,10 +193,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
             return true;
-          }
         },
       });
     }
@@ -215,10 +213,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted holder tenant ${walletId} successfully.`);
             return true;
-          }
         },
       });
     }

@@ -10,22 +10,21 @@ export function getBearerToken() {
   const clientSecret = __ENV.CLIENT_SECRET;
   const requestBody = `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`;
 
-  let response = http.post(url, requestBody, {
+  const response = http.post(url, requestBody, {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
 
   if (response.status === 200) {
-    let responseData = JSON.parse(response.body);
-    let bearerToken = responseData.access_token;
+    const responseData = JSON.parse(response.body);
+    const bearerToken = responseData.access_token;
     return bearerToken;
-  } else {
+  }
     console.error("Error:", response.status_text);
     console.error("Response body:", response.body);
     console.error("Error description:", response.json().error_description);
     throw new Error("Failed to obtain bearer token");
-  }
 }
 
 export function getGovernanceBearerToken() {
@@ -34,20 +33,19 @@ export function getGovernanceBearerToken() {
   const clientSecret = __ENV.GOVERNANCE_CLIENT_SECRET;
   const requestBody = `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`;
 
-  let response = http.post(url, requestBody, {
+  const response = http.post(url, requestBody, {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
 
   if (response.status === 200) {
-    let responseData = JSON.parse(response.body);
-    let bearerToken = responseData.access_token;
+    const responseData = JSON.parse(response.body);
+    const bearerToken = responseData.access_token;
     return bearerToken;
-  } else {
+  }
     console.error("Error:", response.status_text);
     console.error("Response body:", response.body);
     console.error("Error description:", response.json().error_description);
     throw new Error("Failed to obtain bearer token");
-  }
 }

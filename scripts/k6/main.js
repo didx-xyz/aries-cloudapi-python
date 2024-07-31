@@ -23,7 +23,7 @@ import {
   waitForSSEEventConnection,
 } from "./tenant.js";
 
-export let options = {
+export const options = {
   vus: 2, // number of VUs to run
   iterations: 2, // total number of iterations (global)
   maxRedirects: 4,
@@ -44,7 +44,7 @@ const specificFunctionReqs = new Counter("specific_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function () {
+const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
@@ -56,7 +56,7 @@ const wallets = new SharedArray("wallets", function () {
 });
 
 const numIssuers = 1;
-let issuers = [];
+const issuers = [];
 
 export function setup() {
   const bearerToken = getBearerToken();
@@ -105,10 +105,9 @@ export function setup() {
         credentialDefinitionId,
       });
       continue;
-    } else {
+    }
       console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
       // console.error(`Response body: ${credentialDefinitionId.body}`);
-    }
 
     const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag);
     check(createCredentialDefinitionResponse, {
@@ -254,10 +253,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
             return true;
-          }
         },
       });
     }
@@ -273,10 +271,9 @@ export function teardown(data) {
         if (r.status !== 200) {
           console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
           return false;
-        } else {
+        }
           console.log(`Deleted holder tenant ${walletId} successfully.`);
           return true;
-        }
       },
     });
   }

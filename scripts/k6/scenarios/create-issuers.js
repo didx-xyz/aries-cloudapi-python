@@ -13,12 +13,12 @@ import {
   getWalletIdByWalletName,
 } from "../libs/functions.js";
 
-const vus = parseInt(__ENV.VUS, 10);
-const iterations = parseInt(__ENV.ITERATIONS, 10);
+const vus = Number.parseInt(__ENV.VUS, 10);
+const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 // const holderPrefix = __ENV.HOLDER_PREFIX;
 
-export let options = {
+export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
@@ -32,7 +32,7 @@ export let options = {
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": [`max>=0`],
+    "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
   },
@@ -46,7 +46,7 @@ const testFunctionReqs = new Counter("test_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function () {
+const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
@@ -90,10 +90,9 @@ export default function (data) {
           `Unexpected response status while getting trust registry actor for issuer tenant ${wallet.walletName}: ${r.status}`,
         );
         return false;
-      } else {
+      }
         console.log(`Got trust registry actor for issuer tenant ${wallet.walletName} successfully.`);
         return true;
-      }
     },
   });
 
@@ -122,10 +121,9 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`);
             return false;
-          } else {
+          }
             console.log(`Deleted issuer tenant ${walletId} successfully.`);
             return true;
-          }
         },
       });
     }

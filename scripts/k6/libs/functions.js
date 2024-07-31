@@ -33,7 +33,7 @@ export function createTenant(bearerToken, wallet) {
     },
   };
 
-  let response = http.post(url, payload, params);
+  const response = http.post(url, payload, params);
   if (response.status === 200) {
     // Request was successful
     // const { wallet_id: walletId, access_token: accessToken } = JSON.parse(response.body);
@@ -48,12 +48,11 @@ export function createTenant(bearerToken, wallet) {
     //   accessToken: accessToken
     // };
     return response;
-  } else {
+  }
     // Request failed
     console.warn(`Request failed for VU: ${__VU}, ITER: ${__ITER}`);
     logError(response, payload);
     throw new Error("Failed to create tenant");
-  }
 }
 
 export function getWalletIdByWalletName(bearerToken, walletName) {
@@ -65,7 +64,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
     },
   };
 
-  let response = http.get(url, params);
+  const response = http.get(url, params);
   if (response.status >= 200 && response.status < 300) {
     // Request was successful
     const responseData = JSON.parse(response.body);
@@ -80,11 +79,10 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
     console.warn(`Wallet not found for wallet_name ${walletName}`);
     console.warn(`Response body: ${response.body}`);
     return null;
-  } else {
+  }
     logError(response);
     console.warn(`Request failed for wallet_name ${walletName}`);
     return null;
-  }
 }
 
 export function getTrustRegistryActor(walletName) {
@@ -95,21 +93,20 @@ export function getTrustRegistryActor(walletName) {
     },
   };
 
-  let response = http.get(url);
+  const response = http.get(url);
   // console.log(`Respone: ${response}`)
   if (response.status === 200) {
     // Request was successful
     // console.log(`Issuer found for actor_name ${walletName}`);
     return response;
-  } else {
+  }
     logError(response);
     console.warn(`Issuer not on Trust Registry: actor_name ${walletName}`);
     return null;
-  }
 }
 
 export function getAccessTokenByWalletId(bearerToken, walletId) {
-  let start = new Date();
+  const start = new Date();
   const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants/${walletId}/access-token`;
 
   const params = {
@@ -118,24 +115,23 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
     },
   };
 
-  let response = http.get(url, params);
+  const response = http.get(url, params);
 
   if (response.status >= 200 && response.status < 300) {
     // Request was successful
     const responseData = JSON.parse(response.body);
     const accessToken = responseData.access_token;
-    let end = new Date();
+    const end = new Date();
     // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return accessToken;
-  } else {
+  }
     // Request failed
     console.error(`Request failed with status ${response.status}`);
     console.error(`Response body: ${response.body}`);
     // throw new Error(`Failed to get access token: ${response.body}`);
-    let end = new Date();
+    const end = new Date();
     // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return null;
-  }
 }
 
 export function deleteTenant(bearerToken, walletId) {
@@ -147,7 +143,7 @@ export function deleteTenant(bearerToken, walletId) {
   };
 
   try {
-    let response = http.del(url, null, params);
+    const response = http.del(url, null, params);
     const responseBody = response.body;
 
     if (response.status === 200) {
@@ -188,14 +184,13 @@ export function createIssuerTenant(bearerToken, walletName) {
   };
 
   try {
-    let response = http.post(url, payload, params);
+    const response = http.post(url, payload, params);
     if (response.status >= 200 && response.status < 300) {
       return response;
-    } else {
+    }
       logError(response);
       console.warn(`Request failed for wallet_name ${walletName}`);
       return null;
-    }
   } catch (error) {
     console.error(`Error creating issuer tenant: ${error.message}`);
     throw error;
@@ -212,7 +207,7 @@ export function createInvitation(bearerToken, issuerAccessToken) {
   };
 
   try {
-    let response = http.post(url, null, params);
+    const response = http.post(url, null, params);
     return response;
   } catch (error) {
     console.error(`Error creating invitation: ${error.message}`);
@@ -236,7 +231,7 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
       invitation: invitationObj,
     };
 
-    let response = http.post(url, JSON.stringify(requestBody), params);
+    const response = http.post(url, JSON.stringify(requestBody), params);
     return response;
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
@@ -280,15 +275,14 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
     // console.log(`credentialDefinitionId: ${credentialDefinitionId}`)
     // console.log(`issuerConnectionId: ${issuerConnectionId}`)
 
-    let response = http.post(url, requestBody, params);
+    const response = http.post(url, requestBody, params);
     if (response.status >= 200 && response.status < 300) {
       // Request was successful
       return response;
-    } else {
+    }
       console.error(`Request failed with status ${response.status}`);
       console.error(`Response body: ${response.body}`);
       return response.body;
-    }
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
     throw error;
@@ -305,7 +299,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
   };
 
   try {
-    let response = http.post(url, null, params);
+    const response = http.post(url, null, params);
     return response;
   } catch (error) {
     console.error(`Error accepting credential: ${error.message}`);
@@ -332,7 +326,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
       revocation_registry_size: 100,
     });
 
-    let response = http.post(url, requestBody, params);
+    const response = http.post(url, requestBody, params);
     console.log(`Response body: ${response.body}`);
     console.log(`Request body: ${requestBody}`);
     return response;
@@ -352,13 +346,13 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
   try {
-    let response = http.get(url, params);
+    const response = http.get(url, params);
     // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
     // Parse the response body
-    let responseData = JSON.parse(response.body);
+    const responseData = JSON.parse(response.body);
     // Iterate over the responseData array
     for (let i = 0; i < responseData.length; i++) {
-      let obj = responseData[i];
+      const obj = responseData[i];
       // Check if the current object has a matching thread_id
       if (obj.thread_id === threadId) {
         // Return the credential_id if a match is found
@@ -389,8 +383,8 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
       headers,
       tags: { k6_sse_tag: "credential_offer_received" },
     },
-    function (client) {
-      client.on("event", function (event) {
+    (client) => {
+      client.on("event", (event) => {
         // console.log(`event data=${event.data}`);
         const eventData = JSON.parse(event.data);
         if (eventData.topic === "credentials" && eventData.payload.state === "offer-received") {
@@ -402,7 +396,7 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
         }
       });
 
-      client.on("error", function (e) {
+      client.on("error", (e) => {
         console.log("An unexpected error occurred: ", e.error());
         client.close();
       });
@@ -441,8 +435,8 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
       headers,
       tags: { k6_sse_tag: "connection_ready" },
     },
-    function (client) {
-      client.on("event", function (event) {
+    (client) => {
+      client.on("event", (event) => {
         // console.log(`event data=${event.data}`);
         const eventData = JSON.parse(event.data);
         if (eventData.topic === "connections" && eventData.payload.state === "completed") {
@@ -454,7 +448,7 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
         }
       });
 
-      client.on("error", function (e) {
+      client.on("error", (e) => {
         console.log("An unexpected error occurred: ", e.error());
         client.close();
       });
@@ -495,7 +489,7 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
     },
   };
 
-  let response = http.get(url, params);
+  const response = http.get(url, params);
   if (response.status >= 200 && response.status < 300) {
     const responseData = JSON.parse(response.body);
     const matchingItem = responseData.find((item) => item.tag === credDefTag);
@@ -503,15 +497,13 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
     if (matchingItem) {
       console.log(`Credential definition found for tag ${credDefTag}: ${matchingItem.id}`);
       return matchingItem.id;
-    } else {
+    }
       console.warn(`Credential definition not found for tag ${credDefTag}`);
       // logError(response);
       return false;
-    }
-  } else {
+  }
     logError(response);
     throw new Error("Failed to check credential definition existence");
-  }
 }
 
 export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
@@ -539,7 +531,7 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       connection_id: issuerConnectionId,
     };
 
-    let response = http.post(url, JSON.stringify(requestBody), params);
+    const response = http.post(url, JSON.stringify(requestBody), params);
     return response;
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
@@ -561,8 +553,8 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
       headers,
       // tags: { 'k6_sse_tag': 'proof_request_received' },
     },
-    function (client) {
-      client.on("event", function (event) {
+    (client) => {
+      client.on("event", (event) => {
         // console.log(`event data=${event.data}`);
         const eventData = JSON.parse(event.data);
         if (eventData.topic === "proofs" && eventData.payload.state === "request-received") {
@@ -574,7 +566,7 @@ export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threa
         }
       });
 
-      client.on("error", function (e) {
+      client.on("error", (e) => {
         console.log("An unexpected error occurred: ", e.error());
         client.close();
       });
@@ -609,13 +601,13 @@ export function getProofIdByThreadId(holderAccessToken, threadId) {
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
   try {
-    let response = http.get(url, params);
+    const response = http.get(url, params);
     // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
     // Parse the response body
-    let responseData = JSON.parse(response.body);
+    const responseData = JSON.parse(response.body);
     // Iterate over the responseData array
     for (let i = 0; i < responseData.length; i++) {
-      let obj = responseData[i];
+      const obj = responseData[i];
       // Check if the current object has a matching thread_id
       if (obj.thread_id === threadId) {
         // Return the credential_id if a match is found
@@ -642,15 +634,15 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
   };
   // console.log(`holderAccessToken: ${holderAccessToken}`);
   try {
-    let response = http.get(url, params);
+    const response = http.get(url, params);
     // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
     // Parse the response body
-    let responseData = JSON.parse(response.body);
+    const responseData = JSON.parse(response.body);
     // Iterate over the responseData array
     for (let i = 0; i < responseData.length; i++) {
-      let obj = responseData[i];
+      const obj = responseData[i];
       // Check if the current object has a matching thread_id
-      let referent = obj.cred_info.referent;
+      const referent = obj.cred_info.referent;
       return referent;
     }
     // Throw an error if no match is found
@@ -688,7 +680,7 @@ export function acceptProofRequest(holderAccessToken, proofId, referent) {
       diff_presentation_spec: {},
     };
 
-    let response = http.post(url, JSON.stringify(requestBody), params);
+    const response = http.post(url, JSON.stringify(requestBody), params);
     // console.log(`holderAccessToken: ${holderAccessToken}`);
     // console.log(`Response body: ${response.body}`);
     // console.log(`Referent: ${referent}`);
@@ -714,8 +706,8 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
       headers,
       tags: { k6_sse_tag: "proof_done" },
     },
-    function (client) {
-      client.on("event", function (event) {
+    (client) => {
+      client.on("event", (event) => {
         // console.log(`event data=${event.data}`);
         const eventData = JSON.parse(event.data);
         if (eventData.topic === "proofs" && eventData.payload.state === "done") {
@@ -727,7 +719,7 @@ export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThre
         }
       });
 
-      client.on("error", function (e) {
+      client.on("error", (e) => {
         console.log("An unexpected error occurred: ", e.error());
         client.close();
       });
@@ -775,7 +767,7 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
       protocol_version: "v2",
       connection_id: issuerConnectionId,
     };
-    let response = http.get(url, params);
+    const response = http.get(url, params);
     // console.log(`Response body: ${response.body}`);
     // console.log(`IssuerAccessToken: ${issuerAccessToken}`);
     // console.log(`IssuerConnectionId: ${issuerConnectionId}`);
@@ -815,7 +807,7 @@ export function createSchema(bearerToken, schemaName, schemaVersion) {
       ],
     });
 
-    let response = http.post(url, requestBody, params);
+    const response = http.post(url, requestBody, params);
     // console.log(`Response body: ${response.body}`);
     return response;
   } catch (error) {
@@ -833,7 +825,7 @@ export function getSchema(bearerToken, schemaName, schemaVersion) {
   };
 
   try {
-    let response = http.get(url, params);
+    const response = http.get(url, params);
     // console.log(`Response XXX body: ${response.body}`);
     return response;
   } catch (error) {

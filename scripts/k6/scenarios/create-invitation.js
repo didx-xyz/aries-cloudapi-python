@@ -4,20 +4,20 @@
 
 import { check } from "k6";
 import { SharedArray } from "k6/data";
-import { getBearerToken } from "../libs/auth.js";
-import { Trend, Counter } from "k6/metrics";
+import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
-import { createIssuerIfNotExists } from '../libs/issuerUtils.js';
+import { getBearerToken } from "../libs/auth.js";
 import {
-  getWalletIdByWalletName,
-  deleteTenant,
-  createInvitation,
   acceptInvitation,
   createCredentialDefinition,
+  createInvitation,
+  deleteTenant,
+  getCredentialDefinitionId,
+  getWalletIdByWalletName,
   waitForSSEEventConnection,
-  getCredentialDefinitionId
 } from "../libs/functions.js";
+import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
+import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
 const vus = parseInt(__ENV.VUS, 10);
 const iterations = parseInt(__ENV.ITERATIONS, 10);
@@ -35,12 +35,13 @@ export let options = {
   setupTimeout: "120s", // Increase the setup timeout to 120 seconds
   teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
-  thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
+  thresholds: {
+    // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
     "iteration_duration{scenario:default}": ["max>=0"],
-    "checks": ["rate==1"],
+    checks: ["rate==1"],
     // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
@@ -59,12 +60,12 @@ const data = open(inputFilepath, "r");
 const outputFilepath = "output/create-invitation.json";
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function() {
+const wallets = new SharedArray("wallets", function () {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
       wallet_label: `xxkk6 holder ${i}`,
-      wallet_name: `xxkk6_wallet_${i}`
+      wallet_name: `xxkk6_wallet_${i}`,
     });
   }
   return walletsArray;
@@ -93,7 +94,7 @@ export function setup() {
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined
+      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
     });
     if (!issuerData) {
       console.error(`Failed to create or retrieve issuer for ${walletName}`);
@@ -107,7 +108,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
       continue;
     } else {
@@ -117,12 +118,17 @@ export function setup() {
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined
+      "Schema ID is not null": (id) => id !== null && id !== undefined,
     });
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId);
+    const createCredentialDefinitionResponse = createCredentialDefinition(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag,
+      schemaId,
+    );
     check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200
+      "Credential definition created successfully": (r) => r.status === 200,
     });
 
     if (createCredentialDefinitionResponse.status === 200) {
@@ -131,7 +137,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
     } else {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
@@ -151,7 +157,7 @@ function getWalletIndex(vu, iter) {
 const vuStartTimes = {};
 const vuEndTimes = {};
 
-export default function(data) {
+export default function (data) {
   if (__ITER === 0) {
     vuStartTimes[__VU] = Date.now();
   }
@@ -162,7 +168,6 @@ export default function(data) {
 
   const holders = data.holders;
   const wallet = holders[walletIndex];
-
 
   const issuerIndex = __ITER % numIssuers;
   const issuer = issuers[issuerIndex];
@@ -184,7 +189,7 @@ export default function(data) {
         throw new Error(`Unexpected response status while create invitation: ${r.status}`);
       }
       return true;
-    }
+    },
   });
   const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
 
@@ -195,12 +200,16 @@ export default function(data) {
         throw new Error(`Unexpected response while accepting invitation: ${r.response}`);
       }
       return true;
-    }
+    },
   });
 
   const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
 
-  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(wallet.access_token, wallet.wallet_id, holderInvitationConnectionId);
+  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(
+    wallet.access_token,
+    wallet.wallet_id,
+    holderInvitationConnectionId,
+  );
   check(waitForSSEEventConnectionResponse, {
     "SSE Event received successfully: connection-ready": (r) => {
       if (!r) {
@@ -230,8 +239,6 @@ export default function(data) {
   mainIterationDuration.add(duration);
 }
 
-
-
 export function teardown(data) {
   vuEndTimes[__VU] = Date.now();
   const bearerToken = data.bearerToken;
@@ -250,7 +257,7 @@ export function teardown(data) {
             console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
             return true;
           }
-        }
+        },
       });
     }
   } else {
@@ -259,9 +266,9 @@ export function teardown(data) {
   // // Delete holder tenants
   if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
     for (const wallet of holders) {
-      const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
+      const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-      check (deleteHolderResponse, {
+      check(deleteHolderResponse, {
         "Delete Holder Tenant Response status code is 200": (r) => {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
@@ -270,7 +277,7 @@ export function teardown(data) {
             console.log(`Deleted holder tenant ${walletId} successfully.`);
             return true;
           }
-        }
+        },
       });
     }
   } else {

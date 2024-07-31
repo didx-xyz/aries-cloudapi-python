@@ -12,8 +12,8 @@ export function getBearerToken() {
 
   let response = http.post(url, requestBody, {
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    }
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
   });
 
   if (response.status === 200) {
@@ -36,8 +36,8 @@ export function getGovernanceBearerToken() {
 
   let response = http.post(url, requestBody, {
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    }
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
   });
 
   if (response.status === 200) {

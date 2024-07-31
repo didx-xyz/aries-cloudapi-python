@@ -2,20 +2,20 @@
 /* eslint no-undef: "error" */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
-import { sleep, check } from "k6";
+import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
-import { getBearerToken, getGovernanceBearerToken } from "../libs/auth.js";
-import { Trend, Counter } from "k6/metrics";
+import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
-import { createIssuerIfNotExists } from '../libs/issuerUtils.js';
+import { getBearerToken, getGovernanceBearerToken } from "../libs/auth.js";
 import {
-  createTenant,
-  getWalletIdByWalletName,
-  deleteTenant,
   createCredentialDefinition,
+  createTenant,
+  deleteTenant,
   getCredentialDefinitionId,
+  getWalletIdByWalletName,
 } from "../libs/functions.js";
+import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
+import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
 const vus = parseInt(__ENV.VUS, 10);
 const iterations = parseInt(__ENV.ITERATIONS, 10);
@@ -36,11 +36,12 @@ export let options = {
   setupTimeout: "300s", // Increase the setup timeout to 120 seconds
   teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
-  thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
+  thresholds: {
+    // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
-    "checks": ["rate==1"],
+    checks: ["rate==1"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
@@ -55,12 +56,12 @@ const testFunctionReqs = new Counter("test_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", function() {
+const wallets = new SharedArray("wallets", function () {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
       wallet_label: `${holderPrefix} ${i}`,
-      wallet_name: `${holderPrefix}_${i}`
+      wallet_name: `${holderPrefix}_${i}`,
     });
   }
   return walletsArray;
@@ -83,7 +84,7 @@ export function setup() {
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined
+      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
     });
     if (!issuerData) {
       console.error(`Failed to create or retrieve issuer for ${walletName}`);
@@ -97,7 +98,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
       continue;
     } else {
@@ -107,12 +108,17 @@ export function setup() {
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined
+      "Schema ID is not null": (id) => id !== null && id !== undefined,
     });
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId);
+    const createCredentialDefinitionResponse = createCredentialDefinition(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag,
+      schemaId,
+    );
     check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200
+      "Credential definition created successfully": (r) => r.status === 200,
     });
 
     if (createCredentialDefinitionResponse.status === 200) {
@@ -121,7 +127,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
     } else {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
@@ -138,7 +144,7 @@ function getWalletIndex(vu, iter) {
   return walletIndex;
 }
 
-export default function(data) {
+export default function (data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
@@ -152,7 +158,7 @@ export default function(data) {
         throw new Error(`Unexpected response status: ${r.status}`);
       }
       return true;
-    }
+    },
   });
   const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
 
@@ -180,7 +186,8 @@ export function teardown(data) {
 
   console.log(__ENV.SKIP_DELETE_ISSUERS);
 
-  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {    for (const issuer of issuers) {
+  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
+    for (const issuer of issuers) {
       const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
       check(deleteIssuerResponse, {
         "Delete Issuer Tenant Response status code is 200": (r) => {
@@ -191,7 +198,7 @@ export function teardown(data) {
             console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
             return true;
           }
-        }
+        },
       });
     }
   } else {
@@ -199,10 +206,11 @@ export function teardown(data) {
   }
 
   // // Delete holder tenants
-  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {    for (const wallet of wallets) {
-      const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
+  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
+    for (const wallet of wallets) {
+      const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-      check (deleteHolderResponse, {
+      check(deleteHolderResponse, {
         "Delete Holder Tenant Response status code is 200": (r) => {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
@@ -211,7 +219,7 @@ export function teardown(data) {
             console.log(`Deleted holder tenant ${walletId} successfully.`);
             return true;
           }
-        }
+        },
       });
     }
   }

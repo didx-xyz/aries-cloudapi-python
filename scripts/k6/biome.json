@@ -14,7 +14,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "complexity": {
+        "useOptionalChain": "off"
+      }
     },
     "ignore": ["node_modules", "output"]
   }

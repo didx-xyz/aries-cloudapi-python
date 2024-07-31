@@ -16,3 +16,24 @@ Configure local environment variables:
 ```
 cp env.local .env.local
 ```
+
+### Running Biome to lint/format code:
+```
+# Use mise to install Node
+mise install
+
+# Use npm to install Biome - `ci` for frozen lockfile
+npm ci
+
+# check formatting but don't actually write anything
+npm run format:check
+
+# format code
+npm run format
+
+# check linting but don't try to auto-fix
+npm run lint
+
+# lint and auto-fix if possible
+npm run lint:fix
+```

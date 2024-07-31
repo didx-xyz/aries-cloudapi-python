@@ -1,0 +1,11 @@
+{
+	"scripts": {
+		"format:check": "biome format .",
+		"format": "biome format --write .",
+		"lint:fix": "biome lint --write --unsafe .",
+		"lint": "biome lint ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3"
+	}
+}

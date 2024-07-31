@@ -469,7 +469,7 @@ async def test_get_pending_revocations_success(
         )
     )
 
-    result = await rg.get_pending_revocations(
+    await rg.get_pending_revocations(
         controller=mock_agent_controller, rev_reg_id=rev_reg_id
     )
 

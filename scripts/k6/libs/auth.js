@@ -1,6 +1,5 @@
 /* global __ENV, __ITER, __VU */
-/* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error"] }] */
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import http from "k6/http";
 

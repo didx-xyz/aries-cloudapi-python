@@ -1,6 +1,5 @@
 /* global __ENV, __ITER, __VU */
-/* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
@@ -93,7 +92,6 @@ export function setup() {
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
-      // eslint-disable-next-line no-undef
       "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
     });
     if (!issuerData) {
@@ -117,7 +115,6 @@ export function setup() {
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
-      // eslint-disable-next-line no-undef
       "Schema ID is not null": (id) => id !== null && id !== undefined,
     });
 

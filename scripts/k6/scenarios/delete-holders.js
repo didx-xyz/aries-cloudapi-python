@@ -1,6 +1,5 @@
 /* global __ENV, __ITER, __VU */
-/* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
@@ -44,8 +43,8 @@ const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
-      wallet_label: `${holderPrefix} ${i}`, // eslint-disable-line camelcase
-      wallet_name: `${holderPrefix}_${i}`, // eslint-disable-line camelcase
+      wallet_label: `${holderPrefix} ${i}`,
+      wallet_name: `${holderPrefix}_${i}`,
     });
   }
   return walletsArray;

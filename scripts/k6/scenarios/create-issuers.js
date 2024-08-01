@@ -1,5 +1,6 @@
 /* global __ENV, __ITER, __VU */
 // Solve Codacy '__ENV' is not defined. error
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import { check } from "k6";
 import { SharedArray } from "k6/data";
@@ -37,8 +38,8 @@ export const options = {
     "iteration_duration{scenario:default}": ["max>=0"],
   },
   tags: {
-    test_run_id: "phased-issuance", // eslint-disable-line camelcase
-    test_phase: "create-issuers", // eslint-disable-line camelcase
+    test_run_id: "phased-issuance",
+    test_phase: "create-issuers",
   },
 };
 
@@ -86,7 +87,6 @@ export default function (data) {
   check(getTrustRegistryActorResponse, {
     "Trust Registry Actor Response status code is 200": (r) => {
       if (r.status !== 200) {
-        // eslint-disable-next-line no-console
         console.error(
           `Unexpected response status while getting trust registry actor for issuer tenant ${wallet.walletName}: ${r.status}`,
         );

@@ -1,6 +1,5 @@
 /* global __ENV, __ITER, __VU */
-/* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import { check } from "k6";
 import { SharedArray } from "k6/data";
@@ -48,8 +47,8 @@ const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
-      wallet_label: `xk6 holder ${i}`, // eslint-disable-line camelcase
-      wallet_name: `xk6_wallet_${i}`, // eslint-disable-line camelcase
+      wallet_label: `xk6 holder ${i}`,
+      wallet_name: `xk6_wallet_${i}`,
     });
   }
   return walletsArray;

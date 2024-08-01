@@ -44,8 +44,8 @@ const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
     walletsArray.push({
-      wallet_label: `${holderPrefix} ${i}`,
-      wallet_name: `${holderPrefix}_${i}`,
+      wallet_label: `${holderPrefix} ${i}`, // eslint-disable-line camelcase
+      wallet_name: `${holderPrefix}_${i}`, // eslint-disable-line camelcase
     });
   }
   return walletsArray;
@@ -80,8 +80,8 @@ export default function (data) {
         console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
         return false;
       }
-        // console.log(`Deleted holder tenant ${walletId} successfully.`);
-        return true;
+      // console.log(`Deleted holder tenant ${walletId} successfully.`);
+      return true;
     },
   });
   testFunctionReqs.add(1);

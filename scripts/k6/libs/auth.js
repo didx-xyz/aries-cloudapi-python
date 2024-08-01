@@ -21,10 +21,10 @@ export function getBearerToken() {
     const bearerToken = responseData.access_token;
     return bearerToken;
   }
-    console.error("Error:", response.status_text);
-    console.error("Response body:", response.body);
-    console.error("Error description:", response.json().error_description);
-    throw new Error("Failed to obtain bearer token");
+  console.error("Error:", response.status_text);
+  console.error("Response body:", response.body);
+  console.error("Error description:", response.json().error_description);
+  throw new Error("Failed to obtain bearer token");
 }
 
 export function getGovernanceBearerToken() {
@@ -44,8 +44,8 @@ export function getGovernanceBearerToken() {
     const bearerToken = responseData.access_token;
     return bearerToken;
   }
-    console.error("Error:", response.status_text);
-    console.error("Response body:", response.body);
-    console.error("Error description:", response.json().error_description);
-    throw new Error("Failed to obtain bearer token");
+  console.error("Error:", response.status_text);
+  console.error("Response body:", response.body);
+  console.error("Error description:", response.json().error_description);
+  throw new Error("Failed to obtain bearer token");
 }

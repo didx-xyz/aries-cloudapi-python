@@ -37,8 +37,8 @@ export const options = {
     "iteration_duration{scenario:default}": ["max>=0"],
   },
   tags: {
-    test_run_id: "phased-issuance",
-    test_phase: "create-issuers",
+    test_run_id: "phased-issuance", // eslint-disable-line camelcase
+    test_phase: "create-issuers", // eslint-disable-line camelcase
   },
 };
 
@@ -86,13 +86,14 @@ export default function (data) {
   check(getTrustRegistryActorResponse, {
     "Trust Registry Actor Response status code is 200": (r) => {
       if (r.status !== 200) {
+        // eslint-disable-next-line no-console
         console.error(
           `Unexpected response status while getting trust registry actor for issuer tenant ${wallet.walletName}: ${r.status}`,
         );
         return false;
       }
-        console.log(`Got trust registry actor for issuer tenant ${wallet.walletName} successfully.`);
-        return true;
+      console.log(`Got trust registry actor for issuer tenant ${wallet.walletName} successfully.`);
+      return true;
     },
   });
 
@@ -122,8 +123,8 @@ export function teardown(data) {
             console.error(`Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`);
             return false;
           }
-            console.log(`Deleted issuer tenant ${walletId} successfully.`);
-            return true;
+          console.log(`Deleted issuer tenant ${walletId} successfully.`);
+          return true;
         },
       });
     }

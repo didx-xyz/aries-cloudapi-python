@@ -49,10 +49,10 @@ export function createTenant(bearerToken, wallet) {
     // };
     return response;
   }
-    // Request failed
-    console.warn(`Request failed for VU: ${__VU}, ITER: ${__ITER}`);
-    logError(response, payload);
-    throw new Error("Failed to create tenant");
+  // Request failed
+  console.warn(`Request failed for VU: ${__VU}, ITER: ${__ITER}`);
+  logError(response, payload);
+  throw new Error("Failed to create tenant");
 }
 
 export function getWalletIdByWalletName(bearerToken, walletName) {
@@ -80,9 +80,9 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
     console.warn(`Response body: ${response.body}`);
     return null;
   }
-    logError(response);
-    console.warn(`Request failed for wallet_name ${walletName}`);
-    return null;
+  logError(response);
+  console.warn(`Request failed for wallet_name ${walletName}`);
+  return null;
 }
 
 export function getTrustRegistryActor(walletName) {
@@ -100,9 +100,9 @@ export function getTrustRegistryActor(walletName) {
     // console.log(`Issuer found for actor_name ${walletName}`);
     return response;
   }
-    logError(response);
-    console.warn(`Issuer not on Trust Registry: actor_name ${walletName}`);
-    return null;
+  logError(response);
+  console.warn(`Issuer not on Trust Registry: actor_name ${walletName}`);
+  return null;
 }
 
 export function getAccessTokenByWalletId(bearerToken, walletId) {
@@ -125,13 +125,13 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
     // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return accessToken;
   }
-    // Request failed
-    console.error(`Request failed with status ${response.status}`);
-    console.error(`Response body: ${response.body}`);
-    // throw new Error(`Failed to get access token: ${response.body}`);
-    const end = new Date();
-    // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
-    return null;
+  // Request failed
+  console.error(`Request failed with status ${response.status}`);
+  console.error(`Response body: ${response.body}`);
+  // throw new Error(`Failed to get access token: ${response.body}`);
+  const end = new Date();
+  // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
+  return null;
 }
 
 export function deleteTenant(bearerToken, walletId) {
@@ -188,9 +188,9 @@ export function createIssuerTenant(bearerToken, walletName) {
     if (response.status >= 200 && response.status < 300) {
       return response;
     }
-      logError(response);
-      console.warn(`Request failed for wallet_name ${walletName}`);
-      return null;
+    logError(response);
+    console.warn(`Request failed for wallet_name ${walletName}`);
+    return null;
   } catch (error) {
     console.error(`Error creating issuer tenant: ${error.message}`);
     throw error;
@@ -280,9 +280,9 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
       // Request was successful
       return response;
     }
-      console.error(`Request failed with status ${response.status}`);
-      console.error(`Response body: ${response.body}`);
-      return response.body;
+    console.error(`Request failed with status ${response.status}`);
+    console.error(`Response body: ${response.body}`);
+    return response.body;
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
     throw error;
@@ -498,12 +498,12 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
       console.log(`Credential definition found for tag ${credDefTag}: ${matchingItem.id}`);
       return matchingItem.id;
     }
-      console.warn(`Credential definition not found for tag ${credDefTag}`);
-      // logError(response);
-      return false;
+    console.warn(`Credential definition not found for tag ${credDefTag}`);
+    // logError(response);
+    return false;
   }
-    logError(response);
-    throw new Error("Failed to check credential definition existence");
+  logError(response);
+  throw new Error("Failed to check credential definition existence");
 }
 
 export function sendProofRequest(issuerAccessToken, issuerConnectionId) {

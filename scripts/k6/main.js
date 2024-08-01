@@ -48,8 +48,8 @@ const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
-      wallet_label: `xk6 holder ${i}`,
-      wallet_name: `xk6_wallet_${i}`,
+      wallet_label: `xk6 holder ${i}`, // eslint-disable-line camelcase
+      wallet_name: `xk6_wallet_${i}`, // eslint-disable-line camelcase
     });
   }
   return walletsArray;
@@ -106,8 +106,8 @@ export function setup() {
       });
       continue;
     }
-      console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-      // console.error(`Response body: ${credentialDefinitionId.body}`);
+    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
+    // console.error(`Response body: ${credentialDefinitionId.body}`);
 
     const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag);
     check(createCredentialDefinitionResponse, {
@@ -254,8 +254,8 @@ export function teardown(data) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
           }
-            console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
-            return true;
+          console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
+          return true;
         },
       });
     }
@@ -272,8 +272,8 @@ export function teardown(data) {
           console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
           return false;
         }
-          console.log(`Deleted holder tenant ${walletId} successfully.`);
-          return true;
+        console.log(`Deleted holder tenant ${walletId} successfully.`);
+        return true;
       },
     });
   }

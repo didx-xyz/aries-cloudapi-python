@@ -64,8 +64,8 @@ const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
-      wallet_label: `xxkk6 holder ${i}`,
-      wallet_name: `xxkk6_wallet_${i}`,
+      wallet_label: `xxkk6 holder ${i}`, // eslint-disable-line camelcase
+      wallet_name: `xxkk6_wallet_${i}`, // eslint-disable-line camelcase
     });
   }
   return walletsArray;
@@ -94,6 +94,7 @@ export function setup() {
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
+      // eslint-disable-next-line no-undef
       "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
     });
     if (!issuerData) {
@@ -112,11 +113,12 @@ export function setup() {
       });
       continue;
     }
-      console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-      // console.error(`Response body: ${credentialDefinitionId.body}`);
+    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
+    // console.error(`Response body: ${credentialDefinitionId.body}`);
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
+      // eslint-disable-next-line no-undef
       "Schema ID is not null": (id) => id !== null && id !== undefined,
     });
 
@@ -253,8 +255,8 @@ export function teardown(data) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
           }
-            console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
-            return true;
+          console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
+          return true;
         },
       });
     }
@@ -272,8 +274,8 @@ export function teardown(data) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
             return false;
           }
-            console.log(`Deleted holder tenant ${walletId} successfully.`);
-            return true;
+          console.log(`Deleted holder tenant ${walletId} successfully.`);
+          return true;
         },
       });
     }

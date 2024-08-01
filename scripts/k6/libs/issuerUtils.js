@@ -1,5 +1,5 @@
 // issuerUtils.js
-import { getWalletIdByWalletName, getAccessTokenByWalletId, createIssuerTenant } from './functions.js';
+import { createIssuerTenant, getAccessTokenByWalletId, getWalletIdByWalletName } from "./functions.js";
 
 export function createIssuerIfNotExists(bearerToken, walletName) {
   let issuerWalletId = getWalletIdByWalletName(bearerToken, walletName);

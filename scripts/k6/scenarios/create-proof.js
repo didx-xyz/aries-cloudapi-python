@@ -1,33 +1,31 @@
 /* global __ENV, __ITER, __VU */
-/* eslint no-undef: "error" */
-/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+/* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
+import { Counter, Trend } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
-import { Trend, Counter } from "k6/metrics";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
-import { createIssuerIfNotExists } from '../libs/issuerUtils.js';
 import {
-  getWalletIdByWalletName,
-  deleteTenant,
+  acceptProofRequest,
   createCredentialDefinition,
+  deleteTenant,
   getCredentialDefinitionId,
+  getProof,
+  getProofIdByThreadId,
   getProofIdCredentials,
+  getWalletIdByWalletName,
   sendProofRequest,
   waitForSSEEventReceived,
-  getProofIdByThreadId,
-  acceptProofRequest,
   waitForSSEProofDone,
-  getProof,
 } from "../libs/functions.js";
+import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
+import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
-const vus = parseInt(__ENV.VUS, 10);
-const iterations = parseInt(__ENV.ITERATIONS, 10);
+const vus = Number.parseInt(__ENV.VUS, 10);
+const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 
-
-export let options = {
+export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
@@ -39,11 +37,12 @@ export let options = {
   setupTimeout: "180s", // Increase the setup timeout to 120 seconds
   teardownTimeout: "180s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
-  thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
+  thresholds: {
+    // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
-    "checks": ["rate==1"],
+    checks: ["rate==1"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
@@ -73,7 +72,7 @@ const testFunctionReqs = new Counter("test_function_reqs");
 // });
 
 const numIssuers = 1;
-let issuers = [];
+const issuers = [];
 
 export function setup() {
   const bearerToken = getBearerToken();
@@ -93,7 +92,7 @@ export function setup() {
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined
+      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
     });
     if (!issuerData) {
       console.error(`Failed to create or retrieve issuer for ${walletName}`);
@@ -107,22 +106,26 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
       continue;
-    } else {
-      console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-      // console.error(`Response body: ${credentialDefinitionId.body}`);
     }
+    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
+    // console.error(`Response body: ${credentialDefinitionId.body}`);
 
     const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
     check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined
+      "Schema ID is not null": (id) => id !== null && id !== undefined,
     });
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId);
+    const createCredentialDefinitionResponse = createCredentialDefinition(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag,
+      schemaId,
+    );
     check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200
+      "Credential definition created successfully": (r) => r.status === 200,
     });
 
     if (createCredentialDefinitionResponse.status === 200) {
@@ -131,7 +134,7 @@ export function setup() {
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
-        credentialDefinitionId
+        credentialDefinitionId,
       });
     } else {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
@@ -153,7 +156,7 @@ function getRandomInt() {
   return Math.floor(Math.random() * 101);
 }
 
-export default function(data) {
+export default function (data) {
   // const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
@@ -172,8 +175,8 @@ export default function(data) {
   try {
     sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
   } catch (error) {
-      // console.error(`Error creating credential: ${error.message}`);
-      sendProofRequestResponse = { status: 500, response: error.message };
+    // console.error(`Error creating credential: ${error.message}`);
+    sendProofRequestResponse = { status: 500, response: error.message };
   }
   check(sendProofRequestResponse, {
     "Proof request sent successfully": (r) => {
@@ -181,7 +184,7 @@ export default function(data) {
         throw new Error(`Unexpected response while sending proof request: ${r.response}`);
       }
       return true;
-    }
+    },
   });
 
   const { thread_id: threadId } = JSON.parse(sendProofRequestResponse.body);
@@ -207,7 +210,7 @@ export default function(data) {
         throw new Error(`Unexpected response while accepting proof: ${r.response}`);
       }
       return true;
-    }
+    },
   });
 
   const waitForSSEProofDoneRequest = waitForSSEProofDone(issuer.accessToken, issuer.walletId, threadId);
@@ -223,10 +226,10 @@ export default function(data) {
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;
   try {
-    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
+    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId);
   } catch (error) {
-      // console.error(`Error creating credential: ${error.message}`);
-      getProofResponse = { status: 500, response: error.message };
+    // console.error(`Error creating credential: ${error.message}`);
+    getProofResponse = { status: 500, response: error.message };
   }
   check(getProofResponse, {
     "Proof received successfully": (r) => {
@@ -255,11 +258,10 @@ export function teardown(data) {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
             return false;
-          } else {
-            console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
-            return true;
           }
-        }
+          console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
+          return true;
+        },
       });
     }
   } else {
@@ -268,18 +270,17 @@ export function teardown(data) {
   // // Delete holder tenants
   if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
     for (const wallet of wallets) {
-      const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
+      const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
       const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-      check (deleteHolderResponse, {
+      check(deleteHolderResponse, {
         "Delete Holder Tenant Response status code is 200": (r) => {
           if (r.status !== 200) {
             console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
             return false;
-          } else {
-            console.log(`Deleted holder tenant ${walletId} successfully.`);
-            return true;
           }
-        }
+          console.log(`Deleted holder tenant ${walletId} successfully.`);
+          return true;
+        },
       });
     }
   } else {

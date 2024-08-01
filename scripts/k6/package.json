@@ -1,11 +1,12 @@
 {
-	"scripts": {
-		"format:check": "biome format .",
-		"format": "biome format --write .",
-		"lint:fix": "biome lint --write --unsafe .",
-		"lint": "biome lint ."
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.8.3"
-	}
+  "scripts": {
+    "format:check": "biome check --linter-enabled=false .",
+    "format": "biome check --linter-enabled=false --write .",
+    "lint:fix": "biome check --formatter-enabled=false --write .",
+    "lint:fix:unsafe": "biome check --formatter-enabled=false --write --unsafe .",
+    "lint": "biome check --formatter-enabled=false ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3"
+  }
 }

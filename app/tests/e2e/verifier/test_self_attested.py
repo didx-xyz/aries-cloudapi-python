@@ -1,5 +1,4 @@
 import pytest
-
 from aries_cloudcontroller import IndyPresSpec
 
 from app.routes.verifier import AcceptProofRequest, router

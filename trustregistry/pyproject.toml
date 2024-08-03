@@ -15,7 +15,7 @@ orjson = "~3.10.0"
 psycopg2-binary = "~=2.9.6"
 pydantic = "~2.8.2"
 sqlalchemy = "~=2.0.19"
-uvicorn = { version = "~0.30.3", extras = ["standard"] }
+uvicorn = { version = "~0.30.5", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.4.0"

@@ -16,7 +16,7 @@ loguru = "~0.7.2"
 orjson = "~3.10.0"
 pydantic = "~2.8.2"
 redis = "~=5.1.0b5"
-uvicorn = { version = "~0.30.3", extras = ["standard"] }
+uvicorn = { version = "~0.30.5", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.4.0"

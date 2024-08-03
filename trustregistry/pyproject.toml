@@ -19,7 +19,7 @@ uvicorn = { version = "~0.30.3", extras = ["standard"] }
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.4.0"
-black = "~24.4.2"
+black = "~24.8.0"
 isort = "~5.13.2"
 pre-commit = "~3.7.0"
 pylint = "~3.2.6"

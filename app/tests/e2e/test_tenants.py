@@ -526,7 +526,6 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 )
 async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     wallet_label = uuid4().hex
-    group_id = "group"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -572,7 +571,6 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 )
 async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
-    group_id = "group"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -633,7 +631,6 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
     wallet_label = "abc"
     image_url = "https://image.ca"
-    group_id = "group"
     create_response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -691,7 +688,6 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
 async def test_delete_tenant(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
-    group_id = "delete_group"
     wallet_label = uuid4().hex
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,

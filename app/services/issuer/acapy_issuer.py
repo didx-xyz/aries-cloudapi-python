@@ -116,7 +116,14 @@ class Issuer(ABC):
     @classmethod
     @abstractmethod
     async def get_records(
-        cls, controller: AcaPyClient, connection_id: Optional[str] = None
+        cls,
+        controller: AcaPyClient,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        connection_id: Optional[str] = None,
+        role: Optional[str] = None,
+        state: Optional[str] = None,
+        thread_id: Optional[str] = None,
     ) -> List[CredentialExchange]:
         """Get list of credential records.
 

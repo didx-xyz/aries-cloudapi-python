@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -13,17 +14,21 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 
 logger = logging.getLogger(__name__)
 
+look_back = 0.5
+
 
 @pytest.mark.anyio
 async def test_sse_subscribe_wallet_topic(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+
+    await asyncio.sleep(look_back)  # sleep = look_back, ensure sse gets correct record
+
     bob_and_alice_connection = await create_bob_alice_connection(
         alice_member_client, bob_member_client, alias="temp test connection"
     )
-
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     topic = "connections"
@@ -51,11 +56,13 @@ async def test_sse_subscribe_event_state(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+
+    await asyncio.sleep(look_back)  # sleep = look_back, ensure sse gets correct record
+
     bob_and_alice_connection = await create_bob_alice_connection(
         alice_member_client, bob_member_client, alias="temp test connection"
     )
-
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     topic = "connections"
@@ -82,11 +89,13 @@ async def test_sse_subscribe_filtered_stream(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+
+    await asyncio.sleep(look_back)  # sleep = look_back, ensure sse gets correct record
+
     bob_and_alice_connection = await create_bob_alice_connection(
         alice_member_client, bob_member_client, alias="temp test connection"
     )
-
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     topic = "connections"
@@ -116,11 +125,13 @@ async def test_sse_subscribe_event(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+
+    await asyncio.sleep(look_back)  # sleep = look_back, ensure sse gets correct record
+
     bob_and_alice_connection = await create_bob_alice_connection(
         alice_member_client, bob_member_client, alias="temp test connection"
     )
-
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     topic = "connections"
@@ -147,7 +158,9 @@ async def get_sse_stream_response(url, duration=2) -> Response:
     timeout = Timeout(duration)
     try:
         async with RichAsyncClient(timeout=timeout) as client:
-            async with client.stream("GET", url) as response:
+            async with client.stream(
+                "GET", url, params={"look_back": look_back}
+            ) as response:
                 response_text = ""
                 async for line in response.aiter_lines():
                     response_text += line  # pylint: disable=R1713

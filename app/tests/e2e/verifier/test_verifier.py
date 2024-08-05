@@ -347,7 +347,9 @@ async def test_get_proof_and_get_proofs(
     acme_proof_id_2 = send_proof_response_2["proof_id"]
     thread_id_2 = send_proof_response_2["thread_id"]
 
-    all_verifier_proofs = (await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")).json()
+    all_verifier_proofs = (
+        await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs", params={"limit": 10000})
+    ).json()
     all_verifier_proofs = [proof["proof_id"] for proof in all_verifier_proofs]
 
     # Make sure both proofs are in the list

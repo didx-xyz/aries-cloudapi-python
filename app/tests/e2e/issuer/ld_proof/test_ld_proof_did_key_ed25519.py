@@ -154,6 +154,8 @@ async def test_send_jsonld_oob(
     )
 
     oob_record = accept_response.json()
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
     alice_connection_id = oob_record["connection_id"]
 
     assert await check_webhook_state(
@@ -164,20 +166,22 @@ async def test_send_jsonld_oob(
             "connection_id": alice_connection_id,
         },
     )
-    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+    await asyncio.sleep(0.5)  # connection may take moment to reflect
 
     faber_con = await faber_client.get(CONNECTIONS_BASE_PATH)
 
     faber_connections = faber_con.json()
+    faber_connection_id = None
     for con in faber_connections:
         if con["invitation_msg_id"] == invitation["@id"]:
             faber_connection_id = con["connection_id"]
 
+    assert faber_connection_id, "The expected faber-alice connection was not returned"
+
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)
-    credential["connection_id"] = (
-        faber_connection_id  # pylint: disable=possibly-used-before-assignment
-    )
+    credential["connection_id"] = faber_connection_id
     credential["ld_credential_detail"]["credential"][
         "issuer"
     ] = register_issuer_key_ed25519

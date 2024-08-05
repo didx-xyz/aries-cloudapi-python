@@ -8,7 +8,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 
-aiohttp = "~3.9.2"
+aiohttp = "~3.10.1"
 aries-cloudcontroller = "==1.0.0rc4"
 base58 = "~2.1.1"
 fastapi = "~0.112.0"

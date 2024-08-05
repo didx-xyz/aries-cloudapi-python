@@ -173,15 +173,14 @@ async def test_send_jsonld_bbs_oob(
 
     await asyncio.sleep(0.5)  # connection may take moment to reflect
 
-    faber_con = await faber_client.get(CONNECTIONS_BASE_PATH)
+    faber_connections_response = await faber_client.get(
+        CONNECTIONS_BASE_PATH, params={"invitation_msg_id": invitation["@id"]}
+    )
+    faber_connections = faber_connections_response.json()
 
-    faber_connections = faber_con.json()
-    faber_connection_id = None
-    for con in faber_connections:
-        if con["invitation_msg_id"] == invitation["@id"]:
-            faber_connection_id = con["connection_id"]
+    assert faber_connections, "The expected faber-alice connection was not returned"
 
-    assert faber_connection_id, "The expected faber-alice connection was not returned"
+    faber_connection_id = faber_connections[0]["connection_id"]
 
     # Updating JSON-LD credential did:key (bbs)
     credential = deepcopy(credential_)

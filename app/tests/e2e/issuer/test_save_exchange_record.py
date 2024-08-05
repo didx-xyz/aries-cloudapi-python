@@ -159,7 +159,8 @@ async def test_get_cred_exchange_records(
         await asyncio.sleep(0.25)
         alice_cred_ex_response = (
             await alice_member_client.get(
-                CREDENTIALS_BASE_PATH + "?state=offer-received"
+                CREDENTIALS_BASE_PATH,
+                params={"state": "offer-received", "limit": 10000},
             )
         ).json()
 

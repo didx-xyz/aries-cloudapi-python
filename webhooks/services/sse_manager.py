@@ -60,8 +60,10 @@ class SseManager:
         Start the background tasks as part of SseManager's lifecycle
         """
         logger.info("Starting SSE Manager background tasks")
+
         # backfill previous events from redis, if any
-        asyncio.create_task(self._backfill_events(), name="Backfill events")
+        # Removing _backfill_events logic for the time being, due to inefficiency
+        # asyncio.create_task(self._backfill_events(), name="Backfill events")
 
         # listen for new events on redis pubsub channel
         self._tasks.append(
@@ -217,6 +219,10 @@ class SseManager:
 
     async def _backfill_events(self) -> None:
         """
+        TODO: This method is very inefficient when many wallets exist.
+        To be refactored, as detailed here:
+        https://github.com/didx-xyz/aries-cloudapi-python/issues/899
+
         Backfill events from Redis that were published within the MAX_EVENT_AGE window.
         """
         logger.info("Start backfilling SSE queue with recent events from redis")

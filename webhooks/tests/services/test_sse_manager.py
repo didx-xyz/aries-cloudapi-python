@@ -40,7 +40,10 @@ def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
 @pytest.mark.anyio
 async def test_start(sse_manager):  # pylint: disable=redefined-outer-name
     # Mock the coroutine methods
-    sse_manager._backfill_events = AsyncMock()
+
+    # Removing _backfill_events logic for the time being, due to inefficiency
+    # sse_manager._backfill_events = AsyncMock()
+
     sse_manager._listen_for_new_events = AsyncMock()
     sse_manager._process_incoming_events = AsyncMock()
     sse_manager._cleanup_cache = AsyncMock()

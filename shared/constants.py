@@ -68,6 +68,7 @@ MAX_NUM_RETRIES = int(os.getenv("MAX_NUM_RETRIES", "3"))
 
 # timeout for waiting for registries to be created
 REGISTRY_CREATION_TIMEOUT = int(os.getenv("REGISTRY_CREATION_TIMEOUT", "60"))
+REGISTRY_SIZE = int(os.getenv("REGISTRY_SIZE", "32767"))
 
 # Billing Service
 LAGO_URL = os.getenv("LAGO_URL", "")

@@ -12,6 +12,7 @@ from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.assert_public_did import assert_public_did
 from app.util.definitions import credential_definition_from_acapy
 from app.util.transaction_acked import wait_for_transaction_ack
+from shared import REGISTRY_SIZE
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -49,7 +50,7 @@ async def create_credential_definition(
         schema_id=credential_definition.schema_id,
         support_revocation=support_revocation,
         tag=credential_definition.tag,
-        revocation_registry_size=32767,
+        revocation_registry_size=REGISTRY_SIZE,
     )
 
     result = await publisher.publish_credential_definition(request_body)

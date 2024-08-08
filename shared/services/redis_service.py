@@ -200,7 +200,7 @@ class RedisService:
                     self.logger.trace("No keys found matching pattern in this batch.")
 
                 if all(c == 0 for c in next_cursor.values()):
-                    self.logger.debug("Completed SCAN for pattern: %s", match_pattern)
+                    self.logger.trace("Completed SCAN for pattern: {}", match_pattern)
                     break  # Exit the loop
                 cursor += 1
         except Exception:  # pylint: disable=W0718

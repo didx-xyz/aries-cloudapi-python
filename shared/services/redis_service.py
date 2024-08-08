@@ -231,7 +231,7 @@ class RedisService:
             lock_key: The Redis key of the lock to extend.
             interval: Timedelta object representing how long to wait before extending the lock again.
         """
-        retry_interval = interval.total_seconds() * 0.9
+        retry_interval = interval.total_seconds() * 0.5
         try:
             while True:
                 await asyncio.sleep(retry_interval)

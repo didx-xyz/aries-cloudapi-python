@@ -164,7 +164,7 @@ async def test_attempt_process_list_events(acapy_events_processor_mock):
     acapy_events_processor_mock._attempt_process_list_events(event_key)
 
     acapy_events_processor_mock.redis_service.set_lock.assert_called_with(
-        lock_key, px=500
+        lock_key, px=2000
     )
     acapy_events_processor_mock._process_list_events.assert_called_with(event_key)
     acapy_events_processor_mock.redis_service.delete_key.assert_called_with(lock_key)

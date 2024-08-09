@@ -191,12 +191,12 @@ class AcaPyEventsProcessor:
         lock_key = f"lock:{list_key}"
         extend_lock_task = None
 
-        lock_duration = 500  # milliseconds
+        lock_duration = 2000  # milliseconds
 
         if self.redis_service.set_lock(lock_key, px=lock_duration):
             try:
                 # Start a background task to extend the lock periodically
-                # This is just to ensure that on the off chance that 500ms isn't enough to process all the
+                # This is just to ensure that on the off chance that 2000ms isn't enough to process all the
                 # events in the list, we want to avoid replicas processing the same webhook event twice
                 extend_lock_task = self.redis_service.extend_lock_task(
                     lock_key, interval=datetime.timedelta(milliseconds=lock_duration)

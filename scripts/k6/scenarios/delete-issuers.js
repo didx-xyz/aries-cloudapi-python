@@ -50,10 +50,9 @@ const wallets = new SharedArray("wallets", () => {
   return walletsArray;
 });
 
-
 export function setup() {
   const bearerToken = getBearerToken();
-  return { bearerToken };
+  return { bearerToken }; // eslint-disable-line no-eval
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;

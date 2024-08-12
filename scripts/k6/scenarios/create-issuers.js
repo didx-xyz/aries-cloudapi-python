@@ -5,8 +5,8 @@
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
-import { getBearerToken } from "../libs/auth.js";
 import file from "k6/x/file";
+import { getBearerToken } from "../libs/auth.js";
 import {
   createCredentialDefinition,
   createIssuerTenant,

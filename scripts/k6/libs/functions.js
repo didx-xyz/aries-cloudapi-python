@@ -333,7 +333,6 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
     logError(response);
     console.warn(`Failed creating credential definition. Request Body: ${requestBody}`);
     return null;
-
   } catch (error) {
     console.error(`Error creating credential definition: ${error.message}`);
     throw error;

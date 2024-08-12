@@ -48,7 +48,7 @@ export function setup() {
   check(schemaId, {
     "Schema ID is not null": (id) => id !== null && id !== undefined,
   });
-  return { bearerToken, issuers, schemaId };
+  return { bearerToken, issuers, schemaId }; // eslint-disable-line no-eval
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;
@@ -66,9 +66,13 @@ export default function (data) {
   const wallet = issuers[walletIndex];
   const credDefTag = wallet.wallet_name;
 
-  const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, wallet.access_token, credDefTag, schemaId);
+  const createCredentialDefinitionResponse = createCredentialDefinition(
+    bearerToken,
+    wallet.access_token,
+    credDefTag,
+    schemaId,
+  );
   check(createCredentialDefinitionResponse, {
-    "Credential definition created successfully": (r) => r.status === 200
+    "Credential definition created successfully": (r) => r.status === 200,
   });
-
 }

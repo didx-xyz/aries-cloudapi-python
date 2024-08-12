@@ -33,7 +33,12 @@ on:
       - synchronize
       - ready_for_review
 
+concurrency:
+  group: cicd
+  cancel-in-progress: false
+
 jobs:
+
   build:
     if: ${{ !github.event.pull_request.draft }}
     name: Build GHCR
@@ -41,10 +46,6 @@ jobs:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: cicd-build-${{ matrix.image }}-${{ github.ref }}
-      cancel-in-progress: false
 
     outputs:
       image_version: ${{ steps.meta.outputs.version }}
@@ -325,10 +326,6 @@ jobs:
       HELMFILE_VERSION: v0.166.0
       HELM_VERSION: v3.15.3
 
-    concurrency:
-      group: cicd-deploy
-      cancel-in-progress: false
-
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
 
@@ -559,10 +556,6 @@ jobs:
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
       PYTEST_COMPLETIONS: 1
-
-    concurrency:
-      group: cicd-deploy
-      cancel-in-progress: false
 
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
@@ -935,11 +928,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
 
-    timeout-minutes: 5
-
-    concurrency:
-      group: cicd-build-xk6-${{ github.ref }}
-      cancel-in-progress: false
+    timeout-minutes: 10
 
     outputs:
       image_version: ${{ steps.meta.outputs.version }}

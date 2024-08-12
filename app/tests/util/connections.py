@@ -101,7 +101,7 @@ async def fetch_existing_connection_by_alias(
     alias: Optional[str] = None,
     their_label: Optional[str] = None,
 ) -> Optional[Connection]:
-    params = {"state": "completed"}
+    params = {"state": "completed", "limit": 10000}
     if alias:
         params.update({"alias": alias})
 

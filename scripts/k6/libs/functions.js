@@ -326,9 +326,13 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
     });
 
     const response = http.post(url, requestBody, params);
-    console.log(`Response body: ${response.body}`);
-    console.log(`Request body: ${requestBody}`);
-    return response;
+
+    if (response.status == 200) {
+      return response;
+    }
+    logError(response);
+    console.warn(`Failed creating credential definition. Request Body: ${requestBody}`);
+    return null;
   } catch (error) {
     console.error(`Error creating credential definition: ${error.message}`);
     throw error;

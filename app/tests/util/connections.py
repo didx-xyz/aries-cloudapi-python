@@ -101,12 +101,12 @@ async def fetch_existing_connection_by_alias(
     alias: Optional[str] = None,
     their_label: Optional[str] = None,
 ) -> Optional[Connection]:
-    params = {"state": "completed"}
+    params = {"state": "completed", "limit": 10000}
     if alias:
         params.update({"alias": alias})
 
     list_connections_response = await member_client.get(
-        f"{CONNECTIONS_BASE_PATH}", params=params
+        CONNECTIONS_BASE_PATH, params=params
     )
     list_connections = list_connections_response.json()
 
@@ -248,6 +248,9 @@ async def fetch_or_create_trust_registry_connection(
             acme_connection_id=verifier_connection.connection_id,
         )
     else:
+        assert not alice_connection, "Alice has connection, but not found for verifier"
+        assert not verifier_connection, "Verifier has connection, but not for Alice"
+
         # Create connection since they don't exist
         assert_fail_on_recreating_fixtures()
         return await connect_using_trust_registry_invite(

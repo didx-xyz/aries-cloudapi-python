@@ -28,7 +28,7 @@ async def alice_tenant(request) -> AsyncGenerator[CreateTenantResponse, Any]:
 
         elif test_mode == TestMode.regression_run:
             tenant = await get_or_create_tenant(
-                admin_client=admin_client, name="Holder1", roles=[]
+                admin_client=admin_client, name="RegressionHolderAlice", roles=[]
             )
 
             yield tenant
@@ -48,7 +48,7 @@ async def bob_tenant(request) -> AsyncGenerator[CreateTenantResponse, Any]:
 
         elif test_mode == TestMode.regression_run:
             tenant = await get_or_create_tenant(
-                admin_client=admin_client, name="Holder2", roles=[]
+                admin_client=admin_client, name="RegressionHolderBob", roles=[]
             )
 
             yield tenant
@@ -68,7 +68,7 @@ async def acme_verifier(request) -> AsyncGenerator[CreateTenantResponse, Any]:
 
         elif test_mode == TestMode.regression_run:
             verifier_tenant = await get_or_create_tenant(
-                admin_client=admin_client, name="Verifier", roles=["verifier"]
+                admin_client=admin_client, name="RegressionVerifier", roles=["verifier"]
             )
 
             yield verifier_tenant
@@ -88,7 +88,7 @@ async def faber_issuer(request) -> AsyncGenerator[CreateTenantResponse, Any]:
 
         elif test_mode == TestMode.regression_run:
             issuer_tenant = await get_or_create_tenant(
-                admin_client=admin_client, name="Issuer", roles=["issuer"]
+                admin_client=admin_client, name="RegressionIssuer", roles=["issuer"]
             )
 
             yield issuer_tenant
@@ -111,7 +111,7 @@ async def meld_co_issuer_verifier(request) -> AsyncGenerator[CreateTenantRespons
         elif test_mode == TestMode.regression_run:
             issuer_tenant = await get_or_create_tenant(
                 admin_client=admin_client,
-                name="IssuerAndVerifier",
+                name="RegressionIssuerAndVerifier",
                 roles=["issuer", "verifier"],
             )
 

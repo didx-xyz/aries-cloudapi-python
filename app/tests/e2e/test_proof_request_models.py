@@ -62,6 +62,7 @@ async def test_proof_model_failures(
         acme_exchange_v1 = await acme_acapy_client.present_proof_v1_0.send_request_free(
             body=request_body
         )
+        acme_exchange_v2 = None
     else:
         request_body = V20PresSendRequestRequest(
             auto_remove=False,
@@ -86,6 +87,7 @@ async def test_proof_model_failures(
         acme_exchange_v2 = await acme_acapy_client.present_proof_v2_0.send_request_free(
             body=request_body
         )
+        acme_exchange_v1 = None
 
     await check_webhook_state(
         client=alice_member_client,

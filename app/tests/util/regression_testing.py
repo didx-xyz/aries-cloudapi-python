@@ -30,10 +30,9 @@ class TestMode:
 
 
 def assert_fail_on_recreating_fixtures():
-    assert True
-    # assert (
-    #     RegressionTestConfig.fail_on_recreating_fixtures is False
-    # ), "Fixture is being recreated (regression tests configured to fail on recreating)"
+    assert (
+        RegressionTestConfig.fail_on_recreating_fixtures is False
+    ), "Fixture is being recreated (regression tests configured to fail on recreating)"
 
 
 async def get_or_create_tenant(

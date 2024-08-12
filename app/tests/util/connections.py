@@ -106,7 +106,7 @@ async def fetch_existing_connection_by_alias(
         params.update({"alias": alias})
 
     list_connections_response = await member_client.get(
-        f"{CONNECTIONS_BASE_PATH}", params=params
+        CONNECTIONS_BASE_PATH, params=params
     )
     list_connections = list_connections_response.json()
 

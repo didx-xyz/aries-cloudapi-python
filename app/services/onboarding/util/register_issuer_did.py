@@ -194,7 +194,7 @@ async def wait_endorser_connection_completed(
     endorser_controller: AcaPyClient,
     invitation_msg_id: str,
     logger: Logger,
-    max_attempts: int = 15,
+    max_attempts: int = 30,
     retry_delay: float = 0.5,
 ) -> ConnRecord:
     attempt = 0

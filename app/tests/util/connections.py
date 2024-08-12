@@ -248,6 +248,9 @@ async def fetch_or_create_trust_registry_connection(
             acme_connection_id=verifier_connection.connection_id,
         )
     else:
+        assert not alice_connection, "Alice has connection, but not found for verifier"
+        assert not verifier_connection, "Verifier has connection, but not for Alice"
+
         # Create connection since they don't exist
         assert_fail_on_recreating_fixtures()
         return await connect_using_trust_registry_invite(

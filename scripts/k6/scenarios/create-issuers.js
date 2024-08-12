@@ -2,10 +2,11 @@
 // Solve Codacy '__ENV' is not defined. error
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
+import file from "k6/x/file";
 import {
   createCredentialDefinition,
   createIssuerTenant,
@@ -18,6 +19,8 @@ const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 // const holderPrefix = __ENV.HOLDER_PREFIX;
+
+const outputFilepath = "output/create-issuers.json";
 
 export const options = {
   scenarios: {
@@ -60,6 +63,7 @@ const wallets = new SharedArray("wallets", () => {
 
 export function setup() {
   const bearerToken = getBearerToken();
+  file.writeString(outputFilepath, "");
   return { bearerToken };
 }
 
@@ -81,7 +85,8 @@ export default function (data) {
   check(createIssuerTenantResponse, {
     "Issuer tenant created successfully": (r) => r.status === 200,
   });
-  const issuerAccessToken = createIssuerTenantResponse.json().access_token;
+  // const issuerAccessToken = createIssuerTenantResponse.json().access_token;
+  const { wallet_id: walletId, access_token: accessToken } = JSON.parse(createIssuerTenantResponse.body);
 
   const getTrustRegistryActorResponse = getTrustRegistryActor(wallet.walletName);
   check(getTrustRegistryActorResponse, {
@@ -92,7 +97,7 @@ export default function (data) {
         );
         return false;
       }
-      console.log(`Got trust registry actor for issuer tenant ${wallet.walletName} successfully.`);
+      // console.log(`Got trust registry actor for issuer tenant ${wallet.walletName} successfully.`);
       return true;
     },
   });
@@ -102,11 +107,20 @@ export default function (data) {
   //   "Credential definition created successfully": (r) => r.status === 200
   // });
 
+  const issuerData = JSON.stringify({
+    wallet_label: wallet.walletLabel,
+    wallet_name: wallet.walletName,
+    wallet_id: walletId,
+    access_token: accessToken,
+  });
+  file.appendString(outputFilepath, `${issuerData}\n`);
+
   const end = Date.now();
   const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
   mainIterationDuration.add(duration);
   testFunctionReqs.add(1);
+  // sleep(1);
 }
 
 export function teardown(data) {
@@ -123,7 +137,7 @@ export function teardown(data) {
             console.error(`Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`);
             return false;
           }
-          console.log(`Deleted issuer tenant ${walletId} successfully.`);
+          // console.log(`Deleted issuer tenant ${walletId} successfully.`);
           return true;
         },
       });

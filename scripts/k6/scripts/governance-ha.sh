@@ -2,17 +2,17 @@
 source ./env.sh
 
 NAMESPACE="dev-cloudapi"
-VUS=5
-ITERATIONS=15
+ISSUER_PREFIX="k6_issuer_zc"
+VUS=15
+ITERATIONS=5
 
 WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"
 AGENT="governance-ga-agent governance-multitenant-agent"
 SERVICE="tails-server governance-trust-registry governance-endorser governance-webhooks-web"
 AUTH="inquisitor"
-TESTS="create-issuers.js"
+TESTS="create-issuers.js create-creddef.js"
 
-
-INVALID="governance-multitenant-web governance-multitenant-agent"
+INVALID="governance-multitenant-web governance-multitenant-agent governance-webhooks-web governance-tenant-web"
 
 # Combine all stacks into one variable
 ALL="$SERVICE $AGENT $WEBS $AUTH"
@@ -27,7 +27,7 @@ ALL=$(echo $ALL | tr -s ' ')
 
 for STACK in ALL; do
     for TEST in ${TESTS}; do
-        xk6 run -e SKIP_DELETE_ISSUERS=false -e SKIP_DELETE_HOLDERS=true ./scenarios/${TEST} &
+        xk6 run -e SKIP_DELETE_ISSUERS=true -e SKIP_DELETE_HOLDERS=true ./scenarios/${TEST} &
         PID=$!
         for DEPLOYMENT in ${!STACK}; do
             # kubectl -n ${NAMESPACE} scale deployment ${DEPLOYMENT} --replicas=3
@@ -45,3 +45,5 @@ for STACK in ALL; do
         echo done
     done
 done
+
+xk6 run ./scenarios/delete-issuers.js

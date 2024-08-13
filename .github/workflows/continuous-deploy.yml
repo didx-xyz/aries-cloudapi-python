@@ -604,7 +604,7 @@ jobs:
               --state-values-set release=cloudapi-pytest-regression \
               --set fullnameOverride=cloudapi-pytest-regression \
               --set env.RUN_REGRESSION_TESTS="true" \
-              --set command[2]=pytest
+              --state-values-set regressionEnabled=true
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -629,8 +629,7 @@ jobs:
               --set fullnameOverride=cloudapi-pytest-regression \
               --set env.RUN_REGRESSION_TESTS="true" \
               --set env.FAIL_ON_RECREATING_FIXTURES="true" \
-              --set command[2]="pytest --junitxml="/mnt/test_output.xml" --cov-report=term-missing:skip-covered --cov=trustregistry --cov=app --cov=endorser --cov=webhooks | tee /mnt/test_coverage.txt"
-
+              --state-values-set regressionEnabled=true
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

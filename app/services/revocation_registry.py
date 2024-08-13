@@ -187,15 +187,15 @@ async def publish_pending_revocations(
             f"Failed to publish pending revocations: {e.detail}", e.status_code
         ) from e
 
-    if not result.txn or not result.txn.transaction_id:
+    if not result.txn or not result.txn[0].transaction_id:
         bound_logger.warning(
             "Published pending revocations but received no endorser transaction id. Got result: {}",
             result,
         )
         return
 
-    endorse_transaction_id = result.txn.transaction_id
-    bound_logger.debug(
+    endorse_transaction_id = result.txn[0].transaction_id
+    bound_logger.info(
         "Successfully published pending revocations. Endorser transaction id: {}.",
         endorse_transaction_id,
     )

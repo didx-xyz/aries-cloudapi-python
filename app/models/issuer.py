@@ -104,28 +104,29 @@ class RevokedResponse(BaseModel):
     cred_rev_ids_published: Dict[str, List[int]] = Field(
         default_factory=dict,
         description=(
-            "A map of revocation registry IDs to lists of credential revocation IDs"
+            "A map of revocation registry IDs to lists of credential revocation IDs "
             "(as integers) that have been revoked. Can be empty."
         ),
     )
 
     @model_validator(mode="before")
     @classmethod
-    def extract_revoked_info(cls, values):
-        txn = values.get("txn", {})
-        messages_attach = txn.get("messages_attach", [])
-        cred_rev_ids_published = {}
+    def extract_revoked_info(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if isinstance(values, dict) and "txn" in values:
+            txn_list = values["txn"]
+            cred_rev_ids_published = {}
 
-        for attach in messages_attach:
-            data = attach.get("data", {}).get("json", {})
-            operation = data.get("operation", {})
-            revoc_reg_def_id = operation.get("revocRegDefId")
-            revoked = operation.get("value", {}).get("revoked", [])
+            for txn in txn_list:
+                for attach in txn.get("messages_attach", []):
+                    data = attach.get("data", {}).get("json", {})
+                    operation = data.get("operation", {})
+                    revoc_reg_def_id = operation.get("revocRegDefId")
+                    revoked = operation.get("value", {}).get("revoked", [])
+                    if revoc_reg_def_id and revoked:
+                        cred_rev_ids_published[revoc_reg_def_id] = revoked
 
-            if revoc_reg_def_id and revoked:
-                cred_rev_ids_published[revoc_reg_def_id] = revoked
+            values["cred_rev_ids_published"] = cred_rev_ids_published
 
-        values["cred_rev_ids_published"] = cred_rev_ids_published
         return values
 
 

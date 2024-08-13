@@ -670,7 +670,7 @@ async def publish_revocations(
             bound_logger.debug("No revocations to publish.")
             return RevokedResponse()
 
-        endorser_transaction_id = result.txn.transaction_id
+        endorser_transaction_id = result.txn[0].transaction_id
         if endorser_transaction_id:
             bound_logger.debug(
                 "Wait for publish complete on transaction id: {}",

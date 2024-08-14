@@ -45,7 +45,7 @@ async def register_actor(actor: Actor) -> None:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully registered actor on trust registry.")
+    bound_logger.debug("Successfully registered actor on trust registry.")
 
 
 async def update_actor(actor: Actor) -> None:
@@ -105,9 +105,9 @@ async def fetch_all_actors() -> List[Actor]:
     actors = [Actor.model_validate(actor) for actor in actors_response.json()]
 
     if actors:
-        logger.info("Successfully got all actors.")
+        logger.debug("Successfully got all actors.")
     else:
-        logger.info("No actors found.")
+        logger.debug("No actors found.")
 
     return actors
 
@@ -145,7 +145,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -182,7 +182,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -219,7 +219,7 @@ async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -255,9 +255,9 @@ async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     actors_with_role_list = [actor for actor in actors if role in actor.roles]
 
     if actors_with_role_list:
-        bound_logger.info("Successfully got actors with requested role.")
+        bound_logger.debug("Successfully got actors with requested role.")
     else:
-        bound_logger.info("No actors found with requested role.")
+        bound_logger.debug("No actors found with requested role.")
 
     return actors_with_role_list
 
@@ -294,4 +294,4 @@ async def remove_actor_by_id(actor_id: str) -> None:
             remove_response.status_code,
         )
 
-    bound_logger.info("Successfully removed actor from trust registry.")
+    bound_logger.debug("Successfully removed actor from trust registry.")

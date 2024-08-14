@@ -49,7 +49,7 @@ async def send_messages(
             conn_id=message.connection_id,
             body=request_body,
         )
-    logger.info("Successfully sent message.")
+    logger.debug("Successfully sent message.")
 
 
 @router.post(
@@ -91,5 +91,5 @@ async def send_trust_ping(
             conn_id=trustping_msg.connection_id,
             body=request_body,
         )
-    logger.info("Successfully sent trust ping.")
+    logger.debug("Successfully sent trust ping.")
     return response

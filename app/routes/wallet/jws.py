@@ -56,7 +56,7 @@ async def sign_jws(
         )
 
     result = JWSCreateResponse(jws=jws)
-    bound_logger.info("Successfully signed JWS.")
+    bound_logger.debug("Successfully signed JWS.")
     return result
 
 
@@ -95,5 +95,5 @@ async def verify_jws(
         )
 
     result = JWSVerifyResponse(**verify_result.model_dump())
-    bound_logger.info("Successfully verified JWS.")
+    bound_logger.debug("Successfully verified JWS.")
     return result

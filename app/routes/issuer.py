@@ -123,7 +123,7 @@ async def send_credential(
                 f"Failed to send credential: {e.detail}", e.status_code
             ) from e
 
-    bound_logger.info("Successfully sent credential.")
+    bound_logger.debug("Successfully sent credential.")
     return result
 
 
@@ -210,7 +210,7 @@ async def create_offer(
             credential=credential,
         )
 
-    bound_logger.info("Successfully created credential offer.")
+    bound_logger.debug("Successfully created credential offer.")
     return result
 
 
@@ -276,7 +276,7 @@ async def request_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully sent credential request.")
+    bound_logger.debug("Successfully sent credential request.")
     return result
 
 
@@ -324,7 +324,7 @@ async def store_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully stored credential.")
+    bound_logger.debug("Successfully stored credential.")
     return result
 
 
@@ -403,9 +403,9 @@ async def get_credentials(
 
     result = v1_records + v2_records
     if result:
-        bound_logger.info("Successfully fetched v1 and v2 records.")
+        bound_logger.debug("Successfully fetched v1 and v2 records.")
     else:
-        bound_logger.info("No v1 or v2 records returned.")
+        bound_logger.debug("No v1 or v2 records returned.")
     return result
 
 
@@ -456,7 +456,7 @@ async def get_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully fetched credential.")
+    bound_logger.debug("Successfully fetched credential.")
     return result
 
 
@@ -494,7 +494,7 @@ async def remove_credential_exchange_record(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully deleted credential exchange record.")
+    bound_logger.debug("Successfully deleted credential exchange record.")
 
 
 @router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
@@ -536,7 +536,7 @@ async def revoke_credential(
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
 
 
 @router.get(
@@ -605,7 +605,7 @@ async def get_credential_revocation_record(
             revocation_registry_id=revocation_registry_id,
         )
 
-    bound_logger.info("Successfully fetched credential revocation record.")
+    bound_logger.debug("Successfully fetched credential revocation record.")
     return revocation_record
 
 
@@ -681,7 +681,7 @@ async def publish_revocations(
                     504,
                 ) from e
 
-    bound_logger.info("Successfully published revocations.")
+    bound_logger.debug("Successfully published revocations.")
 
 
 @router.post(
@@ -737,5 +737,5 @@ async def clear_pending_revocations(
             revocation_registry_credential_map=clear_pending_request.revocation_registry_credential_map,
         )
 
-    bound_logger.info("Successfully cleared pending revocations.")
+    bound_logger.debug("Successfully cleared pending revocations.")
     return response

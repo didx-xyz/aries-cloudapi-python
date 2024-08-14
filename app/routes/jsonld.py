@@ -87,7 +87,7 @@ async def sign_jsonld(
             body=request_body,
         )
     if result:
-        bound_logger.info("Successfully signed JsonLD.")
+        bound_logger.debug("Successfully signed JsonLD.")
     else:
         bound_logger.warning("No result from signing JsonLD.")
     return result
@@ -134,4 +134,4 @@ async def verify_jsonld(
                 422,
             )
 
-    bound_logger.info("Successfully verified JsonLD.")
+    bound_logger.debug("Successfully verified JsonLD.")

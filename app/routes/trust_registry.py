@@ -24,7 +24,7 @@ async def get_schemas() -> List[Schema]:
     logger.debug("GET request received: Fetch schemas from the trust registry")
     schemas = await registry_schemas.fetch_schemas()
 
-    logger.info("Successfully retrieved schemas.")
+    logger.debug("Successfully retrieved schemas.")
     return schemas
 
 
@@ -46,7 +46,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     schema = await registry_schemas.get_schema_by_id(schema_id)
 
     if schema:
-        bound_logger.info("Successfully fetched schema by id.")
+        bound_logger.debug("Successfully fetched schema by id.")
         return schema
     else:
         bound_logger.info("Bad request: schema not found.")
@@ -81,7 +81,7 @@ async def get_actors(
         logger.debug("GET request received: Fetch all actors from the trust registry")
         actors = await registry_actors.fetch_all_actors()
 
-        logger.info("Successfully retrieved actors.")
+        logger.debug("Successfully retrieved actors.")
         return actors
 
     bound_logger = logger.bind(
@@ -114,7 +114,7 @@ async def get_actors(
         actor = await registry_actors.fetch_actor_by_name(actor_name)
 
     if actor:
-        bound_logger.info("Successfully retrieved actor.")
+        bound_logger.debug("Successfully retrieved actor.")
         return [actor]
     else:
         bound_logger.info("Bad request: actor not found.")
@@ -133,7 +133,7 @@ async def get_issuers() -> List[Actor]:
     logger.debug("GET request received: Fetch the issuers from the trust registry")
     issuers = await registry_actors.fetch_actors_with_role("issuer")
 
-    logger.info("Successfully retrieved issuers.")
+    logger.debug("Successfully retrieved issuers.")
     return issuers
 
 
@@ -149,5 +149,5 @@ async def get_verifiers() -> List[Actor]:
     logger.debug("GET request received: Fetch the verifiers from the trust registry")
     verifiers = await registry_actors.fetch_actors_with_role("verifier")
 
-    logger.info("Successfully retrieved verifiers.")
+    logger.debug("Successfully retrieved verifiers.")
     return verifiers

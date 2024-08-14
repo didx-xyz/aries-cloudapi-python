@@ -153,9 +153,9 @@ async def get_schemas(
                 raise
 
     if schemas:
-        bound_logger.info("Successfully fetched schemas.")
+        bound_logger.debug("Successfully fetched schemas.")
     else:
-        bound_logger.info("No schemas matching request.")
+        bound_logger.debug("No schemas matching request.")
 
     return schemas
 
@@ -202,7 +202,7 @@ async def get_schema(
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
     result = credential_schema_from_acapy(schema.var_schema)
-    bound_logger.info("Successfully fetched schema by id.")
+    bound_logger.debug("Successfully fetched schema by id.")
     return result
 
 
@@ -271,7 +271,7 @@ async def create_credential_definition(
         max_attempts=3,
         retry_delay=0.5,
     )
-    bound_logger.info("Successfully created credential definition.")
+    bound_logger.debug("Successfully created credential definition.")
     return result
 
 
@@ -337,9 +337,9 @@ async def get_credential_definitions(
         )
 
     if credential_definitions:
-        bound_logger.info("Successfully fetched credential definitions.")
+        bound_logger.debug("Successfully fetched credential definitions.")
     else:
-        bound_logger.info("No credential definitions matching request.")
+        bound_logger.debug("No credential definitions matching request.")
 
     return credential_definitions
 
@@ -405,5 +405,5 @@ async def get_credential_definition_by_id(
         )
         cloudapi_credential_definition.schema_id = schema.id
 
-    bound_logger.info("Successfully fetched credential definition.")
+    bound_logger.debug("Successfully fetched credential definition.")
     return cloudapi_credential_definition

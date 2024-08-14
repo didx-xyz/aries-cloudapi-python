@@ -217,7 +217,7 @@ async def delete_tenant_by_id(
             acapy_call=admin_controller.multitenancy.delete_wallet,
             wallet_id=wallet_id,
         )
-        bound_logger.info("Successfully deleted tenant.")
+        bound_logger.debug("Successfully deleted tenant.")
 
 
 @router.get("/{wallet_id}/access-token", response_model=TenantAuth)
@@ -246,7 +246,7 @@ async def get_wallet_auth_token(
         )
 
     response = TenantAuth(access_token=tenant_api_key(response.token))
-    bound_logger.info("Successfully retrieved access token.")
+    bound_logger.debug("Successfully retrieved access token.")
     return response
 
 
@@ -274,7 +274,7 @@ async def update_tenant(
         )
 
     response = tenant_from_wallet_record(wallet)
-    bound_logger.info("Successfully updated tenant.")
+    bound_logger.debug("Successfully updated tenant.")
     return response
 
 
@@ -297,7 +297,7 @@ async def get_tenant(
         )
 
     response = tenant_from_wallet_record(wallet)
-    bound_logger.info("Successfully fetched tenant from wallet record.")
+    bound_logger.debug("Successfully fetched tenant from wallet record.")
     return response
 
 
@@ -328,9 +328,9 @@ async def get_tenants(
     wallets_list = wallets.results
 
     if not wallets_list:
-        bound_logger.info("No wallets found.")
+        bound_logger.debug("No wallets found.")
         return []
 
     response = [tenant_from_wallet_record(record) for record in wallets_list]
-    bound_logger.info("Successfully fetched wallets.")
+    bound_logger.debug("Successfully fetched wallets.")
     return response

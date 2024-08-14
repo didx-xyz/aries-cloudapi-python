@@ -38,7 +38,7 @@ async def register_schema(schema_id: str) -> None:
                 e.status_code,
             )
 
-    bound_logger.info("Successfully registered schema on trust registry.")
+    bound_logger.debug("Successfully registered schema on trust registry.")
 
 
 async def fetch_schemas() -> List[Schema]:
@@ -65,7 +65,7 @@ async def fetch_schemas() -> List[Schema]:
             )
 
     result = [Schema.model_validate(schema) for schema in schemas_res.json()]
-    logger.info("Successfully fetched schemas from trust registry.")
+    logger.debug("Successfully fetched schemas from trust registry.")
     return result
 
 
@@ -102,7 +102,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
                 )
 
     result = Schema.model_validate(schema_response.json())
-    logger.info("Successfully fetched schema from trust registry.")
+    logger.debug("Successfully fetched schema from trust registry.")
     return result
 
 
@@ -131,4 +131,4 @@ async def remove_schema_by_id(schema_id: str) -> None:
                 e.status_code,
             )
 
-    bound_logger.info("Successfully removed schema from trust registry.")
+    bound_logger.debug("Successfully removed schema from trust registry.")

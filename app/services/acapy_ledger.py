@@ -40,7 +40,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
         logger.error("Failed to get TAA. Received info: `{}`.", taa_info)
         raise CloudApiException("Something went wrong. Could not get TAA.")
 
-    logger.info("Successfully fetched TAA info: {}", taa_info)
+    logger.debug("Successfully fetched TAA info: {}", taa_info)
     mechanism = (
         taa_info.taa_accepted.mechanism
         if taa_info.taa_accepted
@@ -76,7 +76,7 @@ async def accept_taa(
             f"An unexpected error occurred while trying to accept TAA: {e.detail}"
         ) from e
 
-    logger.info("Successfully accepted TAA.")
+    logger.debug("Successfully accepted TAA.")
 
 
 async def get_did_endpoint(
@@ -107,7 +107,7 @@ async def get_did_endpoint(
     if not issuer_endpoint_response:
         bound_logger.info("Failed to get DID endpoint; received empty response.")
         raise CloudApiException("Could not obtain issuer endpoint.", 404)
-    bound_logger.info("Successfully fetched DID endpoint.")
+    bound_logger.debug("Successfully fetched DID endpoint.")
     return issuer_endpoint_response
 
 
@@ -134,7 +134,7 @@ async def register_nym_on_ledger(
             conn_id=connection_id,
             create_transaction_for_endorser=create_transaction_for_endorser,
         )
-        bound_logger.info("Successfully registered NYM on ledger.")
+        bound_logger.debug("Successfully registered NYM on ledger.")
         return response
     except CloudApiException as e:
         raise CloudApiException(
@@ -196,5 +196,5 @@ async def schema_id_from_credential_definition_id(
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
         raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
-    bound_logger.info("Successfully obtained schema id from credential definition.")
+    bound_logger.debug("Successfully obtained schema id from credential definition.")
     return schema.var_schema.id

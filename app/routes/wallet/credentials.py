@@ -41,7 +41,7 @@ async def list_credentials(
             wql=wql,
         )
 
-    logger.info("Successfully listed credentials.")
+    logger.debug("Successfully listed credentials.")
     return results
 
 
@@ -62,7 +62,7 @@ async def get_credential_record(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched credential.")
+    bound_logger.debug("Successfully fetched credential.")
     return result
 
 
@@ -83,7 +83,7 @@ async def delete_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully deleted credential.")
+    bound_logger.debug("Successfully deleted credential.")
 
 
 @router.get("/{credential_id}/mime-types", response_model=AttributeMimeTypesResult)
@@ -105,7 +105,7 @@ async def get_credential_mime_types(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched attribute MIME types.")
+    bound_logger.debug("Successfully fetched attribute MIME types.")
     return result
 
 
@@ -132,7 +132,7 @@ async def get_credential_revocation_status(
             to=to,
         )
 
-    bound_logger.info("Successfully fetched revocation status.")
+    bound_logger.debug("Successfully fetched revocation status.")
     return result
 
 
@@ -158,7 +158,7 @@ async def list_w3c_credentials(
             body=body,
         )
 
-    logger.info("Successfully listed W3C credentials.")
+    logger.debug("Successfully listed W3C credentials.")
     return results
 
 
@@ -179,7 +179,7 @@ async def get_w3c_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched W3C credential.")
+    bound_logger.debug("Successfully fetched W3C credential.")
     return result
 
 
@@ -200,4 +200,4 @@ async def delete_w3c_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully deleted W3C credential.")
+    bound_logger.debug("Successfully deleted W3C credential.")

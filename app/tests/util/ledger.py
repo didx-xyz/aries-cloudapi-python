@@ -82,5 +82,5 @@ async def create_public_did(
     if set_public:
         await acapy_wallet.set_public_did(aries_controller, did_object.did)
 
-    logger.info("Successfully handled create public did request.")
+    logger.debug("Successfully handled create public did request.")
     return did_object

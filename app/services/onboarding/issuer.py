@@ -132,5 +132,5 @@ async def onboard_issuer_no_public_did(
             f"Error creating connection with endorser: {str(e)}",
         ) from e
 
-    bound_logger.info("Successfully registered DID for issuer.")
+    bound_logger.debug("Successfully registered DID for issuer.")
     return issuer_did

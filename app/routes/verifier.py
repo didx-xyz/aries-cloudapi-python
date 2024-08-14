@@ -97,7 +97,7 @@ async def send_proof_request(
         raise
 
     if result:
-        bound_logger.info("Successfully sent proof request.")
+        bound_logger.debug("Successfully sent proof request.")
     else:
         bound_logger.warning("No result obtained from sending proof request.")
     return result
@@ -164,7 +164,7 @@ async def create_proof_request(
         raise
 
     if result:
-        bound_logger.info("Successfully created proof request.")
+        bound_logger.debug("Successfully created proof request.")
     else:
         bound_logger.warning("No result obtained from creating proof request.")
     return result
@@ -255,7 +255,7 @@ async def accept_proof_request(
         raise
 
     if result:
-        bound_logger.info("Successfully accepted proof request.")
+        bound_logger.debug("Successfully accepted proof request.")
     else:
         bound_logger.warning("No result obtained from accepting proof request.")
     return result
@@ -316,7 +316,7 @@ async def reject_proof_request(
         bound_logger.info("Could not reject request: {}.", e)
         raise
 
-    bound_logger.info("Successfully rejected proof request.")
+    bound_logger.debug("Successfully rejected proof request.")
 
 
 @router.get(
@@ -386,9 +386,9 @@ async def get_proof_records(
 
     result = v1_records + v2_records
     if result:
-        logger.info("Successfully fetched v1 and v2 records.")
+        logger.debug("Successfully fetched v1 and v2 records.")
     else:
-        logger.info("No v1 or v2 records returned.")
+        logger.debug("No v1 or v2 records returned.")
     return result
 
 
@@ -432,9 +432,9 @@ async def get_proof_record(
         raise
 
     if result:
-        bound_logger.info("Successfully fetched proof record.")
+        bound_logger.debug("Successfully fetched proof record.")
     else:
-        bound_logger.info("No record returned.")
+        bound_logger.debug("No record returned.")
     return result
 
 
@@ -474,7 +474,7 @@ async def delete_proof(
         bound_logger.info("Could not delete proof record: {}.", e)
         raise
 
-    bound_logger.info("Successfully deleted proof record.")
+    bound_logger.debug("Successfully deleted proof record.")
 
 
 @router.get(
@@ -518,5 +518,5 @@ async def get_credentials_by_proof_id(
         bound_logger.info("Could not get matching credentials: {}.", e)
         raise
 
-    bound_logger.info("Successfully fetched credentials for proof request.")
+    bound_logger.debug("Successfully fetched credentials for proof request.")
     return result

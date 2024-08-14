@@ -179,7 +179,7 @@ class VerifierV1(Verifier):
                     f"Failed to delete record: {e.detail}", e.status_code
                 ) from e
 
-        bound_logger.info("Successfully rejected v1 presentation exchange record.")
+        bound_logger.debug("Successfully rejected v1 presentation exchange record.")
 
     @classmethod
     async def get_proof_records(

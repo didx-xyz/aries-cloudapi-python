@@ -144,7 +144,7 @@ async def revoke_credential(
                 "Please check the revocation record state and retry if not revoked."
             )
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
 
 
 async def publish_pending_revocations(
@@ -238,7 +238,7 @@ async def clear_pending_revocations(
     result = ClearPendingRevocationsResult(
         revocation_registry_credential_map=clear_result.rrid2crid
     )
-    bound_logger.info("Successfully cleared pending revocations.")
+    bound_logger.debug("Successfully cleared pending revocations.")
     return result
 
 
@@ -296,7 +296,7 @@ async def get_credential_revocation_record(
 
     result = result.result
 
-    bound_logger.info("Successfully retrieved revocation status.")
+    bound_logger.debug("Successfully retrieved revocation status.")
     return result
 
 
@@ -446,7 +446,7 @@ async def validate_rev_reg_ids(
                     e.status_code,
                 ) from e
 
-    bound_logger.info("Successfully validated revocation registry ids.")
+    bound_logger.debug("Successfully validated revocation registry ids.")
 
 
 async def get_created_active_registries(

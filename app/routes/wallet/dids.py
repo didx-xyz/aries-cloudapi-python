@@ -33,7 +33,7 @@ async def create_did(
             did_create=did_create, controller=aries_controller
         )
 
-    logger.info("Successfully created DID.")
+    logger.debug("Successfully created DID.")
     return result
 
 
@@ -53,10 +53,10 @@ async def list_dids(
         )
 
     if not did_result.results:
-        logger.info("No DIDs returned.")
+        logger.debug("No DIDs returned.")
         return []
 
-    logger.info("Successfully fetched list of DIDs.")
+    logger.debug("Successfully fetched list of DIDs.")
     return did_result.results
 
 
@@ -79,7 +79,7 @@ async def get_public_did(
         logger.info("Bad request: no public DID found.")
         raise CloudApiException("No public did found.", 404)
 
-    logger.info("Successfully fetched public DID.")
+    logger.debug("Successfully fetched public DID.")
     return result.result
 
 
@@ -95,7 +95,7 @@ async def set_public_did(
         logger.debug("Setting public DID")
         result = await acapy_wallet.set_public_did(aries_controller, did)
 
-    logger.info("Successfully set public DID.")
+    logger.debug("Successfully set public DID.")
     return result
 
 
@@ -112,7 +112,7 @@ async def rotate_keypair(
             logger=logger, acapy_call=aries_controller.wallet.rotate_keypair, did=did
         )
 
-    bound_logger.info("Successfully rotated keypair.")
+    bound_logger.debug("Successfully rotated keypair.")
 
 
 @router.get("/{did}/endpoint", response_model=DIDEndpoint)
@@ -129,7 +129,7 @@ async def get_did_endpoint(
             logger=logger, acapy_call=aries_controller.wallet.get_did_endpoint, did=did
         )
 
-    bound_logger.info("Successfully fetched DID endpoint.")
+    bound_logger.debug("Successfully fetched DID endpoint.")
     return result
 
 
@@ -163,4 +163,4 @@ async def set_did_endpoint(
             body=request_body,
         )
 
-    bound_logger.info("Successfully set DID endpoint.")
+    bound_logger.debug("Successfully set DID endpoint.")

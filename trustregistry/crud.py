@@ -19,7 +19,7 @@ def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db
 
     if result:
         num_rows = len(result)
-        logger.info("Successfully retrieved `{}` actors from database.", num_rows)
+        logger.debug("Successfully retrieved `{}` actors from database.", num_rows)
         if num_rows == limit:
             logger.warning(
                 "The number of actors returned is equal to limit used in the query."
@@ -38,7 +38,7 @@ def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
     result = db_session.scalars(query).first()
 
     if result:
-        bound_logger.info("Successfully retrieved actor from database.")
+        bound_logger.debug("Successfully retrieved actor from database.")
     else:
         bound_logger.info("Actor DID not found.")
         raise ActorDoesNotExistException
@@ -54,7 +54,7 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
     result = db_session.scalars(query).first()
 
     if result:
-        bound_logger.info("Successfully retrieved actor from database.")
+        bound_logger.debug("Successfully retrieved actor from database.")
     else:
         bound_logger.info("Actor ID not found.")
         raise ActorDoesNotExistException
@@ -70,7 +70,7 @@ def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
     result = db_session.scalars(query).one_or_none()
 
     if result:
-        bound_logger.info("Successfully retrieved actor from database")
+        bound_logger.debug("Successfully retrieved actor from database")
     else:
         bound_logger.info("Actor name not found")
         raise ActorDoesNotExistException
@@ -89,7 +89,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
         db_session.commit()
         db_session.refresh(db_actor)
 
-        bound_logger.info("Successfully added actor to database.")
+        bound_logger.debug("Successfully added actor to database.")
         return db_actor
 
     except IntegrityError as e:
@@ -157,7 +157,7 @@ def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     db_session.execute(query_delete)
     db_session.commit()
 
-    bound_logger.info("Successfully deleted actor ID.")
+    bound_logger.debug("Successfully deleted actor ID.")
     return db_actor
 
 
@@ -190,7 +190,7 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
 
     updated_actor = result.first()
 
-    bound_logger.info("Successfully updated actor.")
+    bound_logger.debug("Successfully updated actor.")
     return updated_actor
 
 
@@ -203,7 +203,7 @@ def get_schemas(
 
     if result:
         num_rows = len(result)
-        logger.info("Successfully retrieved {} schemas from database.", num_rows)
+        logger.debug("Successfully retrieved {} schemas from database.", num_rows)
         if num_rows == limit:
             logger.warning(
                 "The number of schemas returned is equal to limit used in the query."
@@ -248,7 +248,7 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
     db_session.commit()
     db_session.refresh(db_schema)
 
-    bound_logger.info("Successfully added schema to database.")
+    bound_logger.debug("Successfully added schema to database.")
     return db_schema
 
 
@@ -279,7 +279,7 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
 
     updated_schema = result.first()
 
-    bound_logger.info("Successfully updated schema on database.")
+    bound_logger.debug("Successfully updated schema on database.")
     return updated_schema
 
 
@@ -298,7 +298,7 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
     db_session.execute(query_delete)
     db_session.commit()
 
-    bound_logger.info("Successfully deleted schema from database.")
+    bound_logger.debug("Successfully deleted schema from database.")
     return db_schema
 
 

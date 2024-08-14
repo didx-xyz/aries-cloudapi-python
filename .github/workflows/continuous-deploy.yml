@@ -466,7 +466,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      - name: Helmfile Apply (RDS Proxy) # Always exclude agents and apply (zero diff if resetting deployments)
+      - name: Helmfile Apply (RDS Proxy)
         if: github.event.inputs.run-reset-deployments != 'true'
         uses: helmfile/helmfile-action@v1.9.1
         with:

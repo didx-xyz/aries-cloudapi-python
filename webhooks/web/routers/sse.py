@@ -199,7 +199,7 @@ async def sse_subscribe_wallet(
             "look_back": look_back,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
 
@@ -251,7 +251,7 @@ async def sse_subscribe_wallet_topic(
             "look_back": look_back,
         }
     )
-    bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
+    bound_logger.debug("SSE: GET request received: Subscribe to wallet events by topic")
 
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
@@ -297,7 +297,7 @@ async def sse_subscribe_event_with_state(
             "look_back": look_back,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "SSE: GET request received: Subscribe to wallet event by topic, "
         "waiting for specific state"
     )
@@ -350,7 +350,7 @@ async def sse_subscribe_stream_with_fields(
             "look_back": look_back,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "SSE: GET request received: Subscribe to wallet events by topic, "
         "only events with specific field-id pairs"
     )
@@ -406,7 +406,7 @@ async def sse_subscribe_event_with_field_and_state(
             "look_back": look_back,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "SSE: GET request received: Subscribe to wallet event by topic, "
         "waiting for payload with field-id pair and specific state"
     )

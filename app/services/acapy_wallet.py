@@ -19,7 +19,7 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
         str: the public did formatted as fully qualified did
     """
     # Assert the agent has a public did
-    logger.info("Fetching public DID")
+    logger.debug("Fetching public DID")
     public_did = await handle_acapy_call(
         logger=logger, acapy_call=aries_controller.wallet.get_public_did
     )
@@ -46,7 +46,7 @@ async def create_did(
     Returns:
         DID: The created did
     """
-    logger.info("Creating local DID")
+    logger.debug("Creating local DID")
 
     if did_create is None:
         did_create = DIDCreate()
@@ -82,7 +82,7 @@ async def set_public_did(
     Returns:
         DID: the did
     """
-    logger.info("Setting public DID")
+    logger.debug("Setting public DID")
     did_response = await handle_acapy_call(
         logger=logger,
         acapy_call=controller.wallet.set_public_did,
@@ -111,7 +111,7 @@ async def get_public_did(controller: AcaPyClient) -> DID:
     Returns:
         DID: the public did
     """
-    logger.info("Fetching public DID")
+    logger.debug("Fetching public DID")
     did_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.wallet.get_public_did
     )

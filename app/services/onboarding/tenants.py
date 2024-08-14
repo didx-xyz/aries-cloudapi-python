@@ -28,7 +28,7 @@ async def handle_tenant_update(
     update_request: UpdateTenantRequest,
 ) -> WalletRecord:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.bind(body=update_request).info("Handling tenant update")
+    bound_logger.bind(body=update_request).debug("Handling tenant update")
 
     new_roles = update_request.roles or []
     new_label = update_request.wallet_label
@@ -94,7 +94,7 @@ async def handle_tenant_update(
         wallet_id=wallet_id,
         body=request_body,
     )
-    bound_logger.info("Tenant update handled successfully.")
+    bound_logger.debug("Tenant update handled successfully.")
     return wallet
 
 
@@ -108,7 +108,7 @@ async def onboard_tenant(
     bound_logger = logger.bind(
         body={"tenant_label": tenant_label, "roles": roles, "wallet_id": wallet_id}
     )
-    bound_logger.bind(body=roles).info("Start onboarding tenant")
+    bound_logger.bind(body=roles).debug("Start onboarding tenant")
 
     if "issuer" in roles:
         bound_logger.debug("Tenant has 'issuer' role, onboarding as issuer")
@@ -122,7 +122,7 @@ async def onboard_tenant(
                 issuer_wallet_id=wallet_id,
                 issuer_label=tenant_label,
             )
-            bound_logger.info("Onboarding as issuer completed successfully.")
+            bound_logger.debug("Onboarding as issuer completed successfully.")
             return onboard_result
 
     elif "verifier" in roles:
@@ -131,7 +131,7 @@ async def onboard_tenant(
             onboard_result = await onboard_verifier(
                 verifier_label=tenant_label, verifier_controller=tenant_controller
             )
-            bound_logger.info("Onboarding as verifier completed successfully.")
+            bound_logger.debug("Onboarding as verifier completed successfully.")
             return onboard_result
 
     bound_logger.error("Tenant request does not have valid role(s) for onboarding.")

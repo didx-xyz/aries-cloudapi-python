@@ -45,7 +45,7 @@ async def post_to_ledger(
             detail="Cannot resolve ledger type. Should be either von or sovrin",
         )
 
-    logger.info("Try post to ledger: {}", payload)
+    logger.debug("Try post to ledger: {}", payload)
     async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.post(
             LEDGER_REGISTRATION_URL, json=payload.model_dump(), timeout=300

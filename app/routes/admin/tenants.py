@@ -66,7 +66,7 @@ async def create_tenant(
     wallet_label = body.wallet_label
     wallet_name = body.wallet_name or uuid4().hex
 
-    bound_logger.info("Assert that requested label is not used in trust registry")
+    bound_logger.debug("Assert that requested label is not used in trust registry")
     try:
         actor_name_exists = await assert_actor_name(wallet_label)
     except TrustRegistryException as e:
@@ -98,7 +98,7 @@ async def create_tenant(
     )
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         try:
-            bound_logger.info("Creating wallet")
+            bound_logger.debug("Creating wallet")
             wallet_response = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=admin_controller.multitenancy.create_wallet,
@@ -121,7 +121,7 @@ async def create_tenant(
 
         try:
             if roles:
-                bound_logger.info(
+                bound_logger.debug(
                     "Onboarding `{}` with requested roles: `{}`", wallet_label, roles
                 )
                 onboard_result = await onboard_tenant(

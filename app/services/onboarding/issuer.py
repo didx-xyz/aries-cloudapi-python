@@ -34,7 +34,7 @@ async def onboard_issuer(
         issuer_label (str): alias for the issuer
     """
     bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
-    bound_logger.info("Onboarding issuer")
+    bound_logger.debug("Onboarding issuer")
 
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
@@ -94,7 +94,7 @@ async def onboard_issuer_no_public_did(
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
     bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
-    bound_logger.info("Onboarding issuer that has no public DID")
+    bound_logger.debug("Onboarding issuer that has no public DID")
 
     try:
         bound_logger.debug("Getting public DID for endorser")

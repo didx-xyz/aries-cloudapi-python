@@ -19,7 +19,7 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
         bool: Whether the actor with specified id has specified role
     """
     bound_logger = logger.bind(body={"actor_id": actor_id, "role": role})
-    bound_logger.info("Asserting actor has role")
+    bound_logger.debug("Asserting actor has role")
     actor = await fetch_actor_by_id(actor_id)
 
     if not actor:
@@ -28,9 +28,9 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
 
     result = role in actor.roles
     if result:
-        bound_logger.info("Actor has requested role.")
+        bound_logger.debug("Actor has requested role.")
     else:
-        bound_logger.info("Actor does not have requested role.")
+        bound_logger.debug("Actor does not have requested role.")
     return result
 
 
@@ -47,7 +47,7 @@ async def assert_actor_name(actor_name: str) -> bool:
         Bool: if actor exists
     """
     bound_logger = logger.bind(body={"actor_name": actor_name})
-    bound_logger.info("Fetching actor by name from trust registry")
+    bound_logger.debug("Fetching actor by name from trust registry")
 
     async with RichAsyncClient(raise_status_error=False) as client:
         actor_response = await client.get(
@@ -67,5 +67,5 @@ async def assert_actor_name(actor_name: str) -> bool:
             actor_response.status_code,
         )
 
-    bound_logger.info("Asserted actor name is in trust registry.")
+    bound_logger.debug("Asserted actor name is in trust registry.")
     return True

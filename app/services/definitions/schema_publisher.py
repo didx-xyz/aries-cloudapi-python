@@ -117,7 +117,7 @@ class SchemaPublisher:
             raise CloudApiException(error_message, 409)
 
         result = credential_schema_from_acapy(_schema.var_schema)
-        self._logger.info(
+        self._logger.debug(
             "Schema already exists on ledger. Returning schema definition: `{}`.",
             result,
         )

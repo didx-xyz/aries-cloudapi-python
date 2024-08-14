@@ -21,7 +21,7 @@ async def register_schema(schema_id: str) -> None:
         TrustRegistryException: If an error occurred while registering the schema
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Registering schema on trust registry")
+    bound_logger.debug("Registering schema on trust registry")
     async with RichAsyncClient() as client:
         try:
             await client.post(
@@ -50,7 +50,7 @@ async def fetch_schemas() -> List[Schema]:
     Returns:
         A list of schemas
     """
-    logger.info("Fetching all schemas from trust registry")
+    logger.debug("Fetching all schemas from trust registry")
     async with RichAsyncClient() as client:
         try:
             schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
@@ -79,7 +79,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
         A schema
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Fetching schema from trust registry")
+    bound_logger.debug("Fetching schema from trust registry")
 
     async with RichAsyncClient() as client:
         try:

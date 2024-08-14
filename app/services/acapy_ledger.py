@@ -30,7 +30,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
     taa: Tuple[TAAInfo, str]
         The TAAInfo object, with the mechanism
     """
-    logger.info("Fetching TAA")
+    logger.debug("Fetching TAA")
     taa_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.ledger.fetch_taa
     )
@@ -64,7 +64,7 @@ async def accept_taa(
     mechanism:
         An optional mechanism to specify
     """
-    logger.bind(body=taa).info("Accepting TAA")
+    logger.bind(body=taa).debug("Accepting TAA")
     request_body = TAAAccept(**taa.to_dict(), mechanism=mechanism)
     try:
         await handle_acapy_call(
@@ -99,7 +99,7 @@ async def get_did_endpoint(
         the issuer's Verinym from the ledger
     """
     bound_logger = logger.bind(body={"issuer_nym": issuer_nym})
-    bound_logger.info("Fetching DID endpoint")
+    bound_logger.debug("Fetching DID endpoint")
 
     issuer_endpoint_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.ledger.get_did_endpoint, did=issuer_nym
@@ -176,12 +176,12 @@ async def schema_id_from_credential_definition_id(
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
-    bound_logger.info("Getting schema id from credential definition id")
+    bound_logger.debug("Getting schema id from credential definition id")
 
     # scrape schema id or sequence number from cred def id
     tokens = credential_definition_id.split(":")
     if len(tokens) == 8:  # node protocol >= 1.4: cred def id has 5 or 8 tokens
-        bound_logger.info("Constructed schema id from credential definition.")
+        bound_logger.debug("Constructed schema id from credential definition.")
         return ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
 
     # get txn by sequence number, retrieve schema identifier components

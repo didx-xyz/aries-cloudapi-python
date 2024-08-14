@@ -198,7 +198,6 @@ async def get_schema(
         )
 
     if not schema.var_schema:
-        bound_logger.info("Bad request: schema id not found.")
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
     result = credential_schema_from_acapy(schema.var_schema)
@@ -385,7 +384,6 @@ async def get_credential_definition_by_id(
         )
 
         if not credential_definition.credential_definition:
-            bound_logger.info("Bad request: credential definition id not found.")
             raise HTTPException(
                 404,
                 f"Credential Definition with id {credential_definition_id} not found.",

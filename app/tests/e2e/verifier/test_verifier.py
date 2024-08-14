@@ -47,30 +47,32 @@ async def test_send_proof_request(
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
 
-    assert "presentation" in send_proof_response
-    assert "presentation_request" in send_proof_response
-    assert "created_at" in send_proof_response
-    assert "proof_id" in send_proof_response
-    assert send_proof_response["role"] == "verifier"
-    assert send_proof_response["state"]
+    try:
+        assert "presentation" in send_proof_response
+        assert "presentation_request" in send_proof_response
+        assert "created_at" in send_proof_response
+        assert "proof_id" in send_proof_response
+        assert send_proof_response["role"] == "verifier"
+        assert send_proof_response["state"]
 
-    thread_id = send_proof_response["thread_id"]
-    assert thread_id
+        thread_id = send_proof_response["thread_id"]
+        assert thread_id
 
-    alice_connection_event = await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-        filter_map={
-            "thread_id": thread_id,
-        },
-    )
-    assert alice_connection_event["protocol_version"] == protocol_version
+        alice_connection_event = await check_webhook_state(
+            client=alice_member_client,
+            topic="proofs",
+            state="request-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+        assert alice_connection_event["protocol_version"] == protocol_version
 
-    # Clean up:
-    await acme_client.delete(
-        VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
-    )
+    finally:
+        # Clean up:
+        await acme_client.delete(
+            VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
+        )
 
 
 @pytest.mark.anyio
@@ -354,56 +356,63 @@ async def test_get_proof_and_get_proofs(
 
     # Make sure both proofs are in the list
     proof_ids = [acme_proof_id, acme_proof_id_2]
-    assert sum(1 for proof in proof_ids if proof in all_verifier_proofs) == 2
 
-    # Now test query params
-    proofs_sent = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?state=request-sent"
-    )
-    for proof in proofs_sent.json():
-        assert proof["state"] == "request-sent"
+    try:
+        assert sum(1 for proof in proof_ids if proof in all_verifier_proofs) == 2
 
-    proofs_done = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?state=done")
-    for proof in proofs_done.json():
-        assert proof["state"] == "done"
-
-    proofs_role = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=verifier")
-    for proof in proofs_role.json():
-        assert proof["role"] == "verifier"
-
-    proofs_prover = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=prover")
-    assert len(proofs_prover.json()) == 0
-
-    proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=done"
-    )
-    assert len(proofs.json()) >= 1
-
-    proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=request-sent"
-    )
-    assert len(proofs.json()) >= 1
-
-    proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id}"
-    )
-    assert len(proofs.json()) == 1
-
-    proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id_2}"
-    )
-    assert len(proofs.json()) == 1
-
-    with pytest.raises(HTTPException) as exc:
-        await acme_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
+        # Now test query params
+        proofs_sent = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?state=request-sent"
         )
-    assert exc.value.status_code == 422
-    assert len(json.loads(exc.value.detail)["detail"]) == 3
+        for proof in proofs_sent.json():
+            assert proof["state"] == "request-sent"
 
-    # Clean up:
-    for proof_id in proof_ids:
-        await acme_client.delete(VERIFIER_BASE_PATH + f"/proofs/{proof_id}")
+        proofs_done = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?state=done")
+        for proof in proofs_done.json():
+            assert proof["state"] == "done"
+
+        proofs_role = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?role=verifier"
+        )
+        for proof in proofs_role.json():
+            assert proof["role"] == "verifier"
+
+        proofs_prover = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?role=prover"
+        )
+        assert len(proofs_prover.json()) == 0
+
+        proofs = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=done"
+        )
+        assert len(proofs.json()) >= 1
+
+        proofs = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=request-sent"
+        )
+        assert len(proofs.json()) >= 1
+
+        proofs = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id}"
+        )
+        assert len(proofs.json()) == 1
+
+        proofs = await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id_2}"
+        )
+        assert len(proofs.json()) == 1
+
+        with pytest.raises(HTTPException) as exc:
+            await acme_client.get(
+                f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
+            )
+        assert exc.value.status_code == 422
+        assert len(json.loads(exc.value.detail)["detail"]) == 3
+
+    finally:
+        # Clean up:
+        for proof_id in proof_ids:
+            await acme_client.delete(VERIFIER_BASE_PATH + f"/proofs/{proof_id}")
 
 
 @pytest.mark.anyio
@@ -444,37 +453,45 @@ async def test_get_credentials_for_request(
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
 
-    thread_id = send_proof_response["thread_id"]
-    assert thread_id
+    try:
+        thread_id = send_proof_response["thread_id"]
+        assert thread_id
 
-    alice_exchange = await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-        filter_map={
-            "thread_id": thread_id,
-        },
-    )
-    assert alice_exchange["protocol_version"] == protocol_version
+        alice_exchange = await check_webhook_state(
+            client=alice_member_client,
+            topic="proofs",
+            state="request-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+        assert alice_exchange["protocol_version"] == protocol_version
 
-    proof_id = alice_exchange["proof_id"]
+        proof_id = alice_exchange["proof_id"]
 
-    response = await alice_member_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}/credentials",
-    )
+        response = await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs/{proof_id}/credentials",
+        )
 
-    result = response.json()[0]
-    assert "cred_info" in result
-    assert [
-        attr
-        in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
-        for attr in result["cred_info"]
-    ]
+        result = response.json()[0]
+        assert "cred_info" in result
+        assert [
+            attr
+            in [
+                "attrs",
+                "cred_def_info",
+                "referent",
+                "interval",
+                "presentation_referents",
+            ]
+            for attr in result["cred_info"]
+        ]
 
-    # Clean up:
-    await acme_client.delete(
-        VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
-    )
+    finally:
+        # Clean up:
+        await acme_client.delete(
+            VERIFIER_BASE_PATH + f"/proofs/{send_proof_response["proof_id"]}",
+        )
 
 
 @pytest.mark.anyio

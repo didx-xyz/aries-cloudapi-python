@@ -94,41 +94,44 @@ async def test_send_jsonld_key_ed25519(
     )
 
     data = response.json()
-    thread_id = data["thread_id"]
-    assert_that(data).contains("credential_exchange_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        filter_map={
-            "thread_id": thread_id,
-        },
-    )
-
-    # Check if Alice received the credential
-    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"thread_id": thread_id},
-    )
-
-    records = response.json()
-
-    assert len(records) == 1
-
-    # Check if the received credential matches the sent one
-    received_credential = records[-1]
-    assert_that(received_credential).has_connection_id(alice_connection_id)
-    assert_that(received_credential).has_state("offer-received")
-    assert_that(received_credential).has_role("holder")
-    assert_that(received_credential["credential_exchange_id"]).starts_with("v2")
-
-    # Clean up created offer
     cred_ex_id = data["credential_exchange_id"]
-    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+
+    try:
+        thread_id = data["thread_id"]
+        assert_that(data).contains("credential_exchange_id")
+        assert_that(data).has_state("offer-sent")
+        assert_that(data).has_protocol_version("v2")
+
+        assert await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+
+        # Check if Alice received the credential
+        await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
+        response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH,
+            params={"thread_id": thread_id},
+        )
+
+        records = response.json()
+
+        assert len(records) == 1
+
+        # Check if the received credential matches the sent one
+        received_credential = records[-1]
+        assert_that(received_credential).has_connection_id(alice_connection_id)
+        assert_that(received_credential).has_state("offer-received")
+        assert_that(received_credential).has_role("holder")
+        assert_that(received_credential["credential_exchange_id"]).starts_with("v2")
+
+    finally:
+        # Clean up created offer
+        await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio
@@ -192,22 +195,25 @@ async def test_send_jsonld_oob(
     )
 
     data = response.json()
-    assert_that(data).contains("credential_exchange_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        filter_map={
-            "connection_id": alice_connection_id,
-        },
-    )
-
-    # Clean up created offer
     cred_ex_id = data["credential_exchange_id"]
-    await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+
+    try:
+        assert_that(data).contains("credential_exchange_id")
+        assert_that(data).has_state("offer-sent")
+        assert_that(data).has_protocol_version("v2")
+
+        assert await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "connection_id": alice_connection_id,
+            },
+        )
+
+    finally:
+        # Clean up created offer
+        await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
 
 
 @pytest.mark.anyio

@@ -156,80 +156,84 @@ async def test_accept_proof_request_verifier_oob_connection(
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
 
-    # Present proof from holder to verifier
-    request_body = {
-        "protocol_version": protocol_version,
-        "connection_id": verifier_holder_connection_id,
-        "indy_proof_request": {
-            "name": "Age Check",
-            "version": "1.0",
-            "requested_attributes": {
-                "name": {
-                    "name": "name",
-                    "restrictions": [{"cred_def_id": credential_definition_id}],
-                }
-            },
-            "requested_predicates": {
-                "age_over_21": {
-                    "name": "age",
-                    "p_type": ">=",
-                    "p_value": 21,
-                    "restrictions": [{"cred_def_id": credential_definition_id}],
-                }
-            },
-        },
-    }
-    send_proof_response = await send_proof_request(acme_client, request_body)
-
-    payload = await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-        filter_map={
-            "connection_id": holder_verifier_connection_id,
-        },
-    )
-
-    verifier_proof_exchange_id = send_proof_response["proof_id"]
-    holder_proof_exchange_id = payload["proof_id"]
-
-    available_credentials = (
-        await alice_member_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs/{holder_proof_exchange_id}/credentials",
-        )
-    ).json()
-
-    cred_id = available_credentials[0]["cred_info"]["referent"]
-
-    await alice_member_client.post(
-        VERIFIER_BASE_PATH + "/accept-request",
-        json={
-            "proof_id": holder_proof_exchange_id,
-            "indy_presentation_spec": {
+    try:
+        # Present proof from holder to verifier
+        request_body = {
+            "protocol_version": protocol_version,
+            "connection_id": verifier_holder_connection_id,
+            "indy_proof_request": {
+                "name": "Age Check",
+                "version": "1.0",
                 "requested_attributes": {
                     "name": {
-                        "cred_id": cred_id,
-                        "revealed": True,
+                        "name": "name",
+                        "restrictions": [{"cred_def_id": credential_definition_id}],
                     }
                 },
-                "requested_predicates": {"age_over_21": {"cred_id": cred_id}},
-                "self_attested_attributes": {},
+                "requested_predicates": {
+                    "age_over_21": {
+                        "name": "age",
+                        "p_type": ">=",
+                        "p_value": 21,
+                        "restrictions": [{"cred_def_id": credential_definition_id}],
+                    }
+                },
             },
-        },
-    )
+        }
+        send_proof_response = await send_proof_request(acme_client, request_body)
 
-    event = await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": verifier_proof_exchange_id,
-        },
-    )
-    assert event["verified"]
+        payload = await check_webhook_state(
+            client=alice_member_client,
+            topic="proofs",
+            state="request-received",
+            filter_map={
+                "connection_id": holder_verifier_connection_id,
+            },
+        )
 
-    # Clean up temp connection records
-    await alice_member_client.delete(
-        f"{CONNECTIONS_BASE_PATH}/{holder_verifier_connection_id}"
-    )
-    await acme_client.delete(f"{CONNECTIONS_BASE_PATH}/{verifier_holder_connection_id}")
+        verifier_proof_exchange_id = send_proof_response["proof_id"]
+        holder_proof_exchange_id = payload["proof_id"]
+
+        available_credentials = (
+            await alice_member_client.get(
+                f"{VERIFIER_BASE_PATH}/proofs/{holder_proof_exchange_id}/credentials",
+            )
+        ).json()
+
+        cred_id = available_credentials[0]["cred_info"]["referent"]
+
+        await alice_member_client.post(
+            VERIFIER_BASE_PATH + "/accept-request",
+            json={
+                "proof_id": holder_proof_exchange_id,
+                "indy_presentation_spec": {
+                    "requested_attributes": {
+                        "name": {
+                            "cred_id": cred_id,
+                            "revealed": True,
+                        }
+                    },
+                    "requested_predicates": {"age_over_21": {"cred_id": cred_id}},
+                    "self_attested_attributes": {},
+                },
+            },
+        )
+
+        event = await check_webhook_state(
+            client=acme_client,
+            topic="proofs",
+            state="done",
+            filter_map={
+                "proof_id": verifier_proof_exchange_id,
+            },
+        )
+        assert event["verified"]
+
+    finally:
+        # Clean up temp connection records
+        await alice_member_client.delete(
+            f"{CONNECTIONS_BASE_PATH}/{holder_verifier_connection_id}"
+        )
+        await acme_client.delete(
+            f"{CONNECTIONS_BASE_PATH}/{verifier_holder_connection_id}"
+        )

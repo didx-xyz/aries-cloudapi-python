@@ -47,66 +47,71 @@ async def test_issue_credential_with_save_exchange_record(
     faber_credential_exchange_id = faber_send_response["credential_exchange_id"]
     thread_id = faber_send_response["thread_id"]
 
-    payload = await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        filter_map={
-            "thread_id": thread_id,
-        },
-    )
-
-    alice_credential_exchange_id = payload["credential_exchange_id"]
-
-    # send credential request - holder
-    await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request",
-    )
-
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="done",
-        filter_map={
-            "credential_exchange_id": alice_credential_exchange_id,
-        },
-    )
-
-    time.sleep(1)  # short sleep before fetching cred ex records; allow them to update
-
-    # faber requesting auto_remove only removes their cred ex records
-    # get exchange record from alice side -- should not exist after complete
-    with pytest.raises(HTTPException) as exc:
-        await alice_member_client.get(
-            f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
-        )
-    assert exc.value.status_code == 404
-
-    if save_exchange_record:
-        # get exchange records from faber side:
-        faber_cred_ex_record = (
-            await faber_client.get(
-                f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
-            )
-        ).json()
-
-        # Save record True, should be 1 record
-        assert (
-            faber_cred_ex_record["credential_exchange_id"]
-            == faber_credential_exchange_id
+    try:
+        payload = await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
         )
 
-        # Clean up
-        await faber_client.delete(
-            f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+        alice_credential_exchange_id = payload["credential_exchange_id"]
+
+        # send credential request - holder
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request",
         )
-    else:
-        # If save_exchange_record was not set, credential should not exist
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "credential_exchange_id": alice_credential_exchange_id,
+            },
+        )
+
+        time.sleep(
+            1
+        )  # short sleep before fetching cred ex records; allow them to update
+
+        # faber requesting auto_remove only removes their cred ex records
+        # get exchange record from alice side -- should not exist after complete
         with pytest.raises(HTTPException) as exc:
-            await faber_client.get(
-                f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+            await alice_member_client.get(
+                f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
             )
         assert exc.value.status_code == 404
+
+        if save_exchange_record:
+            # get exchange records from faber side:
+            faber_cred_ex_record = (
+                await faber_client.get(
+                    f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+                )
+            ).json()
+
+            # Save record True, should be 1 record
+            assert (
+                faber_cred_ex_record["credential_exchange_id"]
+                == faber_credential_exchange_id
+            )
+        else:
+            # If save_exchange_record was not set, credential should not exist
+            with pytest.raises(HTTPException) as exc:
+                await faber_client.get(
+                    f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+                )
+            assert exc.value.status_code == 404
+
+    finally:
+        # Clean up
+        if save_exchange_record:
+            await faber_client.delete(
+                f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+            )
 
 
 @pytest.mark.anyio

@@ -369,9 +369,6 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
 
-      - name: Sops Binary Installer
-        uses: mdgreenwald/mozilla-sops-action@v1.6.0
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -397,8 +394,7 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:
@@ -459,8 +455,7 @@ jobs:
               --state-values-set image.tag=${{ env.IMAGE_TAG }} \
               --state-values-set image.registry=ghcr.io/${{ github.repository_owner }}
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:
@@ -478,8 +473,7 @@ jobs:
               --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
               --state-values-set rdsProxyEnabled=true
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:
@@ -549,9 +543,6 @@ jobs:
           path: charts
           ref: ${{ env.branch_name }}
 
-      - name: Sops Binary Installer
-        uses: mdgreenwald/mozilla-sops-action@v1.6.0
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -584,8 +575,7 @@ jobs:
               --set env.RUN_REGRESSION_TESTS="true" \
               --state-values-set regressionEnabled=true
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:
@@ -609,8 +599,7 @@ jobs:
               --set env.FAIL_ON_RECREATING_FIXTURES="true" \
               --state-values-set regressionEnabled=true
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:
@@ -631,8 +620,7 @@ jobs:
               --state-values-set release=cloudapi-pytest \
               --set fullnameOverride=cloudapi-pytest
           helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
+            https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           helm-version: ${{ env.HELM_VERSION }}
         env:

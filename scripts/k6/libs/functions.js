@@ -276,7 +276,6 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
 
     const response = http.post(url, requestBody, params);
     if (response.status >= 200 && response.status < 300) {
-      // Request was successful
       return response;
     }
     console.error(`Request failed with status ${response.status}`);

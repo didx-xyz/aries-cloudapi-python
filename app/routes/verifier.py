@@ -77,7 +77,7 @@ async def send_proof_request(
             The presentation exchange record for this request
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Send proof request")
+    bound_logger.debug("POST request received: Send proof request")
 
     try:
         verifier = get_verifier_by_version(body.protocol_version)
@@ -149,7 +149,7 @@ async def create_proof_request(
             The presentation exchange record for this request
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Create proof request")
+    bound_logger.debug("POST request received: Create proof request")
 
     try:
         verifier = get_verifier_by_version(body.protocol_version)
@@ -223,7 +223,7 @@ async def accept_proof_request(
             The prover's updated presentation exchange record after responding to the proof request.
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Accept proof request")
+    bound_logger.debug("POST request received: Accept proof request")
 
     try:
         verifier = get_verifier_by_version(body.proof_id)
@@ -289,7 +289,7 @@ async def reject_proof_request(
         status_code: 204
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Reject proof request")
+    bound_logger.debug("POST request received: Reject proof request")
 
     try:
         verifier = get_verifier_by_version(body.proof_id)
@@ -356,7 +356,7 @@ async def get_proof_records(
             The list of presentation exchange records
 
     """
-    logger.info("GET request received: Get all proof records")
+    logger.debug("GET request received: Get all proof records")
 
     try:
         async with client_from_auth(auth) as aries_controller:
@@ -417,7 +417,7 @@ async def get_proof_record(
             The presentation exchange record for the proof ID
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
-    bound_logger.info("GET request received: Get proof record by id")
+    bound_logger.debug("GET request received: Get proof record by id")
 
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)
@@ -462,7 +462,7 @@ async def delete_proof(
         status_code: 204
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
-    bound_logger.info("DELETE request received: Delete proof record by id")
+    bound_logger.debug("DELETE request received: Delete proof record by id")
 
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)
@@ -504,7 +504,7 @@ async def get_credentials_by_proof_id(
             A list of applicable Indy credentials
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
-    bound_logger.info("GET request received: Get credentials for a proof request")
+    bound_logger.debug("GET request received: Get credentials for a proof request")
 
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)

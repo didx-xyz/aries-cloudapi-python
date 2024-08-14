@@ -25,7 +25,7 @@ async def get_webhooks_by_wallet(
     redis_service: WebhooksRedisService = Depends(Provide[Container.redis_service]),
 ) -> List[CloudApiWebhookEventGeneric]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("GET request received: Fetch all webhook events for wallet")
+    bound_logger.debug("GET request received: Fetch all webhook events for wallet")
 
     data = redis_service.get_cloudapi_events_by_wallet(wallet_id, num=100)
 
@@ -48,7 +48,7 @@ async def get_webhooks_by_wallet_and_topic(
     redis_service: WebhooksRedisService = Depends(Provide[Container.redis_service]),
 ) -> List[CloudApiWebhookEventGeneric]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Fetch all webhook events for wallet and topic"
     )
 

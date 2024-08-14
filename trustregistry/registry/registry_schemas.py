@@ -21,7 +21,7 @@ class SchemaID(BaseModel):
 
 @router.get("", response_model=List[Schema])
 async def get_schemas(db_session: Session = Depends(get_db)) -> List[Schema]:
-    logger.info("GET request received: Fetch all schemas")
+    logger.debug("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db_session)
 
     return db_schemas
@@ -32,7 +32,7 @@ async def register_schema(
     schema_id: SchemaID, db_session: Session = Depends(get_db)
 ) -> Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("POST request received: Register schema")
+    bound_logger.debug("POST request received: Register schema")
     schema_attrs_list = _get_schema_attrs(schema_id)
     try:
         create_schema_res = crud.create_schema(
@@ -58,7 +58,7 @@ async def update_schema(
     bound_logger = logger.bind(
         body={"schema_id": schema_id, "new_schema_id": new_schema_id}
     )
-    bound_logger.info("PUT request received: Update schema")
+    bound_logger.debug("PUT request received: Update schema")
     if schema_id == new_schema_id.schema_id:
         bound_logger.info("Bad request: New schema ID is identical to existing one.")
         raise HTTPException(
@@ -95,7 +95,7 @@ async def update_schema(
 @router.get("/{schema_id}", response_model=Schema)
 async def get_schema(schema_id: str, db_session: Session = Depends(get_db)) -> Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Fetch schema")
+    bound_logger.debug("GET request received: Fetch schema")
     try:
         schema = crud.get_schema_by_id(db_session, schema_id=schema_id)
     except crud.SchemaDoesNotExistException as e:
@@ -111,7 +111,7 @@ async def get_schema(schema_id: str, db_session: Session = Depends(get_db)) -> S
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db_session: Session = Depends(get_db)) -> None:
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("DELETE request received: Delete schema")
+    bound_logger.debug("DELETE request received: Delete schema")
     try:
         crud.delete_schema(db_session, schema_id=schema_id)
     except crud.SchemaDoesNotExistException as e:

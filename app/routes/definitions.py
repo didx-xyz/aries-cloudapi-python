@@ -69,7 +69,7 @@ async def create_schema(
             The created schema object
     """
     bound_logger = logger.bind(body=schema)
-    bound_logger.info("POST request received: Create schema (publish and register)")
+    bound_logger.debug("POST request received: Create schema (publish and register)")
 
     async with get_governance_controller(governance_auth) as aries_controller:
         schema_response = await schemas_service.create_schema(
@@ -127,7 +127,7 @@ async def get_schemas(
             "schema_version": schema_version,
         }
     )
-    bound_logger.info("GET request received: Get created schemas")
+    bound_logger.debug("GET request received: Get created schemas")
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
@@ -188,7 +188,7 @@ async def get_schema(
             The schema object
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Get schema by id")
+    bound_logger.debug("GET request received: Get schema by id")
 
     async with client_from_auth(auth) as aries_controller:
         schema = await handle_acapy_call(
@@ -248,7 +248,7 @@ async def create_credential_definition(
             "support_revocation": credential_definition.support_revocation,
         }
     )
-    bound_logger.info("POST request received: Create credential definition")
+    bound_logger.debug("POST request received: Create credential definition")
 
     support_revocation = credential_definition.support_revocation
 
@@ -320,7 +320,7 @@ async def get_credential_definitions(
             "schema_version": schema_version,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Get credential definitions created by agent"
     )
 
@@ -374,7 +374,7 @@ async def get_credential_definition_by_id(
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
-    bound_logger.info("GET request received: Get credential definition by id")
+    bound_logger.debug("GET request received: Get credential definition by id")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential definition")

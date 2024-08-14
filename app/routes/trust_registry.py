@@ -21,7 +21,7 @@ async def get_schemas() -> List[Schema]:
     ---------
     Only the schemas from the trust registry
     """
-    logger.info("GET request received: Fetch schemas from the trust registry")
+    logger.debug("GET request received: Fetch schemas from the trust registry")
     schemas = await registry_schemas.fetch_schemas()
 
     logger.info("Successfully retrieved schemas.")
@@ -42,7 +42,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     A schema from the trust registry
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Fetch schema by id")
+    bound_logger.debug("GET request received: Fetch schema by id")
     schema = await registry_schemas.get_schema_by_id(schema_id)
 
     if schema:
@@ -78,7 +78,7 @@ async def get_actors(
     param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var)
 
     if param_count == 0:
-        logger.info("GET request received: Fetch all actors from the trust registry")
+        logger.debug("GET request received: Fetch all actors from the trust registry")
         actors = await registry_actors.fetch_all_actors()
 
         logger.info("Successfully retrieved actors.")
@@ -87,7 +87,7 @@ async def get_actors(
     bound_logger = logger.bind(
         body={"actor_did": actor_did, "actor_id": actor_id, "actor_name": actor_name}
     )
-    bound_logger.info("GET request received: Fetch actor by query param")
+    bound_logger.debug("GET request received: Fetch actor by query param")
 
     if param_count > 1:
         bound_logger.info("Bad request, more than one query param provided.")
@@ -98,17 +98,17 @@ async def get_actors(
 
     # One query param provided:
     if actor_did:
-        bound_logger.info(
+        bound_logger.debug(
             "GET request received: Fetch actor by did from the trust registry"
         )
         actor = await registry_actors.fetch_actor_by_did(actor_did)
     elif actor_id:
-        bound_logger.info(
+        bound_logger.debug(
             "GET request received: Fetch actor by id from the trust registry"
         )
         actor = await registry_actors.fetch_actor_by_id(actor_id)
     else:  # actor_name
-        bound_logger.info(
+        bound_logger.debug(
             "GET request received: Fetch actor by name from the trust registry"
         )
         actor = await registry_actors.fetch_actor_by_name(actor_name)
@@ -130,7 +130,7 @@ async def get_issuers() -> List[Actor]:
     ---------
     List of issuer actors
     """
-    logger.info("GET request received: Fetch the issuers from the trust registry")
+    logger.debug("GET request received: Fetch the issuers from the trust registry")
     issuers = await registry_actors.fetch_actors_with_role("issuer")
 
     logger.info("Successfully retrieved issuers.")
@@ -146,7 +146,7 @@ async def get_verifiers() -> List[Actor]:
     ---------
     List of verifier actors
     """
-    logger.info("GET request received: Fetch the verifiers from the trust registry")
+    logger.debug("GET request received: Fetch the verifiers from the trust registry")
     verifiers = await registry_actors.fetch_actors_with_role("verifier")
 
     logger.info("Successfully retrieved verifiers.")

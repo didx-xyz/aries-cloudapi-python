@@ -56,7 +56,7 @@ async def create_oob_invitation(
             The invitation record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Create OOB invitation")
+    bound_logger.debug("POST request received: Create OOB invitation")
     if body is None:
         body = CreateOobInvitation()
 
@@ -129,7 +129,7 @@ async def accept_oob_invitation(
             The out-of-band record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Accept OOB invitation")
+    bound_logger.debug("POST request received: Accept OOB invitation")
 
     async with client_from_auth(auth) as aries_controller:
         oob_record = await handle_acapy_call(
@@ -168,7 +168,7 @@ async def connect_to_public_did(
             The connection record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Connect to public DID")
+    bound_logger.debug("POST request received: Connect to public DID")
     async with client_from_auth(auth) as aries_controller:
         conn_record = await handle_acapy_call(
             logger=bound_logger,

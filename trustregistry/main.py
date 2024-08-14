@@ -51,7 +51,7 @@ app = create_app()
 
 @app.get("/")
 async def root(db_session: Session = Depends(get_db)):
-    logger.info("GET request received: Fetch actors and schemas from registry")
+    logger.debug("GET request received: Fetch actors and schemas from registry")
     db_schemas = crud.get_schemas(db_session)
     db_actors = crud.get_actors(db_session)
     schemas_repr = [schema.id for schema in db_schemas]

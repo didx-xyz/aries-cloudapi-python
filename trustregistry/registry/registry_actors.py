@@ -16,7 +16,7 @@ router = APIRouter(prefix="/registry/actors", tags=["actor"])
 
 @router.get("", response_model=List[Actor])
 async def get_actors(db_session: Session = Depends(get_db)) -> List[Actor]:
-    logger.info("GET request received: Fetch all actors")
+    logger.debug("GET request received: Fetch all actors")
     db_actors = crud.get_actors(db_session)
 
     return db_actors
@@ -25,7 +25,7 @@ async def get_actors(db_session: Session = Depends(get_db)) -> List[Actor]:
 @router.post("", response_model=Actor)
 async def register_actor(actor: Actor, db_session: Session = Depends(get_db)) -> Actor:
     bound_logger = logger.bind(body={"actor": actor})
-    bound_logger.info("POST request received: Register actor")
+    bound_logger.debug("POST request received: Register actor")
     try:
         created_actor = crud.create_actor(db_session, actor=actor)
     except crud.ActorAlreadyExistsException as e:
@@ -43,7 +43,7 @@ async def update_actor(
     actor_id: str, actor: Actor, db_session: Session = Depends(get_db)
 ) -> Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id, "actor": actor})
-    bound_logger.info("PUT request received: Update actor")
+    bound_logger.debug("PUT request received: Update actor")
     if actor.id and actor.id != actor_id:
         bound_logger.info("Bad request: Actor ID in request doesn't match ID in URL.")
         raise HTTPException(
@@ -70,7 +70,7 @@ async def get_actor_by_did(
     actor_did: str, db_session: Session = Depends(get_db)
 ) -> Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
-    bound_logger.info("GET request received: Get actor by DID")
+    bound_logger.debug("GET request received: Get actor by DID")
     try:
         actor = crud.get_actor_by_did(db_session, actor_did=actor_did)
     except crud.ActorDoesNotExistException as e:
@@ -87,7 +87,7 @@ async def get_actor_by_id(
     actor_id: str, db_session: Session = Depends(get_db)
 ) -> Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
-    bound_logger.info("GET request received: Get actor by ID")
+    bound_logger.debug("GET request received: Get actor by ID")
     try:
         actor = crud.get_actor_by_id(db_session, actor_id=actor_id)
     except crud.ActorDoesNotExistException as e:
@@ -104,7 +104,7 @@ async def get_actor_by_name(
     actor_name: str, db_session: Session = Depends(get_db)
 ) -> Actor:
     bound_logger = logger.bind(body={"actor_name": actor_name})
-    bound_logger.info("GET request received: Get actor by name")
+    bound_logger.debug("GET request received: Get actor by name")
     try:
         actor = crud.get_actor_by_name(db_session, actor_name=actor_name)
     except crud.ActorDoesNotExistException as e:
@@ -119,7 +119,7 @@ async def get_actor_by_name(
 @router.delete("/{actor_id}", status_code=204)
 async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)) -> None:
     bound_logger = logger.bind(body={"actor_id": actor_id})
-    bound_logger.info("DELETE request received: Delete actor by ID")
+    bound_logger.debug("DELETE request received: Delete actor by ID")
     try:
         crud.delete_actor(db_session, actor_id=actor_id)
     except crud.ActorDoesNotExistException as e:

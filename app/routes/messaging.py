@@ -40,7 +40,7 @@ async def send_messages(
     ---
         Status code 204
     """
-    logger.info("POST request received: Send message")
+    logger.debug("POST request received: Send message")
     request_body = SendMessage(content=message.content)
     async with client_from_auth(auth) as aries_controller:
         await handle_acapy_call(
@@ -82,7 +82,7 @@ async def send_trust_ping(
             thread_id: str
                 Thread ID of the ping message
     """
-    logger.info("POST request received: Send trust ping")
+    logger.debug("POST request received: Send trust ping")
     request_body = PingRequest(comment=trustping_msg.comment)
     async with client_from_auth(auth) as aries_controller:
         response = await handle_acapy_call(

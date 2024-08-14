@@ -24,7 +24,7 @@ async def sign_jsonld(
         # Do not log credential data:
         body=body.model_dump(exclude="credential")
     )
-    bound_logger.info("POST request received: Sign JsonLD")
+    bound_logger.debug("POST request received: Sign JsonLD")
 
     async with client_from_auth(auth) as aries_controller:
         if body.verkey:
@@ -102,7 +102,7 @@ async def verify_jsonld(
     Verify a JSON-LD structure
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Verify JsonLD")
+    bound_logger.debug("POST request received: Verify JsonLD")
 
     async with client_from_auth(auth) as aries_controller:
         if not body.verkey:

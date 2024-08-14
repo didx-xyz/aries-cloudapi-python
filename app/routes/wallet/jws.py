@@ -36,7 +36,7 @@ async def sign_jws(
         # Do not log payload:
         body=body.model_dump(exclude="payload")
     )
-    bound_logger.info("POST request received: Sign JWS")
+    bound_logger.debug("POST request received: Sign JWS")
 
     try:
         sign_request = JWSCreate(**body.model_dump())
@@ -74,7 +74,7 @@ async def verify_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> JWSVerifyResponse:
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Verify JWS")
+    bound_logger.debug("POST request received: Verify JWS")
 
     try:
         verify_request = JWSVerify(jwt=body.jws)

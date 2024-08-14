@@ -60,7 +60,7 @@ async def create_tenant(
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Starting tenant creation")
+    bound_logger.debug("POST request received: Starting tenant creation")
 
     roles = body.roles
     wallet_label = body.wallet_label
@@ -189,7 +189,7 @@ async def delete_tenant_by_id(
 ):
     """Delete tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("DELETE request received: Deleting tenant by id")
+    bound_logger.debug("DELETE request received: Deleting tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -227,7 +227,7 @@ async def get_wallet_auth_token(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("GET request received: Access token for tenant")
+    bound_logger.debug("GET request received: Access token for tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -259,7 +259,7 @@ async def update_tenant(
 ) -> Tenant:
     """Update tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
-    bound_logger.info("PUT request received: Update tenant")
+    bound_logger.debug("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -286,7 +286,7 @@ async def get_tenant(
 ) -> Tenant:
     """Get tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("GET request received: Fetch tenant by id")
+    bound_logger.debug("GET request received: Fetch tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         wallet = await get_wallet_and_assert_valid_group(
@@ -311,7 +311,7 @@ async def get_tenants(
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name."""
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Fetch tenants by wallet name and/or group id"
     )
 

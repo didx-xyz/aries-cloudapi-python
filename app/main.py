@@ -147,7 +147,7 @@ app = create_app()
 # additional yaml version of openapi.json
 @app.get("/openapi.yaml", include_in_schema=False)
 def read_openapi_yaml() -> Response:
-    logger.info("GET request received: OpenAPI yaml endpoint")
+    logger.debug("GET request received: OpenAPI yaml endpoint")
     openapi_json = app.openapi()
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s, allow_unicode=True, sort_keys=False)

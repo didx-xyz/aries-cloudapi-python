@@ -163,7 +163,7 @@ class VerifierV2(Verifier):
         cls, controller: AcaPyClient, reject_proof_request: RejectProofRequest
     ) -> None:
         bound_logger = logger.bind(body=reject_proof_request)
-        bound_logger.info("Request to reject v2 presentation exchange record")
+        bound_logger.debug("Request to reject v2 presentation exchange record")
         pres_ex_id = pres_id_no_version(proof_id=reject_proof_request.proof_id)
 
         request_body = V20PresProblemReportRequest(
@@ -195,7 +195,7 @@ class VerifierV2(Verifier):
                     f"Failed to delete record: {e.detail}", e.status_code
                 ) from e
 
-        bound_logger.info("Successfully rejected v2 presentation exchange record.")
+        bound_logger.debug("Successfully rejected v2 presentation exchange record.")
 
     @classmethod
     async def get_proof_records(

@@ -69,7 +69,7 @@ async def create_schema(
             The created schema object
     """
     bound_logger = logger.bind(body=schema)
-    bound_logger.info("POST request received: Create schema (publish and register)")
+    bound_logger.debug("POST request received: Create schema (publish and register)")
 
     async with get_governance_controller(governance_auth) as aries_controller:
         schema_response = await schemas_service.create_schema(
@@ -127,7 +127,7 @@ async def get_schemas(
             "schema_version": schema_version,
         }
     )
-    bound_logger.info("GET request received: Get created schemas")
+    bound_logger.debug("GET request received: Get created schemas")
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
@@ -153,9 +153,9 @@ async def get_schemas(
                 raise
 
     if schemas:
-        bound_logger.info("Successfully fetched schemas.")
+        bound_logger.debug("Successfully fetched schemas.")
     else:
-        bound_logger.info("No schemas matching request.")
+        bound_logger.debug("No schemas matching request.")
 
     return schemas
 
@@ -188,7 +188,7 @@ async def get_schema(
             The schema object
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Get schema by id")
+    bound_logger.debug("GET request received: Get schema by id")
 
     async with client_from_auth(auth) as aries_controller:
         schema = await handle_acapy_call(
@@ -198,11 +198,10 @@ async def get_schema(
         )
 
     if not schema.var_schema:
-        bound_logger.info("Bad request: schema id not found.")
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
     result = credential_schema_from_acapy(schema.var_schema)
-    bound_logger.info("Successfully fetched schema by id.")
+    bound_logger.debug("Successfully fetched schema by id.")
     return result
 
 
@@ -248,7 +247,7 @@ async def create_credential_definition(
             "support_revocation": credential_definition.support_revocation,
         }
     )
-    bound_logger.info("POST request received: Create credential definition")
+    bound_logger.debug("POST request received: Create credential definition")
 
     support_revocation = credential_definition.support_revocation
 
@@ -271,7 +270,7 @@ async def create_credential_definition(
         max_attempts=3,
         retry_delay=0.5,
     )
-    bound_logger.info("Successfully created credential definition.")
+    bound_logger.debug("Successfully created credential definition.")
     return result
 
 
@@ -320,7 +319,7 @@ async def get_credential_definitions(
             "schema_version": schema_version,
         }
     )
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Get credential definitions created by agent"
     )
 
@@ -337,9 +336,9 @@ async def get_credential_definitions(
         )
 
     if credential_definitions:
-        bound_logger.info("Successfully fetched credential definitions.")
+        bound_logger.debug("Successfully fetched credential definitions.")
     else:
-        bound_logger.info("No credential definitions matching request.")
+        bound_logger.debug("No credential definitions matching request.")
 
     return credential_definitions
 
@@ -374,7 +373,7 @@ async def get_credential_definition_by_id(
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
-    bound_logger.info("GET request received: Get credential definition by id")
+    bound_logger.debug("GET request received: Get credential definition by id")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential definition")
@@ -385,7 +384,6 @@ async def get_credential_definition_by_id(
         )
 
         if not credential_definition.credential_definition:
-            bound_logger.info("Bad request: credential definition id not found.")
             raise HTTPException(
                 404,
                 f"Credential Definition with id {credential_definition_id} not found.",
@@ -405,5 +403,5 @@ async def get_credential_definition_by_id(
         )
         cloudapi_credential_definition.schema_id = schema.id
 
-    bound_logger.info("Successfully fetched credential definition.")
+    bound_logger.debug("Successfully fetched credential definition.")
     return cloudapi_credential_definition

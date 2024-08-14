@@ -48,7 +48,7 @@ async def create_schema(
 
     result = await publisher.publish_schema(schema_request)
 
-    bound_logger.info("Successfully published and registered schema.")
+    bound_logger.debug("Successfully published and registered schema.")
     return result
 
 

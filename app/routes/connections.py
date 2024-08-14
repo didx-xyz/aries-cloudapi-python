@@ -65,7 +65,7 @@ async def create_invitation(
             Contains an invitation object, an invitation url, and a connection id for this invite.
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Create invitation")
+    bound_logger.debug("POST request received: Create invitation")
     if body is None:
         body = CreateInvitation()
 
@@ -119,7 +119,7 @@ async def accept_invitation(
             The record of your new connection
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Accept invitation")
+    bound_logger.debug("POST request received: Accept invitation")
     async with client_from_auth(auth) as aries_controller:
         connection_record = await handle_acapy_call(
             logger=bound_logger,
@@ -175,7 +175,7 @@ async def get_connections(
         List[Connection]
             A list of connection records
     """
-    logger.info("GET request received: Get connections")
+    logger.debug("GET request received: Get connections")
 
     async with client_from_auth(auth) as aries_controller:
         connections = await handle_acapy_call(
@@ -227,7 +227,7 @@ async def get_connection_by_id(
             The connection record
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
-    bound_logger.info("GET request received: Get connection by ID")
+    bound_logger.debug("GET request received: Get connection by ID")
     async with client_from_auth(auth) as aries_controller:
         connection = await handle_acapy_call(
             logger=bound_logger,
@@ -264,7 +264,7 @@ async def delete_connection_by_id(
         status_code: 204
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
-    bound_logger.info("DELETE request received: Delete connection by ID")
+    bound_logger.debug("DELETE request received: Delete connection by ID")
 
     async with client_from_auth(auth) as aries_controller:
         await handle_acapy_call(

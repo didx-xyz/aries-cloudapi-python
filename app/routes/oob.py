@@ -56,7 +56,7 @@ async def create_oob_invitation(
             The invitation record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Create OOB invitation")
+    bound_logger.debug("POST request received: Create OOB invitation")
     if body is None:
         body = CreateOobInvitation()
 
@@ -95,7 +95,7 @@ async def create_oob_invitation(
     # If the trust registry is not derived but an entity providing this information,
     # we should possibly write the (multi-use) invitation to the registry
     # We could also investigate storing the invitation URL with the OP's DID
-    bound_logger.info("Successfully created invitation.")
+    bound_logger.debug("Successfully created invitation.")
     return invitation
 
 
@@ -129,7 +129,7 @@ async def accept_oob_invitation(
             The out-of-band record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Accept OOB invitation")
+    bound_logger.debug("POST request received: Accept OOB invitation")
 
     async with client_from_auth(auth) as aries_controller:
         oob_record = await handle_acapy_call(
@@ -140,7 +140,7 @@ async def accept_oob_invitation(
             alias=body.alias,
             body=body.invitation,
         )
-    bound_logger.info("Successfully accepted invitation.")
+    bound_logger.debug("Successfully accepted invitation.")
     return oob_record
 
 
@@ -168,7 +168,7 @@ async def connect_to_public_did(
             The connection record
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Connect to public DID")
+    bound_logger.debug("POST request received: Connect to public DID")
     async with client_from_auth(auth) as aries_controller:
         conn_record = await handle_acapy_call(
             logger=bound_logger,
@@ -177,5 +177,5 @@ async def connect_to_public_did(
         )
 
     result = conn_record_to_connection(conn_record)
-    bound_logger.info("Successfully created DID exchange request.")
+    bound_logger.debug("Successfully created DID exchange request.")
     return result

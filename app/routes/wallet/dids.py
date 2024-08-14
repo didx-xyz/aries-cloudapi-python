@@ -25,7 +25,7 @@ async def create_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """Create Local DID."""
-    logger.info("POST request received: Create DID")
+    logger.debug("POST request received: Create DID")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
@@ -33,7 +33,7 @@ async def create_did(
             did_create=did_create, controller=aries_controller
         )
 
-    logger.info("Successfully created DID.")
+    logger.debug("Successfully created DID.")
     return result
 
 
@@ -44,7 +44,7 @@ async def list_dids(
     """
     Retrieve list of DIDs.
     """
-    logger.info("GET request received: Retrieve list of DIDs")
+    logger.debug("GET request received: Retrieve list of DIDs")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching DIDs")
@@ -53,10 +53,10 @@ async def list_dids(
         )
 
     if not did_result.results:
-        logger.info("No DIDs returned.")
+        logger.debug("No DIDs returned.")
         return []
 
-    logger.info("Successfully fetched list of DIDs.")
+    logger.debug("Successfully fetched list of DIDs.")
     return did_result.results
 
 
@@ -67,7 +67,7 @@ async def get_public_did(
     """
     Fetch the current public DID.
     """
-    logger.info("GET request received: Fetch public DID")
+    logger.debug("GET request received: Fetch public DID")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching public DID")
@@ -76,10 +76,9 @@ async def get_public_did(
         )
 
     if not result.result:
-        logger.info("Bad request: no public DID found.")
         raise CloudApiException("No public did found.", 404)
 
-    logger.info("Successfully fetched public DID.")
+    logger.debug("Successfully fetched public DID.")
     return result.result
 
 
@@ -89,13 +88,13 @@ async def set_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """Set the current public DID."""
-    logger.info("PUT request received: Set public DID")
+    logger.debug("PUT request received: Set public DID")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Setting public DID")
         result = await acapy_wallet.set_public_did(aries_controller, did)
 
-    logger.info("Successfully set public DID.")
+    logger.debug("Successfully set public DID.")
     return result
 
 
@@ -105,14 +104,14 @@ async def rotate_keypair(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     bound_logger = logger.bind(body={"did": did})
-    bound_logger.info("PATCH request received: Rotate keypair for DID")
+    bound_logger.debug("PATCH request received: Rotate keypair for DID")
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Rotating keypair")
         await handle_acapy_call(
             logger=logger, acapy_call=aries_controller.wallet.rotate_keypair, did=did
         )
 
-    bound_logger.info("Successfully rotated keypair.")
+    bound_logger.debug("Successfully rotated keypair.")
 
 
 @router.get("/{did}/endpoint", response_model=DIDEndpoint)
@@ -122,14 +121,14 @@ async def get_did_endpoint(
 ) -> DIDEndpoint:
     """Get DID endpoint."""
     bound_logger = logger.bind(body={"did": did})
-    bound_logger.info("GET request received: Get endpoint for DID")
+    bound_logger.debug("GET request received: Get endpoint for DID")
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching DID endpoint")
         result = await handle_acapy_call(
             logger=logger, acapy_call=aries_controller.wallet.get_did_endpoint, did=did
         )
 
-    bound_logger.info("Successfully fetched DID endpoint.")
+    bound_logger.debug("Successfully fetched DID endpoint.")
     return result
 
 
@@ -143,7 +142,7 @@ async def set_did_endpoint(
 
     # "Endpoint" type is for making connections using public indy DIDs
     bound_logger = logger.bind(body={"did": did, "body": body})
-    bound_logger.info("POST request received: Get endpoint for DID")
+    bound_logger.debug("POST request received: Get endpoint for DID")
 
     endpoint_type = "Endpoint"
 
@@ -163,4 +162,4 @@ async def set_did_endpoint(
             body=request_body,
         )
 
-    bound_logger.info("Successfully set DID endpoint.")
+    bound_logger.debug("Successfully set DID endpoint.")

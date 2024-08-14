@@ -89,5 +89,5 @@ async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: 
                 "Tried and failed to create invitation on their behalf."
             )
 
-    bound_logger.info("Returning verifier onboard result.")
+    bound_logger.debug("Returning verifier onboard result.")
     return OnboardResult(**onboarding_result)

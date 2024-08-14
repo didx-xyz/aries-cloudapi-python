@@ -15,7 +15,7 @@ async def get_hooks_for_wallet(wallet_id: str) -> List:
     Gets webhooks for wallet. Only return the first 100 hooks to not overload OpenAPI interface
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("Fetching webhooks events from /webhooks/wallet_id")
+    bound_logger.debug("Fetching webhooks events from /webhooks/wallet_id")
     try:
         async with RichAsyncClient() as client:
             hooks = (await client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}")).json()
@@ -27,7 +27,7 @@ async def get_hooks_for_wallet(wallet_id: str) -> List:
 
 async def get_hooks_for_wallet_by_topic(wallet_id: str, topic: CloudApiTopics) -> List:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
-    bound_logger.info("Fetching webhooks events from /webhooks/wallet_id/topic")
+    bound_logger.debug("Fetching webhooks events from /webhooks/wallet_id/topic")
     try:
         async with RichAsyncClient() as client:
             hooks = (

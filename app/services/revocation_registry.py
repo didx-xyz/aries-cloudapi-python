@@ -44,7 +44,7 @@ async def get_active_revocation_registry_for_credential(
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
-    bound_logger.info("Fetching activate revocation registry for a credential")
+    bound_logger.debug("Fetching activate revocation registry for a credential")
 
     result = await handle_acapy_call(
         logger=bound_logger,
@@ -62,7 +62,7 @@ async def get_active_revocation_registry_for_credential(
             f"`{credential_definition_id}`."
         )
 
-    bound_logger.info(
+    bound_logger.debug(
         "Successfully retrieved revocation registry for credential definition."
     )
     return result.result
@@ -94,7 +94,7 @@ async def revoke_credential(
             "auto_publish_to_ledger": auto_publish_to_ledger,
         }
     )
-    bound_logger.info("Revoking an issued credential")
+    bound_logger.debug("Revoking an issued credential")
 
     request_body = handle_model_with_validation(
         logger=bound_logger,
@@ -144,7 +144,7 @@ async def revoke_credential(
                 "Please check the revocation record state and retry if not revoked."
             )
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
 
 
 async def publish_pending_revocations(
@@ -189,7 +189,7 @@ async def publish_pending_revocations(
         return
 
     endorse_transaction_id = result.txn.transaction_id
-    bound_logger.info(
+    bound_logger.debug(
         "Successfully published pending revocations. Endorser transaction id: {}.",
         endorse_transaction_id,
     )
@@ -215,7 +215,7 @@ async def clear_pending_revocations(
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
-    bound_logger.info("Validating revocation registry ids")
+    bound_logger.debug("Validating revocation registry ids")
     await validate_rev_reg_ids(
         controller=controller,
         revocation_registry_credential_map=revocation_registry_credential_map,
@@ -238,7 +238,7 @@ async def clear_pending_revocations(
     result = ClearPendingRevocationsResult(
         revocation_registry_credential_map=clear_result.rrid2crid
     )
-    bound_logger.info("Successfully cleared pending revocations.")
+    bound_logger.debug("Successfully cleared pending revocations.")
     return result
 
 
@@ -270,7 +270,7 @@ async def get_credential_revocation_record(
             "revocation_registry_id": revocation_registry_id,
         }
     )
-    bound_logger.info("Fetching the revocation status for a credential exchange")
+    bound_logger.debug("Fetching the revocation status for a credential exchange")
 
     try:
         result = await handle_acapy_call(
@@ -296,7 +296,7 @@ async def get_credential_revocation_record(
 
     result = result.result
 
-    bound_logger.info("Successfully retrieved revocation status.")
+    bound_logger.debug("Successfully retrieved revocation status.")
     return result
 
 
@@ -314,7 +314,7 @@ async def get_credential_definition_id_from_exchange_id(
         credential_definition_id (Optional[str]): The credential definition ID or None.
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("Fetching credential definition id from exchange id")
+    bound_logger.debug("Fetching credential definition id from exchange id")
 
     cred_ex_id = strip_protocol_prefix(credential_exchange_id)
     try:
@@ -329,7 +329,7 @@ async def get_credential_definition_id_from_exchange_id(
             "An Exception was caught while getting v1 record: '{}'", err1.detail
         )
         try:
-            bound_logger.info("Trying to get v2 records")
+            bound_logger.debug("Trying to get v2 records")
 
             cred_ex_record = await handle_acapy_call(
                 logger=bound_logger,
@@ -359,7 +359,7 @@ async def get_credential_definition_id_from_exchange_id(
             )
             return
 
-    bound_logger.info(
+    bound_logger.debug(
         "Successfully obtained cred definition id from the cred exchange id."
     )
     return credential_definition_id
@@ -386,7 +386,7 @@ async def validate_rev_reg_ids(
     if not rev_reg_id_list:
         return
 
-    bound_logger.info("Validating revocation registry ids")
+    bound_logger.debug("Validating revocation registry ids")
 
     for rev_reg_id in rev_reg_id_list:
         try:
@@ -446,7 +446,7 @@ async def validate_rev_reg_ids(
                     e.status_code,
                 ) from e
 
-    bound_logger.info("Successfully validated revocation registry ids.")
+    bound_logger.debug("Successfully validated revocation registry ids.")
 
 
 async def get_created_active_registries(

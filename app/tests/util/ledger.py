@@ -45,7 +45,7 @@ async def post_to_ledger(
             detail="Cannot resolve ledger type. Should be either von or sovrin",
         )
 
-    logger.info("Try post to ledger: {}", payload)
+    logger.debug("Try post to ledger: {}", payload)
     async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.post(
             LEDGER_REGISTRATION_URL, json=payload.model_dump(), timeout=300
@@ -82,5 +82,5 @@ async def create_public_did(
     if set_public:
         await acapy_wallet.set_public_did(aries_controller, did_object.did)
 
-    logger.info("Successfully handled create public did request.")
+    logger.debug("Successfully handled create public did request.")
     return did_object

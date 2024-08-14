@@ -30,7 +30,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
     taa: Tuple[TAAInfo, str]
         The TAAInfo object, with the mechanism
     """
-    logger.info("Fetching TAA")
+    logger.debug("Fetching TAA")
     taa_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.ledger.fetch_taa
     )
@@ -40,7 +40,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
         logger.error("Failed to get TAA. Received info: `{}`.", taa_info)
         raise CloudApiException("Something went wrong. Could not get TAA.")
 
-    logger.info("Successfully fetched TAA info: {}", taa_info)
+    logger.debug("Successfully fetched TAA info: {}", taa_info)
     mechanism = (
         taa_info.taa_accepted.mechanism
         if taa_info.taa_accepted
@@ -64,7 +64,7 @@ async def accept_taa(
     mechanism:
         An optional mechanism to specify
     """
-    logger.bind(body=taa).info("Accepting TAA")
+    logger.bind(body=taa).debug("Accepting TAA")
     request_body = TAAAccept(**taa.to_dict(), mechanism=mechanism)
     try:
         await handle_acapy_call(
@@ -76,7 +76,7 @@ async def accept_taa(
             f"An unexpected error occurred while trying to accept TAA: {e.detail}"
         ) from e
 
-    logger.info("Successfully accepted TAA.")
+    logger.debug("Successfully accepted TAA.")
 
 
 async def get_did_endpoint(
@@ -99,7 +99,7 @@ async def get_did_endpoint(
         the issuer's Verinym from the ledger
     """
     bound_logger = logger.bind(body={"issuer_nym": issuer_nym})
-    bound_logger.info("Fetching DID endpoint")
+    bound_logger.debug("Fetching DID endpoint")
 
     issuer_endpoint_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.ledger.get_did_endpoint, did=issuer_nym
@@ -107,7 +107,7 @@ async def get_did_endpoint(
     if not issuer_endpoint_response:
         bound_logger.info("Failed to get DID endpoint; received empty response.")
         raise CloudApiException("Could not obtain issuer endpoint.", 404)
-    bound_logger.info("Successfully fetched DID endpoint.")
+    bound_logger.debug("Successfully fetched DID endpoint.")
     return issuer_endpoint_response
 
 
@@ -134,7 +134,7 @@ async def register_nym_on_ledger(
             conn_id=connection_id,
             create_transaction_for_endorser=create_transaction_for_endorser,
         )
-        bound_logger.info("Successfully registered NYM on ledger.")
+        bound_logger.debug("Successfully registered NYM on ledger.")
         return response
     except CloudApiException as e:
         raise CloudApiException(
@@ -176,12 +176,12 @@ async def schema_id_from_credential_definition_id(
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
-    bound_logger.info("Getting schema id from credential definition id")
+    bound_logger.debug("Getting schema id from credential definition id")
 
     # scrape schema id or sequence number from cred def id
     tokens = credential_definition_id.split(":")
     if len(tokens) == 8:  # node protocol >= 1.4: cred def id has 5 or 8 tokens
-        bound_logger.info("Constructed schema id from credential definition.")
+        bound_logger.debug("Constructed schema id from credential definition.")
         return ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
 
     # get txn by sequence number, retrieve schema identifier components
@@ -196,5 +196,5 @@ async def schema_id_from_credential_definition_id(
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
         raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
-    bound_logger.info("Successfully obtained schema id from credential definition.")
+    bound_logger.debug("Successfully obtained schema id from credential definition.")
     return schema.var_schema.id

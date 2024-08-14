@@ -19,7 +19,7 @@ async def register_actor(actor: Actor) -> None:
         TrustRegistryException: If an error occurred while registering the schema
     """
     bound_logger = logger.bind(body={"actor": actor})
-    bound_logger.info("Registering actor on trust registry")
+    bound_logger.debug("Registering actor on trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actor_response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors", json=actor.model_dump()
@@ -45,7 +45,7 @@ async def register_actor(actor: Actor) -> None:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully registered actor on trust registry.")
+    bound_logger.debug("Successfully registered actor on trust registry.")
 
 
 async def update_actor(actor: Actor) -> None:
@@ -87,7 +87,7 @@ async def fetch_all_actors() -> List[Actor]:
     Returns:
         List[Actor]: List of actors
     """
-    logger.info("Fetching all actors from trust registry")
+    logger.debug("Fetching all actors from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
@@ -105,9 +105,9 @@ async def fetch_all_actors() -> List[Actor]:
     actors = [Actor.model_validate(actor) for actor in actors_response.json()]
 
     if actors:
-        logger.info("Successfully got all actors.")
+        logger.debug("Successfully got all actors.")
     else:
-        logger.info("No actors found.")
+        logger.debug("No actors found.")
 
     return actors
 
@@ -125,7 +125,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
         Actor: The actor with specified did.
     """
     bound_logger = logger.bind(body={"did": did})
-    bound_logger.info("Fetching actor by DID from trust registry")
+    bound_logger.debug("Fetching actor by DID from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actor_response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
@@ -145,7 +145,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -162,7 +162,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
         Actor: The actor with specified id.
     """
     bound_logger = logger.bind(body={"actor_id": actor_id})
-    bound_logger.info("Fetching actor by ID from trust registry")
+    bound_logger.debug("Fetching actor by ID from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actor_response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
@@ -182,7 +182,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -199,7 +199,7 @@ async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
         Actor: The actor with specified name.
     """
     bound_logger = logger.bind(body={"actor_id": actor_name})
-    bound_logger.info("Fetching actor by NAME from trust registry")
+    bound_logger.debug("Fetching actor by NAME from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actor_response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
@@ -219,7 +219,7 @@ async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -236,7 +236,7 @@ async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
         List[Actor]: List of actors with specified role
     """
     bound_logger = logger.bind(body={"role": role})
-    bound_logger.info("Fetching all actors with requested role from trust registry")
+    bound_logger.debug("Fetching all actors with requested role from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
         actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
@@ -255,9 +255,9 @@ async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     actors_with_role_list = [actor for actor in actors if role in actor.roles]
 
     if actors_with_role_list:
-        bound_logger.info("Successfully got actors with requested role.")
+        bound_logger.debug("Successfully got actors with requested role.")
     else:
-        bound_logger.info("No actors found with requested role.")
+        bound_logger.debug("No actors found with requested role.")
 
     return actors_with_role_list
 
@@ -294,4 +294,4 @@ async def remove_actor_by_id(actor_id: str) -> None:
             remove_response.status_code,
         )
 
-    bound_logger.info("Successfully removed actor from trust registry.")
+    bound_logger.debug("Successfully removed actor from trust registry.")

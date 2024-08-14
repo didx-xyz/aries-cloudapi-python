@@ -166,7 +166,7 @@ class AcaPyEventsProcessor:
                             max_attempts_without_events,
                         )
                         await self._new_event_notification.wait()
-                        logger.info("Keyspace notification triggered")
+                        logger.debug("Keyspace notification triggered")
                         self._new_event_notification.clear()  # Reset the event for the next wait
                         attempts_without_events = 0  # Reset the counter
                     else:
@@ -335,7 +335,7 @@ class AcaPyEventsProcessor:
             and cloudapi_topic == "endorsements"
             and payload_is_applicable_for_endorser(payload, logger=bound_logger)
         ):
-            logger.info("Forwarding endorsement event for Endorser service")
+            logger.debug("Forwarding endorsement event for Endorser service")
             transaction_id = payload["transaction_id"]  # check has asserted key exists
             self.redis_service.add_endorsement_event(
                 event_json=webhook_event_json, transaction_id=transaction_id

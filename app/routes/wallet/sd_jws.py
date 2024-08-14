@@ -37,7 +37,7 @@ async def sign_sd_jws(
         # Do not log payload:
         body=body.model_dump(exclude="payload")
     )
-    bound_logger.info("POST request received: Sign SD-JWS")
+    bound_logger.debug("POST request received: Sign SD-JWS")
 
     try:
         sign_request = SDJWSCreate(**body.model_dump())
@@ -57,7 +57,7 @@ async def sign_sd_jws(
         )
 
     result = SDJWSCreateResponse(sd_jws=sd_jws)
-    bound_logger.info("Successfully signed SD-JWS.")
+    bound_logger.debug("Successfully signed SD-JWS.")
     return result
 
 
@@ -76,7 +76,7 @@ async def verify_sd_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSVerifyResponse:
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Verify SD-JWS")
+    bound_logger.debug("POST request received: Verify SD-JWS")
 
     try:
         verify_request = SDJWSVerify(sd_jwt=body.sd_jws)
@@ -97,5 +97,5 @@ async def verify_sd_jws(
         )
 
     result = SDJWSVerifyResponse(**verify_result.model_dump())
-    bound_logger.info("Successfully verified SD-JWS.")
+    bound_logger.debug("Successfully verified SD-JWS.")
     return result

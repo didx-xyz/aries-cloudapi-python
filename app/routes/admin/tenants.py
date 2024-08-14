@@ -60,13 +60,13 @@ async def create_tenant(
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Starting tenant creation")
+    bound_logger.debug("POST request received: Starting tenant creation")
 
     roles = body.roles
     wallet_label = body.wallet_label
     wallet_name = body.wallet_name or uuid4().hex
 
-    bound_logger.info("Assert that requested label is not used in trust registry")
+    bound_logger.debug("Assert that requested label is not used in trust registry")
     try:
         actor_name_exists = await assert_actor_name(wallet_label)
     except TrustRegistryException as e:
@@ -98,7 +98,7 @@ async def create_tenant(
     )
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         try:
-            bound_logger.info("Creating wallet")
+            bound_logger.debug("Creating wallet")
             wallet_response = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=admin_controller.multitenancy.create_wallet,
@@ -121,7 +121,7 @@ async def create_tenant(
 
         try:
             if roles:
-                bound_logger.info(
+                bound_logger.debug(
                     "Onboarding `{}` with requested roles: `{}`", wallet_label, roles
                 )
                 onboard_result = await onboard_tenant(
@@ -189,7 +189,7 @@ async def delete_tenant_by_id(
 ):
     """Delete tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("DELETE request received: Deleting tenant by id")
+    bound_logger.debug("DELETE request received: Deleting tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -217,7 +217,7 @@ async def delete_tenant_by_id(
             acapy_call=admin_controller.multitenancy.delete_wallet,
             wallet_id=wallet_id,
         )
-        bound_logger.info("Successfully deleted tenant.")
+        bound_logger.debug("Successfully deleted tenant.")
 
 
 @router.get("/{wallet_id}/access-token", response_model=TenantAuth)
@@ -227,7 +227,7 @@ async def get_wallet_auth_token(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("GET request received: Access token for tenant")
+    bound_logger.debug("GET request received: Access token for tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -246,7 +246,7 @@ async def get_wallet_auth_token(
         )
 
     response = TenantAuth(access_token=tenant_api_key(response.token))
-    bound_logger.info("Successfully retrieved access token.")
+    bound_logger.debug("Successfully retrieved access token.")
     return response
 
 
@@ -259,7 +259,7 @@ async def update_tenant(
 ) -> Tenant:
     """Update tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
-    bound_logger.info("PUT request received: Update tenant")
+    bound_logger.debug("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
@@ -274,7 +274,7 @@ async def update_tenant(
         )
 
     response = tenant_from_wallet_record(wallet)
-    bound_logger.info("Successfully updated tenant.")
+    bound_logger.debug("Successfully updated tenant.")
     return response
 
 
@@ -286,7 +286,7 @@ async def get_tenant(
 ) -> Tenant:
     """Get tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.info("GET request received: Fetch tenant by id")
+    bound_logger.debug("GET request received: Fetch tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         wallet = await get_wallet_and_assert_valid_group(
@@ -297,7 +297,7 @@ async def get_tenant(
         )
 
     response = tenant_from_wallet_record(wallet)
-    bound_logger.info("Successfully fetched tenant from wallet record.")
+    bound_logger.debug("Successfully fetched tenant from wallet record.")
     return response
 
 
@@ -311,7 +311,7 @@ async def get_tenants(
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name."""
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Fetch tenants by wallet name and/or group id"
     )
 
@@ -328,9 +328,9 @@ async def get_tenants(
     wallets_list = wallets.results
 
     if not wallets_list:
-        bound_logger.info("No wallets found.")
+        bound_logger.debug("No wallets found.")
         return []
 
     response = [tenant_from_wallet_record(record) for record in wallets_list]
-    bound_logger.info("Successfully fetched wallets.")
+    bound_logger.debug("Successfully fetched wallets.")
     return response

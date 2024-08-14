@@ -21,7 +21,7 @@ async def register_schema(schema_id: str) -> None:
         TrustRegistryException: If an error occurred while registering the schema
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Registering schema on trust registry")
+    bound_logger.debug("Registering schema on trust registry")
     async with RichAsyncClient() as client:
         try:
             await client.post(
@@ -38,7 +38,7 @@ async def register_schema(schema_id: str) -> None:
                 e.status_code,
             )
 
-    bound_logger.info("Successfully registered schema on trust registry.")
+    bound_logger.debug("Successfully registered schema on trust registry.")
 
 
 async def fetch_schemas() -> List[Schema]:
@@ -50,7 +50,7 @@ async def fetch_schemas() -> List[Schema]:
     Returns:
         A list of schemas
     """
-    logger.info("Fetching all schemas from trust registry")
+    logger.debug("Fetching all schemas from trust registry")
     async with RichAsyncClient() as client:
         try:
             schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
@@ -65,7 +65,7 @@ async def fetch_schemas() -> List[Schema]:
             )
 
     result = [Schema.model_validate(schema) for schema in schemas_res.json()]
-    logger.info("Successfully fetched schemas from trust registry.")
+    logger.debug("Successfully fetched schemas from trust registry.")
     return result
 
 
@@ -79,7 +79,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
         A schema
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Fetching schema from trust registry")
+    bound_logger.debug("Fetching schema from trust registry")
 
     async with RichAsyncClient() as client:
         try:
@@ -102,7 +102,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
                 )
 
     result = Schema.model_validate(schema_response.json())
-    logger.info("Successfully fetched schema from trust registry.")
+    logger.debug("Successfully fetched schema from trust registry.")
     return result
 
 
@@ -131,4 +131,4 @@ async def remove_schema_by_id(schema_id: str) -> None:
                 e.status_code,
             )
 
-    bound_logger.info("Successfully removed schema from trust registry.")
+    bound_logger.debug("Successfully removed schema from trust registry.")

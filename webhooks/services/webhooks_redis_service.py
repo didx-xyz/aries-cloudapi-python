@@ -395,7 +395,7 @@ class WebhooksRedisService(RedisService):
         )
         self.redis.publish(self.billing_event_pubsub_channel, broadcast_message)
 
-        bound_logger.info("Successfully wrote billing entry to redis.")
+        bound_logger.debug("Successfully wrote billing entry to redis.")
 
     def get_billing_event(
         self, group_id: str, start_timestamp: int, stop_timestamp: int

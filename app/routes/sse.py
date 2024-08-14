@@ -68,7 +68,7 @@ async def get_sse_subscribe_wallet(
             "wallet_id": wallet_id,
             "look_back": look_back,
         }
-    ).info("GET request received: Subscribe to wallet events")
+    ).debug("GET request received: Subscribe to wallet events")
 
     verify_wallet_access(auth, wallet_id)
 
@@ -112,7 +112,7 @@ async def get_sse_subscribe_wallet_topic(
             "topic": topic,
             "look_back": look_back,
         }
-    ).info("GET request received: Subscribe to wallet events by topic")
+    ).debug("GET request received: Subscribe to wallet events by topic")
 
     verify_wallet_access(auth, wallet_id)
 
@@ -161,7 +161,7 @@ async def get_sse_subscribe_event_with_state(
             "desired_state": desired_state,
             "look_back": look_back,
         }
-    ).info(
+    ).debug(
         "GET request received: Subscribe to wallet events by topic and desired state"
     )
 
@@ -215,7 +215,9 @@ async def get_sse_subscribe_stream_with_fields(
             field: field_id,
             "look_back": look_back,
         }
-    ).info("GET request received: Subscribe to wallet events by topic and select field")
+    ).debug(
+        "GET request received: Subscribe to wallet events by topic and select field"
+    )
 
     verify_wallet_access(auth, wallet_id)
 
@@ -271,7 +273,9 @@ async def get_sse_subscribe_event_with_field_and_state(
             "desired_state": desired_state,
             "look_back": look_back,
         }
-    ).info("GET request received: Subscribe to wallet events by topic, field and state")
+    ).debug(
+        "GET request received: Subscribe to wallet events by topic, field and state"
+    )
 
     verify_wallet_access(auth, wallet_id)
 

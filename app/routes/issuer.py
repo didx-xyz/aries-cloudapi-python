@@ -87,7 +87,7 @@ async def send_credential(
             "credential_type": credential.type,
         }
     )
-    bound_logger.info("POST request received: Send credential")
+    bound_logger.debug("POST request received: Send credential")
 
     issuer = issuer_from_protocol_version(credential.protocol_version)
 
@@ -123,7 +123,7 @@ async def send_credential(
                 f"Failed to send credential: {e.detail}", e.status_code
             ) from e
 
-    bound_logger.info("Successfully sent credential.")
+    bound_logger.debug("Successfully sent credential.")
     return result
 
 
@@ -178,7 +178,7 @@ async def create_offer(
             "credential_type": credential.type,
         }
     )
-    bound_logger.info("POST request received: Create credential offer")
+    bound_logger.debug("POST request received: Create credential offer")
 
     issuer = issuer_from_protocol_version(credential.protocol_version)
 
@@ -210,7 +210,7 @@ async def create_offer(
             credential=credential,
         )
 
-    bound_logger.info("Successfully created credential offer.")
+    bound_logger.debug("Successfully created credential offer.")
     return result
 
 
@@ -242,7 +242,7 @@ async def request_credential(
             An updated record of this credential exchange
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("POST request received: Send credential request")
+    bound_logger.debug("POST request received: Send credential request")
 
     issuer = issuer_from_id(credential_exchange_id)
 
@@ -276,7 +276,7 @@ async def request_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully sent credential request.")
+    bound_logger.debug("Successfully sent credential request.")
     return result
 
 
@@ -314,7 +314,7 @@ async def store_credential(
             An updated record of this credential exchange
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("POST request received: Store credential")
+    bound_logger.debug("POST request received: Store credential")
 
     issuer = issuer_from_id(credential_exchange_id)
 
@@ -324,7 +324,7 @@ async def store_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully stored credential.")
+    bound_logger.debug("Successfully stored credential.")
     return result
 
 
@@ -376,7 +376,7 @@ async def get_credentials(
             A list of credential exchange records
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
-    bound_logger.info("GET request received: Get credentials")
+    bound_logger.debug("GET request received: Get credentials")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching v1 records")
@@ -403,9 +403,9 @@ async def get_credentials(
 
     result = v1_records + v2_records
     if result:
-        bound_logger.info("Successfully fetched v1 and v2 records.")
+        bound_logger.debug("Successfully fetched v1 and v2 records.")
     else:
-        bound_logger.info("No v1 or v2 records returned.")
+        bound_logger.debug("No v1 or v2 records returned.")
     return result
 
 
@@ -446,7 +446,7 @@ async def get_credential(
             The credential exchange record
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("GET request received: Get credentials by credential id")
+    bound_logger.debug("GET request received: Get credentials by credential id")
 
     issuer = issuer_from_id(credential_exchange_id)
 
@@ -456,7 +456,7 @@ async def get_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully fetched credential.")
+    bound_logger.debug("Successfully fetched credential.")
     return result
 
 
@@ -482,7 +482,7 @@ async def remove_credential_exchange_record(
         status_code: 204
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info(
+    bound_logger.debug(
         "DELETE request received: Remove credential exchange record by id"
     )
 
@@ -494,7 +494,7 @@ async def remove_credential_exchange_record(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully deleted credential exchange record.")
+    bound_logger.debug("Successfully deleted credential exchange record.")
 
 
 @router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
@@ -526,7 +526,7 @@ async def revoke_credential(
         status_code: 204
     """
     bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Revoke credential")
+    bound_logger.debug("POST request received: Revoke credential")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Revoking credential")
@@ -536,7 +536,7 @@ async def revoke_credential(
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
 
 
 @router.get(
@@ -585,7 +585,7 @@ async def get_credential_revocation_record(
             "revocation_registry_id": revocation_registry_id,
         }
     )
-    bound_logger.info("GET request received: Get credential revocation record by id")
+    bound_logger.debug("GET request received: Get credential revocation record by id")
 
     if credential_exchange_id is None and (
         credential_revocation_id is None or revocation_registry_id is None
@@ -605,7 +605,7 @@ async def get_credential_revocation_record(
             revocation_registry_id=revocation_registry_id,
         )
 
-    bound_logger.info("Successfully fetched credential revocation record.")
+    bound_logger.debug("Successfully fetched credential revocation record.")
     return revocation_record
 
 
@@ -650,7 +650,7 @@ async def publish_revocations(
         status_code: 204
     """
     bound_logger = logger.bind(body=publish_request)
-    bound_logger.info("POST request received: Publish revocations")
+    bound_logger.debug("POST request received: Publish revocations")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Publishing revocations")
@@ -681,7 +681,7 @@ async def publish_revocations(
                     504,
                 ) from e
 
-    bound_logger.info("Successfully published revocations.")
+    bound_logger.debug("Successfully published revocations.")
 
 
 @router.post(
@@ -728,7 +728,7 @@ async def clear_pending_revocations(
             The revocations that are still pending after the clear request is performed
     """
     bound_logger = logger.bind(body=clear_pending_request)
-    bound_logger.info("POST request received: Clear pending revocations")
+    bound_logger.debug("POST request received: Clear pending revocations")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Clearing pending revocations")
@@ -737,5 +737,5 @@ async def clear_pending_revocations(
             revocation_registry_credential_map=clear_pending_request.revocation_registry_credential_map,
         )
 
-    bound_logger.info("Successfully cleared pending revocations.")
+    bound_logger.debug("Successfully cleared pending revocations.")
     return response

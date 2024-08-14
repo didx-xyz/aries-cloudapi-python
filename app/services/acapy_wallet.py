@@ -19,7 +19,7 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
         str: the public did formatted as fully qualified did
     """
     # Assert the agent has a public did
-    logger.info("Fetching public DID")
+    logger.debug("Fetching public DID")
     public_did = await handle_acapy_call(
         logger=logger, acapy_call=aries_controller.wallet.get_public_did
     )
@@ -27,7 +27,7 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     if not public_did.result or not public_did.result.did:
         raise CloudApiException("Agent has no public did.", 403)
 
-    logger.info("Successfully fetched public DID.")
+    logger.debug("Successfully fetched public DID.")
 
     return qualified_did_sov(public_did.result.did)
 
@@ -46,7 +46,7 @@ async def create_did(
     Returns:
         DID: The created did
     """
-    logger.info("Creating local DID")
+    logger.debug("Creating local DID")
 
     if did_create is None:
         did_create = DIDCreate()
@@ -60,7 +60,7 @@ async def create_did(
         logger.error("Failed to create DID: `{}`.", did_response)
         raise CloudApiException("Error creating did.")
 
-    logger.info("Successfully created local DID.")
+    logger.debug("Successfully created local DID.")
     return result
 
 
@@ -82,7 +82,7 @@ async def set_public_did(
     Returns:
         DID: the did
     """
-    logger.info("Setting public DID")
+    logger.debug("Setting public DID")
     did_response = await handle_acapy_call(
         logger=logger,
         acapy_call=controller.wallet.set_public_did,
@@ -95,7 +95,7 @@ async def set_public_did(
     if not result and not create_transaction_for_endorser:
         raise CloudApiException(f"Error setting public did to `{did}`.", 400)
 
-    logger.info("Successfully set public DID.")
+    logger.debug("Successfully set public DID.")
     return result
 
 
@@ -111,7 +111,7 @@ async def get_public_did(controller: AcaPyClient) -> DID:
     Returns:
         DID: the public did
     """
-    logger.info("Fetching public DID")
+    logger.debug("Fetching public DID")
     did_response = await handle_acapy_call(
         logger=logger, acapy_call=controller.wallet.get_public_did
     )
@@ -120,5 +120,5 @@ async def get_public_did(controller: AcaPyClient) -> DID:
     if not result:
         raise CloudApiException("No public did found", 404)
 
-    logger.info("Successfully fetched public DID.")
+    logger.debug("Successfully fetched public DID.")
     return result

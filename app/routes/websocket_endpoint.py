@@ -21,7 +21,7 @@ async def websocket_endpoint(
     group_id: str = group_id_query,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
-    logger.info("Received websocket request on group `{}`", group_id)
+    logger.debug("Received websocket request on group `{}`", group_id)
     await handle_websocket(
         websocket, group_id=group_id, wallet_id="", topic="", auth=auth
     )
@@ -34,7 +34,7 @@ async def websocket_endpoint_wallet(
     group_id: str = group_id_query,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
-    logger.info(
+    logger.debug(
         "Received websocket request on group `{}` and wallet id `{}`",
         group_id,
         wallet_id,
@@ -51,7 +51,7 @@ async def websocket_endpoint_topic(
     group_id: str = group_id_query,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
-    logger.info(
+    logger.debug(
         "Received websocket request on group `{}` and topic `{}`", group_id, topic
     )
     await handle_websocket(
@@ -67,7 +67,7 @@ async def websocket_endpoint_wallet_topic(
     group_id: str = group_id_query,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
-    logger.info(
+    logger.debug(
         "Received websocket request for group `{}`, wallet id `{}`, and topic `{}`",
         group_id,
         wallet_id,

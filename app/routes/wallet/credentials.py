@@ -29,7 +29,7 @@ async def list_credentials(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredInfoList:
     """Fetch a list of credentials from the wallet."""
-    logger.info("GET request received: List credentials")
+    logger.debug("GET request received: List credentials")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching credentials")
@@ -41,7 +41,7 @@ async def list_credentials(
             wql=wql,
         )
 
-    logger.info("Successfully listed credentials.")
+    logger.debug("Successfully listed credentials.")
     return results
 
 
@@ -52,7 +52,7 @@ async def get_credential_record(
 ) -> IndyCredInfo:
     """Fetch a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info("GET request received: Fetch specific credential by ID")
+    bound_logger.debug("GET request received: Fetch specific credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching credential")
@@ -62,7 +62,7 @@ async def get_credential_record(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched credential.")
+    bound_logger.debug("Successfully fetched credential.")
     return result
 
 
@@ -73,7 +73,7 @@ async def delete_credential(
 ) -> None:
     """Remove a specific credential from the wallet by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info("DELETE request received: Remove specific credential by ID")
+    bound_logger.debug("DELETE request received: Remove specific credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting credential")
@@ -83,7 +83,7 @@ async def delete_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully deleted credential.")
+    bound_logger.debug("Successfully deleted credential.")
 
 
 @router.get("/{credential_id}/mime-types", response_model=AttributeMimeTypesResult)
@@ -93,7 +93,7 @@ async def get_credential_mime_types(
 ) -> AttributeMimeTypesResult:
     """Retrieve attribute MIME types of a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Retrieve attribute MIME types for a specific credential"
     )
 
@@ -105,7 +105,7 @@ async def get_credential_mime_types(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched attribute MIME types.")
+    bound_logger.debug("Successfully fetched attribute MIME types.")
     return result
 
 
@@ -118,7 +118,7 @@ async def get_credential_revocation_status(
 ) -> CredRevokedResult:
     """Query the revocation status of a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info(
+    bound_logger.debug(
         "GET request received: Query revocation status for a specific credential"
     )
 
@@ -132,7 +132,7 @@ async def get_credential_revocation_status(
             to=to,
         )
 
-    bound_logger.info("Successfully fetched revocation status.")
+    bound_logger.debug("Successfully fetched revocation status.")
     return result
 
 
@@ -145,7 +145,7 @@ async def list_w3c_credentials(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """Fetch a list of W3C credentials from the wallet."""
-    logger.info("GET request received: List W3C credentials")
+    logger.debug("GET request received: List W3C credentials")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching W3C credentials")
@@ -158,7 +158,7 @@ async def list_w3c_credentials(
             body=body,
         )
 
-    logger.info("Successfully listed W3C credentials.")
+    logger.debug("Successfully listed W3C credentials.")
     return results
 
 
@@ -169,7 +169,7 @@ async def get_w3c_credential(
 ) -> VCRecord:
     """Fetch a specific W3C credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info("GET request received: Fetch specific W3C credential by ID")
+    bound_logger.debug("GET request received: Fetch specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching W3C credential")
@@ -179,7 +179,7 @@ async def get_w3c_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully fetched W3C credential.")
+    bound_logger.debug("Successfully fetched W3C credential.")
     return result
 
 
@@ -190,7 +190,7 @@ async def delete_w3c_credential(
 ) -> None:
     """Remove a specific W3C credential from the wallet by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
-    bound_logger.info("DELETE request received: Remove specific W3C credential by ID")
+    bound_logger.debug("DELETE request received: Remove specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting W3C credential")
@@ -200,4 +200,4 @@ async def delete_w3c_credential(
             credential_id=credential_id,
         )
 
-    bound_logger.info("Successfully deleted W3C credential.")
+    bound_logger.debug("Successfully deleted W3C credential.")

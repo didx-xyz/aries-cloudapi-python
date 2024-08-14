@@ -244,7 +244,7 @@ class BillingManager:
             )
             lago_response_json = lago_response.json()
 
-            logger.info(
+            logger.debug(
                 "Response for event {} from LAGO: {}", event, lago_response_json
             )
 

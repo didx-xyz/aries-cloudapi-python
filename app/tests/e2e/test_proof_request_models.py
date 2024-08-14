@@ -89,51 +89,53 @@ async def test_proof_model_failures(
         )
         acme_exchange_v1 = None
 
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-    )
-
-    # Get proof exchange id
-    alice_proof_exchange_id = (
-        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    ).json()[0]["proof_id"]
-
-    # Get referent
-    referent = (
-        await alice_member_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_exchange_id}/credentials"
+    try:
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="proofs",
+            state="request-received",
         )
-    ).json()[0]["cred_info"]["referent"]
 
-    # Accept proof request. This call will fail because the proof request is missing
-    # the required fields (name and version). The send proof request call are missing
-    # the required fields (name and version) and the ACA-Py models do not enforce these
-    with pytest.raises(HTTPException) as exc:
-        await alice_member_client.post(
-            f"{VERIFIER_BASE_PATH}/accept-request",
-            json={
-                "proof_id": alice_proof_exchange_id,
-                "type": "indy",
-                "indy_presentation_spec": {
-                    "requested_attributes": {
-                        "THE_SPEED": {"cred_id": referent, "revealed": True}
+        # Get proof exchange id
+        alice_proof_exchange_id = (
+            await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+        ).json()[0]["proof_id"]
+
+        # Get referent
+        referent = (
+            await alice_member_client.get(
+                f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_exchange_id}/credentials"
+            )
+        ).json()[0]["cred_info"]["referent"]
+
+        # Accept proof request. This call will fail because the proof request is missing
+        # the required fields (name and version). The send proof request call are missing
+        # the required fields (name and version) and the ACA-Py models do not enforce these
+        with pytest.raises(HTTPException) as exc:
+            await alice_member_client.post(
+                f"{VERIFIER_BASE_PATH}/accept-request",
+                json={
+                    "proof_id": alice_proof_exchange_id,
+                    "type": "indy",
+                    "indy_presentation_spec": {
+                        "requested_attributes": {
+                            "THE_SPEED": {"cred_id": referent, "revealed": True}
+                        },
+                        "requested_predicates": {},
+                        "self_attested_attributes": {},
                     },
-                    "requested_predicates": {},
-                    "self_attested_attributes": {},
+                    "dif_presentation_spec": {},
                 },
-                "dif_presentation_spec": {},
-            },
-        )
-        assert exc.value.status_code == 422
+            )
+            assert exc.value.status_code == 422
 
-    # Clean up:
-    if protocol_version == "v1":
-        await acme_acapy_client.present_proof_v1_0.delete_record(
-            acme_exchange_v1.presentation_exchange_id
-        )
-    if protocol_version == "v2":
-        await acme_acapy_client.present_proof_v2_0.delete_record(
-            acme_exchange_v2.pres_ex_id
-        )
+    finally:
+        # Clean up:
+        if protocol_version == "v1" and acme_exchange_v1:
+            await acme_acapy_client.present_proof_v1_0.delete_record(
+                acme_exchange_v1.presentation_exchange_id
+            )
+        if protocol_version == "v2" and acme_exchange_v2:
+            await acme_acapy_client.present_proof_v2_0.delete_record(
+                acme_exchange_v2.pres_ex_id
+            )

@@ -448,6 +448,7 @@ async def test_update_tenant_verifier_to_issuer(
         assert_that(new_actor).has_name(new_wallet_label)
         assert_that(new_actor).has_did(new_actor.did)
         assert_that(new_actor.roles).contains_only("issuer", "verifier")
+        assert_that(new_actor.image_url).is_equal_to(new_image_url)
 
         assert new_actor.didcomm_invitation is not None
     finally:

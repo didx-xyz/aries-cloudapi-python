@@ -1,5 +1,6 @@
 import io
 import os
+import time
 import traceback
 from contextlib import asynccontextmanager
 
@@ -83,7 +84,7 @@ async def lifespan(_: FastAPI):
     # Shutdown logic occurs after yield
     logger.info("Calling WebsocketManager shutdown")
     await WebsocketManager.disconnect_all()
-
+    time.sleep(30)
 
 webhook_routes = [webhooks, sse, websocket_endpoint]
 

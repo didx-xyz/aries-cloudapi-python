@@ -13,7 +13,8 @@ class Actor(BaseModel):
     roles: List[TrustRegistryRole]
     did: str
     didcomm_invitation: Optional[str] = None
-
+    image_url: Optional[str] = None
+    
     @field_validator("did")
     @classmethod
     def did_validator(cls, did: str):

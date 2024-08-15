@@ -32,6 +32,7 @@ async def handle_tenant_update(
 
     new_roles = update_request.roles or []
     new_label = update_request.wallet_label
+    new_image_url = update_request.image_url
 
     # See if this wallet belongs to an actor
     actor = await fetch_actor_by_id(wallet_id)
@@ -48,9 +49,10 @@ async def handle_tenant_update(
 
     if actor:
         existing_roles = actor.roles
+        existing_image_url = actor.image_url
         added_roles = list(set(new_roles) - set(existing_roles))
 
-        if new_label or added_roles:  # Only update actor if
+        if new_label or added_roles or new_image_url:  # Only update actor if
             update_dict = {}
             if new_label:
                 update_dict["name"] = new_label
@@ -75,6 +77,9 @@ async def handle_tenant_update(
                 update_dict["roles"] = list(set(new_roles + existing_roles))
                 update_dict["did"] = onboard_result.did
                 update_dict["didcomm_invitation"] = onboard_result.didcomm_invitation
+
+            if new_image_url and new_image_url != existing_image_url:
+                update_dict["image_url"] = new_image_url
 
             updated_actor = actor.model_copy(update=update_dict)
 

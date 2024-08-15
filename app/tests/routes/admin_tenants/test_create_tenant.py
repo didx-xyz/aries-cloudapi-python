@@ -114,6 +114,7 @@ async def test_create_tenant_success(roles):
                     roles=roles,
                     did=did,
                     didcomm_invitation=didcomm_invitation,
+                    image_url=create_tenant_body.image_url,
                 )
             )
 

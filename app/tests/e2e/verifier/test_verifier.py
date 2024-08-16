@@ -646,6 +646,7 @@ async def test_saving_of_presentation_exchange_records(
     assert isinstance(pres_exchange_result, PresentationExchange)
     assert response.status_code == 200
 
+    await asyncio.sleep(1)  # short sleep before fetching records; allow them to update
     # get exchange records from alice side
     if alice_save_exchange_record:
         # Save record is True, should be 1 record

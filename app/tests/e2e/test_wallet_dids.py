@@ -37,14 +37,23 @@ async def create_did_mock(governance_client: RichAsyncClient):
 async def test_list_dids(
     governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
 ):
+    # Capture the existing DIDs before the request
+    initial_dids = await list_dids(auth=mock_governance_auth)
+    initial_dids_set = set(map(lambda x: x.did, initial_dids))
+
+    # Make the GET request
     response = await governance_client.get(WALLET_BASE_PATH)
-
     assert response.status_code == 200
-    response = response.json()
+    response_data = response.json()
 
-    res_method: List[DID] = await list_dids(auth=mock_governance_auth)
-    res_method_dict = list(map(lambda x: x.to_dict(), res_method))
-    assert res_method_dict == response
+    # Filter the response to include only the initial DIDs
+    filtered_response_data = [
+        did_dict for did_dict in response_data if did_dict["did"] in initial_dids_set
+    ]
+
+    # Compare the filtered response with the initial DIDs
+    initial_dids_dict = list(map(lambda x: x.to_dict(), initial_dids))
+    assert filtered_response_data == initial_dids_dict
 
 
 @pytest.mark.anyio

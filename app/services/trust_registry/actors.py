@@ -266,7 +266,7 @@ async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id
 
     Args:
-        actor_id (str): identifier of the actor to remove 
+        actor_id (str): identifier of the actor to remove
 
     Raises:
         TrustRegistryException: If an error occurred while removing the actor

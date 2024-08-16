@@ -73,9 +73,7 @@ async def test_issue_credential_with_save_exchange_record(
             },
         )
 
-        time.sleep(
-            1
-        )  # short sleep before fetching cred ex records; allow them to update
+        await asyncio.sleep(1)  # short sleep before fetching; allow records to update
 
         # faber requesting auto_remove only removes their cred ex records
         # get exchange record from alice side -- should not exist after complete

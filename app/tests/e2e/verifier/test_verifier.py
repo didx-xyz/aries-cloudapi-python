@@ -630,6 +630,11 @@ async def test_saving_of_presentation_exchange_records(
         VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.model_dump(),
     )
+    result = response.json()
+
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
+    assert response.status_code == 200
 
     await assert_both_webhooks_received(
         alice_member_client,
@@ -639,12 +644,6 @@ async def test_saving_of_presentation_exchange_records(
         alice_proof_id,
         acme_proof_id,
     )
-
-    result = response.json()
-
-    pres_exchange_result = PresentationExchange(**result)
-    assert isinstance(pres_exchange_result, PresentationExchange)
-    assert response.status_code == 200
 
     await asyncio.sleep(1)  # short sleep before fetching records; allow them to update
     # get exchange records from alice side

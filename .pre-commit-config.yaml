@@ -20,4 +20,4 @@ repos:
       hooks:
           - id: isort
             stages: [push]
-            args: ["--profile", "black"]
+            args: ["--profile", "black", "."]

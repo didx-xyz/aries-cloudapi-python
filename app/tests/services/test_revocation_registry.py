@@ -120,9 +120,9 @@ async def test_publish_pending_revocations_success(mock_agent_controller: AcaPyC
     ).thenReturn(
         to_async(
             TxnOrPublishRevocationsResult(
-                txn=TransactionRecord(
+                txn=[TransactionRecord(
                     transaction_id="97a46fab-5499-42b3-a2a1-7eb9faad31c0"
-                )
+                )]
             )
         )
     )

@@ -14,7 +14,7 @@ from app.tests.util.models.dummy_txn_record_publish import txn_record
 async def test_publish_revocations_success():
     mock_aries_controller = AsyncMock()
     mock_publish_revocations = AsyncMock(
-        return_value=TxnOrPublishRevocationsResult(txn=txn_record)
+        return_value=TxnOrPublishRevocationsResult(txn=[txn_record])
     )
 
     mock_get_transaction = AsyncMock()

@@ -1,4 +1,4 @@
-FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.12-1.0.0
+FROM ghcr.io/hyperledger/aries-cloudagent-bbs:py3.12-1.0.0
 
 USER root
 

@@ -298,24 +298,23 @@ async def test_get_connections_paginated(
         assert len(connections) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_connections = []
-        # for offset in range(num_connections_to_test):
-        #     response = await alice_member_client.get(
-        #         BASE_PATH,
-        #         params={
-        #             "alias": test_alias,
-        #             "limit": 1,
-        #             "offset": offset,
-        #         },
-        #     )
+        prev_connections = []
+        for offset in range(num_connections_to_test):
+            response = await alice_member_client.get(
+                BASE_PATH,
+                params={
+                    "alias": test_alias,
+                    "limit": 1,
+                    "offset": offset,
+                },
+            )
 
-        #     connections = response.json()
-        #     assert len(connections) == 1
+            connections = response.json()
+            assert len(connections) == 1
 
-        #     record = connections[0]
-        #     assert record not in prev_connections
-        #     prev_connections += (record,)
+            record = connections[0]
+            assert record not in prev_connections
+            prev_connections += (record,)
 
         # Test invalid limit and offset values
         invalid_params = [

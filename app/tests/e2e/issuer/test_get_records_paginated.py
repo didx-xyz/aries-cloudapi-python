@@ -81,24 +81,23 @@ async def test_get_credential_exchange_records_paginated(
         assert len(credentials) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_credentials = []
-        # for offset in range(num_credentials_to_test):
-        #     response = await faber_client.get(
-        #         CREDENTIALS_BASE_PATH,
-        #         params={
-        #             "state": "offer-sent",
-        #             "limit": 1,
-        #             "offset": offset,
-        #         },
-        #     )
+        prev_credentials = []
+        for offset in range(num_credentials_to_test):
+            response = await faber_client.get(
+                CREDENTIALS_BASE_PATH,
+                params={
+                    "state": "offer-sent",
+                    "limit": 1,
+                    "offset": offset,
+                },
+            )
 
-        #     credentials = response.json()
-        #     assert len(credentials) == 1
+            credentials = response.json()
+            assert len(credentials) == 1
 
-        #     record = credentials[0]
-        #     assert record not in prev_credentials
-        #     prev_credentials.append(record)
+            record = credentials[0]
+            assert record not in prev_credentials
+            prev_credentials.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [

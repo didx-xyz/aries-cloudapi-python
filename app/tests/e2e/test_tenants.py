@@ -918,19 +918,18 @@ async def test_get_wallets_paginated(tenant_admin_client: RichAsyncClient):
         assert len(wallets) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_wallets = []
-        # for offset in range(num_wallets_to_test):
-        #     response = await tenant_admin_client.get(
-        #         f"{TENANTS_BASE_PATH}?limit=1&offset={offset}&group_id={test_group}"
-        #     )
+        prev_wallets = []
+        for offset in range(num_wallets_to_test):
+            response = await tenant_admin_client.get(
+                f"{TENANTS_BASE_PATH}?limit=1&offset={offset}&group_id={test_group}"
+            )
 
-        #     wallets = response.json()
-        #     assert len(wallets) == 1
+            wallets = response.json()
+            assert len(wallets) == 1
 
-        #     wallet = wallets[0]
-        #     assert wallet not in prev_wallets
-        #     prev_wallets.append(wallet)
+            wallet = wallets[0]
+            assert wallet not in prev_wallets
+            prev_wallets.append(wallet)
 
         # Test invalid limit and offset values
         invalid_params = [

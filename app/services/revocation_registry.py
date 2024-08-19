@@ -147,7 +147,7 @@ async def revoke_credential(
 
         if revoke_result["txn"] and revoke_result["txn"]["messages_attach"][0]:
             bound_logger.info("Successfully revoked credential.")
-            return RevokedResponse.model_validate({"txn":[revoke_result["txn"]]})
+            return RevokedResponse.model_validate({"txn": [revoke_result["txn"]]})
 
     bound_logger.info("Successfully revoked credential.")
     return RevokedResponse()

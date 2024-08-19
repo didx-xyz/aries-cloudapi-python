@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from aries_cloudcontroller import LDProofVCDetail
+from aries_cloudcontroller import LDProofVCDetail, TxnOrPublishRevocationsResult, TransactionRecord
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
@@ -111,9 +111,9 @@ class RevokedResponse(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_revoked_info(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_revoked_info(cls, values: TxnOrPublishRevocationsResult) -> Dict[str, Any]:
         if isinstance(values, dict) and "txn" in values:
-            txn_list = values["txn"]
+            txn_list: List[TransactionRecord]  = values.get("txn")
             cred_rev_ids_published = {}
 
             for txn in txn_list:

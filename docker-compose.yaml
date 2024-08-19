@@ -417,7 +417,7 @@ services:
     image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-browser
     build:
-      context: https://github.com/bcgov/von-network.git#v1.8.0
+      context: https://github.com/ff137/von-network.git#upgrades
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_webserver.sh'"
     environment:
@@ -454,7 +454,7 @@ services:
     image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-nodes
     build:
-      context: https://github.com/bcgov/von-network.git#v1.8.0
+      context: https://github.com/ff137/von-network.git#upgrades
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_nodes.sh'"
     ports:

@@ -8,7 +8,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 
-aries-cloudcontroller = "==1.0.0rc4"
+aries-cloudcontroller = "==1.0.0"
 dependency-injector-fork = "~=4.42.1"                    # https://github.com/ets-labs/python-dependency-injector/pull/765#issuecomment-1915100744
 fastapi = "~0.112.0"
 httpx = "~0.27.0"

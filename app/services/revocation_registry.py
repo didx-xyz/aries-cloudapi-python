@@ -144,7 +144,7 @@ async def revoke_credential(
                 "Could not assert that revocation was published within timeout. "
                 "Please check the revocation record state and retry if not revoked."
             )
-        
+
         if not revoke_result:
             raise CloudApiException(
                 "Revocation was published but no result was returned. "

@@ -191,6 +191,7 @@ export function createIssuerTenant(bearerToken, walletName) {
     console.warn(`Request failed for wallet_name ${walletName}`);
     return null;
   } catch (error) {
+    logError(response);
     console.error(`Error creating issuer tenant: ${error.message}`);
     throw error;
   }
@@ -777,6 +778,22 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
     return response;
   } catch (error) {
     console.error(`Error accepting invitation: ${error.message}`);
+    throw error;
+  }
+}
+
+export function getDocs() {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/docs`;
+  const params = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = http.get(url, params);
+    return response;
+  } catch (error) {
+    console.error(`Error getting docs: ${error.message}`);
     throw error;
   }
 }

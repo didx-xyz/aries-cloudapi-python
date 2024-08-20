@@ -45,6 +45,7 @@ async def check_webhook_state(
     attempt = 0
 
     while not event and attempt < max_tries:
+        look_back_duration = min(30, look_back + attempt * max_duration)
         try:
             if filter_map:
                 # Assuming that filter_map contains 1 key-value pair
@@ -61,14 +62,14 @@ async def check_webhook_state(
                     field_id=field_id,
                     desired_state=state,
                     timeout=max_duration,
-                    look_back=look_back + attempt * max_duration,  # scale per attempt
+                    look_back=look_back_duration,
                 )
             else:
                 bound_logger.info("Waiting for event with state {}", state)
                 event = await listener.wait_for_state(
                     desired_state=state,
                     timeout=max_duration,
-                    look_back=look_back + attempt * max_duration,  # scale per attempt
+                    look_back=look_back_duration,
                 )
         except SseListenerTimeout:
             bound_logger.error(

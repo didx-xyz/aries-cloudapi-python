@@ -145,7 +145,7 @@ async def revoke_credential(
                 "Please check the revocation record state and retry if not revoked."
             )
 
-        if revoke_result["txn"] and revoke_result["txn"]["messages_attach"][0]:
+        if revoke_result and revoke_result["txn"] and revoke_result["txn"]["messages_attach"][0]:
             bound_logger.info("Successfully revoked credential.")
             return RevokedResponse.model_validate({"txn": [revoke_result["txn"]]})
 

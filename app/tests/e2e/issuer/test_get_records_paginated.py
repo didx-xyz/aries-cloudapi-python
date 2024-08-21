@@ -26,6 +26,7 @@ async def test_get_credential_exchange_records_paginated(
     test_attributes = {"name": "Alice", "age": "44"}
 
     faber_cred_ex_ids = []
+    alice_prev_credentials = []
     try:
         # Create multiple credential exchanges
         for i in range(num_credentials_to_test):
@@ -83,7 +84,6 @@ async def test_get_credential_exchange_records_paginated(
         assert len(credentials) == 0
 
         # Test fetching unique records with pagination
-        alice_prev_credentials = []
         for offset in range(num_credentials_to_test):
             response = await alice_member_client.get(
                 CREDENTIALS_BASE_PATH,

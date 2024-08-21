@@ -27,14 +27,13 @@ async def test_get_presentation_exchange_records_paginated(
     num_presentation_requests_to_test = 5
 
     acme_proof_ids = []
-    acme_connection_id = acme_and_alice_connection.acme_connection_id
-
+    alice_previous_proofs = []
     try:
         # Create multiple presentation requests
         for _ in range(num_presentation_requests_to_test):
             request_body = {
                 "save_exchange_record": True,
-                "connection_id": acme_connection_id,
+                "connection_id": acme_and_alice_connection.acme_connection_id,
                 "protocol_version": "v2",
                 "indy_proof_request": sample_indy_proof_request(
                     restrictions=[{"cred_def_id": credential_definition_id}]
@@ -79,7 +78,6 @@ async def test_get_presentation_exchange_records_paginated(
         assert len(proofs) == 0
 
         # Test fetching unique records with pagination
-        alice_previous_proofs = []
         for offset in range(num_presentation_requests_to_test):
             response = await alice_member_client.get(
                 f"{VERIFIER_BASE_PATH}/proofs",

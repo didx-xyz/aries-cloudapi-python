@@ -18,6 +18,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 )
 async def test_get_credential_exchange_records_paginated(
     faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
@@ -51,7 +52,7 @@ async def test_get_credential_exchange_records_paginated(
             num_tries = 0
             retry = True
             while retry and num_tries < 5:  # Handle case where record doesn't exist yet
-                response = await faber_client.get(
+                response = await alice_member_client.get(
                     CREDENTIALS_BASE_PATH,
                     params={
                         "state": "offer-sent",
@@ -70,10 +71,10 @@ async def test_get_credential_exchange_records_paginated(
             ), f"Expected {expected_num} records, got {len(credentials)}: {credentials}"
 
         # Test offset greater than number of records
-        response = await faber_client.get(
+        response = await alice_member_client.get(
             CREDENTIALS_BASE_PATH,
             params={
-                "state": "offer-sent",
+                "state": "offer-received",
                 "limit": 1,
                 "offset": num_credentials_to_test,
             },
@@ -82,12 +83,12 @@ async def test_get_credential_exchange_records_paginated(
         assert len(credentials) == 0
 
         # Test fetching unique records with pagination
-        prev_credentials = []
+        alice_prev_credentials = []
         for offset in range(num_credentials_to_test):
-            response = await faber_client.get(
+            response = await alice_member_client.get(
                 CREDENTIALS_BASE_PATH,
                 params={
-                    "state": "offer-sent",
+                    "state": "offer-received",
                     "limit": 1,
                     "offset": offset,
                 },
@@ -97,8 +98,8 @@ async def test_get_credential_exchange_records_paginated(
             assert len(credentials) == 1
 
             record = credentials[0]
-            assert record not in prev_credentials
-            prev_credentials.append(record)
+            assert record not in alice_prev_credentials
+            alice_prev_credentials.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [

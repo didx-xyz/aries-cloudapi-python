@@ -20,6 +20,7 @@ VERIFIER_BASE_PATH = router.prefix
 )
 async def test_get_presentation_exchange_records_paginated(
     acme_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -47,10 +48,10 @@ async def test_get_presentation_exchange_records_paginated(
             num_tries = 0
             retry = True
             while retry and num_tries < 5:  # Handle case where record doesn't exist yet
-                response = await acme_client.get(
+                response = await alice_member_client.get(
                     f"{VERIFIER_BASE_PATH}/proofs",
                     params={
-                        "state": "request-sent",
+                        "state": "request-received",
                         "limit": limit,
                     },
                 )
@@ -66,10 +67,10 @@ async def test_get_presentation_exchange_records_paginated(
             ), f"Expected {expected_num} records, got {len(proofs)}: {proofs}"
 
         # Test offset greater than number of records
-        response = await acme_client.get(
+        response = await alice_member_client.get(
             f"{VERIFIER_BASE_PATH}/proofs",
             params={
-                "state": "request-sent",
+                "state": "request-received",
                 "limit": 1,
                 "offset": num_presentation_requests_to_test,
             },
@@ -78,9 +79,9 @@ async def test_get_presentation_exchange_records_paginated(
         assert len(proofs) == 0
 
         # Test fetching unique records with pagination
-        prev_proofs = []
+        alice_previous_proofs = []
         for offset in range(num_presentation_requests_to_test):
-            response = await acme_client.get(
+            response = await alice_member_client.get(
                 f"{VERIFIER_BASE_PATH}/proofs",
                 params={
                     "state": "request-sent",
@@ -93,8 +94,8 @@ async def test_get_presentation_exchange_records_paginated(
             assert len(proofs) == 1
 
             record = proofs[0]
-            assert record not in prev_proofs
-            prev_proofs.append(record)
+            assert record not in alice_previous_proofs
+            alice_previous_proofs.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [

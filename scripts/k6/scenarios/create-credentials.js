@@ -3,6 +3,7 @@
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
+import file from "k6/x/file";
 import { Counter, Trend } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -51,6 +52,8 @@ export const options = {
 
 const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
+const outputFilepath = "output/create-credentials.json";
+
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
 const testFunctionReqs = new Counter("test_function_reqs");
@@ -75,6 +78,7 @@ export function setup() {
   const bearerToken = getBearerToken();
   const issuers = [];
 
+  file.writeString(outputFilepath, "");
   const holders = data.trim().split("\n").map(JSON.parse);
 
   // // Example usage of the loaded data
@@ -201,7 +205,7 @@ export default function (data) {
     },
   });
 
-  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
+  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } = JSON.parse(createCredentialResponse.body);
 
   // console.log(`Thread ID: ${threadId}`);
   // console.log(`Holer access token: ${wallet.holder_access_token}`);
@@ -228,6 +232,12 @@ export default function (data) {
       return true;
     },
   });
+
+  const holderData = JSON.stringify({
+    credential_exchange_id: credentialExchangeId,
+    thread_id: threadId,
+  });
+  file.appendString(outputFilepath, `${holderData}\n`);
 
   // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 

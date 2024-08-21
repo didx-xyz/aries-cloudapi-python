@@ -13,8 +13,10 @@ from app.models.issuer import (
     ClearPendingRevocationsResult,
     CreateOffer,
     CredentialType,
+    PendingRevocations,
     PublishRevocationsRequest,
     RevokeCredential,
+    RevokedResponse,
     SendCredential,
 )
 from app.services import revocation_registry
@@ -497,11 +499,11 @@ async def remove_credential_exchange_record(
     bound_logger.debug("Successfully deleted credential exchange record.")
 
 
-@router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
+@router.post("/revoke", summary="Revoke a Credential (if revocable)")
 async def revoke_credential(
     body: RevokeCredential,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
+) -> RevokedResponse:
     """
     Revoke a credential
     ---
@@ -523,20 +525,24 @@ async def revoke_credential(
 
     Returns:
     ---
-        status_code: 204
+        RevokedResponse:
+            revoked_cred_rev_ids:
+              The revocation registry indexes that were revoked.
+              Will be empty if the revocation was marked as pending.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Revoke credential")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Revoking credential")
-        await revocation_registry.revoke_credential(
+        result = await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
-    bound_logger.debug("Successfully revoked credential.")
+    bound_logger.info("Successfully revoked credential.")
+    return result
 
 
 @router.get(
@@ -609,13 +615,11 @@ async def get_credential_revocation_record(
     return revocation_record
 
 
-@router.post(
-    "/publish-revocations", summary="Publish Pending Revocations", status_code=204
-)
+@router.post("/publish-revocations", summary="Publish Pending Revocations")
 async def publish_revocations(
     publish_request: PublishRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
+) -> RevokedResponse:
     """
     Write pending revocations to the ledger
     ---
@@ -647,18 +651,26 @@ async def publish_revocations(
 
     Returns:
     ---
-        status_code: 204
+        RevokedResponse:
+            revoked_cred_rev_ids:
+              The revocation registry indexes that were revoked.
+              Will be empty if there were no revocations to publish.
     """
     bound_logger = logger.bind(body=publish_request)
     bound_logger.debug("POST request received: Publish revocations")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Publishing revocations")
-        endorser_transaction_id = await revocation_registry.publish_pending_revocations(
+        result = await revocation_registry.publish_pending_revocations(
             controller=aries_controller,
             revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
         )
 
+        if not result:
+            bound_logger.debug("No revocations to publish.")
+            return RevokedResponse()
+
+        endorser_transaction_id = result.txn[0].transaction_id
         if endorser_transaction_id:
             bound_logger.debug(
                 "Wait for publish complete on transaction id: {}",
@@ -681,7 +693,8 @@ async def publish_revocations(
                     504,
                 ) from e
 
-    bound_logger.debug("Successfully published revocations.")
+    bound_logger.info("Successfully published revocations.")
+    return RevokedResponse.model_validate(result.model_dump())
 
 
 @router.post(
@@ -739,3 +752,39 @@ async def clear_pending_revocations(
 
     bound_logger.debug("Successfully cleared pending revocations.")
     return response
+
+
+@router.get(
+    "/get-pending-revocations/{revocation_registry_id}",
+    summary="Get Pending Revocations",
+)
+async def get_pending_revocations(
+    revocation_registry_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> PendingRevocations:
+    """
+    Get pending revocations
+    ---
+    Get the pending revocations for a given revocation registry ID.
+
+    Parameters:
+    ---
+        revocation_registry_id: str
+            The ID of the revocation registry for which to fetch pending revocations
+
+    Returns:
+    ---
+        PendingRevocations:
+            A list of cred_rev_ids pending revocation for a given revocation registry ID
+    """
+    bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
+    bound_logger.info("GET request received: Get pending revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting pending revocations")
+        result = await revocation_registry.get_pending_revocations(
+            controller=aries_controller, rev_reg_id=revocation_registry_id
+        )
+
+    bound_logger.info("Successfully fetched pending revocations.")
+    return PendingRevocations(pending_cred_rev_ids=result)

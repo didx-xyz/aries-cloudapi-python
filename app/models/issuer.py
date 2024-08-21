@@ -1,8 +1,12 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from aries_cloudcontroller import (
+    LDProofVCDetail,
+    TransactionRecord,
+    TxnOrPublishRevocationsResult,
+)
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
 from shared.models.protocol import IssueCredentialProtocolVersion
@@ -98,3 +102,39 @@ class ClearPendingRevocationsResult(BaseModel):
             "The resulting revocations that are still pending after a clear-pending request has been completed."
         ),
     )
+
+
+class RevokedResponse(BaseModel):
+    cred_rev_ids_published: Dict[str, List[int]] = Field(
+        default_factory=dict,
+        description=(
+            "A map of revocation registry IDs to lists of credential revocation IDs "
+            "(as integers) that have been revoked. Can be empty."
+        ),
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_revoked_info(
+        cls, values: TxnOrPublishRevocationsResult
+    ) -> Dict[str, Any]:
+        if isinstance(values, dict) and "txn" in values:
+            txn_list: List[TransactionRecord] = values.get("txn")
+            cred_rev_ids_published = {}
+
+            for txn in txn_list:
+                for attach in txn.get("messages_attach", []):
+                    data = attach.get("data", {}).get("json", {})
+                    operation = data.get("operation", {})
+                    revoc_reg_def_id = operation.get("revocRegDefId")
+                    revoked = operation.get("value", {}).get("revoked", [])
+                    if revoc_reg_def_id and revoked:
+                        cred_rev_ids_published[revoc_reg_def_id] = revoked
+
+            values["cred_rev_ids_published"] = cred_rev_ids_published
+
+        return values
+
+
+class PendingRevocations(BaseModel):
+    pending_cred_rev_ids: list[Optional[int]] = []

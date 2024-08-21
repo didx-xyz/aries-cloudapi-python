@@ -2,16 +2,21 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from aries_cloudcontroller import TxnOrPublishRevocationsResult
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.issuer import PublishRevocationsRequest
 from app.routes.issuer import publish_revocations
+from app.tests.util.models.dummy_txn_record_publish import txn_record
 
 
 @pytest.mark.anyio
 async def test_publish_revocations_success():
     mock_aries_controller = AsyncMock()
-    mock_publish_revocations = AsyncMock(return_value="transaction_id")
+    mock_publish_revocations = AsyncMock(
+        return_value=TxnOrPublishRevocationsResult(txn=[txn_record])
+    )
+
     mock_get_transaction = AsyncMock()
 
     with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
@@ -79,7 +84,8 @@ async def test_publish_revocations_fail_acapy_error(
 @pytest.mark.anyio
 async def test_publish_revocations_fail_timeout():
     mock_aries_controller = AsyncMock()
-    mock_publish_revocations = AsyncMock(return_value="transaction_id")
+    mock_publish_revocations = AsyncMock(spec=TxnOrPublishRevocationsResult)
+    mock_publish_revocations.return_value.txn.transaction_id = "transaction_id"
 
     with patch(
         "app.routes.issuer.client_from_auth"

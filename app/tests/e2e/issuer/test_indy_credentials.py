@@ -302,9 +302,10 @@ async def test_revoke_credential(
     response = await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/revoke",
         json={
-            "credential_definition_id": credential_definition_id_revocable,
             "credential_exchange_id": faber_credential_exchange_id,
+            "auto_publish_on_ledger": True,
         },
     )
 
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert len(response.json()["cred_rev_ids_published"]) == 1

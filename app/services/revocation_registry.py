@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     PublishRevocations,
     RevokeRequest,
     RevRegResult,
+    TxnOrPublishRevocationsResult,
 )
 
 from app.exceptions import (
@@ -17,7 +18,7 @@ from app.exceptions import (
     handle_acapy_call,
     handle_model_with_validation,
 )
-from app.models.issuer import ClearPendingRevocationsResult
+from app.models.issuer import ClearPendingRevocationsResult, RevokedResponse
 from app.util.credentials import strip_protocol_prefix
 from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger
@@ -72,7 +73,7 @@ async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
     auto_publish_to_ledger: bool = False,
-) -> None:
+) -> RevokedResponse:
     """
         Revoke an issued credential
 
@@ -103,7 +104,7 @@ async def revoke_credential(
         publish=auto_publish_to_ledger,
     )
     try:
-        await handle_acapy_call(
+        revoke_result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.revocation.revoke_credential,
             body=request_body,
@@ -144,12 +145,27 @@ async def revoke_credential(
                 "Please check the revocation record state and retry if not revoked."
             )
 
-    bound_logger.debug("Successfully revoked credential.")
+        if not revoke_result:
+            raise CloudApiException(
+                "Revocation was published but no result was returned. "
+                "Has this credential been revoked before?"
+            )
+
+        if (
+            revoke_result
+            and revoke_result["txn"]
+            and revoke_result["txn"]["messages_attach"][0]
+        ):
+            bound_logger.info("Successfully revoked credential.")
+            return RevokedResponse.model_validate({"txn": [revoke_result["txn"]]})
+
+    bound_logger.info("Successfully revoked credential.")
+    return RevokedResponse()
 
 
 async def publish_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> Optional[str]:
+) -> TxnOrPublishRevocationsResult:
     """
         Publish pending revocations
 
@@ -181,19 +197,19 @@ async def publish_pending_revocations(
             f"Failed to publish pending revocations: {e.detail}", e.status_code
         ) from e
 
-    if not result.txn or not result.txn.transaction_id:
+    if not result.txn or not result.txn[0].transaction_id:
         bound_logger.warning(
             "Published pending revocations but received no endorser transaction id. Got result: {}",
             result,
         )
         return
 
-    endorse_transaction_id = result.txn.transaction_id
-    bound_logger.debug(
+    endorse_transaction_id = result.txn[0].transaction_id
+    bound_logger.info(
         "Successfully published pending revocations. Endorser transaction id: {}.",
         endorse_transaction_id,
     )
-    return endorse_transaction_id
+    return result
 
 
 async def clear_pending_revocations(
@@ -487,3 +503,38 @@ async def wait_for_active_registry(
         sleep_duration = 0.5  # Following sleeps should wait 0.5s before retry
 
     return active_registries
+
+
+async def get_pending_revocations(
+    controller: AcaPyClient, rev_reg_id: str
+) -> List[int]:
+    """
+    Get the pending revocations for a revocation registry.
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        rev_reg_id (str): The revocation registry ID.
+
+    Raises:
+        Exception: When the pending revocations could not be retrieved.
+
+    Returns:
+        pending_revocations (List[str]): The pending revocations.
+    """
+    bound_logger = logger.bind(body={"rev_reg_id": rev_reg_id})
+    bound_logger.info("Fetching pending revocations for a revocation registry")
+
+    try:
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.revocation.get_registry,
+            rev_reg_id=rev_reg_id,
+        )
+    except CloudApiException as e:
+        raise CloudApiException(
+            f"Failed to get pending revocations: {e.detail}", e.status_code
+        ) from e
+
+    pending_revocations = result.result.pending_pub
+    bound_logger.info("Successfully retrieved pending revocations.")
+    return pending_revocations

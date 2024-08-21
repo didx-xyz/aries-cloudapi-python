@@ -17,7 +17,8 @@ run_test() {
 run_test true true ./scenarios/create-holders.js
 run_test true true ./scenarios/create-invitation.js
 run_test true true ./scenarios/create-credentials.js
-run_test false true ./scenarios/create-proof.js
+run_test true true ./scenarios/create-proof.js
+run_test false true ./scenarios/revoke-credentials.js
 run_test true false ./scenarios/delete-holders.js
 
 run_test false true ./scenarios/create-issuers.js

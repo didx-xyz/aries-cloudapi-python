@@ -853,6 +853,44 @@ export function getSchema(bearerToken, schemaName, schemaVersion) {
   }
 }
 
+export function revokeCredential(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revoke`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      credential_exchange_id: credentialExchangeId,
+      auto_publish_on_ledger: true,
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function checkRevoked(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revocation/record?credential_exchange_id=${credentialExchangeId}`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = http.get(url, params);
+    return response;
+  } catch (error) {
+    console.error(`Error checking if credential is revoked: ${error.message}`);
+    throw error;
+  }
+}
+
 // {
 //   "name": "load_pop",
 //   "version": "0.1.0",

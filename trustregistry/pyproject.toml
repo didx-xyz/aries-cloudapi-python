@@ -29,6 +29,7 @@ pylint = "~3.3.0"
 pytest = "~8.3.2"
 pytest-cov = "~5.0.0"
 pytest-mock = "~3.14.0"
+alembic = "~1.13.2"
 
 [build-system]
 requires = ["poetry-core>=1.8.3"]

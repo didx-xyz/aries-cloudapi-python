@@ -118,3 +118,6 @@ async def test_get_credential_exchange_records_paginated(
         # Clean up created credentials
         for cred_ex_id in faber_cred_ex_ids:
             await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+        for alice_credential in alice_prev_credentials:
+            cred_ex_id = alice_credential["credential_exchange_id"]
+            await alice_member_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")

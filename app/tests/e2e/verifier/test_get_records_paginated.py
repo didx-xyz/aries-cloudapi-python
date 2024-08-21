@@ -114,3 +114,6 @@ async def test_get_presentation_exchange_records_paginated(
         # Clean up created presentation requests
         for proof_id in acme_proof_ids:
             await acme_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")
+        for alice_proof in alice_previous_proofs:
+            proof_id = alice_proof["proof_id"]
+            await alice_member_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")

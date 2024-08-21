@@ -55,12 +55,15 @@ async def test_get_presentation_exchange_records_paginated(
                     },
                 )
                 proofs = response.json()
-                if len(proofs) != min(limit, num_presentation_requests_to_test):
+                expected_num = min(limit, num_presentation_requests_to_test)
+                if len(proofs) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
-            assert not retry, f"Expected {limit} records, got {len(proofs)}: {proofs}"
+            assert (
+                not retry
+            ), f"Expected {expected_num} records, got {len(proofs)}: {proofs}"
 
         # Test offset greater than number of records
         response = await acme_client.get(

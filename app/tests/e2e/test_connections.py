@@ -276,14 +276,15 @@ async def test_get_connections_paginated(
                 )
 
                 connections = response.json()
-                if len(connections) != min(limit, num_connections_to_test):
+                expected_num = min(limit, num_connections_to_test)
+                if len(connections) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
             assert (
                 not retry
-            ), f"Expected {limit} records, got {len(connections)}: {connections}"
+            ), f"Expected {expected_num} records, got {len(connections)}: {connections}"
 
         # Test offset greater than number of records
         response = await alice_member_client.get(

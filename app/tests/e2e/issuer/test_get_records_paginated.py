@@ -59,14 +59,15 @@ async def test_get_credential_exchange_records_paginated(
                     },
                 )
                 credentials = response.json()
-                if len(credentials) != min(limit, num_credentials_to_test):
+                expected_num = min(limit, num_credentials_to_test)
+                if len(credentials) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
             assert (
                 not retry
-            ), f"Expected {limit} records, got {len(credentials)}: {credentials}"
+            ), f"Expected {expected_num} records, got {len(credentials)}: {credentials}"
 
         # Test offset greater than number of records
         response = await faber_client.get(

@@ -27,7 +27,7 @@ async def test_get_presentation_exchange_records_paginated(
     num_presentation_requests_to_test = 5
 
     acme_proof_ids = []
-    alice_previous_proofs = []
+    alice_proof_records = []
     try:
         # Create multiple presentation requests
         for _ in range(num_presentation_requests_to_test):
@@ -82,7 +82,7 @@ async def test_get_presentation_exchange_records_paginated(
             response = await alice_member_client.get(
                 f"{VERIFIER_BASE_PATH}/proofs",
                 params={
-                    "state": "request-sent",
+                    "state": "request-received",
                     "limit": 1,
                     "offset": offset,
                 },
@@ -92,8 +92,8 @@ async def test_get_presentation_exchange_records_paginated(
             assert len(proofs) == 1
 
             record = proofs[0]
-            assert record not in alice_previous_proofs
-            alice_previous_proofs.append(record)
+            assert record not in alice_proof_records
+            alice_proof_records.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [
@@ -112,6 +112,6 @@ async def test_get_presentation_exchange_records_paginated(
         # Clean up created presentation requests
         for proof_id in acme_proof_ids:
             await acme_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")
-        for alice_proof in alice_previous_proofs:
-            proof_id = alice_proof["proof_id"]
+        for alice_proof_record in alice_proof_records:
+            proof_id = alice_proof_record["proof_id"]
             await alice_member_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")

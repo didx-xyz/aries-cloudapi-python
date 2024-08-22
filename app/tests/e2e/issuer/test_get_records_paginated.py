@@ -26,7 +26,7 @@ async def test_get_credential_exchange_records_paginated(
     test_attributes = {"name": "Alice", "age": "44"}
 
     faber_cred_ex_ids = []
-    alice_prev_credentials = []
+    alice_cred_ex_records = []
     try:
         # Create multiple credential exchanges
         for i in range(num_credentials_to_test):
@@ -56,7 +56,7 @@ async def test_get_credential_exchange_records_paginated(
                 response = await alice_member_client.get(
                     CREDENTIALS_BASE_PATH,
                     params={
-                        "state": "offer-sent",
+                        "state": "offer-received",
                         "limit": limit,
                     },
                 )
@@ -98,8 +98,8 @@ async def test_get_credential_exchange_records_paginated(
             assert len(credentials) == 1
 
             record = credentials[0]
-            assert record not in alice_prev_credentials
-            alice_prev_credentials.append(record)
+            assert record not in alice_cred_ex_records
+            alice_cred_ex_records.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [
@@ -115,9 +115,9 @@ async def test_get_credential_exchange_records_paginated(
             assert exc.value.status_code == 422
 
     finally:
-        # Clean up created credentials
+        # Clean up created credential exchange records
         for cred_ex_id in faber_cred_ex_ids:
             await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
-        for alice_credential in alice_prev_credentials:
-            cred_ex_id = alice_credential["credential_exchange_id"]
+        for alice_record in alice_cred_ex_records:
+            cred_ex_id = alice_record["credential_exchange_id"]
             await alice_member_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")

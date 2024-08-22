@@ -3,8 +3,8 @@
 
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
-import file from "k6/x/file";
 import { Counter, Trend } from "k6/metrics";
+import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
 import {
   acceptCredential,
@@ -53,7 +53,6 @@ export const options = {
 const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
 const outputFilepath = "output/create-credentials.json";
-
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
 const testFunctionReqs = new Counter("test_function_reqs");
@@ -205,7 +204,9 @@ export default function (data) {
     },
   });
 
-  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } = JSON.parse(createCredentialResponse.body);
+  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } = JSON.parse(
+    createCredentialResponse.body,
+  );
 
   // console.log(`Thread ID: ${threadId}`);
   // console.log(`Holer access token: ${wallet.holder_access_token}`);

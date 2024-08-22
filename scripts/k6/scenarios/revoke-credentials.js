@@ -6,12 +6,12 @@ import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
+  checkRevoked,
   createCredentialDefinition,
   deleteTenant,
   getCredentialDefinitionId,
   getWalletIdByWalletName,
   revokeCredential,
-  checkRevoked,
 } from "../libs/functions.js";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
@@ -150,7 +150,6 @@ export default function (data) {
       return true;
     },
   });
-
 
   testFunctionReqs.add(1);
 }

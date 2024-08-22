@@ -7,15 +7,12 @@ import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import {
-  getDocs,
-} from "../libs/functions.js";
+import { getDocs } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 // const holderPrefix = __ENV.HOLDER_PREFIX;
-
 
 export const options = {
   scenarios: {

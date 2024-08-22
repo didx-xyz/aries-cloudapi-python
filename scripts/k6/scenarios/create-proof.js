@@ -255,8 +255,8 @@ export default function (data) {
   };
 
   check(getProofResponse, {
-    [__ENV.IS_REVOKED === 'true' ? "Proof received and unverified" : "Proof received and verified"]:
-      __ENV.IS_REVOKED === 'true' ? unverifiedCheck : verifiedCheck
+    [__ENV.IS_REVOKED === "true" ? "Proof received and unverified" : "Proof received and verified"]:
+      __ENV.IS_REVOKED === "true" ? unverifiedCheck : verifiedCheck,
   });
 
   testFunctionReqs.add(1);

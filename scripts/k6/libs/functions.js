@@ -524,7 +524,7 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       type: "indy",
       indy_proof_request: {
         non_revoked: {
-          to: currentEpochTimeSeconds  // Current epoch time in seconds
+          to: currentEpochTimeSeconds, // Current epoch time in seconds
         },
         requested_attributes: {
           get_id_number: { name: "id_number" },

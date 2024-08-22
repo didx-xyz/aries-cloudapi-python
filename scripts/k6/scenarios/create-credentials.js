@@ -4,6 +4,7 @@
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
+import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
 import {
   acceptCredential,
@@ -51,6 +52,7 @@ export const options = {
 
 const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
+const outputFilepath = "output/create-credentials.json";
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
 const testFunctionReqs = new Counter("test_function_reqs");
@@ -75,6 +77,7 @@ export function setup() {
   const bearerToken = getBearerToken();
   const issuers = [];
 
+  file.writeString(outputFilepath, "");
   const holders = data.trim().split("\n").map(JSON.parse);
 
   // // Example usage of the loaded data
@@ -201,7 +204,9 @@ export default function (data) {
     },
   });
 
-  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
+  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } = JSON.parse(
+    createCredentialResponse.body,
+  );
 
   // console.log(`Thread ID: ${threadId}`);
   // console.log(`Holer access token: ${wallet.holder_access_token}`);
@@ -229,6 +234,11 @@ export default function (data) {
     },
   });
 
+  const issuerData = JSON.stringify({
+    credential_exchange_id: credentialExchangeId,
+  });
+  file.appendString(outputFilepath, `${issuerData}\n`);
+
   // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 
   // const end = Date.now();
@@ -237,49 +247,4 @@ export default function (data) {
   // mainIterationDuration.add(duration);
   // sleep(1);
   testFunctionReqs.add(1);
-}
-
-export function teardown(data) {
-  const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
-  const wallets = data.holders;
-
-  // console.log(__ENV.SKIP_DELETE_ISSUERS)
-
-  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
-    for (const issuer of issuers) {
-      const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
-      check(deleteIssuerResponse, {
-        "Delete Issuer Tenant Response status code is 200": (r) => {
-          if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
-            return false;
-          }
-          console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
-          return true;
-        },
-      });
-    }
-  } else {
-    console.log("Skipping deletion of issuer tenants.");
-  }
-  // // Delete holder tenants
-  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
-    for (const wallet of wallets) {
-      const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-      const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-      check(deleteHolderResponse, {
-        "Delete Holder Tenant Response status code is 200": (r) => {
-          if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
-            return false;
-          }
-          console.log(`Deleted holder tenant ${walletId} successfully.`);
-          return true;
-        },
-      });
-    }
-  } else {
-    console.log("Skipping deletion of holder tenants.");
-  }
 }

@@ -50,6 +50,7 @@ graph TD
  %% Shared or system actions
  K[Wait for SSE connection-ready]:::sseHolder
  AA[Wait for SSE proof done]:::sseIssuer
+ invitationSent[Wait for SSE invitation-sent]:::sseIssuer
  %% Assertions
  AJ>Assert: verified = true]:::assertion
  AK>Assert: verified = false]:::assertion
@@ -60,7 +61,7 @@ graph TD
  C --> F
  F -->|Holder exists| G
  F -->|Holder doesn't exist| H --> I
- G --> I --> J --> K --> L
+ G --> I --> invitationSent --> J --> K --> L
  L -->|Schema exists| N
  L -->|Schema doesn't exist| M --> N
  N --> O

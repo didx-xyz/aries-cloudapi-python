@@ -231,10 +231,16 @@ export default function (data) {
     // console.error(`Error creating credential: ${error.message}`);
     getProofResponse = { status: 500, response: error.message };
   }
+
   check(getProofResponse, {
     "Proof received successfully": (r) => {
+      // console.log(`Proof response body: ${r.body}`);
       if (r.status !== 200) {
         throw new Error(`Unexpected response while getting proof: ${r.response}`);
+      }
+      const responseBody = JSON.parse(r.body);
+      if (responseBody[0].verified !== true) {
+        throw new Error(`Credential state is not verfified. Current verification status: ${responseBody.verified}`);
       }
       return true;
     },

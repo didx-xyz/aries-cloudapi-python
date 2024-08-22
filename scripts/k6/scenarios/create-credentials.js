@@ -233,11 +233,10 @@ export default function (data) {
     },
   });
 
-  const holderData = JSON.stringify({
+  const issuerData = JSON.stringify({
     credential_exchange_id: credentialExchangeId,
-    thread_id: threadId,
   });
-  file.appendString(outputFilepath, `${holderData}\n`);
+  file.appendString(outputFilepath, `${issuerData}\n`);
 
   // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 
@@ -247,49 +246,4 @@ export default function (data) {
   // mainIterationDuration.add(duration);
   // sleep(1);
   testFunctionReqs.add(1);
-}
-
-export function teardown(data) {
-  const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
-  const wallets = data.holders;
-
-  // console.log(__ENV.SKIP_DELETE_ISSUERS)
-
-  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
-    for (const issuer of issuers) {
-      const deleteIssuerResponse = deleteTenant(bearerToken, issuer.walletId);
-      check(deleteIssuerResponse, {
-        "Delete Issuer Tenant Response status code is 200": (r) => {
-          if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
-            return false;
-          }
-          console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
-          return true;
-        },
-      });
-    }
-  } else {
-    console.log("Skipping deletion of issuer tenants.");
-  }
-  // // Delete holder tenants
-  if (__ENV.SKIP_DELETE_HOLDERS !== "true") {
-    for (const wallet of wallets) {
-      const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-      const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-      check(deleteHolderResponse, {
-        "Delete Holder Tenant Response status code is 200": (r) => {
-          if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
-            return false;
-          }
-          console.log(`Deleted holder tenant ${walletId} successfully.`);
-          return true;
-        },
-      });
-    }
-  } else {
-    console.log("Skipping deletion of holder tenants.");
-  }
 }

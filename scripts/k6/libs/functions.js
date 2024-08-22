@@ -5,8 +5,6 @@ import { check, sleep } from "k6";
 import http from "k6/http";
 import { Counter, Trend } from "k6/metrics";
 import sse from "k6/x/sse";
-// import { sleep } from 'k6';
-
 // let customDuration = new Trend('custom_duration', true);
 
 function logError(response, requestBody) {
@@ -517,12 +515,17 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       "Content-Type": "application/json",
     },
   };
-
   try {
+    // Get current epoch time in seconds
+    const currentEpochTimeSeconds = Math.floor(Date.now() / 1000);
+
     // Construct the request body including the invitation object
     const requestBody = {
       type: "indy",
       indy_proof_request: {
+        non_revoked: {
+          to: currentEpochTimeSeconds  // Current epoch time in seconds
+        },
         requested_attributes: {
           get_id_number: { name: "id_number" },
         },
@@ -533,7 +536,6 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       protocol_version: "v2",
       connection_id: issuerConnectionId,
     };
-
     const response = http.post(url, JSON.stringify(requestBody), params);
     return response;
   } catch (error) {
@@ -646,6 +648,7 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
       const obj = responseData[i];
       // Check if the current object has a matching thread_id
       const referent = obj.cred_info.referent;
+      // TODO: this will always return the first referent - fix this
       return referent;
     }
     // Throw an error if no match is found
@@ -867,6 +870,12 @@ export function revokeCredential(issuerAccessToken, credentialExchangeId) {
       auto_publish_on_ledger: true,
     };
     const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
     return response;
   } catch (error) {
     console.error(`Error revoking credential: ${error.message}`);

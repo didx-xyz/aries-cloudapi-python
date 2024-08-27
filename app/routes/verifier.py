@@ -494,12 +494,19 @@ async def get_credentials_by_proof_id(
     ---
     This endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.
 
-    The `presentation_referents` field indicates which of the fields in the proof request that credential satisfies.
+    The `presentation_referents` field (in the response) indicates which of the fields
+    in the proof request that credential satisfies.
 
     Parameters:
     ---
         proof_id: str
             The relevant proof exchange ID for the prover
+        referent: Optional str
+            The presentation_referent of the proof to match
+        count: Optional str
+            The number of credentials to fetch
+        start: Optional str
+            The index to start fetching credentials from
 
     Returns:
     ---

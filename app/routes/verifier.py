@@ -484,6 +484,9 @@ async def delete_proof(
 )
 async def get_credentials_by_proof_id(
     proof_id: str,
+    referent: Optional[str] = None,
+    count: Optional[str] = None,
+    start: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """
@@ -512,7 +515,11 @@ async def get_credentials_by_proof_id(
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching credentials for request")
             result = await verifier.get_credentials_by_proof_id(
-                controller=aries_controller, proof_id=proof_id
+                controller=aries_controller,
+                proof_id=proof_id,
+                referent=referent,
+                count=count,
+                start=start,
             )
     except CloudApiException as e:
         bound_logger.info("Could not get matching credentials: {}.", e)

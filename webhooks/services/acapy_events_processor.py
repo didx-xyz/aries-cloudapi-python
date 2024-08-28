@@ -1,13 +1,13 @@
 import asyncio
 import datetime
 import sys
-from typing import Any, Dict, List, NoReturn
+from typing import Any, Dict, List, NoReturn, Optional
 from uuid import uuid4
 
 import orjson
 
 from shared import APIRouter
-from shared.constants import GOVERNANCE_LABEL
+from shared.constants import GOVERNANCE_LABEL, SET_LOCKS
 from shared.log_config import get_logger
 from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,
@@ -189,40 +189,50 @@ class AcaPyEventsProcessor:
             list_key: The Redis key of the list to process.
         """
         lock_key = f"lock:{list_key}"
-        extend_lock_task = None
 
-        lock_duration = 2000  # milliseconds
+        if SET_LOCKS:
+            lock_duration_ms = 3000  # milliseconds
 
-        if self.redis_service.set_lock(lock_key, px=lock_duration):
-            try:
-                # Start a background task to extend the lock periodically
-                # This is just to ensure that on the off chance that 2000ms isn't enough to process all the
-                # events in the list, we want to avoid replicas processing the same webhook event twice
-                extend_lock_task = self.redis_service.extend_lock_task(
-                    lock_key, interval=datetime.timedelta(milliseconds=lock_duration)
+            if self.redis_service.set_lock(lock_key, px=lock_duration_ms):
+                logger.debug("Successfully set lock key for list index: {}", lock_key)
+            else:
+                logger.debug(
+                    "Event {} is currently being processed by another instance.",
+                    list_key,
                 )
+                return
 
-                self._process_list_events(list_key)
-            except Exception as e:  # pylint: disable=W0718
-                # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                logger.error("Processing {} raised an exception: {}", list_key, e)
-                self._handle_unprocessable_event(list_key, e)
-            finally:
-                # Cancel the lock extension task if it's still running
-                if extend_lock_task:
-                    extend_lock_task.cancel()
-
-                # Delete lock after processing list, whether it completed or errored:
-                if self.redis_service.delete_key(lock_key):
-                    logger.debug("Deleted lock key: {}", lock_key)
-                else:
-                    logger.warning(
-                        "Could not delete lock key: {}. Perhaps it expired?", lock_key
-                    )
-        else:
-            logger.debug(
-                "Event {} is currently being processed by another instance.", list_key
+            # Start a background task to extend the lock periodically
+            # This is just to ensure that on the off chance that 3000ms isn't enough to process all the
+            # events in the list, we want to avoid replicas processing the same webhook event twice
+            extend_lock_task = self.redis_service.extend_lock_task(
+                lock_key, interval=datetime.timedelta(milliseconds=lock_duration_ms)
             )
+        else:
+            extend_lock_task = None
+
+        try:
+            self._process_list_events(list_key)
+        except Exception as e:  # pylint: disable=W0718
+            # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
+            logger.error("Processing {} raised an exception: {}", list_key, e)
+            self._handle_unprocessable_event(list_key, e)
+        finally:
+            self._cleanup_lock(lock_key, extend_lock_task)
+
+    def _cleanup_lock(
+        self, lock_key: str, extend_lock_task: Optional[asyncio.Task]
+    ) -> None:
+        if not SET_LOCKS:
+            return None
+
+        if extend_lock_task:
+            extend_lock_task.cancel()
+
+        if not self.redis_service.delete_key(lock_key):
+            logger.warning("Could not delete lock: {}. Perhaps it expired?", lock_key)
+        else:
+            logger.trace("Deleted lock key: {}", lock_key)
 
     def _process_list_events(self, list_key) -> None:
         """

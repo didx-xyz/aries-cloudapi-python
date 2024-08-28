@@ -219,6 +219,7 @@ class AcaPyEventsProcessor:
             self._handle_unprocessable_event(list_key, e)
         finally:
             self._cleanup_lock(lock_key, extend_lock_task)
+            return
 
     def _cleanup_lock(
         self, lock_key: str, extend_lock_task: Optional[asyncio.Task]

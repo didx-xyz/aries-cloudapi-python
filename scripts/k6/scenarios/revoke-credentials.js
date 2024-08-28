@@ -128,7 +128,7 @@ export default function (data) {
 
   const issuerIndex = __ITER % numIssuers;
   const issuer = issuers[issuerIndex];
-  const revokeCredentialResponse = revokeCredential(issuer.accessToken, id.credential_exchange_id);
+  const revokeCredentialResponse = revokeCredentialAutoPubish(issuer.accessToken, id.credential_exchange_id);
   check(revokeCredentialResponse, {
     "Credential revoked sucessfully": (r) => {
       if (r.status !== 200) {
@@ -150,6 +150,6 @@ export default function (data) {
       return true;
     },
   });
-
+  // sleep(0.2);
   testFunctionReqs.add(1);
 }

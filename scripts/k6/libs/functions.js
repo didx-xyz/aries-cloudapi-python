@@ -867,7 +867,59 @@ export function revokeCredential(issuerAccessToken, credentialExchangeId) {
   try {
     const requestBody = {
       credential_exchange_id: credentialExchangeId,
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function revokeCredentialAutoPublish(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revoke`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      credential_exchange_id: credentialExchangeId,
       auto_publish_on_ledger: true,
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function publishRevocation(issuerAccessToken) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/publish-revocations`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      revocation_registry_credential_map: {}
     };
     const response = http.post(url, JSON.stringify(requestBody), params);
 

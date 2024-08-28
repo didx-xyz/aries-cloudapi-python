@@ -218,15 +218,14 @@ class AcaPyEventsProcessor:
             logger.error("Processing {} raised an exception: {}", list_key, e)
             self._handle_unprocessable_event(list_key, e)
         finally:
-            self._cleanup_lock(lock_key, extend_lock_task)
-            return
+            if SET_LOCKS:
+                self._cleanup_lock(lock_key, extend_lock_task)
+
+        return
 
     def _cleanup_lock(
         self, lock_key: str, extend_lock_task: Optional[asyncio.Task]
     ) -> None:
-        if not SET_LOCKS:
-            return None
-
         if extend_lock_task:
             extend_lock_task.cancel()
 

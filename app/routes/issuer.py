@@ -29,7 +29,12 @@ from app.util.acapy_issuer_utils import (
     issuer_from_protocol_version,
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
-from app.util.pagination import limit_query_parameter, offset_query_parameter
+from app.util.pagination import (
+    descending_query_parameter,
+    limit_query_parameter,
+    offset_query_parameter,
+    order_by_query_parameter,
+)
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
 from shared.models.credential_exchange import (
@@ -338,6 +343,8 @@ async def store_credential(
 async def get_credentials(
     limit: Optional[int] = limit_query_parameter,
     offset: Optional[int] = offset_query_parameter,
+    order_by: Optional[str] = order_by_query_parameter,
+    descending: bool = descending_query_parameter,
     connection_id: Optional[str] = Query(None),
     role: Optional[Role] = Query(None),
     state: Optional[State] = Query(None),
@@ -365,6 +372,7 @@ async def get_credentials(
     ---
         limit: int - The maximum number of records to retrieve
         offset: int - The offset to start retrieving records from
+        descending: bool - Whether to return results in descending order. Results are ordered by record created time.
         connection_id: str
         role: Role: "issuer", "holder"
         state: State: "proposal-sent", "proposal-received", "offer-sent", "offer-received",
@@ -386,6 +394,8 @@ async def get_credentials(
             controller=aries_controller,
             limit=limit,
             offset=offset,
+            order_by=order_by,
+            descending=descending,
             connection_id=connection_id,
             role=role,
             state=back_to_v1_credential_state(state) if state else None,
@@ -397,6 +407,8 @@ async def get_credentials(
             controller=aries_controller,
             limit=limit,
             offset=offset,
+            order_by=order_by,
+            descending=descending,
             connection_id=connection_id,
             role=role,
             state=state,

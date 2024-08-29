@@ -19,7 +19,12 @@ from app.util.acapy_verifier_utils import (
     assert_valid_verifier,
     get_verifier_by_version,
 )
-from app.util.pagination import limit_query_parameter, offset_query_parameter
+from app.util.pagination import (
+    descending_query_parameter,
+    limit_query_parameter,
+    offset_query_parameter,
+    order_by_query_parameter,
+)
 from shared.log_config import get_logger
 from shared.models.presentation_exchange import (
     PresentationExchange,
@@ -327,6 +332,8 @@ async def reject_proof_request(
 async def get_proof_records(
     limit: Optional[int] = limit_query_parameter,
     offset: Optional[int] = offset_query_parameter,
+    order_by: Optional[str] = order_by_query_parameter,
+    descending: bool = descending_query_parameter,
     connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
@@ -344,6 +351,7 @@ async def get_proof_records(
     ---
         limit: int: The maximum number of records to retrieve
         offset: int: The offset to start retrieving records from
+        descending: bool - Whether to return results in descending order. Results are ordered by record created time.
         connection_id: str
         role: Role: "prover", "verifier"
         state: State: "presentation-received", "presentation-sent", "proposal-received", "proposal-sent",
@@ -365,6 +373,8 @@ async def get_proof_records(
                 controller=aries_controller,
                 limit=limit,
                 offset=offset,
+                order_by=order_by,
+                descending=descending,
                 connection_id=connection_id,
                 role=role,
                 state=back_to_v1_presentation_state(state) if state else None,
@@ -375,6 +385,8 @@ async def get_proof_records(
                 controller=aries_controller,
                 limit=limit,
                 offset=offset,
+                order_by=order_by,
+                descending=descending,
                 connection_id=connection_id,
                 role=role,
                 state=state,
@@ -384,7 +396,7 @@ async def get_proof_records(
         logger.info("Could not fetch proof records: {}.", e)
         raise
 
-    result = v1_records + v2_records
+    result = v1_records + v2_records  # TODO: V1 to be deprecated. No need to re-order
     if result:
         logger.debug("Successfully fetched v1 and v2 records.")
     else:

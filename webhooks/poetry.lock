@@ -234,27 +234,23 @@ test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypo
 trio = ["trio (>=0.23)"]
 
 [[package]]
-name = "aries_cloudcontroller"
+name = "aries-cloudcontroller"
 version = "1.0.0b0"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false
 python-versions = ">=3.9"
-files = []
-develop = false
+files = [
+    {file = "aries_cloudcontroller-1.0.0b0-py3-none-any.whl", hash = "sha256:6eade79240442cdb973f5c94357ce150bc86c7e0eee731686147e3cfef4f17a1"},
+    {file = "aries_cloudcontroller-1.0.0b0.tar.gz", hash = "sha256:7c33cd0e8b9238067f024a5329d9bbd97ee8830237091c08f7a1eb29badb8d61"},
+]
 
 [package.dependencies]
 aiohttp = ">=3.9.4,<4.0"
-aiohttp_retry = ">=2.8.3,<2.9.0"
+aiohttp-retry = ">=2.8.3,<2.9.0"
 pydantic = ">=2.6,<3.0"
 python-dateutil = ">=2"
 typing-extensions = ">=4,<5.0"
 urllib3 = ">=2.1,<3"
-
-[package.source]
-type = "git"
-url = "https://github.com/didx-xyz/aries-cloudcontroller-python.git"
-reference = "test/feat/pagination-ordering"
-resolved_reference = "81ef692b503b6b28eeff38bf852f30ca4a074192"
 
 [[package]]
 name = "astroid"
@@ -2126,4 +2122,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "73105bcd019c38e0f563256803e8d67aafc91a1603be8a6342eea318c40199a6"
+content-hash = "7d586061b1e6c54dea197a9d8e9f1c0b86b55243837e74a2bfa9b6310ed43c8f"

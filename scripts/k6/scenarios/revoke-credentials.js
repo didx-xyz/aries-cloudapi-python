@@ -11,7 +11,7 @@ import {
   deleteTenant,
   getCredentialDefinitionId,
   getWalletIdByWalletName,
-  revokeCredential,
+  revokeCredentialAutoPublish,
 } from "../libs/functions.js";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
@@ -128,9 +128,9 @@ export default function (data) {
 
   const issuerIndex = __ITER % numIssuers;
   const issuer = issuers[issuerIndex];
-  const revokeCredentialResponse = revokeCredentialAutoPubish(issuer.accessToken, id.credential_exchange_id);
+  const revokeCredentialResponse = revokeCredentialAutoPublish(issuer.accessToken, id.credential_exchange_id);
   check(revokeCredentialResponse, {
-    "Credential revoked sucessfully": (r) => {
+    "Credential revoked successfully": (r) => {
       if (r.status !== 200) {
         throw new Error(`Unexpected response while revoking credential: ${r.response}`);
       }

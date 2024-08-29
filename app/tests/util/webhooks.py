@@ -6,6 +6,7 @@ from httpx import HTTPError
 from app.tests.util.sse_listener import SseListener, SseListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
+from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiTopics
 
@@ -45,7 +46,10 @@ async def check_webhook_state(
     attempt = 0
 
     while not event and attempt < max_tries:
-        look_back_duration = min(30, look_back + attempt * max_duration)
+        look_back_duration = min(
+            MAX_EVENT_AGE_SECONDS,
+            look_back + attempt * max_duration,
+        )
         try:
             if filter_map:
                 # Assuming that filter_map contains 1 key-value pair

@@ -7,7 +7,7 @@ import pytest
 from redis.client import PubSubWorkerThread
 from redis.cluster import ClusterPubSub
 
-from shared.constants import GOVERNANCE_LABEL
+from shared.constants import GOVERNANCE_LABEL, SET_LOCKS
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 
 # pylint: disable=redefined-outer-name
@@ -163,11 +163,14 @@ async def test_attempt_process_list_events(acapy_events_processor_mock):
 
     acapy_events_processor_mock._attempt_process_list_events(event_key)
 
-    acapy_events_processor_mock.redis_service.set_lock.assert_called_with(
-        lock_key, px=2000
-    )
     acapy_events_processor_mock._process_list_events.assert_called_with(event_key)
-    acapy_events_processor_mock.redis_service.delete_key.assert_called_with(lock_key)
+    if SET_LOCKS:
+        acapy_events_processor_mock.redis_service.set_lock.assert_called_with(
+            lock_key, px=3000
+        )
+        acapy_events_processor_mock.redis_service.delete_key.assert_called_with(
+            lock_key
+        )
 
 
 @pytest.mark.anyio

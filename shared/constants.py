@@ -49,10 +49,11 @@ LEDGER_TYPE: str = "von"
 LEDGER_REGISTRATION_URL = os.getenv("LEDGER_REGISTRATION_URL", f"{url}:9000/register")
 
 # Sse manager
-MAX_EVENT_AGE_SECONDS = float(os.getenv("MAX_EVENT_AGE_SECONDS", "30"))
-MAX_QUEUE_SIZE = int(os.getenv("MAX_QUEUE_SIZE", "200"))
-QUEUE_CLEANUP_PERIOD = int(os.getenv("QUEUE_CLEANUP_PERIOD", "60"))
+MAX_EVENT_AGE_SECONDS = float(os.getenv("MAX_EVENT_AGE_SECONDS", "10"))
+MAX_QUEUE_SIZE = int(os.getenv("MAX_QUEUE_SIZE", "2000"))
+QUEUE_CLEANUP_PERIOD = int(os.getenv("QUEUE_CLEANUP_PERIOD", "30"))
 CLIENT_QUEUE_POLL_PERIOD = float(os.getenv("CLIENT_QUEUE_POLL_PERIOD", "0.2"))
+SET_LOCKS = bool(os.getenv("SET_LOCKS", ""))
 
 # Sse
 SSE_TIMEOUT = int(

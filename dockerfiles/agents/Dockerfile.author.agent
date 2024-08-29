@@ -3,7 +3,7 @@ FROM ghcr.io/didx-xyz/aries-cloudagent-bbs:py3.12-1.0.0b0
 USER root
 
 # Install wallet group id plugin
-RUN pip3 install git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1.0.0
+RUN pip3 install git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1.0.0b0
 
 # install redis-events plugin
 RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@test/feat/pagination-ordering#subdirectory=redis_events

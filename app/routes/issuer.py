@@ -671,28 +671,27 @@ async def publish_revocations(
             return RevokedResponse()
 
         endorser_transaction_ids = [txn.transaction_id for txn in result.txn]
-        if endorser_transaction_ids:
-            for endorser_transaction_id in endorser_transaction_ids:
-                bound_logger.debug(
-                    "Wait for publish complete on transaction id: {}",
-                    endorser_transaction_id,
+        for endorser_transaction_id in endorser_transaction_ids:
+            bound_logger.debug(
+                "Wait for publish complete on transaction id: {}",
+                endorser_transaction_id,
+            )
+            try:
+                # Wait for transaction to be acknowledged and written to the ledger
+                await coroutine_with_retry_until_value(
+                    coroutine_func=aries_controller.endorse_transaction.get_transaction,
+                    args=(endorser_transaction_id,),
+                    field_name="state",
+                    expected_value="transaction_acked",
+                    logger=bound_logger,
+                    max_attempts=30,
+                    retry_delay=1,
                 )
-                try:
-                    # Wait for transaction to be acknowledged and written to the ledger
-                    await coroutine_with_retry_until_value(
-                        coroutine_func=aries_controller.endorse_transaction.get_transaction,
-                        args=(endorser_transaction_id,),
-                        field_name="state",
-                        expected_value="transaction_acked",
-                        logger=bound_logger,
-                        max_attempts=30,
-                        retry_delay=1,
-                    )
-                except asyncio.TimeoutError as e:
-                    raise CloudApiException(
-                        "Timeout waiting for endorser to accept the revocations request.",
-                        504,
-                    ) from e
+            except asyncio.TimeoutError as e:
+                raise CloudApiException(
+                    "Timeout waiting for endorser to accept the revocations request.",
+                    504,
+                ) from e
 
     bound_logger.debug("Successfully published revocations.")
     return RevokedResponse.model_validate(result.model_dump())

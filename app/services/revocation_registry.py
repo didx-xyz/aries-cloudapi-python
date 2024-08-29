@@ -156,10 +156,10 @@ async def revoke_credential(
             and revoke_result["txn"]
             and revoke_result["txn"]["messages_attach"][0]
         ):
-            bound_logger.info("Successfully revoked credential.")
+            bound_logger.debug("Successfully revoked credential.")
             return RevokedResponse.model_validate({"txn": [revoke_result["txn"]]})
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
     return RevokedResponse()
 
 
@@ -204,10 +204,10 @@ async def publish_pending_revocations(
         )
         return
 
-    endorse_transaction_id = result.txn[0].transaction_id
-    bound_logger.info(
-        "Successfully published pending revocations. Endorser transaction id: {}.",
-        endorse_transaction_id,
+    endorse_transaction_ids = [txn.transaction_id for txn in result.txn]
+    bound_logger.debug(
+        "Successfully published pending revocations. Endorser transaction ids: {}.",
+        endorse_transaction_ids,
     )
     return result
 
@@ -519,10 +519,10 @@ async def get_pending_revocations(
         Exception: When the pending revocations could not be retrieved.
 
     Returns:
-        pending_revocations (List[str]): The pending revocations.
+        pending_revocations (List[int]): The pending revocations.
     """
     bound_logger = logger.bind(body={"rev_reg_id": rev_reg_id})
-    bound_logger.info("Fetching pending revocations for a revocation registry")
+    bound_logger.debug("Fetching pending revocations for a revocation registry")
 
     try:
         result = await handle_acapy_call(
@@ -535,6 +535,12 @@ async def get_pending_revocations(
             f"Failed to get pending revocations: {e.detail}", e.status_code
         ) from e
 
+    if not result.result:
+        bound_logger.error("Unexpected type returned from get_registry: `{}`.", result)
+        raise CloudApiException(
+            f"Error retrieving pending revocations for revocation registry with ID `{rev_reg_id}`."
+        )
+
     pending_revocations = result.result.pending_pub
-    bound_logger.info("Successfully retrieved pending revocations.")
+    bound_logger.debug("Successfully retrieved pending revocations.")
     return pending_revocations

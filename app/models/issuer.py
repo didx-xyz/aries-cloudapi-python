@@ -109,7 +109,9 @@ class RevokedResponse(BaseModel):
         default_factory=dict,
         description=(
             "A map of revocation registry IDs to lists of credential revocation IDs "
-            "(as integers) that have been revoked. Can be empty."
+            "(as integers) that have been revoked."
+            "When cred_rev_ids_published is empty no revocations were published."
+            "This will happen when revoke is called with auto_publish_on_ledger=False."
         ),
     )
 
@@ -119,7 +121,8 @@ class RevokedResponse(BaseModel):
         cls, values: TxnOrPublishRevocationsResult
     ) -> Dict[str, Any]:
         if isinstance(values, dict) and "txn" in values:
-            txn_list: List[TransactionRecord] = values.get("txn")
+            # This is a List of TransactionRecord
+            txn_list: List[Dict[str, Any]] = values.get("txn")
             cred_rev_ids_published = {}
 
             for txn in txn_list:

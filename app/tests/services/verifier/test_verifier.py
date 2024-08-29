@@ -493,30 +493,52 @@ async def test_get_credentials_by_proof_id(
     )
     # V1
     when(VerifierV1).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v1-abcd"
+        controller=mock_agent_controller,
+        proof_id="v1-abcd",
+        referent=None,
+        count="100",
+        start="0",
     ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_by_proof_id(
         proof_id="v1-abcd",
         auth=mock_tenant_auth,
+        referent=None,
+        limit=100,
+        offset=0,
     )
 
     assert result == [cred_precis]
     verify(VerifierV1).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v1-abcd"
+        controller=mock_agent_controller,
+        proof_id="v1-abcd",
+        referent=None,
+        count="100",
+        start="0",
     )
 
     # V2
     when(VerifierV2).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v2-abcd"
+        controller=mock_agent_controller,
+        proof_id="v2-abcd",
+        referent=None,
+        count="100",
+        start="0",
     ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_by_proof_id(
         proof_id="v2-abcd",
         auth=mock_tenant_auth,
+        referent=None,
+        limit=100,
+        offset=0,
     )
 
     assert result == [cred_precis]
     verify(VerifierV2).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v2-abcd"
+        controller=mock_agent_controller,
+        proof_id="v2-abcd",
+        referent=None,
+        count="100",
+        start="0",
     )

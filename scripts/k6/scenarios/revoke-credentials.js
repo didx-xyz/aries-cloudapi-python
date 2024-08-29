@@ -130,7 +130,7 @@ export default function (data) {
   const issuer = issuers[issuerIndex];
   const revokeCredentialResponse = revokeCredentialAutoPublish(issuer.accessToken, id.credential_exchange_id);
   check(revokeCredentialResponse, {
-    "successfully": (r) => {
+    "Credential revoked successfully": (r) => {
       if (r.status !== 200) {
         throw new Error(`Unexpected response while revoking credential: ${r.response}`);
       }

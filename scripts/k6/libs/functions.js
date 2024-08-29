@@ -91,7 +91,7 @@ export function getTrustRegistryActor(walletName) {
   };
 
   const response = http.get(url);
-  // console.log(`Respone: ${response}`)
+  // console.log(`Response: ${response}`)
   if (response.status === 200) {
     // Request was successful
     // console.log(`Issuer found for actor_name ${walletName}`);

@@ -7,11 +7,10 @@ from mockito import verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
-from app.routes.verifier import get_credentials_by_proof_id
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import app
-from app.routes.verifier import acapy_auth_from_header
+from app.routes.verifier import acapy_auth_from_header, get_credentials_by_proof_id
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request

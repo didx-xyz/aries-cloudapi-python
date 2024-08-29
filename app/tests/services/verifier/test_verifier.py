@@ -547,11 +547,10 @@ async def test_get_credentials_by_proof_id(
     )
 
 
-client = TestClient(app)
-
-
 @pytest.mark.anyio
 async def test_get_credentials_by_proof_id_bad_limit():
+    client = TestClient(app)
+
     def override_auth():
         return "mocked_auth"
 

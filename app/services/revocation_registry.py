@@ -535,6 +535,14 @@ async def get_pending_revocations(
             f"Failed to get pending revocations: {e.detail}", e.status_code
         ) from e
 
+    if not result.result:
+        bound_logger.error(
+            "Unexpected type returned from get_registry: `{}`.", result
+        )
+        raise CloudApiException(
+            f"Error retrieving pending revocations for revocation registry with ID `{rev_reg_id}`."
+        )
+
     pending_revocations = result.result.pending_pub
     bound_logger.debug("Successfully retrieved pending revocations.")
     return pending_revocations

@@ -541,7 +541,7 @@ async def revoke_credential(
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
-    bound_logger.info("Successfully revoked credential.")
+    bound_logger.debug("Successfully revoked credential.")
     return result
 
 
@@ -693,7 +693,7 @@ async def publish_revocations(
                     504,
                 ) from e
 
-    bound_logger.info("Successfully published revocations.")
+    bound_logger.debug("Successfully published revocations.")
     return RevokedResponse.model_validate(result.model_dump())
 
 
@@ -778,7 +778,7 @@ async def get_pending_revocations(
             A list of cred_rev_ids pending revocation for a given revocation registry ID
     """
     bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
-    bound_logger.info("GET request received: Get pending revocations")
+    bound_logger.debug("GET request received: Get pending revocations")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting pending revocations")
@@ -786,5 +786,5 @@ async def get_pending_revocations(
             controller=aries_controller, rev_reg_id=revocation_registry_id
         )
 
-    bound_logger.info("Successfully fetched pending revocations.")
+    bound_logger.debug("Successfully fetched pending revocations.")
     return PendingRevocations(pending_cred_rev_ids=result)

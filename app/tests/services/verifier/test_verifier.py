@@ -570,8 +570,7 @@ async def test_get_credentials_by_proof_id_bad_limit():
                     "loc": ["query", "limit"],
                     "msg": "Input should be less than or equal to 10000",
                     "input": "10001",
-                    "ctx": {"le": 10000
-                    },
+                    "ctx": {"le": 10000},
                 }
             ]
         }

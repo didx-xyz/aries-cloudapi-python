@@ -11,7 +11,7 @@ import {
   deleteTenant,
   getCredentialDefinitionId,
   getWalletIdByWalletName,
-  revokeCredential,
+  revokeCredentialAutoPublish,
 } from "../libs/functions.js";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";

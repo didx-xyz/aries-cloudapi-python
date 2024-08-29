@@ -3,6 +3,9 @@
 # Get the directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# Source the configuration file
+source "$SCRIPT_DIR/config.sh"
+
 usage() {
     echo "Usage: $0 [-s STACK] [-a]"
     echo "  -s STACK   Specify a single stack to test (WEBS, AGENT, SERVICE, AUTH, or ALL)"
@@ -33,11 +36,16 @@ if [ -n "$STACK" ] && [ "$TEST_ALL" = true ]; then
     usage
 fi
 
+run_ha_revocation() {
+    local stack=$1
+    "$SCRIPT_DIR/ha_revocation.sh" "$stack"
+}
+
 if [ -n "$STACK" ]; then
-    $SCRIPT_DIR/ha_revocation.sh -s "$STACK"
+    run_ha_revocation "$STACK"
 elif [ "$TEST_ALL" = true ]; then
     for stack in WEBS AGENT SERVICE AUTH; do
-        $SCRIPT_DIR/ha_revocation.sh -s "$stack"
+        run_ha_revocation "$stack"
     done
 else
     usage

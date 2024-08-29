@@ -1,31 +1,8 @@
 #!/bin/bash
+
+# Source the configuration file
 source ./env.sh
-
-config() {
-    export NAMESPACE="dev-cloudapi"
-    export ISSUER_PREFIX="k6_issuer_debugh"
-    export HOLDER_PREFIX="k6_holder_debugh"
-    export INTIAL_VUS=10
-    export INITIAL_ITERATIONS=20
-    export VUS=$INTIAL_VUS
-    export ITERATIONS=$INITIAL_ITERATIONS
-    export WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"
-    export AGENT="governance-ga-agent governance-multitenant-agent"
-    export SERVICE="governance-endorser"
-    export AUTH="inquisitor"
-    export INVALID="governance-webhooks-web"
-    export HA_TEST_ITERATIONS=1 # Configurable number of HA test iterations
-
-    # Combine all stacks into one variable
-    ALL="$WEBS $AGENT $SERVICE $AUTH"
-    # Remove INVALID deployments from ALL
-    for invalid in $INVALID; do
-        ALL=${ALL//$invalid/}
-    done
-    # Remove any extra spaces
-    ALL=$(echo "$ALL" | tr -s ' ')
-    export ALL
-}
+source "$(dirname "$0")/config.sh"
 
 run_test() {
     local test_script="$1"
@@ -147,30 +124,9 @@ ha_tests() {
 }
 
 main() {
-    config
     init
 
-    while getopts ":s:" opt; do
-        case ${opt} in
-            s )
-                STACK=$OPTARG
-                ;;
-            \? )
-                echo "Invalid option: $OPTARG" 1>&2
-                exit 1
-                ;;
-            : )
-                echo "Invalid option: $OPTARG requires an argument" 1>&2
-                exit 1
-                ;;
-        esac
-    done
-
-    if [ -z "$STACK" ]; then
-        echo "Error: Stack must be specified with -s option"
-        exit 1
-    fi
-
+    STACK=$1
     case $STACK in
         WEBS|AGENT|SERVICE|AUTH)
             ha_tests "${!STACK}"

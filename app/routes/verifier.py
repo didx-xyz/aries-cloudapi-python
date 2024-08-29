@@ -502,10 +502,10 @@ async def get_credentials_by_proof_id(
         proof_id: str
             The relevant proof exchange ID for the prover
         referent: Optional str
-            The presentation_referent of the proof to match
-        limit: Optional str
+            The presentation_referent of the proof to match, comma separated str of presentation_referents
+        limit: Optional int
             The number of credentials to fetch
-        offset: Optional str
+        offset: Optional int
             The index to start fetching credentials from
 
     Returns:

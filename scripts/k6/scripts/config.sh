@@ -3,8 +3,8 @@
 export NAMESPACE="dev-cloudapi"
 export ISSUER_PREFIX="k6_issuer_debug"
 export HOLDER_PREFIX="k6_holder_debug"
-export INTIAL_VUS=1
-export INITIAL_ITERATIONS=5
+export INTIAL_VUS=5
+export INITIAL_ITERATIONS=2
 export VUS=$INTIAL_VUS
 export ITERATIONS=$INITIAL_ITERATIONS
 export WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"

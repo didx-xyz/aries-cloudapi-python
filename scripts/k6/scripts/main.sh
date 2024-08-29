@@ -1,15 +1,12 @@
 #!/bin/bash
-
-# Get the directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
-# Source the configuration file
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/collections.sh"
 
 usage() {
-    echo "Usage: $0 [-s STACK] [-a]"
-    echo "  -s STACK   Specify a single stack to test (WEBS, AGENT, SERVICE, AUTH, or ALL)"
-    echo "  -a         Test all stacks sequentially"
+    echo "Usage: $0 [-s STACK] [-c COLLECTION]"
+    echo "  -s STACK       Specify a stack to test (WEBS, AGENT, SERVICE, AUTH, or ALL)"
+    echo "  -c COLLECTION  Specify a test collection (default: revocation)"
     exit 1
 }
 
@@ -17,13 +14,16 @@ if [ $# -eq 0 ]; then
     usage
 fi
 
-while getopts ":s:a" opt; do
+COLLECTION="revocation"
+STACK=""
+
+while getopts ":s:c:" opt; do
     case ${opt} in
         s )
             STACK=$OPTARG
             ;;
-        a )
-            TEST_ALL=true
+        c )
+            COLLECTION=$OPTARG
             ;;
         \? )
             usage
@@ -31,22 +31,15 @@ while getopts ":s:a" opt; do
     esac
 done
 
-if [ -n "$STACK" ] && [ "$TEST_ALL" = true ]; then
-    echo "Error: Cannot specify both a single stack and all stacks"
+if [ -z "$STACK" ]; then
     usage
 fi
 
-run_ha_revocation() {
-    local stack=$1
-    "$SCRIPT_DIR/ha_revocation.sh" "$stack"
-}
+DEPLOYMENTS="${!STACK}"
 
-if [ -n "$STACK" ]; then
-    run_ha_revocation "$STACK"
-elif [ "$TEST_ALL" = true ]; then
-    for stack in WEBS AGENT SERVICE AUTH; do
-        run_ha_revocation "$stack"
-    done
-else
+if [ -z "$DEPLOYMENTS" ]; then
+    echo "Error: Invalid stack specified"
     usage
 fi
+
+"$SCRIPT_DIR/ha_revocation.sh" "$DEPLOYMENTS" "$COLLECTION"

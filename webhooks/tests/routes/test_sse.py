@@ -332,7 +332,7 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-@pytest.mark.parametrize("look_back", [0.0, 15.0])
+@pytest.mark.parametrize("look_back", [0.0, MAX_EVENT_AGE_SECONDS / 2])
 async def test_sse_subscribe_wallet(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
@@ -390,7 +390,7 @@ async def test_sse_subscribe_wallet(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-@pytest.mark.parametrize("look_back", [0.0, 15.0])
+@pytest.mark.parametrize("look_back", [0.0, MAX_EVENT_AGE_SECONDS / 2])
 async def test_sse_subscribe_wallet_topic(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
@@ -451,7 +451,7 @@ async def test_sse_subscribe_wallet_topic(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-@pytest.mark.parametrize("look_back", [0.0, 15.0])
+@pytest.mark.parametrize("look_back", [0.0, MAX_EVENT_AGE_SECONDS / 2])
 async def test_sse_subscribe_event_with_state(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
@@ -515,7 +515,7 @@ async def test_sse_subscribe_event_with_state(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-@pytest.mark.parametrize("look_back", [0.0, 15.0])
+@pytest.mark.parametrize("look_back", [0.0, MAX_EVENT_AGE_SECONDS / 2])
 async def test_sse_subscribe_stream_with_fields(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
@@ -582,7 +582,7 @@ async def test_sse_subscribe_stream_with_fields(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-@pytest.mark.parametrize("look_back", [0.0, 15.0])
+@pytest.mark.parametrize("look_back", [0.0, MAX_EVENT_AGE_SECONDS / 2])
 async def test_sse_subscribe_event_with_field_and_state(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,

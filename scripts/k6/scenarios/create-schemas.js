@@ -5,15 +5,12 @@ import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import file from "k6/x/file";
 import { getGovernanceBearerToken } from "../libs/auth.js";
-import {
-  createSchema,
-  getSchema
-} from "../libs/functions.js";
+import { createSchema, getSchema } from "../libs/functions.js";
 
 const outputFilepath = "output/create-schemas.json";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const schemaPrefix =  __ENV.SCHEMA_PREFIX;
+const schemaPrefix = __ENV.SCHEMA_PREFIX;
 
 export const options = {
   scenarios: {
@@ -72,18 +69,18 @@ export default function (data) {
 
   const checkSchemaResponse = getSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
   check(checkSchemaResponse, {
-    "Schema doesn't exist yet": (r) => r.status === 200 && r.body === '[]',
+    "Schema doesn't exist yet": (r) => r.status === 200 && r.body === "[]",
   });
 
   const createSchemaResponse = createSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
   check(createSchemaResponse, {
-    "Schema created successfully": (r) => r.status === 200 && r.json('id') != null && r.json('id') !== '',
+    "Schema created successfully": (r) => r.status === 200 && r.json("id") != null && r.json("id") !== "",
   });
 
   const getSchemaResponse = getSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
   check(getSchemaResponse, {
-    'getSchema check passes': (r) => {
-      if (r.status !== 200 || r.body === '[]') {
+    "getSchema check passes": (r) => {
+      if (r.status !== 200 || r.body === "[]") {
         return false;
       }
 
@@ -91,7 +88,7 @@ export default function (data) {
         const schemaData = JSON.parse(r.body);
         return schemaData.length > 0 && schemaData[0].id != null;
       } catch (e) {
-        console.error('Failed to parse schema data:', e);
+        console.error("Failed to parse schema data:", e);
         return false;
       }
     },

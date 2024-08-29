@@ -919,7 +919,7 @@ export function publishRevocation(issuerAccessToken) {
   };
   try {
     const requestBody = {
-      revocation_registry_credential_map: {}
+      revocation_registry_credential_map: {},
     };
     const response = http.post(url, JSON.stringify(requestBody), params);
 

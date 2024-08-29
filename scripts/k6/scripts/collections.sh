@@ -16,11 +16,15 @@ revocation_collection() {
     INIT_FUNC="revocation_init"
     SCENARIO_FUNC="revocation_scenario"
     CLEANUP_FUNC="default_cleanup"
+}
 
+revocation_config() {
     export VUS=10
     export ITERATIONS=5
     export ISSUER_PREFIX="k6_issuer_revocation"
     export HOLDER_PREFIX="k6_holder_revocation"
+    export HOLDER_PREFIX="k6_holder_revocation"
+    config
 }
 
 revocation_init() {
@@ -47,11 +51,14 @@ proof_collection() {
     INIT_FUNC="proof_init"
     SCENARIO_FUNC="proof_scenario"
     CLEANUP_FUNC="default_cleanup"
+}
 
+proof_config() {
     export VUS=10
     export ITERATIONS=10
     export ISSUER_PREFIX="k6_issuer_proof"
     export HOLDER_PREFIX="k6_holder_proof"
+    config
 }
 
 proof_init() {
@@ -71,10 +78,14 @@ schema_collection() {
     INIT_FUNC="default_init"
     SCENARIO_FUNC="schema_scenario"
     CLEANUP_FUNC="schema_cleanup"
+    CONFIG_FUNC="schema_config"
+}
 
+schema_config() {
     export VUS=20
     export ITERATIONS=25
     export SCHEMA_PREFIX="k6_schema"
+    config
 }
 
 schema_scenario() {
@@ -83,5 +94,56 @@ schema_scenario() {
 
 schema_cleanup() {
     echo "No cleanup specified for schema collection"
+}
+#################
+
+### CREATE ISSUERS ###
+issuer_collection() {
+    INIT_FUNC="default_init"
+    SCENARIO_FUNC="issuers_scenario"
+    CLEANUP_FUNC="issuers_cleanup"
+    CONFIG_FUNC="issuers_config"
+}
+
+issuers_config() {
+    export VUS=15
+    export ITERATIONS=10
+    export ISSUER_PREFIX="k6_issuer_issuer"
+    config
+}
+
+issuers_scenario() {
+    run_test ./scenarios/create-issuers.js
+}
+
+issuers_cleanup() {
+    echo "Cleaning up..."
+    export ITERATIONS=$((INITIAL_ITERATIONS * INTIAL_VUS))
+    export VUS=1
+    xk6 run ./scenarios/delete-issuers.js
+}
+#################
+
+### CREATE CREDDEF ###
+creddef_collection() {
+    INIT_FUNC="creddef_init"
+    SCENARIO_FUNC="creddef_scenario"
+    CLEANUP_FUNC="issuers_cleanup"
+    CONFIG_FUNC="creddef_config"
+}
+
+creddef_config() {
+    export VUS=5 # setting any higher will exceed 30s lifecyce pre-stop on tenant-web
+    export ITERATIONS=8
+    export ISSUER_PREFIX="k6_issuer_creddef"
+    config
+}
+
+creddef_init() {
+    run_test ./scenarios/create-issuers.js
+}
+
+creddef_scenario() {
+    run_test ./scenarios/create-creddef.js
 }
 #################

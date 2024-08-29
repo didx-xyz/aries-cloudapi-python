@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
@@ -7,6 +7,7 @@ from mockito import verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
+from app.routes.verifier import get_credentials_by_proof_id
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import app
@@ -575,3 +576,28 @@ async def test_get_credentials_by_proof_id_bad_limit():
         }
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_get_credentials_by_proof_id_with_limit_offset():
+    mock_aries_controller = AsyncMock()
+
+    with patch("app.routes.verifier.client_from_auth") as mock_client_from_auth:
+        mock_client_from_auth.return_value.__aenter__.return_value = (
+            mock_aries_controller
+        )
+
+        await get_credentials_by_proof_id(
+            proof_id="v2-abcd",
+            auth="mocked_auth",
+            referent=None,
+            limit=2,
+            offset=1,
+        )
+
+        mock_aries_controller.present_proof_v2_0.get_matching_credentials.assert_called_once_with(
+            pres_ex_id="abcd",
+            referent=None,
+            count="2",
+            start="1",
+        )

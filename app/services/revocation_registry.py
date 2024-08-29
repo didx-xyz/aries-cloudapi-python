@@ -536,9 +536,7 @@ async def get_pending_revocations(
         ) from e
 
     if not result.result:
-        bound_logger.error(
-            "Unexpected type returned from get_registry: `{}`.", result
-        )
+        bound_logger.error("Unexpected type returned from get_registry: `{}`.", result)
         raise CloudApiException(
             f"Error retrieving pending revocations for revocation registry with ID `{rev_reg_id}`."
         )

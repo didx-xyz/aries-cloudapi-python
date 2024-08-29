@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from aries_cloudcontroller import IndyCredPrecis
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
@@ -485,8 +485,8 @@ async def delete_proof(
 async def get_credentials_by_proof_id(
     proof_id: str,
     referent: Optional[str] = None,
-    limit: Optional[str] = None,
-    offset: Optional[str] = None,
+    limit: Optional[int] = Query(default=100, ge=0, le=10000),
+    offset: Optional[int] = Query(default=0, ge=0),
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """
@@ -525,8 +525,8 @@ async def get_credentials_by_proof_id(
                 controller=aries_controller,
                 proof_id=proof_id,
                 referent=referent,
-                count=limit,
-                start=offset,
+                count=str(limit),
+                start=str(offset),
             )
     except CloudApiException as e:
         bound_logger.info("Could not get matching credentials: {}.", e)

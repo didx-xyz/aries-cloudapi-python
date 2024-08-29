@@ -2,7 +2,7 @@ FROM ghcr.io/didx-xyz/aries-cloudagent-bbs:py3.12-1.0.0b0
 
 USER root
 # install redis-events plugin
-RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@test/feat/pagination-ordering#subdirectory=redis_events
+RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-08-29#subdirectory=redis_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

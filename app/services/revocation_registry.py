@@ -519,7 +519,7 @@ async def get_pending_revocations(
         Exception: When the pending revocations could not be retrieved.
 
     Returns:
-        pending_revocations (List[str]): The pending revocations.
+        pending_revocations (List[int]): The pending revocations.
     """
     bound_logger = logger.bind(body={"rev_reg_id": rev_reg_id})
     bound_logger.debug("Fetching pending revocations for a revocation registry")

@@ -198,6 +198,7 @@ async def test_get_cred_exchange_records(
             },
         )
 
+    await asyncio.sleep(0.5)  # short sleep to allow records to update
     faber_records = (await faber_client.get(CREDENTIALS_BASE_PATH)).json()
 
     faber_cred_ex_response = (

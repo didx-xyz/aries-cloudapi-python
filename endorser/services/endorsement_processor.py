@@ -138,7 +138,7 @@ class EndorsementProcessor:
         while True:
             try:
                 batch_keys = self.redis_service.scan_keys(
-                    match_pattern=f"{self.endorse_prefix}:*", count=10000
+                    match_pattern=f"{self.endorse_prefix}:*", count=5000
                 )
                 if batch_keys:
                     attempts_without_events = 0  # Reset the counter

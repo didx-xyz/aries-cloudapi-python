@@ -4,14 +4,14 @@
 import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
-import file from "k6/x/file";
-import { getBearerToken, getGovernanceBearerToken } from "../libs/auth.js";
+import { getBearerToken } from "../libs/auth.js";
 import {
+  checkRevoked,
   createCredentialDefinition,
-  createTenant,
   deleteTenant,
   getCredentialDefinitionId,
   getWalletIdByWalletName,
+  revokeCredentialAutoPublish,
 } from "../libs/functions.js";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
@@ -19,9 +19,6 @@ import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
-const holderPrefix = __ENV.HOLDER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export const options = {
   scenarios: {
@@ -32,8 +29,8 @@ export const options = {
       maxDuration: "24h",
     },
   },
-  setupTimeout: "300s", // Increase the setup timeout to 120 seconds
-  teardownTimeout: "120s", // Increase the teardown timeout to 120 seconds
+  setupTimeout: "180s", // Increase the setup timeout to 120 seconds
+  teardownTimeout: "180s", // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
@@ -41,42 +38,24 @@ export const options = {
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
     checks: ["rate==1"],
-    // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
     test_run_id: "phased-issuance",
-    test_phase: "create-holders",
+    test_phase: "revoke-credentials",
   },
 };
 
-// const specificFunctionReqs = new Counter('specific_function_reqs');
-const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+const inputFilepath = "../output/create-credentials.json";
+const data = open(inputFilepath, "r");
 
-// Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray("wallets", () => {
-  const walletsArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
-    walletsArray.push({
-      wallet_label: `${holderPrefix} ${i}`,
-      wallet_name: `${holderPrefix}_${i}`,
-    });
-  }
-  return walletsArray;
-});
+const testFunctionReqs = new Counter("test_function_reqs");
 
 const numIssuers = 1;
-const issuers = [];
-const filepath = "output/create-holders.json";
 
 export function setup() {
-  const bearerToken = getBearerToken();
-  const governanceBearerToken = getGovernanceBearerToken();
   const issuers = [];
-
-  file.writeString(filepath, "");
-
+  const ids = data.trim().split("\n").map(JSON.parse);
+  const bearerToken = getBearerToken();
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `${issuerPrefix}_${i}`;
     const credDefTag = walletName;
@@ -131,8 +110,7 @@ export function setup() {
       console.error(`Failed to create credential definition for issuer ${walletName}`);
     }
   }
-
-  return { bearerToken, issuers };
+  return { bearerToken, ids, issuers }; // eslint-disable-line no-eval
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;
@@ -143,37 +121,35 @@ function getWalletIndex(vu, iter) {
 }
 
 export default function (data) {
-  const start = Date.now();
-  const bearerToken = data.bearerToken;
   const issuers = data.issuers;
+  const ids = data.ids;
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
-  const wallet = wallets[walletIndex];
+  const id = ids[walletIndex];
 
-  const createTenantResponse = createTenant(bearerToken, wallet);
-  check(createTenantResponse, {
-    "Create Tenant Response status code is 200": (r) => {
+  const issuerIndex = __ITER % numIssuers;
+  const issuer = issuers[issuerIndex];
+  const revokeCredentialResponse = revokeCredentialAutoPublish(issuer.accessToken, id.credential_exchange_id);
+  check(revokeCredentialResponse, {
+    "Credential revoked successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response status: ${r.status}`);
+        throw new Error(`Unexpected response while revoking credential: ${r.response}`);
       }
       return true;
     },
   });
-  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
-
-  // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
-
-  const holderData = JSON.stringify({
-    wallet_label: wallet.wallet_label,
-    wallet_name: wallet.wallet_name,
-    wallet_id: walletId,
-    access_token: holderAccessToken,
+  const checkRevokedCredentialResponse = checkRevoked(issuer.accessToken, id.credential_exchange_id);
+  check(checkRevokedCredentialResponse, {
+    "Credential state is revoked": (r) => {
+      if (r.status !== 200) {
+        throw new Error(`Unexpected response while checking if credential is revoked: ${r.status}`);
+      }
+      const responseBody = JSON.parse(r.body);
+      if (responseBody.state !== "revoked") {
+        throw new Error(`Credential state is not revoked. Current state: ${responseBody.state}`);
+      }
+      return true;
+    },
   });
-  file.appendString(filepath, `${holderData}\n`);
-
-  const end = Date.now();
-  const duration = end - start;
-  // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
-  // sleep(1);
+  // sleep(0.2);
   testFunctionReqs.add(1);
 }

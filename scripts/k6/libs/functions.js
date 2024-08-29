@@ -5,8 +5,6 @@ import { check, sleep } from "k6";
 import http from "k6/http";
 import { Counter, Trend } from "k6/metrics";
 import sse from "k6/x/sse";
-// import { sleep } from 'k6';
-
 // let customDuration = new Trend('custom_duration', true);
 
 function logError(response, requestBody) {
@@ -93,7 +91,7 @@ export function getTrustRegistryActor(walletName) {
   };
 
   const response = http.get(url);
-  // console.log(`Respone: ${response}`)
+  // console.log(`Response: ${response}`)
   if (response.status === 200) {
     // Request was successful
     // console.log(`Issuer found for actor_name ${walletName}`);
@@ -191,6 +189,7 @@ export function createIssuerTenant(bearerToken, walletName) {
     console.warn(`Request failed for wallet_name ${walletName}`);
     return null;
   } catch (error) {
+    logError(response);
     console.error(`Error creating issuer tenant: ${error.message}`);
     throw error;
   }
@@ -516,12 +515,17 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       "Content-Type": "application/json",
     },
   };
-
   try {
+    // Get current epoch time in seconds
+    const currentEpochTimeSeconds = Math.floor(Date.now() / 1000);
+
     // Construct the request body including the invitation object
     const requestBody = {
       type: "indy",
       indy_proof_request: {
+        non_revoked: {
+          to: currentEpochTimeSeconds, // Current epoch time in seconds
+        },
         requested_attributes: {
           get_id_number: { name: "id_number" },
         },
@@ -532,7 +536,6 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       protocol_version: "v2",
       connection_id: issuerConnectionId,
     };
-
     const response = http.post(url, JSON.stringify(requestBody), params);
     return response;
   } catch (error) {
@@ -645,6 +648,7 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
       const obj = responseData[i];
       // Check if the current object has a matching thread_id
       const referent = obj.cred_info.referent;
+      // TODO: this will always return the first referent - fix this
       return referent;
     }
     // Throw an error if no match is found
@@ -781,6 +785,22 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
   }
 }
 
+export function getDocs() {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/docs`;
+  const params = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = http.get(url, params);
+    return response;
+  } catch (error) {
+    console.error(`Error getting docs: ${error.message}`);
+    throw error;
+  }
+}
+
 export function createSchema(bearerToken, schemaName, schemaVersion) {
   const url = `${__ENV.CLOUDAPI_URL}/governance/v1/definitions/schemas`;
   const params = {
@@ -832,6 +852,102 @@ export function getSchema(bearerToken, schemaName, schemaVersion) {
     return response;
   } catch (error) {
     console.error(`Error getting schema: ${error.message}`);
+    throw error;
+  }
+}
+
+export function revokeCredential(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revoke`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      credential_exchange_id: credentialExchangeId,
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function revokeCredentialAutoPublish(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revoke`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      credential_exchange_id: credentialExchangeId,
+      auto_publish_on_ledger: true,
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function publishRevocation(issuerAccessToken) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/publish-revocations`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const requestBody = {
+      revocation_registry_credential_map: {}
+    };
+    const response = http.post(url, JSON.stringify(requestBody), params);
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      console.error(`Response body: ${response.body}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error revoking credential: ${error.message}`);
+    throw error;
+  }
+}
+
+export function checkRevoked(issuerAccessToken, credentialExchangeId) {
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revocation/record?credential_exchange_id=${credentialExchangeId}`;
+  const params = {
+    headers: {
+      "x-api-key": issuerAccessToken,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = http.get(url, params);
+    return response;
+  } catch (error) {
+    console.error(`Error checking if credential is revoked: ${error.message}`);
     throw error;
   }
 }

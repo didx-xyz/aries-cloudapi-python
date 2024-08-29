@@ -283,7 +283,7 @@ class WebhooksRedisService(RedisService):
                 next_cursor, keys = self.redis.scan(
                     cursor=cursor,
                     match=f"{self.cloudapi_redis_prefix}:*",
-                    count=10000,
+                    count=5000,
                     target_nodes=RedisCluster.PRIMARIES,
                 )
                 if keys:

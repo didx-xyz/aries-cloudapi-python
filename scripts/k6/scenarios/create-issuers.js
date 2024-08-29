@@ -39,6 +39,7 @@ export const options = {
     "http_req_duration{scenario:default}": ["max>=0"],
     "http_reqs{scenario:default}": ["count >= 0"],
     "iteration_duration{scenario:default}": ["max>=0"],
+    checks: ["rate==1"],
   },
   tags: {
     test_run_id: "phased-issuance",
@@ -121,26 +122,4 @@ export default function (data) {
   mainIterationDuration.add(duration);
   testFunctionReqs.add(1);
   // sleep(1);
-}
-
-export function teardown(data) {
-  const bearerToken = data.bearerToken;
-
-  // // Delete issuer tenants
-  if (__ENV.SKIP_DELETE_ISSUERS !== "true") {
-    for (const wallet of wallets) {
-      const walletId = getWalletIdByWalletName(bearerToken, wallet.walletName);
-      const deleteIssuerResponse = deleteTenant(bearerToken, walletId);
-      check(deleteIssuerResponse, {
-        "Delete Issuer Tenant Response status code is 200": (r) => {
-          if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`);
-            return false;
-          }
-          // console.log(`Deleted issuer tenant ${walletId} successfully.`);
-          return true;
-        },
-      });
-    }
-  }
 }

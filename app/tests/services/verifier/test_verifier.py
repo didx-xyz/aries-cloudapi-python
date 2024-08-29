@@ -2,12 +2,15 @@ from unittest.mock import AsyncMock
 
 import pytest
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
+from fastapi.testclient import TestClient
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions.cloudapi_exception import CloudApiException
+from app.main import app
+from app.routes.verifier import acapy_auth_from_header
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
@@ -542,3 +545,35 @@ async def test_get_credentials_by_proof_id(
         count="100",
         start="0",
     )
+
+
+client = TestClient(app)
+
+
+@pytest.mark.anyio
+async def test_get_credentials_by_proof_id_bad_limit():
+    def override_auth():
+        return "mocked_auth"
+
+    app.dependency_overrides[acapy_auth_from_header] = override_auth
+    try:
+        response = client.get(
+            "/v1/verifier/proofs/v2-abcd/credentials",
+            params={"limit": 10001, "offset": 0},
+            headers={"x-api-key": "mocked_auth"},
+        )
+        assert response.status_code == 422
+        assert response.json() == {
+            "detail": [
+                {
+                    "type": "less_than_equal",
+                    "loc": ["query", "limit"],
+                    "msg": "Input should be less than or equal to 10000",
+                    "input": "10001",
+                    "ctx": {"le": 10000
+                    },
+                }
+            ]
+        }
+    finally:
+        app.dependency_overrides.clear()

@@ -204,7 +204,7 @@ async def publish_pending_revocations(
         )
         return
 
-    endorse_transaction_id = result.txn[0].transaction_id
+    endorse_transaction_id = [txn.transaction_id for txn in result.txn]
     bound_logger.debug(
         "Successfully published pending revocations. Endorser transaction id: {}.",
         endorse_transaction_id,

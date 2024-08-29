@@ -121,7 +121,7 @@ class Issuer(ABC):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[str] = "id",
-        descending: bool = False,
+        descending: bool = True,
         connection_id: Optional[str] = None,
         role: Optional[str] = None,
         state: Optional[str] = None,
@@ -141,7 +141,7 @@ class Issuer(ABC):
         order_by: Optional[str]
             The field by which to order the results. Default is "id".
         descending: bool
-            If True, the results are sorted in descending order. Default is False (ascending order).
+            If True, the results are sorted in descending order. Default is True (descending order).
         connection_id: Optional[str]
             Filter by the connection ID associated with the credential records.
         role: Optional[str]

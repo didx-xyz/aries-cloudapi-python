@@ -202,7 +202,7 @@ class IssuerV2(Issuer):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[str] = "id",
-        descending: bool = False,
+        descending: bool = True,
         connection_id: Optional[str] = None,
         role: Optional[str] = None,
         state: Optional[str] = None,

@@ -204,7 +204,7 @@ class VerifierV2(Verifier):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[str] = "id",
-        descending: bool = False,
+        descending: bool = True,
         connection_id: str = None,
         role: str = None,
         state: str = None,

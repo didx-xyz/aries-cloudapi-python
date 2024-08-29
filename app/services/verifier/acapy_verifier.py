@@ -111,7 +111,7 @@ class Verifier(ABC):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[str] = "id",
-        descending: bool = False,
+        descending: bool = True,
         connection_id: str = None,
         role: str = None,
         state: str = None,
@@ -131,7 +131,7 @@ class Verifier(ABC):
         order_by: Optional[str]
             The field by which to order the results. Default is "id".
         descending: bool
-            If True, the results are sorted in descending order. Default is False (ascending order).
+            If True, the results are sorted in descending order. Default is True (descending order).
         connection_id: Optional[str]
             Filter by the connection ID associated with the proof records.
         role: Optional[str]

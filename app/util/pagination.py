@@ -8,7 +8,7 @@ order_by_query_parameter = Query(
     "id", description="The column to order by", include_in_schema=False
 )
 descending_query_parameter = Query(
-    False,
+    True,
     description=(
         "Whether to return results in descending order. "
         "Results are ordered by record created time."

@@ -485,8 +485,8 @@ async def delete_proof(
 async def get_credentials_by_proof_id(
     proof_id: str,
     referent: Optional[str] = None,
-    limit: Optional[int] = Query(default=100, ge=0, le=10000),
-    offset: Optional[int] = Query(default=0, ge=0),
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """

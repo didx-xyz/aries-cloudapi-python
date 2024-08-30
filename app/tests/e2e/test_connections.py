@@ -276,14 +276,54 @@ async def test_get_connections_paginated(
                 )
 
                 connections = response.json()
-                if len(connections) != min(limit, num_connections_to_test):
+                expected_num = min(limit, num_connections_to_test)
+                if len(connections) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
             assert (
                 not retry
-            ), f"Expected {limit} records, got {len(connections)}: {connections}"
+            ), f"Expected {expected_num} records, got {len(connections)}: {connections}"
+
+        # Test ascending order
+        response = await alice_member_client.get(
+            BASE_PATH,
+            params={
+                "alias": test_alias,
+                "limit": num_connections_to_test,
+                "descending": False,
+            },
+        )
+        connections_asc = response.json()
+        assert len(connections_asc) == num_connections_to_test
+
+        # Verify that the connections are in ascending order based on created_at
+        assert connections_asc == sorted(
+            connections_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            BASE_PATH,
+            params={
+                "alias": test_alias,
+                "limit": num_connections_to_test,
+                "descending": True,
+            },
+        )
+        connections_desc = response.json()
+        assert len(connections_desc) == num_connections_to_test
+
+        # Verify that the connections are in descending order based on created_at
+        assert connections_desc == sorted(
+            connections_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert connections_desc == sorted(
+            connections_asc, key=lambda x: x["created_at"], reverse=True
+        )
 
         # Test offset greater than number of records
         response = await alice_member_client.get(
@@ -298,24 +338,23 @@ async def test_get_connections_paginated(
         assert len(connections) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_connections = []
-        # for offset in range(num_connections_to_test):
-        #     response = await alice_member_client.get(
-        #         BASE_PATH,
-        #         params={
-        #             "alias": test_alias,
-        #             "limit": 1,
-        #             "offset": offset,
-        #         },
-        #     )
+        prev_connections = []
+        for offset in range(num_connections_to_test):
+            response = await alice_member_client.get(
+                BASE_PATH,
+                params={
+                    "alias": test_alias,
+                    "limit": 1,
+                    "offset": offset,
+                },
+            )
 
-        #     connections = response.json()
-        #     assert len(connections) == 1
+            connections = response.json()
+            assert len(connections) == 1
 
-        #     record = connections[0]
-        #     assert record not in prev_connections
-        #     prev_connections += (record,)
+            record = connections[0]
+            assert record not in prev_connections
+            prev_connections += (record,)
 
         # Test invalid limit and offset values
         invalid_params = [

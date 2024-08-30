@@ -120,19 +120,41 @@ class Issuer(ABC):
         controller: AcaPyClient,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        order_by: Optional[str] = "id",
+        descending: bool = True,
         connection_id: Optional[str] = None,
         role: Optional[str] = None,
         state: Optional[str] = None,
         thread_id: Optional[str] = None,
     ) -> List[CredentialExchange]:
-        """Get list of credential records.
+        """
+        Get a list of credential records.
 
         Parameters:
         -----------
         controller: AcaPyClient
-            The aries_cloudcontroller object
-        connection_id:
-            Filter credential record by connection id
+            The aries_cloudcontroller object used to interact with the ACA-Py API.
+        limit: Optional[int]
+            The maximum number of records to return. If not specified, returns maximum possible (10'000).
+        offset: Optional[int]
+            The starting index from where to return records. Useful for pagination.
+        order_by: Optional[str]
+            The field by which to order the results. Default is "id".
+        descending: bool
+            If True, the results are sorted in descending order. Default is True (descending order).
+        connection_id: Optional[str]
+            Filter by the connection ID associated with the credential records.
+        role: Optional[str]
+            Filter by the role of the agent in the credential exchange (e.g., "issuer", "holder").
+        state: Optional[str]
+            Filter by the state of the credential exchange (e.g., "offer_sent", "credential_issued").
+        thread_id: Optional[str]
+            Filter by the thread ID associated with the credential exchange.
+
+        Returns:
+        --------
+        List[CredentialExchange]
+            A list of credential exchange records.
         """
 
     @classmethod

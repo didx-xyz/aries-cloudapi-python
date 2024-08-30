@@ -35,6 +35,8 @@ connections_response = ConnectionList(
         {"their_did": "their_did"},
         {"alias": "test_alias", "their_public_did": "their_public_did", "limit": 10},
         {"limit": 5, "offset": 5},
+        {"descending": False},
+        {"descending": True},
     ],
 )
 async def test_get_connections_success(params):
@@ -58,6 +60,10 @@ async def test_get_connections_success(params):
             params["limit"] = 100
         if "offset" not in params:
             params["offset"] = 0
+        if "descending" not in params:
+            params["descending"] = True
+        if "order_by" not in params:
+            params["order_by"] = "id"
 
         response = await get_connections(auth="mocked_auth", **params)
 
@@ -66,6 +72,8 @@ async def test_get_connections_success(params):
         expected_params = {
             "limit": params.get("limit") or 100,
             "offset": params.get("offset") or 0,
+            "order_by": params.get("order_by") or "id",
+            "descending": params.get("descending", True),
             "alias": params.get("alias"),
             "connection_protocol": params.get("connection_protocol"),
             "invitation_key": params.get("invitation_key"),

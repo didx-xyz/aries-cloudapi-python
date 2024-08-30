@@ -18,6 +18,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 )
 async def test_get_credential_exchange_records_paginated(
     faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
@@ -25,6 +26,7 @@ async def test_get_credential_exchange_records_paginated(
     test_attributes = {"name": "Alice", "age": "44"}
 
     faber_cred_ex_ids = []
+    alice_cred_ex_records = []
     try:
         # Create multiple credential exchanges
         for i in range(num_credentials_to_test):
@@ -51,28 +53,68 @@ async def test_get_credential_exchange_records_paginated(
             num_tries = 0
             retry = True
             while retry and num_tries < 5:  # Handle case where record doesn't exist yet
-                response = await faber_client.get(
+                response = await alice_member_client.get(
                     CREDENTIALS_BASE_PATH,
                     params={
-                        "state": "offer-sent",
+                        "state": "offer-received",
                         "limit": limit,
                     },
                 )
                 credentials = response.json()
-                if len(credentials) != min(limit, num_credentials_to_test):
+                expected_num = min(limit, num_credentials_to_test)
+                if len(credentials) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
             assert (
                 not retry
-            ), f"Expected {limit} records, got {len(credentials)}: {credentials}"
+            ), f"Expected {expected_num} records, got {len(credentials)}: {credentials}"
 
-        # Test offset greater than number of records
-        response = await faber_client.get(
+        # Test ascending order
+        response = await alice_member_client.get(
             CREDENTIALS_BASE_PATH,
             params={
-                "state": "offer-sent",
+                "state": "offer-received",
+                "limit": num_credentials_to_test,
+                "descending": False,
+            },
+        )
+        credentials_asc = response.json()
+        assert len(credentials_asc) == num_credentials_to_test
+
+        # Verify that the credentials are in ascending order based on created_at
+        assert credentials_asc == sorted(
+            credentials_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH,
+            params={
+                "state": "offer-received",
+                "limit": num_credentials_to_test,
+                "descending": True,
+            },
+        )
+        credentials_desc = response.json()
+        assert len(credentials_desc) == num_credentials_to_test
+
+        # Verify that the credentials are in descending order based on created_at
+        assert credentials_desc == sorted(
+            credentials_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert credentials_desc == sorted(
+            credentials_asc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Test offset greater than number of records
+        response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH,
+            params={
+                "state": "offer-received",
                 "limit": 1,
                 "offset": num_credentials_to_test,
             },
@@ -81,24 +123,22 @@ async def test_get_credential_exchange_records_paginated(
         assert len(credentials) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_credentials = []
-        # for offset in range(num_credentials_to_test):
-        #     response = await faber_client.get(
-        #         CREDENTIALS_BASE_PATH,
-        #         params={
-        #             "state": "offer-sent",
-        #             "limit": 1,
-        #             "offset": offset,
-        #         },
-        #     )
+        for offset in range(num_credentials_to_test):
+            response = await alice_member_client.get(
+                CREDENTIALS_BASE_PATH,
+                params={
+                    "state": "offer-received",
+                    "limit": 1,
+                    "offset": offset,
+                },
+            )
 
-        #     credentials = response.json()
-        #     assert len(credentials) == 1
+            credentials = response.json()
+            assert len(credentials) == 1
 
-        #     record = credentials[0]
-        #     assert record not in prev_credentials
-        #     prev_credentials.append(record)
+            record = credentials[0]
+            assert record not in alice_cred_ex_records
+            alice_cred_ex_records.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [
@@ -114,6 +154,9 @@ async def test_get_credential_exchange_records_paginated(
             assert exc.value.status_code == 422
 
     finally:
-        # Clean up created credentials
+        # Clean up created credential exchange records
         for cred_ex_id in faber_cred_ex_ids:
             await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")
+        for alice_record in alice_cred_ex_records:
+            cred_ex_id = alice_record["credential_exchange_id"]
+            await alice_member_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")

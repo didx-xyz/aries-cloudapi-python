@@ -9,7 +9,7 @@ package-mode = false
 python = "^3.12"
 
 aiohttp = "~3.10.5"
-aries-cloudcontroller = "==1.0.0"
+aries-cloudcontroller = "==1.0.0b0"
 base58 = "~2.1.1"
 fastapi = "~0.112.0"
 fastapi_websocket_pubsub = "~0.3.8"

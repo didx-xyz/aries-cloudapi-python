@@ -73,6 +73,8 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
     when(mock_agent_controller.issue_credential_v1_0).get_records(
         limit=100,
         offset=0,
+        order_by="id",
+        descending=True,
         connection_id=record.connection_id,
         role=record.role,
         state=record.state,
@@ -83,6 +85,8 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
         mock_agent_controller,
         limit=100,
         offset=0,
+        order_by="id",
+        descending=True,
         connection_id=record.connection_id,
         role=record.role,
         state=record.state,

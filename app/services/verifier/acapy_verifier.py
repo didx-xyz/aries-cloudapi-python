@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 
@@ -106,20 +106,45 @@ class Verifier(ABC):
     @classmethod
     @abstractmethod
     async def get_proof_records(
-        cls, controller: AcaPyClient
+        cls,
+        controller: AcaPyClient,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_by: Optional[str] = "id",
+        descending: bool = True,
+        connection_id: str = None,
+        role: str = None,
+        state: str = None,
+        thread_id: str = None,
     ) -> List[PresentationExchange]:
         """
-        Get all proof records
+        Get all proof records.
 
         Parameters:
         -----------
         controller: AcaPyClient
-            The aries_cloudcontroller object
+            The aries_cloudcontroller object used to interact with the ACA-Py API.
+        limit: Optional[int]
+            The maximum number of records to return. If not specified, returns maximum possible (10'000).
+        offset: Optional[int]
+            The starting index from where to return records. Useful for pagination.
+        order_by: Optional[str]
+            The field by which to order the results. Default is "id".
+        descending: bool
+            If True, the results are sorted in descending order. Default is True (descending order).
+        connection_id: Optional[str]
+            Filter by the connection ID associated with the proof records.
+        role: Optional[str]
+            Filter by the role of the agent in the proof exchange (e.g., "prover", "verifier").
+        state: Optional[str]
+            Filter by the state of the proof exchange (e.g., "request_sent", "presentation_acked").
+        thread_id: Optional[str]
+            Filter by the thread ID associated with the proof exchange.
 
         Returns:
         --------
-        [PresentationExchange]
-            A list of presentation exchange records
+        List[PresentationExchange]
+            A list of presentation exchange records.
         """
 
     @classmethod

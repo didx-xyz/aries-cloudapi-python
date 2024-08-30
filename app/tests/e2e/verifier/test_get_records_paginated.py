@@ -20,20 +20,20 @@ VERIFIER_BASE_PATH = router.prefix
 )
 async def test_get_presentation_exchange_records_paginated(
     acme_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     num_presentation_requests_to_test = 5
 
     acme_proof_ids = []
-    acme_connection_id = acme_and_alice_connection.acme_connection_id
-
+    alice_proof_records = []
     try:
         # Create multiple presentation requests
         for _ in range(num_presentation_requests_to_test):
             request_body = {
                 "save_exchange_record": True,
-                "connection_id": acme_connection_id,
+                "connection_id": acme_and_alice_connection.acme_connection_id,
                 "protocol_version": "v2",
                 "indy_proof_request": sample_indy_proof_request(
                     restrictions=[{"cred_def_id": credential_definition_id}]
@@ -47,26 +47,68 @@ async def test_get_presentation_exchange_records_paginated(
             num_tries = 0
             retry = True
             while retry and num_tries < 5:  # Handle case where record doesn't exist yet
-                response = await acme_client.get(
+                response = await alice_member_client.get(
                     f"{VERIFIER_BASE_PATH}/proofs",
                     params={
-                        "state": "request-sent",
+                        "state": "request-received",
                         "limit": limit,
                     },
                 )
                 proofs = response.json()
-                if len(proofs) != min(limit, num_presentation_requests_to_test):
+                expected_num = min(limit, num_presentation_requests_to_test)
+                if len(proofs) != expected_num:
                     num_tries += 1
                     await asyncio.sleep(0.2)
                 else:
                     retry = False
-            assert not retry, f"Expected {limit} records, got {len(proofs)}: {proofs}"
+            assert (
+                not retry
+            ), f"Expected {expected_num} records, got {len(proofs)}: {proofs}"
 
-        # Test offset greater than number of records
-        response = await acme_client.get(
+        # Test ascending order
+        response = await alice_member_client.get(
             f"{VERIFIER_BASE_PATH}/proofs",
             params={
-                "state": "request-sent",
+                "state": "request-received",
+                "limit": num_presentation_requests_to_test,
+                "descending": False,
+            },
+        )
+        proofs_asc = response.json()
+        assert len(proofs_asc) == num_presentation_requests_to_test
+
+        # Verify that the proofs are in ascending order based on created_at
+        assert proofs_asc == sorted(
+            proofs_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs",
+            params={
+                "state": "request-received",
+                "limit": num_presentation_requests_to_test,
+                "descending": True,
+            },
+        )
+        proofs_desc = response.json()
+        assert len(proofs_desc) == num_presentation_requests_to_test
+
+        # Verify that the proofs are in descending order based on created_at
+        assert proofs_desc == sorted(
+            proofs_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert proofs_desc == sorted(
+            proofs_asc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Test offset greater than number of records
+        response = await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs",
+            params={
+                "state": "request-received",
                 "limit": 1,
                 "offset": num_presentation_requests_to_test,
             },
@@ -75,24 +117,22 @@ async def test_get_presentation_exchange_records_paginated(
         assert len(proofs) == 0
 
         # Test fetching unique records with pagination
-        # TODO: Skipping for now; we require ACA-Py / Askar record ordering to guarantee unique records across pages
-        # prev_proofs = []
-        # for offset in range(num_presentation_requests_to_test):
-        #     response = await acme_client.get(
-        #         f"{VERIFIER_BASE_PATH}/proofs",
-        #         params={
-        #             "state": "request-sent",
-        #             "limit": 1,
-        #             "offset": offset,
-        #         },
-        #     )
+        for offset in range(num_presentation_requests_to_test):
+            response = await alice_member_client.get(
+                f"{VERIFIER_BASE_PATH}/proofs",
+                params={
+                    "state": "request-received",
+                    "limit": 1,
+                    "offset": offset,
+                },
+            )
 
-        #     proofs = response.json()
-        #     assert len(proofs) == 1
+            proofs = response.json()
+            assert len(proofs) == 1
 
-        #     record = proofs[0]
-        #     assert record not in prev_proofs
-        #     prev_proofs.append(record)
+            record = proofs[0]
+            assert record not in alice_proof_records
+            alice_proof_records.append(record)
 
         # Test invalid limit and offset values
         invalid_params = [
@@ -111,3 +151,6 @@ async def test_get_presentation_exchange_records_paginated(
         # Clean up created presentation requests
         for proof_id in acme_proof_ids:
             await acme_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")
+        for alice_proof_record in alice_proof_records:
+            proof_id = alice_proof_record["proof_id"]
+            await alice_member_client.delete(f"{VERIFIER_BASE_PATH}/proofs/{proof_id}")

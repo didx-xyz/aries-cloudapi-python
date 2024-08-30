@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 import pytest
 from aries_cloudcontroller import DID, AcaPyClient

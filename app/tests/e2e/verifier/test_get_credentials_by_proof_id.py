@@ -53,8 +53,7 @@ async def test_limit_and_offset(
     alice_proof_id = alice_payload["proof_id"]
 
     try:
-
-        for limit, offset, length in [
+        for limit, offset, expected_length in [
             [1, 0, 1],
             [3, 0, 3],
             [4, 0, 3],
@@ -64,11 +63,12 @@ async def test_limit_and_offset(
         ]:
             requested_credentials = (
                 await alice_member_client.get(
-                    f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials?limit={limit}&offset={offset}"
+                    f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials",
+                    params={"limit": limit, "offset": offset},
                 )
             ).json()
 
-            assert len(requested_credentials) == length
+            assert len(requested_credentials) == expected_length
 
     finally:
         await alice_member_client.delete(

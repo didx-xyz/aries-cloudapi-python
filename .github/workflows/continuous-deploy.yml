@@ -363,8 +363,8 @@ jobs:
         id: check_branch
         run: |
           DEFAULT_BRANCH=master
-
-          if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
+          SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//%2F/g')
+          if gh api "repos/didx-xyz/charts/git/ref/heads/$SANITIZED_BRANCH_NAME" &> /dev/null; then
             echo "branch_exists=true" >> $GITHUB_ENV
             echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
           else
@@ -406,7 +406,7 @@ jobs:
           helmfile-args: |
             destroy \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
@@ -465,7 +465,7 @@ jobs:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl \
               --state-values-set image.tag=${{ env.IMAGE_TAG }} \
               --state-values-set image.registry=ghcr.io/${{ github.repository_owner }}
           helm-plugins: |
@@ -482,7 +482,7 @@ jobs:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl \
               --state-values-set image.tag=${{ env.IMAGE_TAG }} \
               --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
               --state-values-set rdsProxyEnabled=true

@@ -1,11 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from aries_cloudcontroller import (
-    LDProofVCDetail,
-    TransactionRecord,
-    TxnOrPublishRevocationsResult,
-)
+from aries_cloudcontroller import LDProofVCDetail, TxnOrPublishRevocationsResult
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError

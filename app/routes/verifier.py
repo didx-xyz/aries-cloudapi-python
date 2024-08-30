@@ -496,6 +496,9 @@ async def delete_proof(
 )
 async def get_credentials_by_proof_id(
     proof_id: str,
+    referent: Optional[str] = None,
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """
@@ -503,12 +506,19 @@ async def get_credentials_by_proof_id(
     ---
     This endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.
 
-    The `presentation_referents` field indicates which of the fields in the proof request that credential satisfies.
+    The `presentation_referents` field (in the response) indicates which of the fields
+    in the proof request that credential satisfies.
 
     Parameters:
     ---
         proof_id: str
             The relevant proof exchange ID for the prover
+        referent: Optional str
+            The presentation_referent of the proof to match, comma separated str of presentation_referents
+        limit: Optional int
+            The number of credentials to fetch
+        offset: Optional int
+            The index to start fetching credentials from
 
     Returns:
     ---
@@ -524,7 +534,11 @@ async def get_credentials_by_proof_id(
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching credentials for request")
             result = await verifier.get_credentials_by_proof_id(
-                controller=aries_controller, proof_id=proof_id
+                controller=aries_controller,
+                proof_id=proof_id,
+                referent=referent,
+                count=str(limit),
+                start=str(offset),
             )
     except CloudApiException as e:
         bound_logger.info("Could not get matching credentials: {}.", e)

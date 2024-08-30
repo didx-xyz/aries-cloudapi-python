@@ -1,13 +1,16 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
+from fastapi.testclient import TestClient
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions.cloudapi_exception import CloudApiException
+from app.main import app
+from app.routes.verifier import acapy_auth_from_header, get_credentials_by_proof_id
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
@@ -503,30 +506,107 @@ async def test_get_credentials_by_proof_id(
     )
     # V1
     when(VerifierV1).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v1-abcd"
+        controller=mock_agent_controller,
+        proof_id="v1-abcd",
+        referent=None,
+        count="100",
+        start="0",
     ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_by_proof_id(
         proof_id="v1-abcd",
         auth=mock_tenant_auth,
+        referent=None,
+        limit=100,
+        offset=0,
     )
 
     assert result == [cred_precis]
     verify(VerifierV1).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v1-abcd"
+        controller=mock_agent_controller,
+        proof_id="v1-abcd",
+        referent=None,
+        count="100",
+        start="0",
     )
 
     # V2
     when(VerifierV2).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v2-abcd"
+        controller=mock_agent_controller,
+        proof_id="v2-abcd",
+        referent=None,
+        count="100",
+        start="0",
     ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_by_proof_id(
         proof_id="v2-abcd",
         auth=mock_tenant_auth,
+        referent=None,
+        limit=100,
+        offset=0,
     )
 
     assert result == [cred_precis]
     verify(VerifierV2).get_credentials_by_proof_id(
-        controller=mock_agent_controller, proof_id="v2-abcd"
+        controller=mock_agent_controller,
+        proof_id="v2-abcd",
+        referent=None,
+        count="100",
+        start="0",
     )
+
+
+@pytest.mark.anyio
+async def test_get_credentials_by_proof_id_bad_limit():
+    client = TestClient(app)
+
+    def override_auth():
+        return "mocked_auth"
+
+    app.dependency_overrides[acapy_auth_from_header] = override_auth
+    try:
+        response = client.get(
+            "/v1/verifier/proofs/v2-abcd/credentials",
+            params={"limit": 10001, "offset": 0},
+            headers={"x-api-key": "mocked_auth"},
+        )
+        assert response.status_code == 422
+        assert response.json() == {
+            "detail": [
+                {
+                    "type": "less_than_equal",
+                    "loc": ["query", "limit"],
+                    "msg": "Input should be less than or equal to 10000",
+                    "input": "10001",
+                    "ctx": {"le": 10000},
+                }
+            ]
+        }
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_get_credentials_by_proof_id_with_limit_offset():
+    mock_aries_controller = AsyncMock()
+
+    with patch("app.routes.verifier.client_from_auth") as mock_client_from_auth:
+        mock_client_from_auth.return_value.__aenter__.return_value = (
+            mock_aries_controller
+        )
+
+        await get_credentials_by_proof_id(
+            proof_id="v2-abcd",
+            auth="mocked_auth",
+            referent=None,
+            limit=2,
+            offset=1,
+        )
+
+        mock_aries_controller.present_proof_v2_0.get_matching_credentials.assert_called_once_with(
+            pres_ex_id="abcd",
+            referent=None,
+            count="2",
+            start="1",
+        )

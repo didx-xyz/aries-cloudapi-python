@@ -407,13 +407,13 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "certifi"
-version = "2024.7.4"
+version = "2024.8.30"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.7.4-py3-none-any.whl", hash = "sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90"},
-    {file = "certifi-2024.7.4.tar.gz", hash = "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b"},
+    {file = "certifi-2024.8.30-py3-none-any.whl", hash = "sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8"},
+    {file = "certifi-2024.8.30.tar.gz", hash = "sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9"},
 ]
 
 [[package]]
@@ -704,13 +704,13 @@ websockets = ">=10.3"
 
 [[package]]
 name = "fastapi-websocket-rpc"
-version = "0.1.26"
+version = "0.1.27"
 description = "A fast and durable bidirectional JSON RPC channel over Websockets and FastApi."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "fastapi_websocket_rpc-0.1.26-py3-none-any.whl", hash = "sha256:6c490bf608b1c74e3cff1993a28c69ff44cf28a19f085eaddaad03d0030614e4"},
-    {file = "fastapi_websocket_rpc-0.1.26.tar.gz", hash = "sha256:725990d437ec0f56170327ec9a4cdc357f6f9afee7e3a1e51507c40222730ec5"},
+    {file = "fastapi_websocket_rpc-0.1.27-py3-none-any.whl", hash = "sha256:b3786cbb76128a22ec2ffde19cac263569fc507974f6651493b8548c4288cc63"},
+    {file = "fastapi_websocket_rpc-0.1.27.tar.gz", hash = "sha256:62463f0d6b42b9b3afde124e25dac51d5fd3ddc7cf59d7a49c5b9a5e87a36ab5"},
 ]
 
 [package.dependencies]

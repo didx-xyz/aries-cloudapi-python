@@ -71,6 +71,45 @@ async def test_get_credential_exchange_records_paginated(
                 not retry
             ), f"Expected {expected_num} records, got {len(credentials)}: {credentials}"
 
+        # Test ascending order
+        response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH,
+            params={
+                "state": "offer-received",
+                "limit": num_credentials_to_test,
+                "descending": False,
+            },
+        )
+        credentials_asc = response.json()
+        assert len(credentials_asc) == num_credentials_to_test
+
+        # Verify that the credentials are in ascending order based on created_at
+        assert credentials_asc == sorted(
+            credentials_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH,
+            params={
+                "state": "offer-received",
+                "limit": num_credentials_to_test,
+                "descending": True,
+            },
+        )
+        credentials_desc = response.json()
+        assert len(credentials_desc) == num_credentials_to_test
+
+        # Verify that the credentials are in descending order based on created_at
+        assert credentials_desc == sorted(
+            credentials_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert credentials_desc == sorted(
+            credentials_asc, key=lambda x: x["created_at"], reverse=True
+        )
+
         # Test offset greater than number of records
         response = await alice_member_client.get(
             CREDENTIALS_BASE_PATH,

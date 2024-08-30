@@ -286,6 +286,45 @@ async def test_get_connections_paginated(
                 not retry
             ), f"Expected {expected_num} records, got {len(connections)}: {connections}"
 
+        # Test ascending order
+        response = await alice_member_client.get(
+            BASE_PATH,
+            params={
+                "alias": test_alias,
+                "limit": num_connections_to_test,
+                "descending": False,
+            },
+        )
+        connections_asc = response.json()
+        assert len(connections_asc) == num_connections_to_test
+
+        # Verify that the connections are in ascending order based on created_at
+        assert connections_asc == sorted(
+            connections_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            BASE_PATH,
+            params={
+                "alias": test_alias,
+                "limit": num_connections_to_test,
+                "descending": True,
+            },
+        )
+        connections_desc = response.json()
+        assert len(connections_desc) == num_connections_to_test
+
+        # Verify that the connections are in descending order based on created_at
+        assert connections_desc == sorted(
+            connections_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert connections_desc == sorted(
+            connections_asc, key=lambda x: x["created_at"], reverse=True
+        )
+
         # Test offset greater than number of records
         response = await alice_member_client.get(
             BASE_PATH,

@@ -904,10 +904,48 @@ async def test_get_wallets_paginated(tenant_admin_client: RichAsyncClient):
         # Test different limits
         for limit in range(1, num_wallets_to_test + 2):
             response = await tenant_admin_client.get(
-                f"{TENANTS_BASE_PATH}?limit={limit}&group_id={test_group}"
+                TENANTS_BASE_PATH,
+                params={"limit": limit, "group_id": test_group},
             )
             wallets = response.json()
             assert len(wallets) == min(limit, num_wallets_to_test)
+
+        # Test ascending order
+        response = await tenant_admin_client.get(
+            TENANTS_BASE_PATH,
+            params={
+                "limit": num_wallets_to_test,
+                "group_id": test_group,
+                "descending": False,
+            },
+        )
+        wallets_asc = response.json()
+        assert len(wallets_asc) == num_wallets_to_test
+
+        # Verify that the wallets are in ascending order based on created_at
+        assert wallets_asc == sorted(wallets_asc, key=lambda x: x["created_at"])
+
+        # Test descending order
+        response = await tenant_admin_client.get(
+            TENANTS_BASE_PATH,
+            params={
+                "limit": num_wallets_to_test,
+                "group_id": test_group,
+                "descending": True,
+            },
+        )
+        wallets_desc = response.json()
+        assert len(wallets_desc) == num_wallets_to_test
+
+        # Verify that the wallets are in descending order based on created_at
+        assert wallets_desc == sorted(
+            wallets_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert wallets_desc == sorted(
+            wallets_asc, key=lambda x: x["created_at"], reverse=True
+        )
 
         # Test offset greater than number of records
         response = await tenant_admin_client.get(
@@ -921,7 +959,8 @@ async def test_get_wallets_paginated(tenant_admin_client: RichAsyncClient):
         prev_wallets = []
         for offset in range(num_wallets_to_test):
             response = await tenant_admin_client.get(
-                f"{TENANTS_BASE_PATH}?limit=1&offset={offset}&group_id={test_group}"
+                TENANTS_BASE_PATH,
+                params={"limit": 1, "offset": offset, "group_id": test_group},
             )
 
             wallets = response.json()

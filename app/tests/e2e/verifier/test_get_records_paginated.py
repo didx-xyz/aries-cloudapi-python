@@ -65,6 +65,45 @@ async def test_get_presentation_exchange_records_paginated(
                 not retry
             ), f"Expected {expected_num} records, got {len(proofs)}: {proofs}"
 
+        # Test ascending order
+        response = await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs",
+            params={
+                "state": "request-received",
+                "limit": num_presentation_requests_to_test,
+                "descending": False,
+            },
+        )
+        proofs_asc = response.json()
+        assert len(proofs_asc) == num_presentation_requests_to_test
+
+        # Verify that the proofs are in ascending order based on created_at
+        assert proofs_asc == sorted(
+            proofs_asc, key=lambda x: x["created_at"], reverse=False
+        )
+
+        # Test descending order
+        response = await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs",
+            params={
+                "state": "request-received",
+                "limit": num_presentation_requests_to_test,
+                "descending": True,
+            },
+        )
+        proofs_desc = response.json()
+        assert len(proofs_desc) == num_presentation_requests_to_test
+
+        # Verify that the proofs are in descending order based on created_at
+        assert proofs_desc == sorted(
+            proofs_desc, key=lambda x: x["created_at"], reverse=True
+        )
+
+        # Compare ascending and descending order results
+        assert proofs_desc == sorted(
+            proofs_asc, key=lambda x: x["created_at"], reverse=True
+        )
+
         # Test offset greater than number of records
         response = await alice_member_client.get(
             f"{VERIFIER_BASE_PATH}/proofs",

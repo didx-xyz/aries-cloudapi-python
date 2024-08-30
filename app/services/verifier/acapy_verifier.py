@@ -125,7 +125,7 @@ class Verifier(ABC):
         controller: AcaPyClient
             The aries_cloudcontroller object used to interact with the ACA-Py API.
         limit: Optional[int]
-            The maximum number of records to return. If not specified, returns all available records.
+            The maximum number of records to return. If not specified, returns maximum possible (10'000).
         offset: Optional[int]
             The starting index from where to return records. Useful for pagination.
         order_by: Optional[str]

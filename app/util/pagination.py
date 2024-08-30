@@ -3,7 +3,7 @@
 from fastapi import Query
 
 limit_query_parameter = Query(
-    1000, description="Number of results to return", ge=0, le=10000
+    1000, description="Number of results to return", ge=1, le=10000
 )
 offset_query_parameter = Query(0, description="Offset for pagination", ge=0)
 order_by_query_parameter = Query(

@@ -4,6 +4,7 @@ import pytest
 
 from app.routes.verifier import router
 from app.tests.util.connections import AcmeAliceConnect
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
@@ -13,6 +14,10 @@ VERIFIER_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Temporarily skip; existing tests on dev don't clean up old records yet",
+)
 async def test_limit_and_offset(
     issue_alice_creds: List[CredentialExchange],  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,

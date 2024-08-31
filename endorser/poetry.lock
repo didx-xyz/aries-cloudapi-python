@@ -183,13 +183,13 @@ trio = ["trio (>=0.23)"]
 
 [[package]]
 name = "aries-cloudcontroller"
-version = "1.0.0b0"
+version = "1.0.0"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "aries_cloudcontroller-1.0.0b0-py3-none-any.whl", hash = "sha256:6eade79240442cdb973f5c94357ce150bc86c7e0eee731686147e3cfef4f17a1"},
-    {file = "aries_cloudcontroller-1.0.0b0.tar.gz", hash = "sha256:7c33cd0e8b9238067f024a5329d9bbd97ee8830237091c08f7a1eb29badb8d61"},
+    {file = "aries_cloudcontroller-1.0.0-py3-none-any.whl", hash = "sha256:b4ba3e78085ee3648fbe83002b11af44955a7663fdc4f7ae8ccc79031569f738"},
+    {file = "aries_cloudcontroller-1.0.0.tar.gz", hash = "sha256:faa69c128281fbd3317762bd6d2d32d224a9873c3ce6fdc3660d416edebf84d7"},
 ]
 
 [package.dependencies]
@@ -1881,4 +1881,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8395bc3a4cded9198a9e02a6a98d14db0e44115491b4abea5304891b7d6fa6d8"
+content-hash = "8be1c8b8cbafc03490d80c9da16dfe25e0afec3bab1a2e88a2a040d9b60fc8a1"

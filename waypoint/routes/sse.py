@@ -30,3 +30,13 @@ class BadGroupIdException(HTTPException):
         )
 
 
+async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
+    """
+    Check if the client has disconnected
+    """
+    while not stop_event.is_set():
+        if await request.is_disconnected:
+            stop_event.set()
+        await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
+
+

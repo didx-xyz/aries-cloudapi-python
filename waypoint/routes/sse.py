@@ -12,3 +12,11 @@ from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from waypoint.services.dependency_injection.container import Container
 from waypoint.services.nats_service import NatsEventsProcessor
 from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
+
+logger = get_logger(__name__)
+
+router = APIRouter(
+    prefix="/stuff",
+    tags=["waypoint"],
+)
+

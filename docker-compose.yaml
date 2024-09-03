@@ -257,6 +257,29 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+  waypoint-web:
+    image: ${REGISTRY:-local}/waypoint-web:${IMAGE_TAG:-latest}
+    container_name: waypoint-web
+    build:
+      context: .
+      dockerfile: ./dockerfiles/waypoint/Dockerfile
+    ports:
+      - 0.0.0.0:3011:3011
+    volumes:
+      - ./waypoint:/waypoint
+      - ./logs:/logs
+    networks:
+      - governance-multitenant
+      - host
+      - nats
+    depends_on:
+      - governance-endorser
+    # depends_on:
+    #   - nats-1
+    #   - nats-2
+    #   - nats-3
+    env_file:
+      - environments/waypoint/waypoint.env
 
   redis-cluster:
     image: redis:latest

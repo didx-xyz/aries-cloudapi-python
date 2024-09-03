@@ -60,3 +60,27 @@ class NatsEventsProcessor:
         # TODO: Implement
         pass
 
+    async def _subscribe(
+        self, group_id: str, wallet_id: str
+    ) -> JetStreamContext.PullSubscription:
+        try:
+            start_time = math.floor((time.time() - int(NATS_START_TIME)) / 1000)
+            config = ConsumerConfig(
+                deliver_policy="by_start_time",
+                opt_start_time=start_time,
+                inactive_threshold=130,
+            )
+
+            logger.error(
+                f"Subscribing to {NATS_SUBJECT}.{group_id}.{wallet_id} on nats stream {NATS_STREAM} with start time {start_time} and config\n {config}"
+            )
+            subscription = await self.js_context.pull_subscribe(
+                subject=f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
+                stream=NATS_STREAM,
+                config=config,
+            )
+        except Exception as e:
+            logger.error(f"Error subscribing to NATS: {e}")
+            raise e
+
+        return subscription

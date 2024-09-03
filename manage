@@ -58,7 +58,7 @@ EOF
 DEFAULT_CONTAINERS="governance-trust-registry trustregistry-db governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
                     governance-ga-wallets-db governance-ga-agent governance-multitenant-web governance-tenant-web governance-ga-web governance-public-web
                     redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5 redis-node-6 redis-cluster
-                    governance-webhooks-web governance-endorser"
+                    governance-webhooks-web governance-endorser waypoint-web"
 TEST_CONTAINERS="${DEFAULT_CONTAINERS} tests"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:

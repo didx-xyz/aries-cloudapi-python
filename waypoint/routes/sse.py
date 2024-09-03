@@ -40,3 +40,44 @@ async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
         await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
 
 
+async def nats_event_stream_generator(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    wallet_id: str,
+    topic: str,
+    field: str,
+    field_id: str,
+    desired_state: str,
+    group_id: Optional[str],
+    nats_processor: NatsEventsProcessor,
+) -> AsyncGenerator[str, None]:
+    """
+    Generator for NATS events
+    """
+    logger.error("got connection")
+    stop_event = asyncio.Event()
+
+    event_generator_wrapper: EventGeneratorWrapper = (
+        await nats_processor.process_events(
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            stop_event=stop_event,
+            duration=SSE_TIMEOUT,
+        )
+    )
+
+    try:
+        async with event_generator_wrapper as event_generator:
+            background_tasks.add_task(check_disconnect, request, stop_event)
+            async for event in event_generator:
+                if await request.is_disconnected():
+                    stop_event.set()
+                    break
+                payload = dict(event.payload)
+                if payload[field] == field_id and payload["state"] == desired_state:
+                    yield event.model_dump_json()
+                    stop_event.set()
+                    break
+    except asyncio.CancelledError:
+        stop_event.set()

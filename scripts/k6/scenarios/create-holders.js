@@ -59,6 +59,7 @@ const filepath = "output/create-holders.json";
 export function setup() {
   file.writeString(filepath, "");
   const bearerToken = getBearerToken();
+  // eslint-disable-next-line
   return { bearerToken };
 }
 

@@ -6,11 +6,7 @@ import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import {
-  acceptInvitation,
-  createInvitation,
-  waitForSSEEventConnection,
-} from "../libs/functions.js";
+import { acceptInvitation, createInvitation, waitForSSEEventConnection } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 // import bootstrapIssuer from "./bootstrap-issuer.js";
 

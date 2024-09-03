@@ -1,17 +1,14 @@
-import { check } from 'k6';
-import { getBearerToken, getGovernanceBearerToken } from './auth.js';
-import {
-  createCredentialDefinition,
-  getCredentialDefinitionId,
-} from "./functions.js";
+import { check } from "k6";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
+import { getBearerToken, getGovernanceBearerToken } from "./auth.js";
+import { createCredentialDefinition, getCredentialDefinitionId } from "./functions.js";
 
 export function bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion) {
   const bearerToken = getBearerToken();
   const governanceBearerToken = getGovernanceBearerToken();
   const issuers = [];
-  const hack = `${walletName}_0`
+  const hack = `${walletName}_0`;
 
   const issuerData = createIssuerIfNotExists(bearerToken, hack);
   check(issuerData, {

@@ -45,7 +45,7 @@ run_ha_iterations() {
   local deployments="$1"
   local scenario_func="$2"
 
-  for ((i=1; i<=$HA_TEST_ITERATIONS; i++)); do
+  for ((i=1; i<=HA_TEST_ITERATIONS; i++)); do
     log "Starting HA test iteration $i of ${HA_TEST_ITERATIONS}"
 
     ${scenario_func} &

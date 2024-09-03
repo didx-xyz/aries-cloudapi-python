@@ -5,12 +5,7 @@ import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import {
-  acceptCredential,
-  createCredential,
-  getCredentialIdByThreadId,
-  waitForSSEEvent,
-} from "../libs/functions.js";
+import { acceptCredential, createCredential, getCredentialIdByThreadId, waitForSSEEvent } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);

@@ -24,8 +24,6 @@ scenario() {
 
 cleanup() {
     log "Cleaning up..."
-    local iterations=$((ITERATIONS * VUS))
-    local vus=1
     xk6 run ./scenarios/delete-holders.js
     xk6 run ./scenarios/delete-issuers.js -e ITERATIONS=1 -e VUS=1
 }

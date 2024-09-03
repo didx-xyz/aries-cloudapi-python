@@ -6,8 +6,7 @@ import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { bootstrapIssuer } from '../libs/setup.js';
-
+import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 1);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 1);

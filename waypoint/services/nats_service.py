@@ -84,3 +84,36 @@ class NatsEventsProcessor:
             raise e
 
         return subscription
+
+    async def process_events(
+        self,
+        group_id: str,
+        wallet_id: str,
+        topic: str,
+        stop_event: asyncio.Event,
+        duration: int = 150,
+    ):
+
+        subscription = await self._subscribe(group_id=group_id, wallet_id=wallet_id)
+
+        async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
+            end_time = time.time() + duration
+            while not stop_event.is_set():
+                remaining_time = remaining_time = end_time - time.time()
+                if remaining_time <= 0:
+                    stop_event.set()
+                    break
+                try:
+                    messages = await subscription.fetch(10, 1)
+                    for message in messages:
+                        if message.headers.get("event_topic") == topic:
+                            event = json.loads(message.data)
+                            yield CloudApiWebhookEventGeneric(**event)
+                        await message.ack()
+                except TimeoutError:
+                    await asyncio.sleep(1)
+                except asyncio.CancelledError:
+                    stop_event.set()
+                    break
+
+        return EventGeneratorWrapper(generator=event_generator())

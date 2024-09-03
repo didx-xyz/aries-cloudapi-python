@@ -22,7 +22,7 @@ run_test() {
 # Single issuer, multiple holder tests
 export MULTI_ISSUERS=false
 run_test ./scenarios/create-holders.js
-run_test ./scenarios/create-invitation.js
+run_test ./scenarios/create-invitations.js
 run_test ./scenarios/create-credentials.js
 run_test ./scenarios/create-proof.js
 export ITERATIONS=$((ITERATIONS * VUS)) # revoke sequentially

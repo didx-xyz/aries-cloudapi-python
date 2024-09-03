@@ -11,7 +11,7 @@ config() {
 }
 
 init() {
-    echo "No init function specified"
+    log "No init function specified"
 }
 
 scenario() {
@@ -19,7 +19,7 @@ scenario() {
 }
 
 cleanup() {
-    echo "No cleanup specified for schema collection"
+    log "No cleanup specified for schema collection"
 }
 
 run_collection() {

@@ -36,7 +36,7 @@ run_test() {
 
 restart_deployment() {
   local deployment="$1"
-  echo "Restarting deployment: ${deployment}"
+  log "Restarting deployment: ${deployment}"
   kubectl -n "${NAMESPACE}" rollout restart deployment "${deployment}"
   kubectl -n "${NAMESPACE}" rollout status deployment "${deployment}"
 }
@@ -45,8 +45,8 @@ run_ha_iterations() {
   local deployments="$1"
   local scenario_func="$2"
 
-  for ((i=1; i<=$HA_TEST_ITERATIONS; i++)); doxw
-    echo "Starting HA test iteration $i of ${HA_TEST_ITERATIONS}"
+  for ((i=1; i<=$HA_TEST_ITERATIONS; i++)); do
+    log "Starting HA test iteration $i of ${HA_TEST_ITERATIONS}"
 
     ${scenario_func} &
     local scenario_pid=$!
@@ -61,21 +61,21 @@ run_ha_iterations() {
         for pid in "${deployment_pids[@]}"; do
           wait "${pid}"
           if [[ $? -ne 0 ]]; then
-            echo "A deployment failed to restart" >&2
+            wrn "A deployment failed to restart" >&2
             kill "${scenario_pid}"
             return 1
           fi
         done
       done
     else
-      echo "No stack specified. Skipping restarts."
+      log "No stack specified. Skipping restarts."
     fi
 
     wait "${scenario_pid}"
     if [[ $? -ne 0 ]]; then
-      echo "Scenarios failed with exit code $?" >&2
+      err "Scenarios failed with exit code $?" >&2
       return 1
     fi
-    echo "Completed tests for iteration $i"
+    log "Completed tests for iteration $i"
   done
 }

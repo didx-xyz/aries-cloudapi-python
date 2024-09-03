@@ -1,27 +1,16 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
-import { getBearerToken, getGovernanceBearerToken } from "../libs/auth.js";
-import {
-  createCredentialDefinition,
-  createTenant,
-  deleteTenant,
-  getCredentialDefinitionId,
-  getWalletIdByWalletName,
-} from "../libs/functions.js";
-import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
+import { getBearerToken } from "../libs/auth.js";
+import { createTenant } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
 const holderPrefix = __ENV.HOLDER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export const options = {
   scenarios: {
@@ -66,73 +55,11 @@ const wallets = new SharedArray("wallets", () => {
   return walletsArray;
 });
 
-const numIssuers = 1;
-const issuers = [];
 const filepath = "output/create-holders.json";
-
 export function setup() {
-  const bearerToken = getBearerToken();
-  const governanceBearerToken = getGovernanceBearerToken();
-  const issuers = [];
-
   file.writeString(filepath, "");
-
-  for (let i = 0; i < numIssuers; i++) {
-    const walletName = `${issuerPrefix}_${i}`;
-    const credDefTag = walletName;
-
-    const issuerData = createIssuerIfNotExists(bearerToken, walletName);
-    check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
-    });
-    if (!issuerData) {
-      console.error(`Failed to create or retrieve issuer for ${walletName}`);
-      continue;
-    }
-    const { issuerWalletId, issuerAccessToken } = issuerData;
-
-    const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
-    if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-      continue;
-    }
-    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-    // console.error(`Response body: ${credentialDefinitionId.body}`);
-
-    const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
-    check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined,
-    });
-
-    const createCredentialDefinitionResponse = createCredentialDefinition(
-      bearerToken,
-      issuerAccessToken,
-      credDefTag,
-      schemaId,
-    );
-    check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200,
-    });
-
-    if (createCredentialDefinitionResponse.status === 200) {
-      const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
-      console.log(`Credential definition created successfully for issuer ${walletName}`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-    } else {
-      console.error(`Failed to create credential definition for issuer ${walletName}`);
-    }
-  }
-
-  return { bearerToken, issuers };
+  const bearerToken = getBearerToken();
+  return { bearerToken };
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;
@@ -145,7 +72,6 @@ function getWalletIndex(vu, iter) {
 export default function (data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = wallets[walletIndex];
 

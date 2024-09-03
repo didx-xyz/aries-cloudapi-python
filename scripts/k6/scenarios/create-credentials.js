@@ -2,26 +2,22 @@
 /* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
-import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
 import {
   acceptCredential,
   createCredential,
-  createCredentialDefinition,
-  deleteTenant,
-  getCredentialDefinitionId,
   getCredentialIdByThreadId,
-  getWalletIdByWalletName,
   waitForSSEEvent,
 } from "../libs/functions.js";
-import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
+import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+const schemaName = __ENV.SCHEMA_NAME;
+const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export const options = {
   scenarios: {
@@ -58,87 +54,18 @@ const outputFilepath = "output/create-credentials.json";
 const testFunctionReqs = new Counter("test_function_reqs");
 // const mainIterationDuration = new Trend('main_iteration_duration');
 
-// Seed data: Generating a list of options.iterations unique wallet names
-// const wallets = new SharedArray('wallets', function() {
-//   const walletsArray = [];
-//   for (let i = 0; i < options.iterations; i++) {
-//     walletsArray.push({
-//       wallet_label: `xk6 holder ${i}`,
-//       wallet_name: `xk6_wallet_${i}`
-//     });
-//   }
-//   return walletsArray;
-// });
-
-const numIssuers = 1;
-const issuers = [];
-
 export function setup() {
   const bearerToken = getBearerToken();
-  const issuers = [];
 
   file.writeString(outputFilepath, "");
   const holders = data.trim().split("\n").map(JSON.parse);
 
-  // // Example usage of the loaded data
-  // holders.forEach((holderData) => {
-  //   console.log(`Processing wallet ID: ${holderData.wallet_id}`);
-  //   // Your test logic here, e.g., make HTTP requests using the holderData
-  // });
+  const walletName = issuerPrefix;
+  const credDefTag = walletName;
+  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
 
-  for (let i = 0; i < numIssuers; i++) {
-    const walletName = `${issuerPrefix}_${i}`;
-    const credDefTag = walletName;
-
-    const issuerData = createIssuerIfNotExists(bearerToken, walletName);
-    check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
-    });
-    if (!issuerData) {
-      console.error(`Failed to create or retrieve issuer for ${walletName}`);
-      continue;
-    }
-    const { issuerWalletId, issuerAccessToken } = issuerData;
-
-    const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
-    if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-      continue;
-    }
-    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-    // console.error(`Response body: ${credentialDefinitionId.body}`);
-
-    const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
-    check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined,
-    });
-
-    const createCredentialDefinitionResponse = createCredentialDefinition(
-      bearerToken,
-      issuerAccessToken,
-      credDefTag,
-      schemaId,
-    );
-    check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200,
-    });
-
-    if (createCredentialDefinitionResponse.status === 200) {
-      const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
-      console.log(`Credential definition created successfully for issuer ${walletName}`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-    } else {
-      console.error(`Failed to create credential definition for issuer ${walletName}`);
-    }
+  if (!issuers || issuers.length === 0) {
+    console.error("Failed to bootstrap issuers.");
   }
 
   return { bearerToken, issuers, holders };
@@ -164,7 +91,7 @@ export default function (data) {
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = holders[walletIndex];
 
-  const issuerIndex = __ITER % numIssuers;
+  const issuerIndex = 0;
   const issuer = issuers[issuerIndex];
 
   // console.log(`isser.accessToken: ${issuer.accessToken}`);

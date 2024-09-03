@@ -53,7 +53,9 @@ info:
     about the available topics.
 
     "
-  version: 0.12.1
+  version: 1.0.0
+servers:
+  - url: /tenant-admin
 paths:
   /v1/tenants:
     post:
@@ -100,6 +102,42 @@ paths:
               - type: string
               - type: "null"
             title: Wallet Name
+        - name: limit
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+                maximum: 10000
+                minimum: 1
+              - type: "null"
+            description: Number of results to return
+            default: 1000
+            title: Limit
+          description: Number of results to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+                minimum: 0
+              - type: "null"
+            description: Offset for pagination
+            default: 0
+            title: Offset
+          description: Offset for pagination
+        - name: descending
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Whether to return results in descending order. Results are
+              ordered by record created time.
+            default: true
+            title: Descending
+          description: Whether to return results in descending order. Results are ordered
+            by record created time.
       responses:
         "200":
           description: Successful Response
@@ -359,19 +397,19 @@ paths:
           required: false
           schema:
             type: number
-            maximum: 30.0
+            maximum: 10.0
             minimum: 0.0
             description: The duration in seconds to look back in time, defining the
               window of additional webhook events that should be included, prior to
               the initial connection of the stream. The default value will include events
-              up to 30.0 seconds ago, and represents the maximum value for this setting.
+              up to 10.0 seconds ago, and represents the maximum value for this setting.
               Setting to 0 means only events after the connection is established will
               be returned.
-            default: 30.0
+            default: 10.0
             title: Look Back
           description: The duration in seconds to look back in time, defining the window
             of additional webhook events that should be included, prior to the initial
-            connection of the stream. The default value will include events up to 30.0
+            connection of the stream. The default value will include events up to 10.0
             seconds ago, and represents the maximum value for this setting. Setting
             to 0 means only events after the connection is established will be returned.
       responses:
@@ -414,19 +452,19 @@ paths:
           required: false
           schema:
             type: number
-            maximum: 30.0
+            maximum: 10.0
             minimum: 0.0
             description: The duration in seconds to look back in time, defining the
               window of additional webhook events that should be included, prior to
               the initial connection of the stream. The default value will include events
-              up to 30.0 seconds ago, and represents the maximum value for this setting.
+              up to 10.0 seconds ago, and represents the maximum value for this setting.
               Setting to 0 means only events after the connection is established will
               be returned.
-            default: 30.0
+            default: 10.0
             title: Look Back
           description: The duration in seconds to look back in time, defining the window
             of additional webhook events that should be included, prior to the initial
-            connection of the stream. The default value will include events up to 30.0
+            connection of the stream. The default value will include events up to 10.0
             seconds ago, and represents the maximum value for this setting. Setting
             to 0 means only events after the connection is established will be returned.
       responses:
@@ -476,19 +514,19 @@ paths:
           required: false
           schema:
             type: number
-            maximum: 30.0
+            maximum: 10.0
             minimum: 0.0
             description: The duration in seconds to look back in time, defining the
               window of additional webhook events that should be included, prior to
               the initial connection of the stream. The default value will include events
-              up to 30.0 seconds ago, and represents the maximum value for this setting.
+              up to 10.0 seconds ago, and represents the maximum value for this setting.
               Setting to 0 means only events after the connection is established will
               be returned.
-            default: 30.0
+            default: 10.0
             title: Look Back
           description: The duration in seconds to look back in time, defining the window
             of additional webhook events that should be included, prior to the initial
-            connection of the stream. The default value will include events up to 30.0
+            connection of the stream. The default value will include events up to 10.0
             seconds ago, and represents the maximum value for this setting. Setting
             to 0 means only events after the connection is established will be returned.
       responses:
@@ -546,19 +584,19 @@ paths:
           required: false
           schema:
             type: number
-            maximum: 30.0
+            maximum: 10.0
             minimum: 0.0
             description: The duration in seconds to look back in time, defining the
               window of additional webhook events that should be included, prior to
               the initial connection of the stream. The default value will include events
-              up to 30.0 seconds ago, and represents the maximum value for this setting.
+              up to 10.0 seconds ago, and represents the maximum value for this setting.
               Setting to 0 means only events after the connection is established will
               be returned.
-            default: 30.0
+            default: 10.0
             title: Look Back
           description: The duration in seconds to look back in time, defining the window
             of additional webhook events that should be included, prior to the initial
-            connection of the stream. The default value will include events up to 30.0
+            connection of the stream. The default value will include events up to 10.0
             seconds ago, and represents the maximum value for this setting. Setting
             to 0 means only events after the connection is established will be returned.
       responses:
@@ -622,19 +660,19 @@ paths:
           required: false
           schema:
             type: number
-            maximum: 30.0
+            maximum: 10.0
             minimum: 0.0
             description: The duration in seconds to look back in time, defining the
               window of additional webhook events that should be included, prior to
               the initial connection of the stream. The default value will include events
-              up to 30.0 seconds ago, and represents the maximum value for this setting.
+              up to 10.0 seconds ago, and represents the maximum value for this setting.
               Setting to 0 means only events after the connection is established will
               be returned.
-            default: 30.0
+            default: 10.0
             title: Look Back
           description: The duration in seconds to look back in time, defining the window
             of additional webhook events that should be included, prior to the initial
-            connection of the stream. The default value will include events up to 30.0
+            connection of the stream. The default value will include events up to 10.0
             seconds ago, and represents the maximum value for this setting. Setting
             to 0 means only events after the connection is established will be returned.
       responses:

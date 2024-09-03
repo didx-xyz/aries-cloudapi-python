@@ -3,7 +3,7 @@
   "info": {
     "title": "CloudAPI-Tenant",
     "description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for\nreal-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish\na WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the\nability to subscribe by topic, or to any wallet in their group.\n\nOur WebSocket endpoints are as follows:\n\n1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.\n\n2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook\nevents for a specific wallet ID.\n\n3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.\n\n4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.\n`connections`, `credentials`, `proofs`, `endorsements`).\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information\nabout the available topics.\n",
-    "version": "0.12.1"
+    "version": "1.0.0"
   },
   "paths": {
     "/v1/connections/create-invitation": {
@@ -62,10 +62,46 @@
       "get": {
         "tags": ["connections"],
         "summary": "Fetch Connection Records",
-        "description": "Fetch a list of connection records\n---\nThe records contain information about connections with other tenants, such as the state of the connection,\nthe alias of the connection, the label and the did of the other party, and other metadata.\n\nThe following query parameters can be used to filter the connection records to fetch.\n\nParameters (Optional):\n---\n    alias: str\n    connection_protocol: Protocol: \"connections/1.0\", \"didexchange/1.0\"\n    invitation_key: str\n    invitation_msg_id: str\n    my_did: str\n    state: State: \"active\", \"response\", \"request\", \"start\", \"completed\", \"init\", \"error\", \"invitation\", \"abandoned\"\n    their_did: str\n    their_public_did: str\n    their_role: Role: \"invitee\", \"requester\", \"inviter\", \"responder\"\n\nReturns:\n---\n    List[Connection]\n        A list of connection records",
+        "description": "Fetch a list of connection records\n---\nThe records contain information about connections with other tenants, such as the state of the connection,\nthe alias of the connection, the label and the did of the other party, and other metadata.\n\nThe following query parameters can be used to filter the connection records to fetch.\n\nParameters (Optional):\n---\n    limit: int - The maximum number of records to retrieve\n    offset: int - The offset to start retrieving records from\n    descending: bool - Whether to return results in descending order. Results are ordered by record created time.\n    alias: str\n    connection_protocol: Protocol: \"connections/1.0\", \"didexchange/1.0\"\n    invitation_key: str\n    invitation_msg_id: str\n    my_did: str\n    state: State: \"active\", \"response\", \"request\", \"start\", \"completed\", \"init\", \"error\", \"invitation\", \"abandoned\"\n    their_did: str\n    their_public_did: str\n    their_role: Role: \"invitee\", \"requester\", \"inviter\", \"responder\"\n\nReturns:\n---\n    List[Connection]\n        A list of connection records",
         "operationId": "get_connections_v1_connections_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "maximum": 10000, "minimum": 1 }, { "type": "null" }],
+              "description": "Number of results to return",
+              "default": 1000,
+              "title": "Limit"
+            },
+            "description": "Number of results to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to return results in descending order. Results are ordered by record created time.",
+              "default": true,
+              "title": "Descending"
+            },
+            "description": "Whether to return results in descending order. Results are ordered by record created time."
+          },
           {
             "name": "alias",
             "in": "query",
@@ -452,10 +488,46 @@
       "get": {
         "tags": ["issuer"],
         "summary": "Fetch Credential Exchange Records",
-        "description": "Get a list of credential exchange records\n---\nBoth holders and issuers can call this endpoint, because they each have their own records of a credential exchange.\n\nThese records contain information about the credentials issued to a holder, such as the current state of the\nexchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received\nfrom (if a holder). Each record in the list is related to a single credential exchange flow.\n\nNB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.\nThe `thread_id` is the only record attribute that will be the same for the holder and the issuer.\n\nAn exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),\nunless the `save_exchange_record` was set to true.\n\nThe following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.\n\nParameters:\n---\n    connection_id: str (Optional)\n    role: Role (Optional): \"issuer\", \"holder\"\n    state: State (Optional): \"proposal-sent\", \"proposal-received\", \"offer-sent\", \"offer-received\",\n                             \"request-sent\", \"request-received\", \"credential-issued\", \"credential-received\",\n                             \"credential-revoked\", \"abandoned\", \"done\"\n    thread_id: UUID (Optional)\n\nReturns:\n---\n    List[CredentialExchange]\n        A list of credential exchange records",
+        "description": "Get a list of credential exchange records\n---\nBoth holders and issuers can call this endpoint, because they each have their own records of a credential exchange.\n\nThese records contain information about the credentials issued to a holder, such as the current state of the\nexchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received\nfrom (if a holder). Each record in the list is related to a single credential exchange flow.\n\nNB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.\nThe `thread_id` is the only record attribute that will be the same for the holder and the issuer.\n\nAn exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),\nunless the `save_exchange_record` was set to true.\n\nThe following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.\n\nParameters (Optional):\n---\n    limit: int - The maximum number of records to retrieve\n    offset: int - The offset to start retrieving records from\n    descending: bool - Whether to return results in descending order. Results are ordered by record created time.\n    connection_id: str\n    role: Role: \"issuer\", \"holder\"\n    state: State: \"proposal-sent\", \"proposal-received\", \"offer-sent\", \"offer-received\",\n                             \"request-sent\", \"request-received\", \"credential-issued\", \"credential-received\",\n                             \"credential-revoked\", \"abandoned\", \"done\"\n    thread_id: UUID\n\nReturns:\n---\n    List[CredentialExchange]\n        A list of credential exchange records",
         "operationId": "get_credentials_v1_issuer_credentials_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "maximum": 10000, "minimum": 1 }, { "type": "null" }],
+              "description": "Number of results to return",
+              "default": 1000,
+              "title": "Limit"
+            },
+            "description": "Number of results to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to return results in descending order. Results are ordered by record created time.",
+              "default": true,
+              "title": "Descending"
+            },
+            "description": "Whether to return results in descending order. Results are ordered by record created time."
+          },
           {
             "name": "connection_id",
             "in": "query",
@@ -657,14 +729,17 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Revoke a Credential (if revocable)",
-        "description": "Revoke a credential\n---\nRevoke a credential by providing the identifier of the exchange.\n\nIf an issuer is going to revoke more than one credential, it is recommended to set the\n'auto_publish_on_ledger' field to False (default), and then batch publish the revocations using\nthe 'publish-revocations' endpoint.\n\nBy batching the revocations, the issuer can save on transaction fees related to\npublishing revocations to the ledger.\n\nRequest Body:\n---\n    body: RevokeCredential\n        - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.\n        - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or\n            (default, False) mark it pending\n\nReturns:\n---\n    status_code: 204",
+        "description": "Revoke a credential\n---\nRevoke a credential by providing the identifier of the exchange.\n\nIf an issuer is going to revoke more than one credential, it is recommended to set the\n'auto_publish_on_ledger' field to False (default), and then batch publish the revocations using\nthe 'publish-revocations' endpoint.\n\nBy batching the revocations, the issuer can save on transaction fees related to\npublishing revocations to the ledger.\n\nRequest Body:\n---\n    body: RevokeCredential\n        - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.\n        - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or\n            (default, False) mark it pending\n\nReturns:\n---\n    RevokedResponse:\n        revoked_cred_rev_ids:\n          The revocation registry indexes that were revoked.\n          Will be empty if the revocation was marked as pending.",
         "operationId": "revoke_credential_v1_issuer_credentials_revoke_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RevokeCredential" } } },
           "required": true
         },
         "responses": {
-          "204": { "description": "Successful Response" },
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RevokedResponse" } } }
+          },
           "422": {
             "description": "Validation Error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
@@ -716,14 +791,17 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Publish Pending Revocations",
-        "description": "Write pending revocations to the ledger\n---\nRevocations that are in a pending state can be published to the ledger.\n\nThe endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of\nrevocation registry IDs to credential revocation IDs, to allow publishing individual credentials.\n\nIf no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),\nthen all pending revocations will be published.\n\nIf no credential revocation id is provided under a given revocation registry id, then all pending revocations for\nthe given revocation registry id will be published.\n\nWhere to find the revocation registry id and credential revocation id:\nWhen issuing a credential, against a credential definition that supports revocation,\nthe issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain\nthe credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and\nthe revocation registry id (rev_reg_id).\n\nRequest Body:\n---\n    publish_request: PublishRevocationsRequest\n        An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be published. Providing an empty list for a registry ID instructs the system to\n        publish all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be published.\n\nReturns:\n---\n    status_code: 204",
+        "description": "Write pending revocations to the ledger\n---\nRevocations that are in a pending state can be published to the ledger.\n\nThe endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of\nrevocation registry IDs to credential revocation IDs, to allow publishing individual credentials.\n\nIf no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),\nthen all pending revocations will be published.\n\nIf no credential revocation id is provided under a given revocation registry id, then all pending revocations for\nthe given revocation registry id will be published.\n\nWhere to find the revocation registry id and credential revocation id:\nWhen issuing a credential, against a credential definition that supports revocation,\nthe issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain\nthe credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and\nthe revocation registry id (rev_reg_id).\n\nRequest Body:\n---\n    publish_request: PublishRevocationsRequest\n        An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map\n        is a dictionary where each key is a revocation registry ID and its value is a list of credential\n        revocation IDs to be published. Providing an empty list for a registry ID instructs the system to\n        publish all pending revocations for that ID. An empty dictionary signifies that all pending\n        revocations across all registry IDs should be published.\n\nReturns:\n---\n    RevokedResponse:\n        revoked_cred_rev_ids:\n          The revocation registry indexes that were revoked.\n          Will be empty if there were no revocations to publish.",
         "operationId": "publish_revocations_v1_issuer_credentials_publish_revocations_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublishRevocationsRequest" } } },
           "required": true
         },
         "responses": {
-          "204": { "description": "Successful Response" },
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RevokedResponse" } } }
+          },
           "422": {
             "description": "Validation Error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
@@ -757,6 +835,33 @@
           }
         },
         "security": [{ "APIKeyHeader": [] }]
+      }
+    },
+    "/v1/issuer/credentials/get-pending-revocations/{revocation_registry_id}": {
+      "get": {
+        "tags": ["issuer"],
+        "summary": "Get Pending Revocations",
+        "description": "Get pending revocations\n---\nGet the pending revocations for a given revocation registry ID.\n\nParameters:\n---\n    revocation_registry_id: str\n        The ID of the revocation registry for which to fetch pending revocations\n\nReturns:\n---\n    PendingRevocations:\n        A list of cred_rev_ids pending revocation for a given revocation registry ID",
+        "operationId": "get_pending_revocations_v1_issuer_credentials_get_pending_revocations__revocation_registry_id__get",
+        "security": [{ "APIKeyHeader": [] }],
+        "parameters": [
+          {
+            "name": "revocation_registry_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Revocation Registry Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PendingRevocations" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
       }
     },
     "/v1/jsonld/sign": {
@@ -1013,10 +1118,46 @@
       "get": {
         "tags": ["verifier"],
         "summary": "Get Presentation Exchange Records",
-        "description": "Get all presentation exchange records for this tenant\n---\nThese records contains information about proof requests and presentations.\n\nThe results can be filtered by connection_id, role, state, and thread_id.\n\nParameters (Optional):\n---\n    connection_id: str\n    role: Role: \"prover\", \"verifier\"\n    state: State: \"presentation-received\", \"presentation-sent\", \"proposal-received\", \"proposal-sent\",\n                    \"request-received\", \"request-sent\", \"abandoned\", \"done\"\n    thread_id: UUID\n\nReturns:\n---\n    List[PresentationExchange]\n        The list of presentation exchange records",
+        "description": "Get all presentation exchange records for this tenant\n---\nThese records contains information about proof requests and presentations.\n\nThe results can be filtered by connection_id, role, state, and thread_id.\n\nParameters (Optional):\n---\n    limit: int: The maximum number of records to retrieve\n    offset: int: The offset to start retrieving records from\n    descending: bool - Whether to return results in descending order. Results are ordered by record created time.\n    connection_id: str\n    role: Role: \"prover\", \"verifier\"\n    state: State: \"presentation-received\", \"presentation-sent\", \"proposal-received\", \"proposal-sent\",\n                    \"request-received\", \"request-sent\", \"abandoned\", \"done\"\n    thread_id: UUID\n\nReturns:\n---\n    List[PresentationExchange]\n        The list of presentation exchange records",
         "operationId": "get_proof_records_v1_verifier_proofs_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "maximum": 10000, "minimum": 1 }, { "type": "null" }],
+              "description": "Number of results to return",
+              "default": 1000,
+              "title": "Limit"
+            },
+            "description": "Number of results to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to return results in descending order. Results are ordered by record created time.",
+              "default": true,
+              "title": "Descending"
+            },
+            "description": "Whether to return results in descending order. Results are ordered by record created time."
+          },
           {
             "name": "connection_id",
             "in": "query",
@@ -1127,11 +1268,41 @@
       "get": {
         "tags": ["verifier"],
         "summary": "Get Matching Credentials for a Proof",
-        "description": "Get matching credentials for a presentation exchange\n---\nThis endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.\n\nThe `presentation_referents` field indicates which of the fields in the proof request that credential satisfies.\n\nParameters:\n---\n    proof_id: str\n        The relevant proof exchange ID for the prover\n\nReturns:\n---\n    List[IndyCredPrecis]\n        A list of applicable Indy credentials",
+        "description": "Get matching credentials for a presentation exchange\n---\nThis endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.\n\nThe `presentation_referents` field (in the response) indicates which of the fields\nin the proof request that credential satisfies.\n\nParameters:\n---\n    proof_id: str\n        The relevant proof exchange ID for the prover\n    referent: Optional str\n        The presentation_referent of the proof to match, comma separated str of presentation_referents\n    limit: Optional int\n        The number of credentials to fetch\n    offset: Optional int\n        The index to start fetching credentials from\n\nReturns:\n---\n    List[IndyCredPrecis]\n        A list of applicable Indy credentials",
         "operationId": "get_credentials_by_proof_id_v1_verifier_proofs__proof_id__credentials_get",
         "security": [{ "APIKeyHeader": [] }],
         "parameters": [
-          { "name": "proof_id", "in": "path", "required": true, "schema": { "type": "string", "title": "Proof Id" } }
+          { "name": "proof_id", "in": "path", "required": true, "schema": { "type": "string", "title": "Proof Id" } },
+          {
+            "name": "referent",
+            "in": "query",
+            "required": false,
+            "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Referent" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "maximum": 10000, "minimum": 1 }, { "type": "null" }],
+              "description": "Number of results to return",
+              "default": 1000,
+              "title": "Limit"
+            },
+            "description": "Number of results to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          }
         ],
         "responses": {
           "200": {
@@ -1734,13 +1905,13 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 30.0,
+              "maximum": 10.0,
               "minimum": 0.0,
-              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 30.0,
+              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
+              "default": 10.0,
               "title": "Look Back"
             },
-            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
+            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
           }
         ],
         "responses": {
@@ -1768,13 +1939,13 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 30.0,
+              "maximum": 10.0,
               "minimum": 0.0,
-              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 30.0,
+              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
+              "default": 10.0,
               "title": "Look Back"
             },
-            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
+            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
           }
         ],
         "responses": {
@@ -1808,13 +1979,13 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 30.0,
+              "maximum": 10.0,
               "minimum": 0.0,
-              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 30.0,
+              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
+              "default": 10.0,
               "title": "Look Back"
             },
-            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
+            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
           }
         ],
         "responses": {
@@ -1844,13 +2015,13 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 30.0,
+              "maximum": 10.0,
               "minimum": 0.0,
-              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 30.0,
+              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
+              "default": 10.0,
               "title": "Look Back"
             },
-            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
+            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
           }
         ],
         "responses": {
@@ -1886,13 +2057,13 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 30.0,
+              "maximum": 10.0,
               "minimum": 0.0,
-              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 30.0,
+              "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
+              "default": 10.0,
               "title": "Look Back"
             },
-            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 30.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
+            "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
           }
         ],
         "responses": {
@@ -2192,6 +2363,7 @@
       },
       "ClaimFormat": {
         "properties": {
+          "di_vc": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Di Vc" },
           "jwt": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt" },
           "jwt_vc": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt Vc" },
           "jwt_vp": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt Vp" },
@@ -3907,7 +4079,7 @@
             "description": "Associates a challenge with a proof, for use with a proofPurpose such as authentication"
           },
           "created": {
-            "type": "string",
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Created",
             "description": "The string value of an ISO8601 combined date and time string generated by the Signature Algorithm"
           },
@@ -3945,7 +4117,7 @@
           "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
         },
         "type": "object",
-        "required": ["created", "proofPurpose", "type", "verificationMethod"],
+        "required": ["proofPurpose", "type", "verificationMethod"],
         "title": "LinkedDataProof",
         "description": "LinkedDataProof"
       },
@@ -4009,6 +4181,18 @@
         "required": ["invi_msg_id", "invitation", "oob_id", "state"],
         "title": "OobRecord",
         "description": "OobRecord"
+      },
+      "PendingRevocations": {
+        "properties": {
+          "pending_cred_rev_ids": {
+            "items": { "anyOf": [{ "type": "integer" }, { "type": "null" }] },
+            "type": "array",
+            "title": "Pending Cred Rev Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "PendingRevocations"
       },
       "PingRequestResponse": {
         "properties": {
@@ -4203,6 +4387,18 @@
         "type": "object",
         "required": ["credential_exchange_id"],
         "title": "RevokeCredential"
+      },
+      "RevokedResponse": {
+        "properties": {
+          "cred_rev_ids_published": {
+            "additionalProperties": { "items": { "type": "integer" }, "type": "array" },
+            "type": "object",
+            "title": "Cred Rev Ids Published",
+            "description": "A map of revocation registry IDs to lists of credential revocation IDs (as integers) that have been revoked.When cred_rev_ids_published is empty no revocations were published.This will happen when revoke is called with auto_publish_on_ledger=False."
+          }
+        },
+        "type": "object",
+        "title": "RevokedResponse"
       },
       "SDJWSCreateRequest": {
         "properties": {

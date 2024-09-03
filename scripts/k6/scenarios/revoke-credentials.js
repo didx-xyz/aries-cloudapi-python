@@ -1,24 +1,26 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
-import { SharedArray } from "k6/data";
-import { Counter, Trend } from "k6/metrics";
+import { check } from "k6";
+import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   checkRevoked,
   createCredentialDefinition,
-  deleteTenant,
   getCredentialDefinitionId,
-  getWalletIdByWalletName,
   revokeCredentialAutoPublish,
 } from "../libs/functions.js";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 
+const inputFilepath = "../output/create-credentials.json";
+const data = open(inputFilepath, "r");
+
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+const testFunctionReqs = new Counter("test_function_reqs");
+const numIssuers = 1;
 
 export const options = {
   scenarios: {
@@ -44,13 +46,6 @@ export const options = {
     test_phase: "revoke-credentials",
   },
 };
-
-const inputFilepath = "../output/create-credentials.json";
-const data = open(inputFilepath, "r");
-
-const testFunctionReqs = new Counter("test_function_reqs");
-
-const numIssuers = 1;
 
 export function setup() {
   const issuers = [];
@@ -150,6 +145,5 @@ export default function (data) {
       return true;
     },
   });
-  // sleep(0.2);
   testFunctionReqs.add(1);
 }

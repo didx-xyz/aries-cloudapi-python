@@ -267,11 +267,13 @@ jobs:
               fi
               exit $EXIT_CODE
           fi
+          pwd
       - name: Upload .coverage files as artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-files-${{ matrix.module.id }}
           path: coverage-files/.coverage.${{ matrix.module.id }}
+          include-hidden-files: true
 
   status-check:
     name: Status Check

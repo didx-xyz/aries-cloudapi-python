@@ -10,5 +10,6 @@ export VUS=5
 export ITERATIONS=2
 export ISSUER_PREFIX=k6_issuer
 export HOLDER_PREFIX=k6_holder
+export SCHEMA_PREFIX=k6_schema
 export SCHEMA_NAME="proof_of_person"
 export SCHEMA_VERSION="0.1.0"

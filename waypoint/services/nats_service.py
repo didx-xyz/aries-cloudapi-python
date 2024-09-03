@@ -45,3 +45,18 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
     logger.info("Closing NATS connection...")
     nats_client.close()
     logger.debug("NATS connection closed")
+
+
+class NatsEventsProcessor:
+    def __init__(self, jetstream: JetStreamContext):
+        self.js_context: JetStreamContext = jetstream
+        self._tasks: List[asyncio.Task] = []
+
+    async def start(self):
+        # TODO: Implement
+        pass
+
+    async def stop(self):
+        # TODO: Implement
+        pass
+

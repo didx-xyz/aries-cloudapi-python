@@ -48,6 +48,7 @@
     "maxsplit",
     "multitenancy",
     "multitenant",
+    "nats",
     "onboarded",
     "onupdate",
     "orjson",

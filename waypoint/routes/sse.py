@@ -81,3 +81,62 @@ async def nats_event_stream_generator(
                     break
     except asyncio.CancelledError:
         stop_event.set()
+
+
+@router.get(
+    "/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
+    response_class=EventSourceResponse,
+    summary="Wait for a desired state to be reached for some event for this wallet and topic "
+    "The `relevant_id` refers to a `transaction_id` when using topic `endorsements,"
+    "or a `connection_id` on topics: `connections`, `credentials`, or `proofs`, etc."
+    "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
+)
+@inject
+async def sse_wait_for_event_with_field_and_state(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    wallet_id: str,
+    topic: str,
+    field: str,
+    field_id: str,
+    desired_state: str,
+    group_id: Optional[str] = Query(
+        default=None, description="Group ID to which the wallet belongs"
+    ),
+    nats_processor: NatsEventsProcessor = Depends(
+        Provide[Container.nats_events_processor]
+    ),
+) -> EventSourceResponse:
+    bound_logger = logger.bind(
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            field: field_id,
+            "desired_state": desired_state,
+        }
+    )
+    bound_logger.debug(
+        "SSE: GET request received: Subscribe to wallet event by topic, "
+        "waiting for payload with field-id pair and specific state"
+    )
+
+    # TODO check wallet belongs to group
+    # if group_id and not await check_wallet_belongs_to_group(
+    #     wallet_id=wallet_id, group_id=group_id
+    # ):
+    #     raise BadGroupIdException()
+
+    event_stream = nats_event_stream_generator(
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        topic=topic,
+        field=field,
+        field_id=field_id,
+        desired_state=desired_state,
+        group_id=group_id,
+        nats_processor=nats_processor,
+    )
+
+    return EventSourceResponse(event_stream)

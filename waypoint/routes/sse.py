@@ -16,14 +16,13 @@ from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
 logger = get_logger(__name__)
 
 router = APIRouter(
-    # TODO add a prefix for the router
-    prefix="/stuff",
+    prefix="/waypoint",
     tags=["waypoint"],
 )
 
 
 class BadGroupIdException(HTTPException):
-    """Custom exception when group_id is specified and no events exist on redis"""
+    """Custom exception when group_id is specified and no events exist on Nats"""
 
     def __init__(self):
         super().__init__(
@@ -35,9 +34,9 @@ async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
     """
     Check if the client has disconnected
     """
-    # TODO add a logger
     while not stop_event.is_set():
         if await request.is_disconnected:
+            logger.debug("Waypoint client disconnected")
             stop_event.set()
         await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
 
@@ -56,8 +55,8 @@ async def nats_event_stream_generator(
     """
     Generator for NATS events
     """
-    # TODO add a logger
-    logger.error("got connection")
+
+    logger.debug("Starting NATS event stream generator")
     stop_event = asyncio.Event()
 
     event_generator_wrapper: EventGeneratorWrapper = (
@@ -73,16 +72,22 @@ async def nats_event_stream_generator(
     try:
         async with event_generator_wrapper as event_generator:
             background_tasks.add_task(check_disconnect, request, stop_event)
+
             async for event in event_generator:
                 if await request.is_disconnected():
+                    logger.debug("Client disconnected")
                     stop_event.set()
                     break
+
                 payload = dict(event.payload)
                 if payload[field] == field_id and payload["state"] == desired_state:
+                    logger.trace("Event found yielding event {}", event)
                     yield event.model_dump_json()
                     stop_event.set()
                     break
+
     except asyncio.CancelledError:
+        logger.debug("Event stream cancelled")
         stop_event.set()
 
 

@@ -53,13 +53,17 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
         self._tasks: List[asyncio.Task] = []
 
-    async def start(self):
-        # TODO: Implement
-        pass
-
     async def stop(self):
-        # TODO: Implement
-        pass
+        logger.debug("Stopping NATS event processor...")
+
+        for task in self._tasks:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                logger.debug("Task was cancelled successfully")
+
+        logger.info("NATS event processor stopped.")
 
     async def _subscribe(
         self, group_id: str, wallet_id: str

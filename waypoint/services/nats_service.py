@@ -69,6 +69,8 @@ class NatsEventsProcessor:
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.debug("Subscribing to JetStream...")
+            start_time = int(time.time() * 1e9) - (int(NATS_START_TIME) * 1e9)
+
             config = ConsumerConfig(
                 deliver_policy="by_start_time",
                 opt_start_time=start_time,

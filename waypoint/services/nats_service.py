@@ -43,7 +43,7 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
     yield jetstream
 
     logger.info("Closing NATS connection...")
-    nats_client.close()
+    await nats_client.close()
     logger.debug("NATS connection closed")
 
 

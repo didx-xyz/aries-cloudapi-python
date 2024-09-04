@@ -72,24 +72,29 @@ class NatsEventsProcessor:
             start_time = int(time.time() * 1e9) - (int(NATS_START_TIME) * 1e9)
 
             config = ConsumerConfig(
-                deliver_policy="by_start_time",
+                # durable_name=f"{group_id}.{wallet_id}",
+                deliver_policy=DeliverPolicy.BY_START_TIME,
                 opt_start_time=start_time,
-                inactive_threshold=130,
             )
 
-            logger.error(
-                f"Subscribing to {NATS_SUBJECT}.{group_id}.{wallet_id} on nats stream {NATS_STREAM} with start time {start_time} and config\n {config}"
-            )
             subscription = await self.js_context.pull_subscribe(
+                # durable=f"{group_id}.{wallet_id}",
                 subject=f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
                 stream=NATS_STREAM,
-                config=config,
+                # config=ConsumerConfig(**config_dict)
             )
-        except Exception as e:
-            logger.error(f"Error subscribing to NATS: {e}")
-            raise e
 
-        return subscription
+            return subscription
+
+        except BadSubscriptionError as e:
+            logger.error(f"BadSubscriptionError subscribing to NATS: {e}")
+            raise
+        except Error as e:
+            logger.error(f"Error subscribing to NATS: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unknown error subscribing to NATS: {e}")
+            raise
 
     async def process_events(
         self,

@@ -1,4 +1,4 @@
-from typing import Any, AsyncGenerator, Optional
+from typing import Any, AsyncGenerator
 
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
@@ -8,6 +8,7 @@ class EventGeneratorWrapper:
         self.generator = generator
 
     async def __aenter__(self):
+        # TODO add description
         return self.generator
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

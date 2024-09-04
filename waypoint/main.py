@@ -50,3 +50,5 @@ def create_app() -> FastAPI:
 logger.info("Waypoint Service startup")
 
 app = create_app()
+
+# TODO add a health check endpoint

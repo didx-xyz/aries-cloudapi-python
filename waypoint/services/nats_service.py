@@ -48,6 +48,7 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
 
 
 class NatsEventsProcessor:
+    # TODO add a logger and check error handling
     def __init__(self, jetstream: JetStreamContext):
         self.js_context: JetStreamContext = jetstream
         self._tasks: List[asyncio.Task] = []

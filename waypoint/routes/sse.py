@@ -16,6 +16,7 @@ from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
 logger = get_logger(__name__)
 
 router = APIRouter(
+    # TODO add a prefix for the router
     prefix="/stuff",
     tags=["waypoint"],
 )
@@ -34,6 +35,7 @@ async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
     """
     Check if the client has disconnected
     """
+    # TODO add a logger
     while not stop_event.is_set():
         if await request.is_disconnected:
             stop_event.set()
@@ -54,6 +56,7 @@ async def nats_event_stream_generator(
     """
     Generator for NATS events
     """
+    # TODO add a logger
     logger.error("got connection")
     stop_event = asyncio.Event()
 

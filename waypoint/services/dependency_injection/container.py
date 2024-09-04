@@ -1,6 +1,3 @@
-import os
-from typing import List
-
 from dependency_injector import containers, providers
 
 from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client

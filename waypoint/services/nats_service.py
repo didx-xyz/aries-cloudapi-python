@@ -68,7 +68,7 @@ class NatsEventsProcessor:
         self, group_id: str, wallet_id: str
     ) -> JetStreamContext.PullSubscription:
         try:
-            start_time = math.floor((time.time() - int(NATS_START_TIME)) / 1000)
+            logger.debug("Subscribing to JetStream...")
             config = ConsumerConfig(
                 deliver_policy="by_start_time",
                 opt_start_time=start_time,

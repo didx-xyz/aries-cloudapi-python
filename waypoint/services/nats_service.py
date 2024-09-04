@@ -5,6 +5,7 @@ from typing import Any, AsyncGenerator, List
 
 import nats
 from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrTimeout, ErrNoServers
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -27,12 +28,12 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
     """
     Initialize a connection to the NATS server.
     """
-    logger.info("Connecting to NATS server...")
+    logger.debug("Connecting to NATS server...")
     try:
         nats_client: NATS = await nats.connect(
             servers=[NATS_SERVER], user_credentials=NATS_CREDS_FILE
         )
-    except Exception as e:
+    except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
         logger.error(f"Error connecting to NATS server: {e}")
         raise e
     logger.debug("Connected to NATS server")
@@ -41,7 +42,7 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
     logger.debug("Yielding JetStream context...")
     yield jetstream
 
-    logger.info("Closing NATS connection...")
+    logger.debug("Closing NATS connection...")
     await nats_client.close()
     logger.debug("NATS connection closed")
 
@@ -62,7 +63,7 @@ class NatsEventsProcessor:
             except asyncio.CancelledError:
                 logger.debug("Task was cancelled successfully")
 
-        logger.info("NATS event processor stopped.")
+        logger.debug("NATS event processor stopped.")
 
     async def _subscribe(
         self, group_id: str, wallet_id: str
@@ -104,7 +105,7 @@ class NatsEventsProcessor:
         stop_event: asyncio.Event,
         duration: int = 150,
     ):
-        logger.info(
+        logger.debug(
             f"Processing events for group {group_id} and wallet {wallet_id} on topic {topic}"
         )
 
@@ -112,7 +113,6 @@ class NatsEventsProcessor:
 
         async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
             end_time = time.time() + duration
-            logger.trace(f"end_time: {end_time}")
             while not stop_event.is_set():
                 remaining_time = remaining_time = end_time - time.time()
                 logger.trace(f"remaining_time: {remaining_time}")
@@ -137,6 +137,7 @@ class NatsEventsProcessor:
                     break
 
         generator_wrapper = EventGeneratorWrapper(generator=event_generator())
+
         logger.trace("adding generator to tasks")
         task = asyncio.create_task(generator_wrapper)
         self._tasks.append(task)

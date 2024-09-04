@@ -125,7 +125,7 @@ async def sse_wait_for_event_with_field_and_state(
         }
     )
     bound_logger.debug(
-        "SSE: GET request received: Subscribe to wallet event by topic, "
+        "Waypoint: GET request received: Subscribe to wallet event by topic, "
         "waiting for payload with field-id pair and specific state"
     )
 

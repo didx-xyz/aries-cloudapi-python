@@ -13,8 +13,8 @@ class EventGeneratorWrapper:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
-        Exits the asynchronous context, closing the generator and cancelling the populate task.
-
+        Exits the asynchronous context, closing the generator
+        
         Args:
             exc_type: The exception type, if any, that caused the context to be exited.
             exc_val: The exception value, if any.

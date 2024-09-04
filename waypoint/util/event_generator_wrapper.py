@@ -16,6 +16,7 @@ class EventGeneratorWrapper:
 
     Modified from code written by @ff137
     """
+
     def __init__(self, generator: AsyncGenerator[CloudApiWebhookEventGeneric, Any]):
         self.generator = generator
 

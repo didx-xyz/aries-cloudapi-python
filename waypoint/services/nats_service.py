@@ -1,13 +1,12 @@
 import asyncio
 import json
-import math
 import time
-from typing import Any, AsyncGenerator, Generator, List
+from typing import Any, AsyncGenerator, List
 
 import nats
 from nats.aio.client import Client as NATS
-from nats.errors import TimeoutError
-from nats.js.api import ConsumerConfig
+from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
 from shared.constants import (

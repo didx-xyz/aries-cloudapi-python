@@ -98,16 +98,23 @@ class NatsEventsProcessor:
         stop_event: asyncio.Event,
         duration: int = 150,
     ):
+        logger.info(
+            f"Processing events for group {group_id} and wallet {wallet_id} on topic {topic}"
+        )
 
         subscription = await self._subscribe(group_id=group_id, wallet_id=wallet_id)
 
         async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
             end_time = time.time() + duration
+            logger.trace(f"end_time: {end_time}")
             while not stop_event.is_set():
                 remaining_time = remaining_time = end_time - time.time()
+                logger.trace(f"remaining_time: {remaining_time}")
                 if remaining_time <= 0:
+                    logger.debug("Timeout reached")
                     stop_event.set()
                     break
+
                 try:
                     messages = await subscription.fetch(10, 1)
                     for message in messages:
@@ -116,9 +123,16 @@ class NatsEventsProcessor:
                             yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
                 except TimeoutError:
+                    logger.trace("Timeout fetching messages continuing...")
                     await asyncio.sleep(1)
                 except asyncio.CancelledError:
+                    logger.debug("Event generator cancelled")
                     stop_event.set()
                     break
 
-        return EventGeneratorWrapper(generator=event_generator())
+        generator_wrapper = EventGeneratorWrapper(generator=event_generator())
+        logger.trace("adding generator to tasks")
+        task = asyncio.create_task(generator_wrapper)
+        self._tasks.append(task)
+
+        return generator_wrapper

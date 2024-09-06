@@ -221,6 +221,7 @@ async def test_reject_proof_request(
         filter_map={
             "thread_id": thread_id,
         },
+        look_back=5,
     )
     assert acme_abandoned_webhook["error_msg"] == "abandoned: rejected"
 
@@ -233,6 +234,7 @@ async def test_reject_proof_request(
             filter_map={
                 "thread_id": thread_id,
             },
+            look_back=5,
         )
 
 

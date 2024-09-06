@@ -26,12 +26,7 @@ from app.util.pagination import (
     order_by_query_parameter,
 )
 from shared.log_config import get_logger
-from shared.models.presentation_exchange import (
-    PresentationExchange,
-    Role,
-    State,
-    back_to_v1_presentation_state,
-)
+from shared.models.presentation_exchange import PresentationExchange, Role, State
 
 logger = get_logger(__name__)
 
@@ -368,20 +363,8 @@ async def get_proof_records(
 
     try:
         async with client_from_auth(auth) as aries_controller:
-            logger.debug("Fetching v1 proof records")
-            v1_records = await VerifierFacade.V1.value.get_proof_records(
-                controller=aries_controller,
-                limit=limit,
-                offset=offset,
-                order_by=order_by,
-                descending=descending,
-                connection_id=connection_id,
-                role=role,
-                state=back_to_v1_presentation_state(state) if state else None,
-                thread_id=str(thread_id) if thread_id else None,
-            )
             logger.debug("Fetching v2 proof records")
-            v2_records = await VerifierFacade.V2.value.get_proof_records(
+            result = await VerifierFacade.V2.value.get_proof_records(
                 controller=aries_controller,
                 limit=limit,
                 offset=offset,
@@ -396,11 +379,10 @@ async def get_proof_records(
         logger.info("Could not fetch proof records: {}.", e)
         raise
 
-    result = v1_records + v2_records  # TODO: V1 to be deprecated. No need to re-order
     if result:
-        logger.debug("Successfully fetched v1 and v2 records.")
+        logger.debug("Successfully fetched records.")
     else:
-        logger.debug("No v1 or v2 records returned.")
+        logger.debug("No records returned.")
     return result
 
 

@@ -333,47 +333,35 @@ async def get_credential_definition_id_from_exchange_id(
     bound_logger.debug("Fetching credential definition id from exchange id")
 
     cred_ex_id = strip_protocol_prefix(credential_exchange_id)
+
     try:
         cred_ex_record = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=controller.issue_credential_v1_0.get_record,
+            acapy_call=controller.issue_credential_v2_0.get_record,
             cred_ex_id=cred_ex_id,
         )
-        credential_definition_id = cred_ex_record.credential_definition_id
-    except CloudApiException as err1:
-        bound_logger.info(
-            "An Exception was caught while getting v1 record: '{}'", err1.detail
+        rev_reg_id = cred_ex_record.indy.rev_reg_id
+        rev_reg_parts = rev_reg_id.split(":")
+        credential_definition_id = ":".join(
+            [
+                rev_reg_parts[2],
+                "3",
+                "CL",  # NOTE: update this with other signature types in future
+                rev_reg_parts[-4],
+                rev_reg_parts[-1],
+            ]
         )
-        try:
-            bound_logger.debug("Trying to get v2 records")
-
-            cred_ex_record = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=controller.issue_credential_v2_0.get_record,
-                cred_ex_id=cred_ex_id,
-            )
-            rev_reg_id = cred_ex_record.indy.rev_reg_id
-            rev_reg_parts = rev_reg_id.split(":")
-            credential_definition_id = ":".join(
-                [
-                    rev_reg_parts[2],
-                    "3",
-                    "CL",  # NOTE: update this with other signature types in future
-                    rev_reg_parts[-4],
-                    rev_reg_parts[-1],
-                ]
-            )
-        except CloudApiException as err2:
-            bound_logger.info(
-                "An Exception was caught while getting v2 record: '{}'",
-                err2.detail,
-            )
-            return
-        except Exception:  # pylint: disable=W0718
-            bound_logger.exception(
-                "Exception caught while constructing cred def id from record."
-            )
-            return
+    except CloudApiException as err:
+        bound_logger.info(
+            "An Exception was caught while getting v2 record: '{}'",
+            err.detail,
+        )
+        return
+    except Exception:  # pylint: disable=W0718
+        bound_logger.exception(
+            "Exception caught while constructing cred def id from record."
+        )
+        return
 
     bound_logger.debug(
         "Successfully obtained cred definition id from the cred exchange id."

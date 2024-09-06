@@ -37,12 +37,7 @@ from app.util.pagination import (
 )
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
-from shared.models.credential_exchange import (
-    CredentialExchange,
-    Role,
-    State,
-    back_to_v1_credential_state,
-)
+from shared.models.credential_exchange import CredentialExchange, Role, State
 
 logger = get_logger(__name__)
 
@@ -389,21 +384,8 @@ async def get_credentials(
     bound_logger.debug("GET request received: Get credentials")
 
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching v1 records")
-        v1_records = await IssueCredentialFacades.V1.value.get_records(
-            controller=aries_controller,
-            limit=limit,
-            offset=offset,
-            order_by=order_by,
-            descending=descending,
-            connection_id=connection_id,
-            role=role,
-            state=back_to_v1_credential_state(state) if state else None,
-            thread_id=str(thread_id) if thread_id else None,
-        )
-
         bound_logger.debug("Fetching v2 records")
-        v2_records = await IssueCredentialFacades.V2.value.get_records(
+        result = await IssueCredentialFacades.V2.value.get_records(
             controller=aries_controller,
             limit=limit,
             offset=offset,
@@ -415,11 +397,10 @@ async def get_credentials(
             thread_id=str(thread_id) if thread_id else None,
         )
 
-    result = v1_records + v2_records
     if result:
-        bound_logger.debug("Successfully fetched v1 and v2 records.")
+        bound_logger.debug("Successfully fetched records.")
     else:
-        bound_logger.debug("No v1 or v2 records returned.")
+        bound_logger.debug("No records returned.")
     return result
 
 

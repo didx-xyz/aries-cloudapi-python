@@ -11,7 +11,6 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedAttr,
     IndyRequestedCredsRequestedPred,
     PresentationDefinition,
-    V10PresentationExchange,
     V20Pres,
     V20PresExRecord,
     V20PresExRecordByFormat,
@@ -33,27 +32,6 @@ indy_proof_request_empty = IndyProofRequest(
     requested_attributes={},
     requested_predicates={},
 )
-
-v10_presentation_exchange_records = [
-    V10PresentationExchange(
-        auto_present=False,
-        connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        created_at="2021-09-15 13:49:47Z",
-        error_msg=None,
-        initiator="self",
-        presentation=indy_proof,
-        presentation_exchange_id="dabc8f4e-164a-410f-bd10-471b090f65a5",
-        presentation_proposal_dict=None,
-        presentation_request=indy_proof_request_empty,
-        presentation_request_dict=None,
-        role="prover",
-        state="proposal_sent",
-        thread_id=None,
-        trace=False,
-        updated_at=None,
-        verified="false",
-    ),
-]
 
 
 def sample_indy_proof_request(restrictions=None) -> IndyProofRequest:

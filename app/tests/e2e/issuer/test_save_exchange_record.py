@@ -123,21 +123,6 @@ async def test_get_cred_exchange_records(
         await alice_member_client.get(CREDENTIALS_BASE_PATH + "?state=offer-received")
     ).json()
 
-    credential_v1 = {
-        "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection.faber_connection_id,
-        "indy_credential_detail": {
-            "credential_definition_id": credential_definition_id,
-            "attributes": sample_credential_attributes,
-        },
-        "save_exchange_record": True,
-    }
-
-    faber_send_response_1 = await faber_client.post(
-        CREDENTIALS_BASE_PATH, json=credential_v1
-    )
-    faber_cred_ex_id_1 = faber_send_response_1.json()["credential_exchange_id"]
-
     credential_v2 = {
         "protocol_version": "v2",
         "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -153,7 +138,7 @@ async def test_get_cred_exchange_records(
     )
     faber_cred_ex_id_2 = faber_send_response_2.json()["credential_exchange_id"]
 
-    faber_cred_ids = [faber_cred_ex_id_1, faber_cred_ex_id_2]
+    faber_cred_ids = [faber_cred_ex_id_2]
 
     num_tries = 0
     num_credentials_returned = 0

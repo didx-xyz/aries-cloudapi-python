@@ -27,7 +27,7 @@ async def issue_credential_to_alice(
     alice_member_client: RichAsyncClient,
 ) -> CredentialExchange:
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -78,7 +78,7 @@ async def meld_co_issue_credential_to_alice(
     alice_member_client: RichAsyncClient,
 ) -> CredentialExchange:
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": meld_co_credential_definition_id,
@@ -138,7 +138,7 @@ async def issue_alice_creds(
     faber_cred_ex_ids = []
     for i in range(3):
         credential = {
-            "protocol_version": "v1",
+            "protocol_version": "v2",
             "connection_id": faber_conn_id,
             "save_exchange_record": True,
             "indy_credential_detail": {

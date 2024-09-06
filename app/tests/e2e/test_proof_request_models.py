@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    V10PresentationSendRequestRequest,
     V20PresRequestByFormat,
     V20PresSendRequestRequest,
 )
@@ -18,11 +17,11 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "name, version, protocol_version",
+    "name, version",
     [
-        ("Proof", None, "v2"),
-        (None, "1.0", "v2"),
-        (None, None, "v2"),
+        ("Proof", None),
+        (None, "1.0"),
+        (None, None),
     ],
 )
 async def test_proof_model_failures(
@@ -32,7 +31,6 @@ async def test_proof_model_failures(
     alice_member_client: RichAsyncClient,
     name: str,
     version: str,
-    protocol_version: str,
 ):
     acme_connection_id = acme_and_alice_connection.acme_connection_id
 

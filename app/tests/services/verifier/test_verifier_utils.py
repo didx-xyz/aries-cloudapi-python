@@ -43,19 +43,15 @@ sample_actor = Actor(
 pres_exchange = PresentationExchange(
     connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
     created_at="2021-09-15 13:49:47Z",
-    proof_id="v1-abcd",
+    proof_id="v2-abcd",
     presentation=None,
     presentation_request=sample_indy_proof_request(),
     role="prover",
     state="proposal-sent",
-    protocol_version="v1",
+    protocol_version="v2",
     updated_at=None,
     verified="false",
 )
-
-
-def test_get_verifier_by_version_v1():
-    assert get_verifier_by_version("v1") is VerifierFacade.V1.value
 
 
 def test_get_verifier_by_version_v2():
@@ -66,7 +62,7 @@ def test_get_verifier_by_version_exception():
     other = "v0"
     with pytest.raises(
         CloudApiValueError,
-        match=f"Unknown protocol version: `{other}`. Expecting `v1` or `v2`",
+        match=f"Unknown protocol version: `{other}`. Expecting `v2`",
     ):
         get_verifier_by_version(other)
 

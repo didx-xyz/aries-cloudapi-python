@@ -267,7 +267,6 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
       },
       save_exchange_record: false,
       connection_id: issuerConnectionId,
-      protocol_version: "v2",
     });
 
     // console.log(`credentialDefinitionId: ${credentialDefinitionId}`)
@@ -533,7 +532,6 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
       },
       save_exchange_record: true,
       comment: "string",
-      protocol_version: "v2",
       connection_id: issuerConnectionId,
     };
     const response = http.post(url, JSON.stringify(requestBody), params);
@@ -770,7 +768,6 @@ export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
       },
       save_exchange_record: true,
       comment: "string",
-      protocol_version: "v2",
       connection_id: issuerConnectionId,
     };
     const response = http.get(url, params);

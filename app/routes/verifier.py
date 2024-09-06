@@ -13,12 +13,8 @@ from app.models.verifier import (
     RejectProofRequest,
     SendProofRequest,
 )
-from app.util.acapy_verifier_utils import (
-    VerifierFacade,
-    assert_valid_prover,
-    assert_valid_verifier,
-    get_verifier_by_version,
-)
+from app.services.verifier.acapy_verifier_v2 import VerifierV2
+from app.util.acapy_verifier_utils import assert_valid_prover, assert_valid_verifier
 from app.util.pagination import (
     descending_query_parameter,
     limit_query_parameter,
@@ -57,7 +53,6 @@ async def send_proof_request(
             "dif_proof_request": {...}, <-- Required if type is "ld_proof"
             "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
             "comment": "string", <-- This comment will appear in the proof record for the recipient as well
-            "protocol_version": "v2", <-- "v1" is supported, but deprecated
             "connection_id": "string", <-- The verifier's reference to the connection to send this proof request to
         }
     ```
@@ -80,8 +75,6 @@ async def send_proof_request(
     bound_logger.debug("POST request received: Send proof request")
 
     try:
-        verifier = get_verifier_by_version(body.protocol_version)
-
         async with client_from_auth(auth) as aries_controller:
             if body.connection_id:
                 await assert_valid_verifier(
@@ -89,7 +82,7 @@ async def send_proof_request(
                 )
 
             bound_logger.debug("Sending proof request")
-            result = await verifier.send_proof_request(
+            result = await VerifierV2.send_proof_request(
                 controller=aries_controller, send_proof_request=body
             )
     except CloudApiException as e:
@@ -130,7 +123,6 @@ async def create_proof_request(
             "dif_proof_request": {...}, <-- Required if type is "ld_proof"
             "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
             "comment": "string", <-- This comment will appear in the proof record for the recipient as well
-            "protocol_version": "v2", <-- "v1" is supported, but deprecated
         }
     ```
     For a detailed technical specification and informative diagrams
@@ -152,11 +144,9 @@ async def create_proof_request(
     bound_logger.debug("POST request received: Create proof request")
 
     try:
-        verifier = get_verifier_by_version(body.protocol_version)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Creating proof request")
-            result = await verifier.create_proof_request(
+            result = await VerifierV2.create_proof_request(
                 controller=aries_controller, create_proof_request=body
             )
     except Exception as e:
@@ -226,20 +216,16 @@ async def accept_proof_request(
     bound_logger.debug("POST request received: Accept proof request")
 
     try:
-        verifier = get_verifier_by_version(body.proof_id)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Get proof record")
-            proof_record = await verifier.get_proof_record(
+            proof_record = await VerifierV2.get_proof_record(
                 controller=aries_controller, proof_id=body.proof_id
             )
 
             # If there is a connection id the proof is not connectionless
             if proof_record.connection_id:
                 await assert_valid_prover(
-                    aries_controller=aries_controller,
-                    verifier=verifier,
-                    presentation=body,
+                    aries_controller=aries_controller, presentation=body
                 )
             else:
                 bound_logger.warning(
@@ -247,7 +233,7 @@ async def accept_proof_request(
                 )
 
             bound_logger.debug("Accepting proof record")
-            result = await verifier.accept_proof_request(
+            result = await VerifierV2.accept_proof_request(
                 controller=aries_controller, accept_proof_request=body
             )
     except CloudApiException as e:
@@ -292,11 +278,9 @@ async def reject_proof_request(
     bound_logger.debug("POST request received: Reject proof request")
 
     try:
-        verifier = get_verifier_by_version(body.proof_id)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Getting proof record")
-            proof_record = await verifier.get_proof_record(
+            proof_record = await VerifierV2.get_proof_record(
                 controller=aries_controller, proof_id=body.proof_id
             )
 
@@ -309,7 +293,7 @@ async def reject_proof_request(
                 raise CloudApiException(message, 400)
 
             bound_logger.debug("Rejecting proof request")
-            await verifier.reject_proof_request(
+            await VerifierV2.reject_proof_request(
                 controller=aries_controller, reject_proof_request=body
             )
     except CloudApiException as e:
@@ -364,7 +348,7 @@ async def get_proof_records(
     try:
         async with client_from_auth(auth) as aries_controller:
             logger.debug("Fetching v2 proof records")
-            result = await VerifierFacade.V2.value.get_proof_records(
+            result = await VerifierV2.get_proof_records(
                 controller=aries_controller,
                 limit=limit,
                 offset=offset,
@@ -414,11 +398,9 @@ async def get_proof_record(
     bound_logger.debug("GET request received: Get proof record by id")
 
     try:
-        verifier = get_verifier_by_version(version_candidate=proof_id)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching proof record")
-            result = await verifier.get_proof_record(
+            result = await VerifierV2.get_proof_record(
                 controller=aries_controller, proof_id=proof_id
             )
     except CloudApiException as e:
@@ -459,11 +441,11 @@ async def delete_proof(
     bound_logger.debug("DELETE request received: Delete proof record by id")
 
     try:
-        verifier = get_verifier_by_version(version_candidate=proof_id)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Deleting proof record")
-            await verifier.delete_proof(controller=aries_controller, proof_id=proof_id)
+            await VerifierV2.delete_proof(
+                controller=aries_controller, proof_id=proof_id
+            )
     except CloudApiException as e:
         bound_logger.info("Could not delete proof record: {}.", e)
         raise
@@ -511,11 +493,9 @@ async def get_credentials_by_proof_id(
     bound_logger.debug("GET request received: Get credentials for a proof request")
 
     try:
-        verifier = get_verifier_by_version(version_candidate=proof_id)
-
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching credentials for request")
-            result = await verifier.get_credentials_by_proof_id(
+            result = await VerifierV2.get_credentials_by_proof_id(
                 controller=aries_controller,
                 proof_id=proof_id,
                 referent=referent,

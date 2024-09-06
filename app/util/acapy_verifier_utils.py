@@ -38,7 +38,7 @@ def get_verifier_by_version(
 
 
 async def assert_valid_prover(
-    aries_controller: AcaPyClient, presentation: AcceptProofRequest, verifier: Verifier
+    aries_controller: AcaPyClient, presentation: AcceptProofRequest
 ) -> None:
     """Check transaction requirements against trust registry for prover"""
     # get connection record
@@ -49,7 +49,7 @@ async def assert_valid_prover(
 
     bound_logger.debug("Getting connection from proof")
     connection_id = await get_connection_from_proof(
-        aries_controller=aries_controller, proof_id=proof_id, verifier=verifier
+        aries_controller=aries_controller, proof_id=proof_id
     )
 
     if not connection_id:
@@ -268,9 +268,9 @@ async def get_schema_ids(
 
 
 async def get_connection_from_proof(
-    aries_controller: AcaPyClient, verifier: Verifier, proof_id: str
+    aries_controller: AcaPyClient, proof_id: str
 ) -> Optional[str]:
-    proof_record = await verifier.get_proof_record(
+    proof_record = await VerifierV2.get_proof_record(
         controller=aries_controller, proof_id=proof_id
     )
     return proof_record.connection_id

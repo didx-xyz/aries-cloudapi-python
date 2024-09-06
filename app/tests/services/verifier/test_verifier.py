@@ -16,7 +16,6 @@ from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_
 from app.tests.util.mock import to_async
 from app.util import acapy_verifier_utils
 from shared.models.presentation_exchange import PresentationExchange
-from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.trustregistry import Actor
 from shared.util.mock_agent_controller import MockContextManagedController
 
@@ -25,7 +24,7 @@ presentation_exchange_record_2 = PresentationExchange(
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version=PresentProofProtocolVersion.V2.value,
+    protocol_version="v2",
     presentation={},
     role="prover",
     state="presentation-sent",
@@ -72,7 +71,6 @@ async def test_send_proof_request_v2(
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
         indy_proof_request=sample_indy_proof_request(),
-        protocol_version="v2",
     )
 
     mocker.patch.object(
@@ -99,7 +97,6 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     )
     result = await test_module.create_proof_request(
         body=test_module.CreateProofRequest(
-            protocol_version="v2",
             indy_proof_request=sample_indy_proof_request(),
             connection_id="abcde",
         ),

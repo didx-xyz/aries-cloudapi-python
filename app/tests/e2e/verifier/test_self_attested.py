@@ -22,7 +22,6 @@ async def test_self_attested_attributes(
 
     request_body = {
         "type": "indy",
-        "protocol_version": "v2",
         "indy_proof_request": {
             "requested_attributes": {
                 "name_attribute": {

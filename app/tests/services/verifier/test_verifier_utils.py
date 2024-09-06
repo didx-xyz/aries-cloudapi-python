@@ -11,11 +11,11 @@ from aries_cloudcontroller import (
 )
 from assertpy import assert_that
 from httpx import Response
-from mockito import mock, when
+from mockito import when
 
 from app.exceptions import CloudApiException, CloudApiValueError
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
-from app.services.verifier.acapy_verifier import Verifier
+from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
 from app.tests.util.mock import to_async
 from app.util.acapy_verifier_utils import (
@@ -185,15 +185,11 @@ async def test_get_actor(mock_async_client: Mock):
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_invitation_key(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id,
+        connection_id=pres_exchange.connection_id,
         invitation_key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     )
 
@@ -214,13 +210,11 @@ async def test_assert_valid_prover_invitation_key(
         },
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     with patch(
@@ -236,23 +230,18 @@ async def test_assert_valid_prover_invitation_key(
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=test_pres_exchange.proof_id,
+                proof_id=pres_exchange.proof_id,
                 indy_presentation_spec=presentation,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_public_did(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id, their_public_did="did:sov:123"
+        connection_id=pres_exchange.connection_id, their_public_did="did:sov:123"
     )
 
     presentation = IndyPresSpec(
@@ -272,13 +261,11 @@ async def test_assert_valid_prover_public_did(
         },
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     with patch(
@@ -294,30 +281,23 @@ async def test_assert_valid_prover_public_did(
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=test_pres_exchange.proof_id,
+                proof_id=pres_exchange.proof_id,
                 indy_presentation_spec=presentation,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
-    conn_record = ConnRecord(connection_id=test_pres_exchange.connection_id)
+    conn_record = ConnRecord(connection_id=pres_exchange.connection_id)
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     with pytest.raises(
@@ -326,34 +306,27 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=test_pres_exchange.proof_id,
+                proof_id=pres_exchange.proof_id,
                 indy_presentation_spec=indy_pres_spec,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_actor_invalid_role(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     actor = sample_actor.model_copy(update={"roles": ["issuer"]})
 
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id, their_public_did="xxx"
+        connection_id=pres_exchange.connection_id, their_public_did="xxx"
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     # valid
@@ -367,34 +340,27 @@ async def test_assert_valid_prover_x_actor_invalid_role(
             await assert_valid_prover(
                 aries_controller=mock_agent_controller,
                 presentation=AcceptProofRequest(
-                    proof_id=test_pres_exchange.proof_id,
+                    proof_id=pres_exchange.proof_id,
                     indy_presentation_spec=indy_pres_spec,
                 ),
-                verifier=verifier,
             )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_could_not_fetch_actor_recover_label(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id,
+        connection_id=pres_exchange.connection_id,
         their_public_did="xxx",
         their_label="some_label",
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     # valid
@@ -414,34 +380,27 @@ async def test_assert_valid_prover_could_not_fetch_actor_recover_label(
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=test_pres_exchange.proof_id,
+                proof_id=pres_exchange.proof_id,
                 indy_presentation_spec=indy_pres_spec,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_could_not_fetch_actor_exc(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id,
+        connection_id=pres_exchange.connection_id,
         their_public_did="xxx",
         their_label="some_label",
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     # valid
@@ -456,34 +415,27 @@ async def test_assert_valid_prover_x_could_not_fetch_actor_exc(
             await assert_valid_prover(
                 aries_controller=mock_agent_controller,
                 presentation=AcceptProofRequest(
-                    proof_id=test_pres_exchange.proof_id,
+                    proof_id=pres_exchange.proof_id,
                     indy_presentation_spec=indy_pres_spec,
                 ),
-                verifier=verifier,
             )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_could_not_fetch_actor_exc2(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={"protocol_version": protocol_version}
-    )
     conn_record = ConnRecord(
-        connection_id=test_pres_exchange.connection_id,
+        connection_id=pres_exchange.connection_id,
         their_public_did="xxx",
         their_label="some_label",
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
-    ).thenReturn(to_async(test_pres_exchange))
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
-        conn_id=test_pres_exchange.connection_id
+        conn_id=pres_exchange.connection_id
     ).thenReturn(to_async(conn_record))
 
     # valid
@@ -495,10 +447,9 @@ async def test_assert_valid_prover_x_could_not_fetch_actor_exc2(
             await assert_valid_prover(
                 aries_controller=mock_agent_controller,
                 presentation=AcceptProofRequest(
-                    proof_id=test_pres_exchange.proof_id,
+                    proof_id=pres_exchange.proof_id,
                     indy_presentation_spec=indy_pres_spec,
                 ),
-                verifier=verifier,
             )
 
 
@@ -510,9 +461,7 @@ async def test_assert_valid_prover_x_invalid_schemas(
         connection_id=pres_exchange.connection_id, their_public_did="xxx"
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
+    when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -538,7 +487,6 @@ async def test_assert_valid_prover_x_invalid_schemas(
                     proof_id=pres_exchange.proof_id,
                     indy_presentation_spec=indy_pres_spec,
                 ),
-                verifier=verifier,
             )
 
 
@@ -550,9 +498,7 @@ async def test_assert_valid_prover_x_no_schemas(
         connection_id=pres_exchange.connection_id, their_public_did="xxx"
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
+    when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -575,25 +521,15 @@ async def test_assert_valid_prover_x_no_schemas(
                     proof_id=pres_exchange.proof_id,
                     indy_presentation_spec=indy_pres_spec,
                 ),
-                verifier=verifier,
             )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_connection_id(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
-    test_pres_exchange = pres_exchange.model_copy(
-        update={
-            "connection_id": None,
-            "protocol_version": protocol_version,
-        }
-    )
-
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
+    test_pres_exchange = pres_exchange.model_copy(update={"connection_id": None})
+    when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
     ).thenReturn(to_async(test_pres_exchange))
 
@@ -606,25 +542,20 @@ async def test_assert_valid_prover_x_no_connection_id(
                 proof_id=test_pres_exchange.proof_id,
                 indy_presentation_spec=indy_pres_spec,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_prover_x_no_connection_id2(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     test_pres_exchange = pres_exchange.model_copy(
         update={
             "connection_id": "a-connection-id",
-            "protocol_version": protocol_version,
         }
     )
 
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
+    when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=test_pres_exchange.proof_id
     ).thenReturn(to_async(test_pres_exchange))
 
@@ -639,15 +570,11 @@ async def test_assert_valid_prover_x_no_connection_id2(
                 proof_id=test_pres_exchange.proof_id,
                 indy_presentation_spec=indy_pres_spec,
             ),
-            verifier=verifier,
         )
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
-async def test_assert_valid_verifier_invitation_key(
-    mock_agent_controller: AcaPyClient, protocol_version: str
-):
+async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPyClient):
     conn = ConnRecord(
         connection_id="a-connection-id",
         invitation_key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
@@ -665,7 +592,6 @@ async def test_assert_valid_verifier_invitation_key(
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
-                protocol_version=protocol_version,
                 connection_id="a-connection-id",
                 indy_proof_request=sample_indy_proof_request(),
             ),
@@ -673,10 +599,7 @@ async def test_assert_valid_verifier_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
-async def test_assert_valid_verifier_public_did(
-    mock_agent_controller: AcaPyClient, protocol_version: str
-):
+async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClient):
     # valid
     with patch(
         "app.util.acapy_verifier_utils.assert_public_did",
@@ -685,7 +608,6 @@ async def test_assert_valid_verifier_public_did(
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
-                protocol_version=protocol_version,
                 connection_id="abcde",
                 indy_proof_request=sample_indy_proof_request(),
             ),
@@ -693,9 +615,8 @@ async def test_assert_valid_verifier_public_did(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     conn = ConnRecord(
         connection_id="a-connection-id",
@@ -714,7 +635,6 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),
@@ -722,10 +642,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
-async def test_assert_valid_verifier_x_not_verifier(
-    mock_agent_controller: AcaPyClient, protocol_version: str
-):
+async def test_assert_valid_verifier_x_not_verifier(mock_agent_controller: AcaPyClient):
     actor = sample_actor.model_copy(update={"roles": ["issuer"]})
 
     conn = ConnRecord(
@@ -749,7 +666,6 @@ async def test_assert_valid_verifier_x_not_verifier(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),
@@ -757,9 +673,8 @@ async def test_assert_valid_verifier_x_not_verifier(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     # valid with recovery from actor not found, using label
     with patch(
@@ -778,7 +693,6 @@ async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
-                protocol_version=protocol_version,
                 connection_id="a-connection-id",
                 indy_proof_request=sample_indy_proof_request(),
             ),
@@ -786,9 +700,8 @@ async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     # failure to attempt recovery by reading wallet_label: No actor
     with patch(
@@ -811,7 +724,6 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),
@@ -819,9 +731,8 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     # failure to attempt recovery by reading wallet_label
     with patch(
@@ -841,7 +752,6 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),
@@ -849,9 +759,8 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     # failure to attempt recovery by reading wallet_label
     with patch(
@@ -868,7 +777,6 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),
@@ -876,9 +784,8 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_assert_valid_verifier_x_could_not_fetch_actor_exc4(
-    mock_agent_controller: AcaPyClient, protocol_version: str
+    mock_agent_controller: AcaPyClient,
 ):
     # failure to attempt recovery by reading wallet_label
     with patch(
@@ -892,7 +799,6 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc4(
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(
-                    protocol_version=protocol_version,
                     connection_id="a-connection-id",
                     indy_proof_request=sample_indy_proof_request(),
                 ),

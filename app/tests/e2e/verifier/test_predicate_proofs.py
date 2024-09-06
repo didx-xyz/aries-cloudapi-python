@@ -14,19 +14,16 @@ VERIFIER_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 @pytest.mark.parametrize("predicate", ["<", ">", "<=", ">="])
 async def test_predicate_proofs(
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
-    protocol_version: str,
     predicate: str,
 ):
     request_body = {
         "type": "indy",
-        "protocol_version": protocol_version,
         "indy_proof_request": {
             "requested_attributes": {},
             "requested_predicates": {

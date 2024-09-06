@@ -24,25 +24,22 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_accept_proof_request_oob(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
-    protocol_version: str,
 ):
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
         indy_proof_request=sample_indy_proof_request(),
         comment="some comment",
-        protocol_version=protocol_version,
     )
     create_proof_response = await bob_member_client.post(
         VERIFIER_BASE_PATH + "/create-request",
         json=create_proof_request.model_dump(by_alias=True),
     )
     bob_exchange = create_proof_response.json()
-    assert bob_exchange["protocol_version"] == protocol_version
+    assert bob_exchange["protocol_version"] == "v2"
     thread_id = bob_exchange["thread_id"]
 
     create_oob_invitation_request = CreateOobInvitation(
@@ -122,13 +119,11 @@ async def test_accept_proof_request_oob(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_accept_proof_request_verifier_oob_connection(
     credential_definition_id: str,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    protocol_version: str,
 ):
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
@@ -159,7 +154,6 @@ async def test_accept_proof_request_verifier_oob_connection(
     try:
         # Present proof from holder to verifier
         request_body = {
-            "protocol_version": protocol_version,
             "connection_id": verifier_holder_connection_id,
             "indy_proof_request": {
                 "name": "Age Check",

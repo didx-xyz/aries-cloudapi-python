@@ -19,13 +19,11 @@ from app.tests.routes.issuer.test_create_offer import indy_cred, ld_cred
     "credential",
     [
         SendCredential(
-            protocol_version="v2",
             type=CredentialType.INDY,
             indy_credential_detail=indy_cred,
             connection_id="abc",
         ),
         SendCredential(
-            protocol_version="v2",
             type=CredentialType.LD_PROOF,
             ld_credential_detail=ld_cred,
             connection_id="abc",
@@ -90,7 +88,6 @@ async def test_send_credential_fail_acapy_error(
 
         await send_credential(
             credential=SendCredential(
-                protocol_version="v2",
                 type=CredentialType.INDY,
                 indy_credential_detail=indy_cred,
                 connection_id="abc",
@@ -104,7 +101,6 @@ async def test_send_credential_fail_acapy_error(
 @pytest.mark.anyio
 async def test_send_credential_fail_bad_public_did():
     credential = SendCredential(
-        protocol_version="v2",
         type=CredentialType.INDY,
         indy_credential_detail=indy_cred,
         connection_id="abc",

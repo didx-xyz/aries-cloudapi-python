@@ -32,7 +32,6 @@ async def test_get_credential_exchange_records_paginated(
         for i in range(num_credentials_to_test):
             test_attributes["speed"] = str(i)
             credential_v2 = {
-                "protocol_version": "v2",
                 "connection_id": faber_and_alice_connection.faber_connection_id,
                 "indy_credential_detail": {
                     "credential_definition_id": credential_definition_id,

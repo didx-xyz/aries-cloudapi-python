@@ -16,17 +16,14 @@ CREDENTIALS_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [False, True])
-@pytest.mark.parametrize("protocol_version", ["v2"])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     save_exchange_record: bool,
-    protocol_version: str,
 ) -> CredentialExchange:
     credential = {
-        "protocol_version": protocol_version,
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -124,7 +121,6 @@ async def test_get_cred_exchange_records(
     ).json()
 
     credential_v2 = {
-        "protocol_version": "v2",
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -142,7 +138,7 @@ async def test_get_cred_exchange_records(
 
     num_tries = 0
     num_credentials_returned = 0
-    while num_credentials_returned != 2 and num_tries < 10:
+    while num_credentials_returned != 1 and num_tries < 10:
         await asyncio.sleep(0.25)
         alice_cred_ex_response = (
             await alice_member_client.get(
@@ -161,9 +157,9 @@ async def test_get_cred_exchange_records(
         num_credentials_returned = len(alice_cred_ex_response)
         num_tries += 1
 
-    if num_credentials_returned != 2:
+    if num_credentials_returned != 1:
         raise Exception(  # pylint: disable=W0719
-            f"Expected 2 credentials to be issued; only got {num_credentials_returned}"
+            f"Expected 1 credential to be issued; got {num_credentials_returned}"
         )
 
     for cred in alice_cred_ex_response:

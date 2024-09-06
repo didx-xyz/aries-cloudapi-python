@@ -7,12 +7,11 @@ from pytest_mock import MockerFixture
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions import CloudApiException
-from app.models.issuer import CredentialWithProtocol, IndyCredential, RevokeCredential
+from app.models.issuer import CredentialBase, IndyCredential, RevokeCredential
 from app.services import revocation_registry
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
 from shared.models.credential_exchange import CredentialExchange
-from shared.models.protocol import IssueCredentialProtocolVersion
 from shared.util.mock_agent_controller import MockContextManagedController
 
 did = "did:sov:WgWxqztrNooG92RXvxSTWv"
@@ -42,7 +41,6 @@ async def test_send_credential(
     when(test_module).assert_public_did(...).thenReturn(to_async(did))
 
     credential = test_module.SendCredential(
-        protocol_version=IssueCredentialProtocolVersion.V2,
         connection_id="conn_id",
         indy_credential_detail=IndyCredential(
             credential_definition_id=cred_def_id,
@@ -324,9 +322,7 @@ async def test_create_offer(
         "client_from_auth",
         return_value=mock_context_managed_controller(mock_agent_controller),
     )
-    v2_credential = mock(CredentialWithProtocol)
-
-    v2_credential.protocol_version = IssueCredentialProtocolVersion.V2
+    v2_credential = mock(CredentialBase)
 
     v2_credential.type = "Indy"
 

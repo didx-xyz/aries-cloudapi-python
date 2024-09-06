@@ -27,7 +27,6 @@ CONNECTIONS_BASE_PATH = con_router.prefix
 credential_ = SendCredential(
     type="ld_proof",
     connection_id="",
-    protocol_version="v2",
     ld_credential_detail=LDProofVCDetail(
         credential=Credential(
             context=[
@@ -53,7 +52,6 @@ credential_ = SendCredential(
 # {
 #     "type": "ld_proof",
 #     "connection_id": "",
-#     "protocol_version": "v2",
 #     "ld_credential_detail": {
 #         "credential": {
 #             "@context": [

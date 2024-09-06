@@ -26,7 +26,6 @@ async def test_limit_and_offset(
 ):
     request_body = {
         "connection_id": acme_and_alice_connection.acme_connection_id,
-        "protocol_version": "v2",
         "indy_proof_request": {
             "name": "Proof Request",
             "version": "1.0.0",

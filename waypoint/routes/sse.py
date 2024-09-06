@@ -118,12 +118,6 @@ async def sse_wait_for_event_with_field_and_state(
         "waiting for payload with field-id pair and specific state"
     )
 
-    # TODO check wallet belongs to group
-    # if group_id and not await check_wallet_belongs_to_group(
-    #     wallet_id=wallet_id, group_id=group_id
-    # ):
-    #     raise BadGroupIdException()
-
     event_stream = nats_event_stream_generator(
         request=request,
         background_tasks=background_tasks,

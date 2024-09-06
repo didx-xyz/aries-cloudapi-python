@@ -83,7 +83,6 @@ To create schemas and effectively write them to the ledger as well as registerin
 
    ```json
    {
-     "protocol_version": "v1",
      "connection_id": "string",
      "schema_id": "string",
      "attributes": {
@@ -110,7 +109,6 @@ To create schemas and effectively write them to the ledger as well as registerin
 
    ```json
    {
-     "protocol_version": "v1",
      "connection_id": "string",
      "indy_proof_request": {
        "requested_attributes": {
@@ -147,7 +145,6 @@ To create schemas and effectively write them to the ledger as well as registerin
 
    ```json
    {
-     "protocol_version": "v1",
      "proof_id": "string",
      "indy_presentation_spec": {
        "requested_attributes": {

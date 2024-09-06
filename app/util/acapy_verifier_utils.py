@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set
 
 from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 
@@ -8,33 +7,13 @@ from app.models.verifier import AcceptProofRequest, ProofRequestType, SendProofR
 from app.services.acapy_wallet import assert_public_did
 from app.services.trust_registry.actors import fetch_actor_by_did, fetch_actor_by_name
 from app.services.trust_registry.schemas import fetch_schemas
-from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key, qualified_did_sov
 from app.util.tenants import get_wallet_label_from_controller
-from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
-from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
-
-
-class VerifierFacade(Enum):
-    V2 = VerifierV2
-
-
-def get_verifier_by_version(
-    version_candidate: Union[str, PresentProofProtocolVersion]
-) -> Verifier:
-    if version_candidate == PresentProofProtocolVersion.V2 or (
-        isinstance(version_candidate, str) and version_candidate.startswith("v2-")
-    ):
-        return VerifierFacade.V2.value
-    else:
-        raise CloudApiValueError(
-            f"Unknown protocol version: `{version_candidate}`. Expecting `v2`."
-        )
 
 
 async def assert_valid_prover(

@@ -13,20 +13,18 @@ from assertpy import assert_that
 from httpx import Response
 from mockito import when
 
-from app.exceptions import CloudApiException, CloudApiValueError
+from app.exceptions import CloudApiException
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
 from app.tests.util.mock import to_async
 from app.util.acapy_verifier_utils import (
-    VerifierFacade,
     are_valid_schemas,
     assert_valid_prover,
     assert_valid_verifier,
     ed25519_verkey_to_did_key,
     get_actor,
     get_schema_ids,
-    get_verifier_by_version,
     is_verifier,
 )
 from shared.models.presentation_exchange import PresentationExchange
@@ -53,18 +51,6 @@ pres_exchange = PresentationExchange(
     verified="false",
 )
 
-
-def test_get_verifier_by_version_v2():
-    assert get_verifier_by_version("v2") is VerifierFacade.V2.value
-
-
-def test_get_verifier_by_version_exception():
-    other = "v0"
-    with pytest.raises(
-        CloudApiValueError,
-        match=f"Unknown protocol version: `{other}`. Expecting `v2`",
-    ):
-        get_verifier_by_version(other)
 
 
 @pytest.mark.anyio

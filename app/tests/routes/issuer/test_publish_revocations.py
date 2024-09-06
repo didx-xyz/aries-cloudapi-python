@@ -11,11 +11,13 @@ from app.tests.util.models.dummy_txn_record_publish import txn_record
 
 
 @pytest.mark.anyio
-async def test_publish_revocations_success():
+@pytest.mark.parametrize(
+    "publish_revocation_response",
+    [None, TxnOrPublishRevocationsResult(txn=[txn_record])],
+)
+async def test_publish_revocations_success(publish_revocation_response):
     mock_aries_controller = AsyncMock()
-    mock_publish_revocations = AsyncMock(
-        return_value=TxnOrPublishRevocationsResult(txn=[txn_record])
-    )
+    mock_publish_revocations = AsyncMock(return_value=publish_revocation_response)
 
     mock_get_transaction = AsyncMock()
 
@@ -38,7 +40,8 @@ async def test_publish_revocations_success():
         mock_publish_revocations.assert_awaited_once_with(
             controller=mock_aries_controller, revocation_registry_credential_map={}
         )
-        mock_get_transaction.assert_awaited_once()
+        if publish_revocation_response:
+            mock_get_transaction.assert_awaited_once()
 
 
 @pytest.mark.anyio

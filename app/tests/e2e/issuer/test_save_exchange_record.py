@@ -120,7 +120,7 @@ async def test_get_cred_exchange_records(
         await alice_member_client.get(CREDENTIALS_BASE_PATH + "?state=offer-received")
     ).json()
 
-    credential_v2 = {
+    credential = {
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -129,16 +129,21 @@ async def test_get_cred_exchange_records(
         "save_exchange_record": True,
     }
 
-    faber_send_response_2 = await faber_client.post(
-        CREDENTIALS_BASE_PATH, json=credential_v2
+    faber_send_response_1 = await faber_client.post(
+        CREDENTIALS_BASE_PATH, json=credential
     )
+    faber_send_response_2 = await faber_client.post(
+        CREDENTIALS_BASE_PATH, json=credential
+    )
+
+    faber_cred_ex_id_1 = faber_send_response_1.json()["credential_exchange_id"]
     faber_cred_ex_id_2 = faber_send_response_2.json()["credential_exchange_id"]
 
-    faber_cred_ids = [faber_cred_ex_id_2]
+    faber_cred_ids = [faber_cred_ex_id_1, faber_cred_ex_id_2]
 
     num_tries = 0
     num_credentials_returned = 0
-    while num_credentials_returned != 1 and num_tries < 10:
+    while num_credentials_returned != 2 and num_tries < 10:
         await asyncio.sleep(0.25)
         alice_cred_ex_response = (
             await alice_member_client.get(
@@ -157,9 +162,9 @@ async def test_get_cred_exchange_records(
         num_credentials_returned = len(alice_cred_ex_response)
         num_tries += 1
 
-    if num_credentials_returned != 1:
+    if num_credentials_returned != 2:
         raise Exception(  # pylint: disable=W0719
-            f"Expected 1 credential to be issued; got {num_credentials_returned}"
+            f"Expected 2 credentials to be issued; got {num_credentials_returned}"
         )
 
     for cred in alice_cred_ex_response:

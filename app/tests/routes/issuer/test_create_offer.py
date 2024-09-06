@@ -57,8 +57,8 @@ async def test_create_offer_success(credential):
     issuer.create_offer = AsyncMock()
 
     with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
-        "app.routes.issuer.assert_public_did", return_value="public_did"
-    ), patch(
+        "app.routes.issuer.IssuerV2", new=issuer
+    ), patch("app.routes.issuer.assert_public_did", return_value="public_did"), patch(
         "app.routes.issuer.schema_id_from_credential_definition_id",
         return_value="schema_id",
     ), patch(

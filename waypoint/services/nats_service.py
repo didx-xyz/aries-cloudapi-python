@@ -31,9 +31,17 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
     """
     logger.debug("Connecting to NATS server...")
     try:
-        nats_client: NATS = await nats.connect(
-            servers=[NATS_SERVER], user_credentials=NATS_CREDS_FILE
-        )
+        connect_kwargs = {
+            "servers": [NATS_SERVER],
+        }
+        if NATS_CREDS_FILE:
+            connect_kwargs["user_credentials"] = NATS_CREDS_FILE
+
+            nats_client: NATS = await nats.connect(**connect_kwargs)
+        else:
+            logger.warning("No NATS credentials file found, assuming local development")
+            nats_client: NATS = await nats.connect(**connect_kwargs)
+
     except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
         logger.error(f"Error connecting to NATS server: {e}")
         raise e

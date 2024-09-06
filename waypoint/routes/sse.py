@@ -19,15 +19,6 @@ router = APIRouter(
 )
 
 
-class BadGroupIdException(HTTPException):
-    """Custom exception when group_id is specified and no events exist on Nats"""
-
-    def __init__(self):
-        super().__init__(
-            status_code=404, detail="No events found for this wallet/group combination"
-        )
-
-
 async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
     """
     Check if the client has disconnected

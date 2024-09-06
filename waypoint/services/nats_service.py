@@ -68,13 +68,13 @@ class NatsEventsProcessor:
 
     async def stop(self):
         logger.debug("Stopping NATS event processor...")
-
-        for task in self._tasks:
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                logger.debug("Task was cancelled successfully")
+        # TODO - Need to decide if we want/need to track tasks and cancel them
+        # for task in self._tasks:
+        #     task.cancel()
+        #     try:
+        #         await task
+        #     except asyncio.CancelledError:
+        #         logger.debug("Task was cancelled successfully")
 
         logger.debug("NATS event processor stopped.")
 

@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 
 from aries_cloudcontroller import IndyProof, IndyProofRequest, V20PresExRecord
 from pydantic import BaseModel

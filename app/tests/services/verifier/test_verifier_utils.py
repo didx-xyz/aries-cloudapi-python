@@ -52,7 +52,6 @@ pres_exchange = PresentationExchange(
 )
 
 
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True

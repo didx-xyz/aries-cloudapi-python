@@ -144,3 +144,81 @@ async def assert_both_webhooks_received(
     )
 
     assert all(results), "Not all webhooks received the expected state"
+
+
+async def assert_waypoint_state(
+    client: RichAsyncClient,
+    topic: CloudApiTopics,
+    state: str,
+    filter_map: Optional[Dict[str, str]] = None,
+    max_duration: int = 30,
+    max_tries: int = 2,
+    delay: float = 0.5,
+) -> Dict[str, Any]:
+    assert max_duration >= 0, "Poll duration cannot be negative"
+
+    wallet_id = get_wallet_id_from_async_client(client)
+    group_id = await get_tenant_group_id(wallet_id)
+
+    listener = WaypointListener(wallet_id, topic)
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+
+    # Retry logic in case of disconnect errors (don't retry on timeout errors)
+    event = None
+    attempt = 0
+
+    while not event and attempt < max_tries:
+        try:
+
+            field, field_id = list(filter_map.items())[0]
+            bound_logger.info(
+                "Waiting for event with field:field_id {}:{}, and state {}",
+                field,
+                field_id,
+                state,
+            )
+            event = await listener.wait_for_event(
+                field=field,
+                field_id=field_id,
+                desired_state=state,
+                timeout=max_duration,
+                group_id=group_id,
+            )
+        except WaypointListenerTimeout:
+            bound_logger.error(
+                "Encountered SSE Timeout (server didn't return expected event in time)."
+            )
+            raise
+        except HTTPError as e:
+            if attempt + 1 >= max_tries:
+                bound_logger.error(
+                    "Encountered {} HTTPErrors while waiting for SSE event. Failing",
+                    max_tries,
+                )
+                raise
+            else:
+                bound_logger.warning(
+                    "Attempt {}. Encountered HTTP Error while waiting for SSE Event: {}.",
+                    attempt + 1,
+                    e,
+                )
+        if not event:
+            attempt += 1
+            bound_logger.warning("Retrying SSE request in {}s", delay)
+            await asyncio.sleep(delay)
+    if event:
+        return event
+    else:
+        raise Exception(  # pylint: disable=W0719
+            f"Could not satisfy webhook filter: `{filter_map}`."
+        )
+
+
+async def get_tenant_group_id(wallet_id: str) -> str:
+    async with RichAsyncClient() as client:
+        response = await client.get(
+            f"{TENANT_ADMIN_FASTAPI_ENDPOINT}/v1/tenants/{wallet_id}",
+            headers={"x-api-key": f"tenant-admin.{TENANT_ACAPY_API_KEY}"},
+        )
+        response.raise_for_status()
+        return response.json()["group_id"]

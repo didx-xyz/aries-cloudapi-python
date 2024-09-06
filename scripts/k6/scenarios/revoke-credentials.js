@@ -6,12 +6,9 @@ import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   checkRevoked,
-  createCredentialDefinition,
-  getCredentialDefinitionId,
   revokeCredentialAutoPublish,
 } from "../libs/functions.js";
-import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
-import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
+import { bootstrapIssuer } from "../libs/setup.js";
 
 const inputFilepath = "../output/create-credentials.json";
 const data = open(inputFilepath, "r");
@@ -19,8 +16,9 @@ const data = open(inputFilepath, "r");
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+const schemaName = __ENV.SCHEMA_NAME;
+const schemaVersion = __ENV.SCHEMA_VERSION;
 const testFunctionReqs = new Counter("test_function_reqs");
-const numIssuers = 1;
 
 export const options = {
   scenarios: {
@@ -48,62 +46,14 @@ export const options = {
 };
 
 export function setup() {
-  const issuers = [];
   const ids = data.trim().split("\n").map(JSON.parse);
   const bearerToken = getBearerToken();
-  for (let i = 0; i < numIssuers; i++) {
-    const walletName = `${issuerPrefix}_${i}`;
-    const credDefTag = walletName;
+  const walletName = issuerPrefix;
+  const credDefTag = walletName;
+  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
 
-    const issuerData = createIssuerIfNotExists(bearerToken, walletName);
-    check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
-    });
-    if (!issuerData) {
-      console.error(`Failed to create or retrieve issuer for ${walletName}`);
-      continue;
-    }
-    const { issuerWalletId, issuerAccessToken } = issuerData;
-
-    const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
-    if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-      continue;
-    }
-    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
-    // console.error(`Response body: ${credentialDefinitionId.body}`);
-
-    const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
-    check(schemaId, {
-      "Schema ID is not null": (id) => id !== null && id !== undefined,
-    });
-
-    const createCredentialDefinitionResponse = createCredentialDefinition(
-      bearerToken,
-      issuerAccessToken,
-      credDefTag,
-      schemaId,
-    );
-    check(createCredentialDefinitionResponse, {
-      "Credential definition created successfully": (r) => r.status === 200,
-    });
-
-    if (createCredentialDefinitionResponse.status === 200) {
-      const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
-      console.log(`Credential definition created successfully for issuer ${walletName}`);
-      issuers.push({
-        walletId: issuerWalletId,
-        accessToken: issuerAccessToken,
-        credentialDefinitionId,
-      });
-    } else {
-      console.error(`Failed to create credential definition for issuer ${walletName}`);
-    }
+  if (!issuers || issuers.length === 0) {
+    console.error("Failed to bootstrap issuers.");
   }
   return { bearerToken, ids, issuers }; // eslint-disable-line no-eval
 }
@@ -121,7 +71,7 @@ export default function (data) {
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const id = ids[walletIndex];
 
-  const issuerIndex = __ITER % numIssuers;
+  const issuerIndex = 0;
   const issuer = issuers[issuerIndex];
   const revokeCredentialResponse = revokeCredentialAutoPublish(issuer.accessToken, id.credential_exchange_id);
   check(revokeCredentialResponse, {

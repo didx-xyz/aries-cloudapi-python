@@ -5,21 +5,22 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=20
-    export ITERATIONS=25
-    export SCHEMA_PREFIX="k6_schema"
+    export VUS=5
+    export ITERATIONS=5
+    export HOLDER_PREFIX="k6_holder_holder"
 }
 
 init() {
-    log "No init function specified"
+  log "Initializing..."
 }
 
 scenario() {
-    run_test ./scenarios/create-schemas.js
+    run_test ./scenarios/create-holders.js
 }
 
 cleanup() {
-    log "No cleanup specified for schema collection"
+  log "Cleaning up..."
+  xk6 run ./scenarios/delete-holders.js
 }
 
 run_collection() {

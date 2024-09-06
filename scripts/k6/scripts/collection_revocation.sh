@@ -27,11 +27,11 @@ scenario() {
 }
 
 cleanup() {
-  echo "Cleaning up..."
+  log "Cleaning up..."
   local iterations=$((ITERATIONS * VUS))
   local vus=1
-  run_test ./scenarios/delete-holders.js -e ITERATIONS=${iterations} -e VUS=${vus}
-  run_test ./scenarios/delete-issuers.js -e ITERATIONS=1 -e VUS=1
+  xk6 run ./scenarios/delete-holders.js -e ITERATIONS=${iterations} -e VUS=${vus}
+  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS=1 -e VUS=1
 }
 
 run_collection() {

@@ -70,6 +70,7 @@ main() {
 
   if ${cleanup_only}; then
     echo "Running cleanup only for collection '${collection}'..."
+    config
     cleanup
   else
     # Run the full collection

@@ -4,9 +4,14 @@ from typing import Any, Dict, Optional
 from httpx import HTTPError
 
 from app.tests.util.sse_listener import SseListener, SseListenerTimeout
+from app.tests.util.waypoint_listener import WaypointListener, WaypointListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
-from shared.constants import MAX_EVENT_AGE_SECONDS
+from shared.constants import (
+    MAX_EVENT_AGE_SECONDS,
+    TENANT_ACAPY_API_KEY,
+    TENANT_ADMIN_FASTAPI_ENDPOINT,
+)
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiTopics
 

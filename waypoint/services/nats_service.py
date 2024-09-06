@@ -5,12 +5,13 @@ from typing import Any, AsyncGenerator, List
 
 import nats
 from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrTimeout, ErrNoServers
+from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
 from shared.constants import (
+    NATS_CONSUMER_INACTIVE_THRESHOLD,
     NATS_CREDS_FILE,
     NATS_SERVER,
     NATS_START_TIME,

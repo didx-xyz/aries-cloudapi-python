@@ -150,10 +150,4 @@ class NatsEventsProcessor:
                     stop_event.set()
                     break
 
-        generator_wrapper = EventGeneratorWrapper(generator=event_generator())
-
-        logger.trace("adding generator to tasks")
-        task = asyncio.create_task(generator_wrapper)
-        self._tasks.append(task)
-
-        return generator_wrapper
+        return EventGeneratorWrapper(generator=event_generator())

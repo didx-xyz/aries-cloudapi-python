@@ -83,19 +83,20 @@ class NatsEventsProcessor:
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.debug("Subscribing to JetStream...")
-            start_time = int(time.time() * 1e9) - (int(NATS_START_TIME) * 1e9)
+            start_time = int(time.time() * 1e9) - (NATS_START_TIME * 1e9)
 
             config = ConsumerConfig(
-                # durable_name=f"{group_id}.{wallet_id}",
+                durable_name=f"{group_id}.{wallet_id}",
                 deliver_policy=DeliverPolicy.BY_START_TIME,
                 opt_start_time=start_time,
+                inactive_threshold=NATS_CONSUMER_INACTIVE_THRESHOLD,
             )
 
             subscription = await self.js_context.pull_subscribe(
-                # durable=f"{group_id}.{wallet_id}",
+                durable=f"{group_id}.{wallet_id}",
                 subject=f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
                 stream=NATS_STREAM,
-                # config=ConsumerConfig(**config_dict)
+                config=ConsumerConfig(**config),
             )
 
             return subscription

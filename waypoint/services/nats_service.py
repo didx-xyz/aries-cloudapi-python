@@ -117,7 +117,7 @@ class NatsEventsProcessor:
         wallet_id: str,
         topic: str,
         stop_event: asyncio.Event,
-        duration: int = 150,
+        duration: int = 10,
     ):
         logger.debug(
             f"Processing events for group {group_id} and wallet {wallet_id} on topic {topic}"

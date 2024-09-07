@@ -8,12 +8,12 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 
-fastapi = "~0.112.0"
+fastapi = "~0.114.0"
 httpx = "~0.27.0"
 loguru = "~0.7.2"
 orjson = "~3.10.7"
 psycopg2-binary = "~=2.9.6"
-pydantic = "~2.8.2"
+pydantic = "~2.9.0"
 sqlalchemy = "~=2.0.19"
 uvicorn = { version = "~0.30.5", extras = ["standard"] }
 

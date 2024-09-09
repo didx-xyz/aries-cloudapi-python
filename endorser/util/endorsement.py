@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
@@ -82,7 +82,10 @@ async def extract_operation_type(attachment) -> Optional[str]:
 
 
 async def check_applicable_operation_type(
-    client: AcaPyClient, endorsement: Endorsement, operation_type: str, attachment
+    client: AcaPyClient,
+    endorsement: Endorsement,
+    operation_type: str,
+    attachment: Dict[str, Any],
 ) -> bool:
     bound_logger = logger.bind(body=endorsement)
 
@@ -94,10 +97,11 @@ async def check_applicable_operation_type(
         bound_logger.debug("Endorsement request is for ATTRIB type.")
         return True
 
-    if not is_credential_definition_transaction(operation_type):
+    if not is_credential_definition_transaction(operation_type, attachment):
         bound_logger.warning("Endorsement request is not for credential definition.")
         return False
 
+    # Here, endorsement request is for credential definition
     did, schema_id = await get_did_and_schema_id_from_cred_def_attachment(
         client, attachment
     )

@@ -37,15 +37,14 @@ def get_endorsement_request_attachment(
     return None
 
 
-def is_credential_definition_transaction(operation_type: str) -> bool:
+def is_credential_definition_transaction(
+    operation_type: str, attachment: Dict[str, Any]
+) -> bool:
     # credential definition type is 102
     # see https://github.com/hyperledger/indy-node/blob/master/docs/source/requests.md#common-request-structure
-    return operation_type == TransactionTypes.CLAIM_DEF
+    if operation_type != TransactionTypes.CLAIM_DEF:
+        return False
 
-
-async def get_did_and_schema_id_from_cred_def_attachment(
-    client: AcaPyClient, attachment: Dict[str, Any]
-):
     if "identifier" not in attachment:
         logger.warning(
             "Expected key `identifier` does not exist in extracted attachment. Got attachment: `{}`.",
@@ -53,7 +52,7 @@ async def get_did_and_schema_id_from_cred_def_attachment(
         )
         return False
 
-    # `operation` key is asserted to exist in `is_credential_definition_transaction`
+    # `operation` key is already asserted to exist in `extract_operation_type`
     if "ref" not in attachment["operation"]:
         logger.warning(
             "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
@@ -61,6 +60,12 @@ async def get_did_and_schema_id_from_cred_def_attachment(
         )
         return False
 
+    return True
+
+
+async def get_did_and_schema_id_from_cred_def_attachment(
+    client: AcaPyClient, attachment: Dict[str, Any]
+):
     did = "did:sov:" + attachment["identifier"]
     schema_seq_id = attachment["operation"]["ref"]
 

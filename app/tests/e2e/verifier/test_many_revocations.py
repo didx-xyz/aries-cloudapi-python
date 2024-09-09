@@ -145,7 +145,7 @@ async def issue_many_creds(
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
     faber_cred_ex_ids = []
-    num_to_issue = 20
+    num_to_issue = 50
     for i in range(num_to_issue):  # Adjust the number as needed
         credential = {
             "protocol_version": "v2",

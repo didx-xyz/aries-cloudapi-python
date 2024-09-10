@@ -14,7 +14,7 @@ from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
 logger = get_logger(__name__)
 
 router = APIRouter(
-    prefix="/v1/waypoint",
+    prefix="/sse",
     tags=["waypoint"],
 )
 

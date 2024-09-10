@@ -5,7 +5,8 @@ COPY shared /shared
 
 WORKDIR /app
 
-RUN pip install "poetry==1.8.3"
+ARG POETRY_VERSION=1.8.3
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 # Set Poetry's cache and virtualenvs path to a writable directory
 ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry
 RUN poetry config cache-dir $POETRY_CACHE_DIR && \

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# mise description="Destroy Kubernetes Kind Cluster"
+
+kindClusterName=aries-cloudapi
+kind delete cluster --name $kindClusterName
+
+rm -f .mise/kubeconfig.yaml
+
+docker rm -f kind-registry
+docker rm -f cache-docker

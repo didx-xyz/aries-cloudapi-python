@@ -1,0 +1,416 @@
+load('../utils/Tiltfile', 'namespace_create_wrap')
+load('ext://color', 'color')
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
+
+# https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
+redis_version='11.0.4'
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
+postgres_version='14.2.27'
+# https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
+pgadmin_version='1.29.0'
+pgadmin_host='pgadmin.127.0.0.1.nip.io'
+
+registry='localhost:5001'
+
+def setup_redis(namespace):
+  print(color.green('Installing Redis...'))
+
+  values_file='./tilt/cloudapi/redis.yaml'
+
+  ## Setup Clustered Redis
+  # https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
+  helm_resource(
+    name='redis',
+    chart='oci://registry-1.docker.io/bitnamicharts/redis-cluster',
+    release_name='redis',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      '--version', redis_version,
+      '--wait',
+    ],
+    labels=['01-cloudapi'],
+    resource_deps=['cloudapi-ns'],
+    deps=[values_file]
+  )
+
+def setup_postgres(namespace):
+  print(color.green('Installing Postgres...'))
+
+  values_file='./tilt/cloudapi/postgres.yaml'
+
+  ## Setup HA Postgres
+  # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
+  helm_resource(
+    name='postgres',
+    chart='oci://registry-1.docker.io/bitnamicharts/postgresql-ha',
+    release_name='postgres',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      # Due to bug in Askar (https://github.com/hyperledger/aries-askar/issues/299)
+      # we can't use PGPool on first boot and we need to guarantee that we talk to
+      # the primary Postgres instance.
+      # So we set replicaCount to 1 to avoid accidentally talking to a RO replica.
+      '--set', 'postgresql.replicaCount=1',
+      '--version', postgres_version,
+      '--wait',
+    ],
+    labels=['01-cloudapi'],
+    resource_deps=['cloudapi-ns'],
+    deps=[values_file]
+  )
+
+def setup_pgadmin(namespace):
+  print(color.green('Installing pgAdmin...'))
+
+  values_file='./tilt/cloudapi/pgadmin.yaml'
+
+  ## Setup pgAdmin
+  # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
+  helm_repo(
+    name='runix',
+    url='https://rowanruseler.github.io/helm-charts',
+    resource_name='runix',
+    labels=['10-helm-repos'],
+  )
+  helm_resource(
+    name='pgadmin',
+    chart='runix/pgadmin4',
+    release_name='pgadmin',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      '--set', 'ingress.hosts[0].host='+pgadmin_host,
+      '--version', pgadmin_version,
+      '--wait',
+    ],
+    labels=['01-cloudapi'],
+    resource_deps=['cloudapi-ns', 'runix'],
+    deps=[values_file]
+  )
+  k8s_resource(
+    workload='pgadmin',
+    links=[
+      link('http://'+pgadmin_host, 'pgAdmin'),
+    ],
+  )
+
+def setup_nats(namespace):
+  print(color.green('Installing NATS...'))
+
+  values_file='./tilt/cloudapi/nats/values.yaml'
+
+  ## Setup NATS
+  # https://github.com/bitnami/charts/tree/main/bitnami/nats
+  flags=[]
+  if config.tilt_subcommand == 'ci':
+    flags=[
+      '--set', 'nats.replicaCount=2',
+    ]
+  local('cd tilt/cloudapi/nats && helm dep build', echo_off=True, quiet=True)
+  helm_resource(
+    name='nats',
+    chart='./tilt/cloudapi/nats',
+    release_name='nats',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      '--wait',
+    ]+flags,
+    labels=['01-cloudapi'],
+    resource_deps=['cloudapi-ns'],
+    port_forwards=[
+      port_forward(8222, name='monitoring'),
+      port_forward(4222, name='nats'),
+    ],
+    deps=[
+      values_file,
+      './tilt/cloudapi/nats/Chart.yaml',
+      './tilt/cloudapi/nats/Chart.lock',
+    ]
+  )
+
+def build_cloudapi_service(service, image={}):
+  docker_build(
+      registry+'/'+service,
+      context=image.get('context', '.'),
+      dockerfile=image.get('dockerfile', 'Dockerfile is required'),
+      live_update=image.get('live_update', []),
+    )
+  return [registry+'/'+service]
+
+def setup_cloudapi_service(release, chart, namespace, release_config={}, build_enabled=True):
+  print(color.green('Installing '+release+'...'))
+
+  image_deps=[]
+  image_keys=[]
+
+  flags=release_config.get('flags', [])
+
+  if 'image' in release_config:
+    if build_enabled:
+      image_deps=build_cloudapi_service(release, release_config['image'])
+      image_keys=[('image.registry', 'image.name', 'image.tag')]
+    else:
+      print(color.yellow('Skipping Docker Build for '+release))
+      # Use pre-existing image
+      flags+=[
+        '--set', 'image.registry='+os.environ.get('REGISTRY', 'ghcr.io/didx-xyz'),
+        '--set', 'image.tag='+os.environ.get('IMAGE_TAG', 'latest'),
+      ]
+
+  # Setup CloudAPI Service
+  if release_config.get('enabled', True):
+    values_file=chart+'/conf/local/'+release+'.yaml'
+    helm_resource(
+      name=release,
+      chart=chart,
+      release_name=release,
+      namespace=namespace,
+      image_deps=image_deps,
+      image_keys=image_keys,
+      flags=[
+        '--values', values_file,
+        '--set', 'replicaCount='+str(release_config.get('replicaCount', 1)),
+        '--wait',
+      ]+flags,
+      labels=['01-cloudapi'],
+      resource_deps=['cloudapi-ns']+release_config.get('depends', []),
+      deps=[values_file]
+    )
+    k8s_resource(
+      workload=release,
+      links=release_config.get('links', [])
+    )
+  else:
+    print(color.yellow('Skipping '+release+', not enabled'))
+
+def setup_ledger(namespace):
+  print(color.green('Installing Ledger...'))
+
+  # Setup Ledger Nodes
+  ledger_enabled=True
+  cpu_arch=str(local('uname -m', echo_off=True, quiet=True)).strip()
+  # Until we have more stable Ledger Browser/Nodes deployment for K8s
+  if 'unstable' in cpu_arch:
+    values_file='./tilt/.charts/charts/ledger-nodes/conf/local/values.yaml'
+    helm_resource(
+      name='ledger-nodes',
+      chart='./tilt/.charts/charts/ledger-nodes',
+      release_name='ledger-nodes',
+      namespace=namespace,
+      flags=[
+        '--values', values_file,
+        '--wait',
+      ],
+      labels=['01-cloudapi'],
+      resource_deps=['cloudapi-ns'],
+      deps=[values_file]
+    )
+    k8s_resource(
+      workload='ledger-nodes',
+    )
+  else:
+    # Incompatible CPU Architecture
+    # Deploy Ledger Nodes and Browser via Docker Compose instead of Kind/Helm
+    # print(color.yellow('Skipping Ledger Nodes, CPU Architecture not supported: '+cpu_arch))
+    print(color.yellow('Skipping deploying Ledger Nodes to Kind due to instability.'))
+
+    von_dir='tilt/.von-network'
+    if not os.path.exists(von_dir):
+      print(color.yellow('von-network not found, cloning von-network repo'))
+      local('git clone https://github.com/bcgov/von-network.git -b v1.8.0 '+von_dir, quiet=True)
+
+    docker_build(
+      'tilt.dev/ledger-nodes',
+      von_dir,
+      dockerfile=von_dir+'/Dockerfile',
+      platform='linux/amd64',
+    )
+    docker_build(
+      'tilt.dev/ledger-browser',
+      von_dir,
+      dockerfile=von_dir+'/Dockerfile',
+      platform='linux/amd64',
+    )
+
+    docker_compose('./docker-compose.yaml', wait=True)
+    dc_resource('ledger-nodes', labels=['01-cloudapi'])
+    dc_resource('ledger-browser', labels=['01-cloudapi'])
+
+    ledger_enabled=False
+
+  return ledger_enabled
+
+def add_live_update(live_update_config, enabled):
+  # live_update_config: List[Tuple[str, str]]
+  # enabled: bool
+  # return: List[sync]
+  config=[]
+  if enabled:
+    for src, dest in live_update_config:
+      config.append(sync(src, dest))
+    return config
+  return []
+
+def setup_cloudapi(build_enabled=True):
+  print(color.green('Installing CloudAPI...'))
+
+  # Adopt and manage CloudAPI namespace
+  namespace=namespace_create_wrap(
+    namespace='cloudapi',
+    namespace_labels=['istio-injection: enabled'],
+    allow_duplicates=True,
+  )
+
+  setup_redis(namespace)
+  setup_postgres(namespace)
+  setup_pgadmin(namespace)
+  setup_nats(namespace)
+
+  ledger_enabled=setup_ledger(namespace)
+
+  releases={
+    'governance-endorser': {
+      'depends': ['redis'],
+      'image': {
+        'dockerfile': './dockerfiles/endorser/Dockerfile',
+        'live_update': add_live_update([
+          ('./endorser', '/endorser'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-ga-agent': {
+      'depends': ['postgres', 'ledger-browser'],
+      'links': [
+        link('http://governance-agent.cloudapi.127.0.0.1.nip.io', 'Governance Agent'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/agents/Dockerfile.agent',
+      }
+    },
+    'governance-ga-web': {
+      'depends': ['governance-ga-agent', 'governance-multitenant-agent'],
+      'links': [
+        link('http://cloudapi.127.0.0.1.nip.io/governance', 'Governance Web'),
+        link('http://cloudapi.127.0.0.1.nip.io/governance/docs', 'Governance Web Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/fastapi/Dockerfile',
+        'live_update': add_live_update([
+          ('./app', '/app'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-multitenant-agent': {
+      'depends': ['postgres', 'ledger-browser'],
+      'links': [
+        link('http://multitenant-agent.cloudapi.127.0.0.1.nip.io', 'Multitenant Agent'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/agents/Dockerfile.author.agent',
+      }
+    },
+    'governance-multitenant-web': {
+      'depends': ['governance-ga-agent', 'governance-multitenant-agent'],
+      'links': [
+        link('http://cloudapi.127.0.0.1.nip.io/tenant-admin', 'Tenant Admin'),
+        link('http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs', 'Tenant Admin Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/fastapi/Dockerfile',
+        'live_update': add_live_update([
+          ('./app', '/app'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-tenant-web': {
+      'depends': ['governance-ga-agent', 'governance-multitenant-agent'],
+      'links': [
+        link('http://cloudapi.127.0.0.1.nip.io/tenant', 'Tenant'),
+        link('http://cloudapi.127.0.0.1.nip.io/tenant/docs', 'Tenant Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/fastapi/Dockerfile',
+        'live_update': add_live_update([
+          ('./app', '/app'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-trust-registry-web': {
+      'depends': ['governance-trust-registry'],
+      'links': [
+        link('http://cloudapi.127.0.0.1.nip.io/public', 'Public'),
+        link('http://cloudapi.127.0.0.1.nip.io/public/docs', 'Public Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/fastapi/Dockerfile',
+        'live_update': add_live_update([
+          ('./app', '/app'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-trust-registry': {
+      'depends': ['postgres'],
+      'links': [
+        link('http://trust-registry.cloudapi.127.0.0.1.nip.io', 'Trust Registry'),
+        link('http://trust-registry.cloudapi.127.0.0.1.nip.io/docs', 'Trust Registry Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/trustregistry/Dockerfile',
+        'live_update': add_live_update([
+          ('./trustregistry', '/trustregistry'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'governance-webhooks-web': {
+      'depends': ['redis'],
+      'replicaCount': 1,
+      'links': [
+        link('http://webhooks.cloudapi.127.0.0.1.nip.io', 'Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/webhooks/Dockerfile',
+        'live_update': add_live_update([
+          ('./webhooks', '/app'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
+    'ledger-browser': {
+      'depends': ['ledger-nodes'],
+      'enabled': ledger_enabled,
+      'links': [
+        link('http://ledger-browser.cloudapi.127.0.0.1.nip.io', 'Ledger Browser'),
+      ]
+    },
+    'mediator': {
+      'depends': ['postgres', 'governance-ga-agent', 'governance-multitenant-agent'],
+      'links': [
+        link('http://mediator.cloudapi.127.0.0.1.nip.io', 'Mediator'),
+      ]
+    },
+    'tails-server': {
+      'links': [
+        link('http://tails.cloudapi.127.0.0.1.nip.io', 'Tails'),
+      ]
+    },
+  }
+
+  for release in releases:
+    setup_cloudapi_service(
+      release,
+      './tilt/.charts/charts/aries-cloudapi-python',
+      namespace,
+      releases[release],
+      build_enabled
+    )
+
+  print(color.green('CloudAPI Installed'))

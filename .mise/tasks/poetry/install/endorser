@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Install Endorser dependencies"
+
+echo "Installing Endorser dependencies"
+
+cd ./endorser
+poetry install

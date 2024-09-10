@@ -1,61 +1,59 @@
 # Quick Start Guide
 
-This guide provides a simple walkthrough for starting, managing, and stopping a Docker-based project. Please ensure you have the necessary system requirements and a basic understanding of Docker and Docker Compose.
+This guide provides a simple walkthrough for starting, managing, and stopping a
+Docker-based project. Please ensure you have the necessary system requirements
+and a basic understanding of Docker and Docker Compose.
 
-1. Ensure you have Docker, Docker Compose, Bash, and (optionally) GNU Make installed on your machine. The project will require about 5GB of free disk space, 4GB of RAM, and an average CPU like an Intel i5.
+1. Ensure you have Docker, Docker Compose, Bash, and Mise installed on your
+machine. The project will require about 5GB of free disk space, 4GB of RAM, and
+an average CPU like an Intel i5.
 
-2. In the root directory of the project, you can start the entire project using either GNU Make command:
-
-   ```bash
-   make start
-   ```
-
-   or Bash command:
+2. In the root directory of the project, you can start the entire project:
 
    ```bash
-   ./manage start # or ./manage up
+   mise run tilt:up
    ```
 
-3. If you want to start the containers in daemon mode (meaning they'll run in the background), you can use:
+3. When you're done, you can stop the project by running:
 
    ```bash
-   ./manage up-as-daemon
+   tilt down
    ```
 
-4. When you're done, you can stop the project by running:
+4. If you want to remove the containers that have been spun up, you can use:
 
    ```bash
-   ./manage down # or ./manage stop
+   mise run kind:destroy
    ```
 
-   or
+5. If you want to remove absolutely everything for a clean slate:
 
-   ```bash
-   make stop
-   ```
-
-5. If you want to remove the containers that have been spun up, you can use:
-
-   ```bash
-   make stop_n_clean
-   ```
+    ```bash
+    mise run kind:destroy:all
+    ```
 
 ## Accessing Services
 
-Once the project is running, you'll have access to several services via Swagger interfaces. These can be found at the following URLs:
+Once the project is running, you'll have access to several services via Swagger
+interfaces. These can be found at the following URLs:
 
-- [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
-- [CloudAPI-Governance](http://localhost:8200/docs)
-- [CloudAPI-Tenant](http://localhost:8300/docs)
-- [CloudAPI-Public](http://localhost:8400/docs)
-- [ACA-Py Governance Agent Admin](http://localhost:3021)
-- [ACA-Py Multitenant Agent Admin](http://localhost:4021)
-- [Webhooks](http://localhost:3010/docs)
-- [Trust Registry](http://localhost:8001/docs)
+- [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
+- [ACA-Py Governance Agent Admin](http://governance-agent.cloudapi.127.0.0.1.nip.io)
+- [ACA-Py Multitenant Agent Admin](http://multitenant-agent.cloudapi.127.0.0.1.nip.io)
+- [Webhooks](http://webhooks.cloudapi.127.0.0.1.nip.io/docs)
+- [Trust Registry](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs)
 
 ## Customization
 
-Each Docker container's environment parameters can be adjusted via its respective `.env` file, located in a correspondingly named sub-folder within the `environments` directory. For example, if you want to change the `auto-provision` setting for the ACA-Py multitenant instance from `true` to `false`, adjust the `ACAPY_AUTO_PROVISION` value in `environments/governance-multitenant/aca-py-agent.default.env`.
+Each Docker container's environment parameters can be adjusted via its respective
+`.env` file, located in a correspondingly named sub-folder within the
+`environments` directory. For example, if you want to change the
+`auto-provision` setting for the ACA-Py multitenant instance from `true` to
+`false`, adjust the `ACAPY_AUTO_PROVISION` value in
+`environments/governance-multitenant/aca-py-agent.default.env`.
 
 Remember to stop and restart the affected containers after making changes. However, be careful when changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml` file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values within the `docker-compose.yaml` to reflect these changes.
 

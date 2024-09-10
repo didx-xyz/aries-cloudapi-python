@@ -2,6 +2,21 @@
 data/
 **.db
 
+# Mise Kind Kubeconfig
+.mise/kubeconfig.yaml
+
+# Docker Cache
+tilt/docker
+
+# Helm Charts
+tilt/.charts
+
+# VON Network
+tilt/.von-network
+
+# Nats credentials
+**.creds
+
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,django,windows,virtualenv,sublimetext,intellij+all,visualstudio,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,django,windows,virtualenv,sublimetext,intellij+all,visualstudio,visualstudiocode
 

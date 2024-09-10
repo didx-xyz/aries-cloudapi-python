@@ -29,7 +29,7 @@ def setup_redis(namespace):
       '--version', redis_version,
       '--wait',
     ],
-    labels=['01-cloudapi'],
+    labels=['03-streaming'],
     resource_deps=['cloudapi-ns'],
     deps=[values_file]
   )
@@ -56,7 +56,7 @@ def setup_postgres(namespace):
       '--version', postgres_version,
       '--wait',
     ],
-    labels=['01-cloudapi'],
+    labels=['04-dbs'],
     resource_deps=['cloudapi-ns'],
     deps=[values_file]
   )
@@ -85,7 +85,7 @@ def setup_pgadmin(namespace):
       '--version', pgadmin_version,
       '--wait',
     ],
-    labels=['01-cloudapi'],
+    labels=['04-dbs'],
     resource_deps=['cloudapi-ns', 'runix'],
     deps=[values_file]
   )
@@ -109,7 +109,12 @@ def setup_nats(namespace):
     flags=[
       '--set', 'nats.replicaCount=2',
     ]
-  local('cd tilt/cloudapi/nats && helm dep build --skip-refresh', echo_off=True, quiet=True)
+  local_resource(
+    name='build-nats',
+    cmd='cd '+chart_dir+' && helm dep build --skip-refresh',
+    labels=['10-helm-repos'],
+    allow_parallel=True,
+  )
   helm_resource(
     name='nats',
     chart=chart_dir,
@@ -119,8 +124,11 @@ def setup_nats(namespace):
       '--values', values_file,
       '--wait',
     ]+flags,
-    labels=['01-cloudapi'],
-    resource_deps=['cloudapi-ns'],
+    labels=['03-streaming'],
+    resource_deps=[
+      'cloudapi-ns',
+      'build-nats',
+    ],
     port_forwards=[
       port_forward(8222, name='monitoring'),
       port_forward(4222, name='nats'),
@@ -147,7 +155,13 @@ def setup_benthos(namespace):
     resource_name='benthos-repo',
     labels=['10-helm-repos'],
   )
-  local('cd '+chart_dir+' && helm dep build --skip-refresh', echo_off=True, quiet=True)
+  local_resource(
+    name='build-benthos',
+    cmd='cd '+chart_dir+' && helm dep build --skip-refresh',
+    labels=['10-helm-repos'],
+    resource_deps=['benthos-repo'],
+    allow_parallel=True,
+  )
   helm_resource(
     name='benthos',
     chart=chart_dir,
@@ -157,8 +171,14 @@ def setup_benthos(namespace):
       '--values', values_file,
       '--wait',
     ],
-    labels=['01-cloudapi'],
-    resource_deps=['cloudapi-ns', 'benthos-repo'],
+    labels=['03-streaming'],
+    resource_deps=[
+      'cloudapi-ns',
+      'benthos-repo',
+      'build-benthos',
+      'redis',
+      'nats',
+    ],
     deps=[
       values_file,
       chart_dir+'/Chart.yaml',
@@ -239,7 +259,7 @@ def setup_ledger(namespace):
         '--values', values_file,
         '--wait',
       ],
-      labels=['01-cloudapi'],
+      labels=['02-indy-ledger'],
       resource_deps=['cloudapi-ns'],
       deps=[values_file]
     )
@@ -271,8 +291,8 @@ def setup_ledger(namespace):
     )
 
     docker_compose('./docker-compose.yaml', wait=True)
-    dc_resource('ledger-nodes', labels=['01-cloudapi'])
-    dc_resource('ledger-browser', labels=['01-cloudapi'])
+    dc_resource('ledger-nodes', labels=['02-indy-ledger'])
+    dc_resource('ledger-browser', labels=['02-indy-ledger'])
 
     ledger_enabled=False
 

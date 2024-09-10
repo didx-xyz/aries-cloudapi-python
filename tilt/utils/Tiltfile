@@ -15,7 +15,7 @@ def namespace_create_wrap(namespace, allow_duplicates=False, namespace_labels=[]
   k8s_resource(
     new_name=namespace+'-ns',
     objects=[namespace+':namespace'],
-    labels=['02-Namespaces']+resource_labels,
+    labels=['20-namespaces']+resource_labels,
   )
 
   return namespace

@@ -1,12 +1,16 @@
-load('./tilt/metrics/Tiltfile', 'setup_metrics_server')
 load('./tilt/cloudapi/Tiltfile', 'setup_cloudapi')
+load('./tilt/metrics/Tiltfile', 'setup_metrics_server')
 load('ext://color', 'color')
+load('ext://helm_resource', 'helm_repo')
 
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
 config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker cache")
 
-update_settings(k8s_upsert_timeout_secs=300)
+update_settings(
+  k8s_upsert_timeout_secs=300,
+  max_parallel_updates=10,
+)
 
 # Restrict to `kind-aries-cloudapi` kube context
 kind_cluster_name='kind-aries-cloudapi'

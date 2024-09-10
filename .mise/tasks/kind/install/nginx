@@ -8,7 +8,7 @@ kindClusterName=kind-aries-cloudapi
 # Ensure we are on the right kube context
 kubectl config use-context ${kindClusterName}
 
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx --force-update
 helm repo update
 
 # Install Nginx Ingress

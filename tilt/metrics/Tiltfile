@@ -1,9 +1,6 @@
 load('../utils/Tiltfile', 'namespace_create_wrap')
 load('ext://helm_resource', 'helm_resource')
 
-# https://github.com/bitnami/charts/tree/main/bitnami/metrics-server
-metrics_version='7.2.14'
-
 def setup_metrics_server():
   namespace=namespace_create_wrap(
     namespace='monitoring',
@@ -20,8 +17,8 @@ def setup_metrics_server():
       '--set', 'apiService.create=true',
       '--set', 'extraArgs[0]=--metric-resolution=15s',
       '--set', 'extraArgs[1]=--kubelet-insecure-tls',
-      '--version', metrics_version,
+      '--version', '7.2.14',
       '--wait',
     ],
-    labels=['05-metrics'],
+    labels=['30-monitoring'],
   )

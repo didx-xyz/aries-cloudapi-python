@@ -52,10 +52,12 @@ logger.info("Waypoint Service startup")
 
 app = create_app()
 
+
 # TODO - Improve health checks
 @app.get("/health/live")
 async def health_live():
     return {"status": "live"}
+
 
 @app.get("/health/ready")
 async def health_ready():

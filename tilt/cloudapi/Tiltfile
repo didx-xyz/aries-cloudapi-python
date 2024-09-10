@@ -99,7 +99,8 @@ def setup_pgadmin(namespace):
 def setup_nats(namespace):
   print(color.green('Installing NATS...'))
 
-  values_file='./tilt/cloudapi/nats/values.yaml'
+  chart_dir='./tilt/cloudapi/nats'
+  values_file=chart_dir+'/values.yaml'
 
   ## Setup NATS
   # https://github.com/bitnami/charts/tree/main/bitnami/nats
@@ -108,10 +109,10 @@ def setup_nats(namespace):
     flags=[
       '--set', 'nats.replicaCount=2',
     ]
-  local('cd tilt/cloudapi/nats && helm dep build', echo_off=True, quiet=True)
+  local('cd tilt/cloudapi/nats && helm dep build --skip-refresh', echo_off=True, quiet=True)
   helm_resource(
     name='nats',
-    chart='./tilt/cloudapi/nats',
+    chart=chart_dir,
     release_name='nats',
     namespace=namespace,
     flags=[
@@ -126,8 +127,42 @@ def setup_nats(namespace):
     ],
     deps=[
       values_file,
-      './tilt/cloudapi/nats/Chart.yaml',
-      './tilt/cloudapi/nats/Chart.lock',
+      chart_dir+'/Chart.yaml',
+      chart_dir+'/Chart.lock',
+    ]
+  )
+
+def setup_benthos(namespace):
+  print(color.green('Installing Benthos...'))
+
+  base_dir='./tilt/.charts/charts'
+  chart_dir=base_dir+'/benthos'
+  values_file=base_dir+'/aries-cloudapi-python/conf/local/benthos-events.yaml'
+
+  ## Setup Benthos
+  # https://github.com/redpanda-data/redpanda-connect-helm-chart
+  helm_repo(
+    name='benthos',
+    url='https://benthosdev.github.io/charts',
+    resource_name='benthos-repo',
+    labels=['10-helm-repos'],
+  )
+  local('cd '+chart_dir+' && helm dep build --skip-refresh', echo_off=True, quiet=True)
+  helm_resource(
+    name='benthos',
+    chart=chart_dir,
+    release_name='benthos',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      '--wait',
+    ],
+    labels=['01-cloudapi'],
+    resource_deps=['cloudapi-ns', 'benthos-repo'],
+    deps=[
+      values_file,
+      chart_dir+'/Chart.yaml',
+      chart_dir+'/Chart.lock',
     ]
   )
 
@@ -268,6 +303,7 @@ def setup_cloudapi(build_enabled=True):
   setup_postgres(namespace)
   setup_pgadmin(namespace)
   setup_nats(namespace)
+  setup_benthos(namespace)
 
   ledger_enabled=setup_ledger(namespace)
 
@@ -374,7 +410,7 @@ def setup_cloudapi(build_enabled=True):
       'depends': ['redis'],
       'replicaCount': 1,
       'links': [
-        link('http://webhooks.cloudapi.127.0.0.1.nip.io', 'Docs'),
+        link('http://webhooks.cloudapi.127.0.0.1.nip.io/docs', 'Docs'),
       ],
       'image': {
         'dockerfile': './dockerfiles/webhooks/Dockerfile',

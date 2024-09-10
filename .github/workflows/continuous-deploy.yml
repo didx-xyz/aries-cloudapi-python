@@ -349,6 +349,11 @@ jobs:
       - name: Get Pods
         if: always()
         run: kubectl get pods --all-namespaces
+      ## Benthos generates too many logs.
+      ## Uncomment if needed. (be careful)
+      # - name: Benthos Logs
+      #   if: always()
+      #   run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=benthos --tail 10000
       - name: Endorser Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-endorser --tail 10000

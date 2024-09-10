@@ -1,14 +1,12 @@
 import os
 from contextlib import asynccontextmanager
 
-from dependency_injector.wiring import Provide, inject
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
 from waypoint.routes import sse
 from waypoint.services.dependency_injection.container import Container
-from waypoint.services.nats_service import NatsEventsProcessor
 
 logger = get_logger(__name__)
 
@@ -54,4 +52,11 @@ logger.info("Waypoint Service startup")
 
 app = create_app()
 
-# TODO add a health check endpoint
+# TODO - Improve health checks
+@app.get("/health/live")
+async def health_live():
+    return {"status": "live"}
+
+@app.get("/health/ready")
+async def health_ready():
+    return {"status": "ready"}

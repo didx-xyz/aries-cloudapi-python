@@ -93,10 +93,10 @@ class NatsEventsProcessor:
             )
 
             subscription = await self.js_context.pull_subscribe(
-                durable=f"{group_id}.{wallet_id}",
-                subject=f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
+                durable=f"{wallet_id}",
+                subject=f"{NATS_SUBJECT}.*.{wallet_id}",
                 stream=NATS_STREAM,
-                config=ConsumerConfig(**config),
+                config=config,
             )
 
             return subscription

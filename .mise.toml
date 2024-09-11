@@ -1,7 +1,7 @@
 # https://mise.jdx.dev
 [tools]
-"go:github.com/nats-io/natscli/nats" = "latest"
-go = "latest"
+"go:github.com/nats-io/natscli/nats" = "0.1"
+go = "1.23"
 helm = "3"
 helmfile = "0.168"
 istioctl = "1.23"
@@ -36,6 +36,10 @@ depends = ["poetry:install:*"]
 description = "Start Tilt"
 depends = ["kind:create"]
 run = "tilt up"
+
+[tasks."tilt:down:destroy"]
+description = "Tilt Down Destroy"
+run = "tilt down -- --destroy"
 
 [tasks."tilt:ci"]
 description = "Start Tilt in CI mode"

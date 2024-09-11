@@ -8,7 +8,7 @@ config.define_bool("destroy", False, "Destroy Kind cluster")
 config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker cache")
 
 update_settings(
-  k8s_upsert_timeout_secs=300,
+  k8s_upsert_timeout_secs=600,
   max_parallel_updates=10,
 )
 

@@ -417,7 +417,7 @@ jobs:
 
       - name: Tilt Down Destroy
         if: always()
-        run: tilt down -- --destroy
+        run: mise run tilt:down:destroy
 
   status-check:
     name: Status Check

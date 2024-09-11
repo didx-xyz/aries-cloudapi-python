@@ -98,22 +98,30 @@ Once you have Mise installed, you will need to activate it in your shell.
 
 ```sh
 # Bash
-echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc && source ~/.bashrc
 
 # Zsh
-echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc && source ~/.zshrc
 
 # Fish
-echo 'mise activate fish | source' >> ~/.config/fish/config.fish
+echo 'mise activate fish | source' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish
 ```
+
+Once Mise is installed and activated, you can run `mise trust` and then
+`mise install` to install all the required tools.
 
 Other shells are supported as well. Please refer to the
 [Mise documentation](https://mise.jdx.dev/getting-started.html#shells) for more
 information.
 
-At the time of writing,
-[Windows is not supported](https://mise.jdx.dev/faq.html#windows-support).
-WSL is recommended for Windows users.
+> [!NOTE]
+> At the time of writing, Mise
+> [does not support Windows](https://mise.jdx.dev/faq.html#windows-support).
+> WSL is recommended for Windows users.
+>
+> If you are using WSL, you will need to take some
+> [additional steps](https://kind.sigs.k8s.io/docs/user/using-wsl2/) for Kind to
+> work.
 
 ## Docs
 

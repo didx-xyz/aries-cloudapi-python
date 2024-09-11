@@ -241,7 +241,7 @@ def setup_cloudapi_service(release, chart, namespace, release_config={}, build_e
   else:
     print(color.yellow('Skipping '+release+', not enabled'))
 
-def setup_ledger(namespace):
+def setup_ledger(namespace, build_enabled=True):
   print(color.green('Installing Ledger...'))
 
   # Setup Ledger Nodes
@@ -277,20 +277,17 @@ def setup_ledger(namespace):
       print(color.yellow('von-network not found, cloning von-network repo'))
       local('git clone https://github.com/bcgov/von-network.git -b v1.8.0 '+von_dir, quiet=True)
 
-    docker_build(
-      'tilt.dev/ledger-nodes',
-      von_dir,
-      dockerfile=von_dir+'/Dockerfile',
-      platform='linux/amd64',
-    )
-    docker_build(
-      'tilt.dev/ledger-browser',
-      von_dir,
-      dockerfile=von_dir+'/Dockerfile',
-      platform='linux/amd64',
-    )
+    if build_enabled:
+      docker_build(
+        'ghcr.io/didx-xyz/ledger-nodes',
+        von_dir,
+        dockerfile=von_dir+'/Dockerfile',
+        platform='linux/amd64',
+      )
+    else:
+      print(color.yellow('Skipping Docker Build for ledger-nodes'))
 
-    docker_compose('./docker-compose.yaml', wait=True)
+    docker_compose('./docker-compose-ledger.yaml', wait=True)
     dc_resource('ledger-nodes', labels=['02-indy-ledger'])
     dc_resource('ledger-browser', labels=['02-indy-ledger'])
 
@@ -325,7 +322,7 @@ def setup_cloudapi(build_enabled=True):
   setup_nats(namespace)
   setup_benthos(namespace)
 
-  ledger_enabled=setup_ledger(namespace)
+  ledger_enabled=setup_ledger(namespace, build_enabled)
 
   releases={
     'governance-endorser': {

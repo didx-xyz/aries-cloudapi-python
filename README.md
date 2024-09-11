@@ -29,6 +29,14 @@ creating the wallet itself, can be done in a single call. Convenient, isn't it?
 
 ## How to Run It
 
+> [!NOTE]
+> For local development we migrated away from Docker Compose and now use Tilt
+> and Kind.
+>
+> The original `./manage` script and Docker Compose files are still available in
+> this repository, however they are now deprecated, no longer maintained, and
+> will be removed in the future.
+
 Running the project is straightforward — it's all containerized. Simply execute
 `mise run tilt:up` from the project root. This command will spin up a Kind
 cluster, build all the necessary docker images, and start the project.

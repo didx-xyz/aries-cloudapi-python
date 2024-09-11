@@ -23,39 +23,39 @@ if config.tilt_subcommand in ("up", "ci"):
   print(color.green('Setting up Nginx Ingress'))
   local('mise run kind:install:nginx', dir=os.path.dirname(__file__))
 
-  # Setup Metrics Server
-  setup_metrics_server()
+# Setup Metrics Server
+setup_metrics_server()
 
-  # Validate `didx-xyz/charts` repo has been cloned
-  charts_dir='tilt/.charts'
-  if not os.path.exists(charts_dir):
-    print(color.yellow('Charts not found, cloning charts repo'))
+# Validate `didx-xyz/charts` repo has been cloned
+charts_dir='tilt/.charts'
+if not os.path.exists(charts_dir):
+  print(color.yellow('Charts not found, cloning charts repo'))
 
-    ssh_result=str(local(
-        'git clone git@github.com:didx-xyz/charts.git ' + charts_dir + ' 2>&1 | tee /dev/stdout',
+  ssh_result=str(local(
+      'git clone git@github.com:didx-xyz/charts.git ' + charts_dir + ' 2>&1 | tee /dev/stdout',
+      dir=os.path.dirname(__file__),
+      quiet=True,
+      echo_off=True)).strip()
+
+  if 'fatal' in ssh_result:
+    print(color.red('Failed to clone charts repo via SSH, retrying with HTTPS'))
+
+    https_result=str(local(
+        'git clone https://github.com/didx-xyz/charts.git ' + charts_dir + ' 2>&1 | tee /dev/stdout',
         dir=os.path.dirname(__file__),
         quiet=True,
-        echo_off=True)).strip()
+        echo_off=True))
 
-    if 'fatal' in ssh_result:
-      print(color.red('Failed to clone charts repo via SSH, retrying with HTTPS'))
+    if 'fatal' in https_result:
+      fail(color.red('Failed to clone charts repo'))
 
-      https_result=str(local(
-          'git clone https://github.com/didx-xyz/charts.git ' + charts_dir + ' 2>&1 | tee /dev/stdout',
-          dir=os.path.dirname(__file__),
-          quiet=True,
-          echo_off=True))
+  print(color.green('Charts repo cloned'))
+else:
+  print(color.green('Charts repo already cloned'))
 
-      if 'fatal' in https_result:
-        fail(color.red('Failed to clone charts repo'))
-
-    print(color.green('Charts repo cloned'))
-  else:
-    print(color.green('Charts repo already cloned'))
-
-  # Setup CloudAPI
-  build_enabled = not config.parse().get("no-build")
-  setup_cloudapi(build_enabled)
+# Setup CloudAPI
+build_enabled = not config.parse().get("no-build")
+setup_cloudapi(build_enabled)
 
 if config.tilt_subcommand not in ("down"):
   # _FORCE_ Kube Context to `kind-aries-cloudapi`

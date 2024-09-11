@@ -37,9 +37,17 @@ description = "Start Tilt"
 depends = ["kind:create"]
 run = "tilt up"
 
+[tasks."tilt:down"]
+description = "Tilt Down"
+run = "tilt down"
+
 [tasks."tilt:down:destroy"]
 description = "Tilt Down Destroy"
 run = "tilt down -- --destroy"
+
+[tasks."tilt:down:destroy:all"]
+description = "Tilt Down Destroy everything, including Docker Cache"
+run = "tilt down -- --destroy-all"
 
 [tasks."tilt:ci"]
 description = "Start Tilt in CI mode"
@@ -49,7 +57,11 @@ run = "tilt ci"
 [tasks."kind:destroy:all"]
 description = "Destroy Kind and delete Docker Cache"
 depends = ["kind:destroy"]
-run = "rm -rf tilt/docker"
+run = """
+docker rm -f kind-registry
+docker rm -f cache-docker
+rm -rf tilt/docker
+"""
 
 [tasks.tests]
 description = "Run all tests"

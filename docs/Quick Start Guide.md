@@ -17,19 +17,20 @@ an average CPU like an Intel i5.
 3. When you're done, you can stop the project by running:
 
    ```bash
-   tilt down
+   mise run tilt:down
    ```
 
-4. If you want to remove the containers that have been spun up, you can use:
-
-   ```bash
-   mise run kind:destroy
-   ```
-
-5. If you want to remove absolutely everything for a clean slate:
+4. If you want to destroy the Kind cluster too:
 
     ```bash
-    mise run kind:destroy:all
+    mise run tilt:down:destroy
+    ```
+
+5. If you want to remove absolutely everything, including the docker cache, for
+a clean slate:
+
+    ```bash
+    mise run tilt:down:destroy:all
     ```
 
 ## Accessing Services

@@ -9,7 +9,7 @@ from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 
-base_url = f"{WAYPOINT_URL}/waypoint"
+base_url = f"{WAYPOINT_URL}/sse"
 
 DEFAULT_LISTENER_TIMEOUT = 30  # seconds
 

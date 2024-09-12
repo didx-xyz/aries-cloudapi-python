@@ -7,17 +7,9 @@ import nats
 from nats.aio.client import Client as NATS
 from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
-from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
-from shared.constants import (
-    NATS_CONSUMER_INACTIVE_THRESHOLD,
-    NATS_CREDS_FILE,
-    NATS_SERVER,
-    NATS_START_TIME,
-    NATS_STREAM,
-    NATS_SUBJECT,
-)
+from shared.constants import NATS_CREDS_FILE, NATS_SERVER, NATS_STREAM, NATS_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from waypoint.util.event_generator_wrapper import EventGeneratorWrapper

@@ -60,13 +60,7 @@ class NatsEventsProcessor:
 
     async def stop(self):
         logger.debug("Stopping NATS event processor...")
-        # TODO - Need to decide if we want/need to track tasks and cancel them
-        # for task in self._tasks:
-        #     task.cancel()
-        #     try:
-        #         await task
-        #     except asyncio.CancelledError:
-        #         logger.debug("Task was cancelled successfully")
+        # TODO - Need to decide how to handle stopping the event processor
 
         logger.debug("NATS event processor stopped.")
 
@@ -75,21 +69,20 @@ class NatsEventsProcessor:
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.debug("Subscribing to JetStream...")
-            start_time = int(time.time() * 1e9) - (NATS_START_TIME * 1e9)
+            if group_id:
 
-            config = ConsumerConfig(
-                durable_name=f"{group_id}.{wallet_id}",
-                deliver_policy=DeliverPolicy.BY_START_TIME,
-                opt_start_time=start_time,
-                inactive_threshold=NATS_CONSUMER_INACTIVE_THRESHOLD,
-            )
-
-            subscription = await self.js_context.pull_subscribe(
-                # durable=f"{wallet_id}",
-                subject=f"{NATS_SUBJECT}.*.{wallet_id}",
-                stream=NATS_STREAM,
-                # config=config,
-            )
+                logger.trace("Tenant-admin call got group_id: {}", group_id)
+                subscribe_kwargs = {
+                    "subject": f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
+                    "stream": NATS_STREAM,
+                }
+            else:
+                logger.trace("Tenant call got no group_id")
+                subscribe_kwargs = {
+                    "subject": f"{NATS_SUBJECT}.*.{wallet_id}",
+                    "stream": NATS_STREAM,
+                }
+            subscription = await self.js_context.pull_subscribe(**subscribe_kwargs)
 
             return subscription
 

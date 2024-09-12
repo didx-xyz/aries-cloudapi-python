@@ -5,8 +5,8 @@ Docker-based project. Please ensure you have the necessary system requirements
 and a basic understanding of Docker and Docker Compose.
 
 1. Ensure you have Docker, Docker Compose, Bash, and Mise installed on your
-machine. The project will require about 5GB of free disk space, 4GB of RAM, and
-an average CPU like an Intel i5.
+machine. The project will require about 25GB of free disk space, 16GB of RAM, and
+an average CPU like an modern Intel i5 (min 4 cores).
 
 2. In the root directory of the project, you can start the entire project:
 

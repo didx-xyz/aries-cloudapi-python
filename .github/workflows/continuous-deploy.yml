@@ -274,29 +274,14 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
       - name: Test with pytest
         id: test
-        env:
-          ACAPY_GOVERNANCE_AGENT_URL: http://governance-agent.cloudapi.127.0.0.1.nip.io
-          ACAPY_MULTITENANT_JWT_SECRET: verySecretMultitenantJwtSecret
-          ACAPY_TAILS_SERVER_BASE_URL: http://tails-server.cloudapi.127.0.0.1.nip.io
-          ACAPY_TENANT_AGENT_URL: http://multitenant-agent.cloudapi.127.0.0.1.nip.io
-          CLOUDAPI_URL: http://cloudapi.127.0.0.1.nip.io/tenant
-          GOVERNANCE_ACAPY_API_KEY: adminApiKey
-          GOVERNANCE_ACAPY_LABEL: Governance
-          GOVERNANCE_FASTAPI_ENDPOINT: http://cloudapi.127.0.0.1.nip.io/governance
-          LEDGER_REGISTRATION_URL: http://127.0.0.1:9000/register # http://ledger-browser.cloudapi.127.0.0.1.nip.io/register
-          REGISTRY_CREATION_TIMEOUT: "120"
-          SKIP_SET_PUBLIC_DID: "true" # skip set_public_did test to avoid conflict with two public dids, different seed
-          TENANT_ACAPY_API_KEY: adminApiKey
-          TENANT_ADMIN_FASTAPI_ENDPOINT: http://cloudapi.127.0.0.1.nip.io/tenant-admin
-          TENANT_FASTAPI_ENDPOINT: http://cloudapi.127.0.0.1.nip.io/tenant
-          TRUST_REGISTRY_FASTAPI_ENDPOINT: http://cloudapi.127.0.0.1.nip.io/public
-          TRUST_REGISTRY_URL: http://trust-registry.cloudapi.127.0.0.1.nip.io
-          WEBHOOKS_URL: http://webhooks.cloudapi.127.0.0.1.nip.io
-          # WEBHOOKS_PUBSUB_URL: ws://webhooks-web:3010/pubsub
 
         run: |
           source .venv/bin/activate
           set +e
+
+          cp .env.example .env
+          source .env
+
           poetry run pytest --durations=0 ${{ matrix.module.test }} --cov | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e

@@ -162,23 +162,31 @@ Install the requirements:
 mise run poetry:install:all
 ```
 
-To start the containers and run the tests:
+To run the tests you need to set up some environment variables to point Pytest
+at the correct endpoints.
 
 ```bash
-pytest .
+cp .env.example .env
+source .env
+```
+
+Then you can run the tests:
+
+```bash
+poetry run pytest .
 ```
 
 Or only the unit tests:
 
 ```bash
-pytest --ignore=app/tests/e2e
+poetry run pytest --ignore=app/tests/e2e
 ```
 
 You can specify the log level of the pytest output by using the `--log-cli-level`
 flag.
 
 ```bash
-pytest . --log-cli-level=DEBUG
+poetry run pytest . --log-cli-level=DEBUG
 ```
 
 This will output all log messages with a log level of `DEBUG` or higher.
@@ -187,7 +195,9 @@ To run specific tests, you can specify the path to the test file and the test
 method. For example:
 
 ```bash
-pytest app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1 --log-cli-level=1
+poetry run pytest \
+  app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1 \
+  --log-cli-level=1
 ```
 
 ## Running containerised tests

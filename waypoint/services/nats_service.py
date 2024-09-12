@@ -56,13 +56,6 @@ class NatsEventsProcessor:
 
     def __init__(self, jetstream: JetStreamContext):
         self.js_context: JetStreamContext = jetstream
-        self._tasks: List[asyncio.Task] = []
-
-    async def stop(self):
-        logger.debug("Stopping NATS event processor...")
-        # TODO - Need to decide how to handle stopping the event processor
-
-        logger.debug("NATS event processor stopped.")
 
     async def _subscribe(
         self, group_id: str, wallet_id: str

@@ -1,0 +1,8 @@
+---
+engines:
+  - markdownlint:
+      # Keep these settings in sync with .markdownlint.json
+      - MD013:
+          - line_length: 110
+          - code_block_line_length: 240
+      - MD043: false

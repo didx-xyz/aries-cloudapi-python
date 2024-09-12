@@ -9,7 +9,7 @@ config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker
 
 update_settings(
   k8s_upsert_timeout_secs=600,
-  max_parallel_updates=10,
+  max_parallel_updates=5,
 )
 
 # Restrict to `kind-aries-cloudapi` kube context
@@ -18,10 +18,20 @@ allow_k8s_contexts([kind_cluster_name])
 
 if config.tilt_subcommand in ("up", "ci"):
   print(color.green('Setting up Istio'))
-  local('mise run kind:install:istio', dir=os.path.dirname(__file__))
+  local_resource(
+    name='istio',
+    cmd='mise run kind:install:istio',
+    allow_parallel=True,
+    labels=['99-networking']
+  )
 
-  print(color.green('Setting up Nginx Ingress'))
-  local('mise run kind:install:nginx', dir=os.path.dirname(__file__))
+  print(color.green('Setting up Ingress Nginx'))
+  local_resource(
+    name='ingress-nginx',
+    cmd='mise run kind:install:nginx',
+    allow_parallel=True,
+    labels=['99-networking']
+  )
 
 # Setup Metrics Server
 setup_metrics_server()

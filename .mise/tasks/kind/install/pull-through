@@ -2,7 +2,9 @@
 # mise description="Start up the Docker Pullthrough Cache"
 
 cache_name='cache-docker'
-registries="quay.io ghcr.io registry.k8s.io gcr.io"
+# 'gcr.io' seems to have issues when run in Github Actions
+# https://github.com/rpardini/docker-registry-proxy/issues/115
+registries="quay.io ghcr.io registry.k8s.io"
 
 # Create cache directories
 mkdir -p $(pwd)/tilt/docker/cache $(pwd)/tilt/docker/certs

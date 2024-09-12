@@ -4,7 +4,8 @@ metadata:
   name: istio
   namespace: istio-system
 spec:
-  hub: gcr.io/istio-release
+  hub: docker.io/istio
+  # hub: gcr.io/istio-release
   meshConfig:
     enableTracing: false
     accessLogFile: /dev/stdout

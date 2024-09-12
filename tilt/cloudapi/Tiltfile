@@ -30,7 +30,7 @@ def setup_redis(namespace):
       '--wait',
     ],
     labels=['03-streaming'],
-    resource_deps=['cloudapi-ns'],
+    resource_deps=['cloudapi-ns', 'istio'],
     deps=[values_file]
   )
 
@@ -57,7 +57,7 @@ def setup_postgres(namespace):
       '--wait',
     ],
     labels=['04-dbs'],
-    resource_deps=['cloudapi-ns'],
+    resource_deps=['cloudapi-ns', 'istio'],
     deps=[values_file]
   )
 
@@ -86,8 +86,14 @@ def setup_pgadmin(namespace):
       '--wait',
     ],
     labels=['04-dbs'],
-    resource_deps=['cloudapi-ns', 'runix'],
-    deps=[values_file]
+    resource_deps=[
+      'cloudapi-ns',
+      'runix',
+      'ingress-nginx',
+      'istio',
+    ],
+    deps=[values_file],
+    auto_init=False,
   )
   k8s_resource(
     workload='pgadmin',
@@ -128,6 +134,7 @@ def setup_nats(namespace):
     resource_deps=[
       'cloudapi-ns',
       'build-nats',
+      'istio',
     ],
     port_forwards=[
       port_forward(8222, name='monitoring'),
@@ -174,10 +181,10 @@ def setup_benthos(namespace):
     labels=['03-streaming'],
     resource_deps=[
       'cloudapi-ns',
-      'benthos-repo',
       'build-benthos',
       'redis',
       'nats',
+      'istio',
     ],
     deps=[
       values_file,
@@ -231,7 +238,11 @@ def setup_cloudapi_service(release, chart, namespace, release_config={}, build_e
         '--wait',
       ]+flags,
       labels=['01-cloudapi'],
-      resource_deps=['cloudapi-ns']+release_config.get('depends', []),
+      resource_deps=[
+        'cloudapi-ns',
+        'ingress-nginx',
+        'istio',
+      ]+release_config.get('depends', []),
       deps=[values_file]
     )
     k8s_resource(

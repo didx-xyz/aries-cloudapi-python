@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import ANY, AsyncMock, Mock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 from fastapi import BackgroundTasks, Request

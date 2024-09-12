@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from typing import Any, AsyncGenerator, List
+from typing import Any, AsyncGenerator
 
 import nats
 from nats.aio.client import Client as NATS

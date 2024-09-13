@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# mise description="Install Istio in Kubernetes"
+# mise depends=["kind:create"]
+# mise env={KUBECONFIG = ".mise/kubeconfig.yaml"}
+
+kindClusterName=kind-aries-cloudapi
+
+# Ensure we are on the right kube context
+kubectl config use-context ${kindClusterName}
+
+# Check if Istio is already installed
+if kubectl get pods -n istio-system | grep -q istiod; then
+  echo "Istio is already installed"
+  exit 0
+fi
+
+# Install Istio
+istioctl install -f ./tilt/istio/istio.yaml --skip-confirmation

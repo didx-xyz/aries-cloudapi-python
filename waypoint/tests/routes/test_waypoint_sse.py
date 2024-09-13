@@ -153,6 +153,45 @@ async def test_sse_event_stream_generator_disconnects(
 
 
 @pytest.mark.anyio
+async def test_nats_event_stream_generator_cancelled_error_handling(
+    nats_processor_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
+):
+    """
+    Test to ensure `nats_event_stream_generator` handles asyncio.CancelledError properly.
+    """
+    background_tasks = BackgroundTasks()
+
+    async def mock_event_generator():
+        raise asyncio.CancelledError
+        yield  # Make this function an asynchronous generator
+
+    mock_event_generator_wrapper = AsyncMock(spec=EventGeneratorWrapper)
+    mock_event_generator_wrapper.__aenter__.return_value = mock_event_generator()
+    mock_event_generator_wrapper.__aexit__.return_value = None
+
+    nats_processor_mock.process_events.return_value = mock_event_generator_wrapper
+
+    generator = nats_event_stream_generator(
+        request=request_mock,
+        background_tasks=background_tasks,
+        wallet_id="wallet123",
+        topic="some_topic",
+        field="some_field",
+        field_id="some_field_id",
+        desired_state="some_state",
+        group_id="some_group",
+        nats_processor=nats_processor_mock,
+    )
+
+    async for _ in generator:
+            pass
+
+    # Assert that stop_event is set when asyncio.CancelledError is raised
+    assert await nats_processor_mock.process_events.stop_event.is_set()
+    request_mock.is_disconnected.assert_not_called()
+
+@pytest.mark.anyio
 async def test_sse_event_stream(
     async_generator_mock,  # pylint: disable=redefined-outer-name
     nats_processor_mock,  # pylint: disable=redefined-outer-name

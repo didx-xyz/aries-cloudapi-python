@@ -4,7 +4,7 @@ redis:
   # podLabels:
   #   sidecar.istio.io/inject: "false"
   # https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
-  resourcesPreset: micro
+  resourcesPreset: nano
 password: redis
 tls:
   enabled: false

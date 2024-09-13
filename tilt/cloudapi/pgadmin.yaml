@@ -25,3 +25,5 @@ ingress:
           pathType: Prefix
 persistentVolume:
   enabled: false
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m

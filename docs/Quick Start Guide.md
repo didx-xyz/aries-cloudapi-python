@@ -5,8 +5,8 @@ Docker-based project. Please ensure you have the necessary system requirements
 and a basic understanding of Docker and Docker Compose.
 
 1. Ensure you have Docker, Docker Compose, Bash, and Mise installed on your
-machine. The project will require about 25GB of free disk space, 16GB of RAM, and
-an average CPU like an modern Intel i5 (min 4 cores).
+   machine. The project will require about 25GB of free disk space, 16GB of RAM, and
+   an average CPU like an modern Intel i5 (min 4 cores).
 
 2. In the root directory of the project, you can start the entire project:
 
@@ -22,16 +22,16 @@ an average CPU like an modern Intel i5 (min 4 cores).
 
 4. If you want to destroy the Kind cluster too:
 
-    ```bash
-    mise run tilt:down:destroy
-    ```
+   ```bash
+   mise run tilt:down:destroy
+   ```
 
 5. If you want to remove absolutely everything, including the docker cache, for
-a clean slate:
+   a clean slate:
 
-    ```bash
-    mise run tilt:down:destroy:all
-    ```
+   ```bash
+   mise run tilt:down:destroy:all
+   ```
 
 ## Accessing Services
 
@@ -56,6 +56,11 @@ Each Docker container's environment parameters can be adjusted via its respectiv
 `false`, adjust the `ACAPY_AUTO_PROVISION` value in
 `environments/governance-multitenant/aca-py-agent.default.env`.
 
-Remember to stop and restart the affected containers after making changes. However, be careful when changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml` file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values within the `docker-compose.yaml` to reflect these changes.
+Remember to stop and restart the affected containers after making changes.However, be careful when
+changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml`
+file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or
+`ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the
+values within the `docker-compose.yaml` to reflect these changes.
 
-The [Common Steps](Common%20Steps.md) document can help you understand how to use the project's infrastructure once it's up and running.
+The [Common Steps](Common%20Steps.md) document can help you understand how to use the project's infrastructure
+once it's up and running.

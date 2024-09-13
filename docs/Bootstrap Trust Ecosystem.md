@@ -93,7 +93,8 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 1. Go to the [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 2. Execute the PUT endpoint to set a Public DID: `/v1/wallet/dids/public?did=`
 3. Use the DID that you anchored to the ledger in step 3
-4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the Governance Agent to confirm that the public DID is now set:
+4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the
+   Governance Agent to confirm that the public DID is now set:
 
 ```json
 {

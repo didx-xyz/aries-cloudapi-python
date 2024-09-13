@@ -13,7 +13,7 @@ from app.services.event_handling.sse import (
     sse_subscribe_wallet_topic,
     yield_lines_with_disconnect_check,
 )
-from shared.constants import MAX_EVENT_AGE_SECONDS, WEBHOOKS_URL, WAYPOINT_URL
+from shared.constants import MAX_EVENT_AGE_SECONDS, WAYPOINT_URL, WEBHOOKS_URL
 from shared.util.rich_async_client import RichAsyncClient
 
 wallet_id = "some_wallet"

@@ -185,7 +185,7 @@ async def test_nats_event_stream_generator_cancelled_error_handling(
     )
 
     async for _ in generator:
-            pass
+        pass
 
     # Assert that stop_event is set when asyncio.CancelledError is raised
     assert await nats_processor_mock.process_events.stop_event.is_set()

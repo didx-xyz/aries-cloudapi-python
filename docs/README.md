@@ -13,10 +13,10 @@
 
 After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the **Swagger UI** :
 
-- [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
-- [CloudAPI-Governance](http://localhost:8200/docs)
-- [CloudAPI-Tenant](http://localhost:8300/docs)
-- [CloudAPI-Public](http://localhost:8400/docs)
+- [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
 
  provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and webhooks endpoints.
 
@@ -31,7 +31,7 @@ The Swagger UI is documented. It shows you endpoints, expected parameters, and w
 It can be handy to follow the logs of a specific container. A convenient way to do so is using:
 
 ```bash
-docker logs --follow $(docker ps -f name="YOUR_CONTAINER_NAME" | awk 'FNR == 2 {print $1}')
+kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
 ```
 
 And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-webhooks-web). You can find the container name in the docker-compose.yaml.

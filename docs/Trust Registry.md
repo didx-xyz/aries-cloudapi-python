@@ -4,9 +4,12 @@ As a client, you can retrieve the trust registry but not alter it. This design i
 
 >NOTE: The Trust Registry GET API endpoint is not protected and should not be publicly accessible.
 
-The [Trust Registry](http://localhost:8001/docs) serves as a gatekeeper interface for interactions, maintaining the truth states about actors, their respective roles as issuers and/or verifiers, and schemas.
+The [Trust Registry](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs) serves
+as a gatekeeper interface for interactions, maintaining the truth states about
+actors, their respective roles as issuers and/or verifiers, and schemas.
 
-The [Swagger docs](http://localhost:8001/docs) are divided into three main sections:
+The [Swagger docs](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs) are
+divided into three main sections:
 
 - Actor - For actor information and actions on the ledger
 - Schema - For schema information and actions on the ledger

@@ -1,0 +1,38 @@
+# https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
+fullnameOverride: ingress-nginx
+controller:
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true
+    controllerValue: k8s.io/nginx
+  replicaCount: 1 # Because Kind/Tilt Host Port Mapping
+  electionID: nginx-leader
+  hostPort:
+    enabled: true
+  nodeSelector: # Required for Kind/Tilt
+    ingress-ready: "true"
+    kubernetes.io/os: linux
+  tolerations: # Required for Kind/Tilt
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Equal
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Equal
+  config:
+    allow-snippet-annotations: true
+  service:
+    type: NodePort # Required for Kind/Tilt
+    ports:
+      http: 80
+      https: 443
+    targetPorts:
+      http: 80
+      https: 443
+  admissionWebhooks:
+    patch:
+      podAnnotations:
+        sidecar.istio.io/inject: "false"
+defaultBackend:
+  enabled: false

@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# mise description="Create Kubernetes Kind Cluster with Registry Caches"
+# mise outputs=[".mise/kubeconfig.yaml"]
+# mise depends=["kind:install:registry", "kind:install:pull-through"]
+
+set -o errexit
+
+scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+kindClusterName=aries-cloudapi
+
+## Create Kind Cluster
+# If cluster already exists, `exit 0`
+kind get clusters | grep -q ${kindClusterName} && exit 0
+
+kind create cluster --config ${scriptDir}/kind.yaml --name ${kindClusterName}
+kind get kubeconfig --name ${kindClusterName} > .mise/kubeconfig.yaml
+chmod 600 .mise/kubeconfig.yaml
+KUBECONFIG=.mise/kubeconfig.yaml
+
+# Switch to the new cluster
+kubectl config use-context kind-${kindClusterName}
+kubectl create namespace cloudapi
+kubectl label namespace cloudapi istio-injection=enabled
+kubectl config set-context --current --namespace=cloudapi
+
+## Setup local docker registry and caches
+# https://kind.sigs.k8s.io/docs/user/local-registry/
+# 1. Create registry container unless it already exists
+## Done in `kind:install:registry`
+reg_name='kind-registry'
+reg_port='5001'
+
+# Create Docker Cache
+## Done in `kind:install:pull-through`
+cache_name='cache-docker'
+# Connect the cache to the cluster network
+docker network connect "kind" "${cache_name}" || true
+
+# 2. Create kind cluster with containerd registry config dir enabled
+# Handled in `kind.yaml`
+
+# 3. Add the registry configs to the nodes
+REGISTRY_DIR="/etc/containerd/certs.d"
+CACHE_SETUP_URL=http://${cache_name}:3128/setup/systemd
+MAX_RETRIES=10
+RETRY_INTERVAL=1
+
+for node in $(kind get nodes --name ${kindClusterName}); do
+  # Main registry
+  docker exec "${node}" mkdir -p "${REGISTRY_DIR}/localhost:${reg_port}"
+  cat <<EOF | docker exec -i "${node}" cp /dev/stdin "${REGISTRY_DIR}/localhost:${reg_port}/hosts.toml"
+[host."http://${reg_name}:5000"]
+EOF
+
+  # Cache registries
+  retry_count=0
+  while [ $retry_count -lt $MAX_RETRIES ]; do
+    if docker exec "${node}" curl -s -f ${CACHE_SETUP_URL} > /dev/null; then
+      docker exec "${node}" bash -c "\
+        curl -s ${CACHE_SETUP_URL} \
+        | sed s/docker\.service/containerd\.service/g \
+        | sed '/Environment/ s/$/ \"NO_PROXY=127.0.0.0\/8,10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16\"/' \
+        | bash"
+      echo "Successfully set up cache for node ${node}"
+      break
+    else
+      retry_count=$((retry_count + 1))
+      if [ $retry_count -eq $MAX_RETRIES ]; then
+        echo "Failed to set up cache for node ${node} after ${MAX_RETRIES} attempts"
+      else
+        echo "Attempt ${retry_count} failed. Retrying in ${RETRY_INTERVAL} second(s)..."
+        sleep ${RETRY_INTERVAL}
+      fi
+    fi
+  done
+done
+
+# 4. Connect the registries to the cluster network
+docker network connect "kind" "${reg_name}" || true
+
+# 5. Document the local registry
+# https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:${reg_port}"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+EOF

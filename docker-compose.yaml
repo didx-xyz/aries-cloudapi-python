@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   governance-ga-wallets-db:
     image: postgres:16-alpine

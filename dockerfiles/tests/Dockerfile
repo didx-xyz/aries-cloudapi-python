@@ -14,9 +14,15 @@ COPY endorser/poetry.lock endorser/
 COPY trustregistry/poetry.lock trustregistry/
 COPY webhooks/poetry.lock webhooks/
 
-# Copy and run the install dependencies script
-COPY scripts/install_all_dependencies.sh .
-RUN bash install_all_dependencies.sh
+# Install all depedencies
+ARG POETRY_VERSION=1.8.3
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
+
+ENV POETRY_VIRTUALENVS_CREATE=false
+ARG MODULES="app endorser trustregistry webhooks"
+RUN for module in ${MODULES}; do \
+    cd /tests/$module && poetry install; \
+  done
 
 COPY . .
 

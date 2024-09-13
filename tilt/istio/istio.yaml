@@ -1,0 +1,64 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio
+  namespace: istio-system
+spec:
+  hub: docker.io/istio
+  # hub: gcr.io/istio-release
+  meshConfig:
+    enableTracing: false
+    accessLogFile: /dev/stdout
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+    defaultConfig:
+      gatewayTopology:
+        numTrustedProxies: 2
+      holdApplicationUntilProxyStarts: true
+      terminationDrainDuration: 15s
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: false
+      - name: istio-internal
+        enabled: false
+        label:
+          istio: istio-internal
+        k8s:
+          replicaCount: 1
+          service:
+            type: NodePort # Required for Kind
+          nodeSelector:
+            ingress-ready: "true"
+          tolerations:
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/control-plane
+              operator: Equal
+          overlays: # Required for Kind
+            - apiVersion: apps/v1
+              kind: Deployment
+              name: istio-internal
+              patches:
+                - path: spec.template.spec.containers[name:istio-proxy].ports[containerPort:8080].hostPort
+                  value: 80
+                - path: spec.template.spec.containers[name:istio-proxy].ports[containerPort:8443].hostPort
+                  value: 443
+    pilot:
+      enabled: true
+      k8s:
+        replicaCount: 1
+        env:
+          # https://istio.io/latest/blog/2023/native-sidecars
+          - name: ENABLE_NATIVE_SIDECARS
+            value: "true"
+        hpaSpec:
+          minReplicas: 1
+          maxReplicas: 1
+        podDisruptionBudget:
+          minAvailable: 0
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi

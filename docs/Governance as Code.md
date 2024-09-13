@@ -4,7 +4,7 @@
 
 Schemas are used to define attributes related to credentials. To define schemas for your trust ecosystem, follow the steps below:
 
-1. Access the API through the [Governance Cloud API](http://localhost:8200/docs).
+1. Access the API through the [Governance Cloud API](http://cloudapi.127.0.0.1.nip.io/governance/docs).
 2. Authenticate with `governance.` + `APIKEY` role.
 3. Generate a new schema with a `POST` to the following API endpoint: `/v1/definitions/schemas`.
 
@@ -27,7 +27,7 @@ Creating new tenants in the multi-tenant environment for the various tenant type
 
 Tenants are custodial wallets created within the Trust Ecosystem's multitenant AcaPy agent. To create new tenants for your trust ecosystem, follow the steps below:
 
-1. Access the API through the [CloudAPI-Multitenant-Admin](http://localhost:8100/docs).
+1. Access the API through the [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs).
 2. Authenticate with `tenant-admin.` + `APIKEY` role.
 3. Create a new tenant with a `POST` to the following API endpoint: `/tenant-admin/v1/admin/tenants/`, using the example request body below.
 
@@ -62,7 +62,7 @@ An example of a successful response to create a new Issuer Tenant:
 
 Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant AcaPy agent. Follow the steps below to create new tenants for your trust ecosystem:
 
-1. Access the API through [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
+1. Access the API through [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 2. Authenticate using the `tenant-admin.`+`APIKEY` role
 3. Generate a new tenant with a `POST` request to the API endpoint `/tenant-admin/v1/admin/tenants/` using the request body detailed in the example below
 
@@ -97,7 +97,7 @@ Tenants, functioning as custodial wallets, are established within the Trust Ecos
 
 Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant AcaPy agent. Follow these steps to create new Holders for your trust ecosystem:
 
-1. Access the API through [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
+1. Access the API through [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 2. Authenticate using `tenant-admin.`+`APIKEY` role
 3. Generate a new tenant with a `POST` to the API endpoint `/tenant-admin/v1/admin/tenants/` using the request body in the example below
 
@@ -131,7 +131,7 @@ Credential definitions are expected to be created by all **_Issuers_** within th
 
 To create credential definitions through the `Transaction Endorser Protocol` for trust ecosystem _issuers_, follow the steps below:
 
-1. Access the [CloudAPI-Tenant Swagger UI](http://localhost:8300/docs)
+1. Access the [CloudAPI-Tenant Swagger UI](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` x-api-key
 3. Create a new schema with a `POST` to the API endpoint `/v1/definitions/credentials` using the request body illustrated in the example below.
 
@@ -158,7 +158,7 @@ To create credential definitions through the `Transaction Endorser Protocol` for
 
 To query entries in the Trust Registry, adhere to the following steps:
 
-1. Access the [CloudAPI-Public Swagger UI](http://localhost:8400/docs)
+1. Access the [CloudAPI-Public Swagger UI](http://cloudapi.127.0.0.1.nip.io/public/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` role
 
    >NOTE: The Trust Registry is currently public and accessible to anyone on the internet
@@ -227,7 +227,7 @@ To query entries in the Trust Registry, adhere to the following steps:
           "issuer"
         ],
         "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1...Y29tbS5vcmcvZGlkZXhjaGFuZ2UvMS4wIl19"
+        "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1...Y29tbS5vcmcvZGlkZXhjaGFuZ2UvMS4wIl19"
       },
       {
         "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
@@ -236,7 +236,7 @@ To query entries in the Trust Registry, adhere to the following steps:
           "verifier"
         ],
         "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW...jb21tLm9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
+        "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW...jb21tLm9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
       },
       {
         "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
@@ -246,7 +246,7 @@ To query entries in the Trust Registry, adhere to the following steps:
           "verifier"
         ],
         "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3Jn...odHRovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+        "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3Jn...odHRovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
       }
     ]
     ```

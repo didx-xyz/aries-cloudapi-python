@@ -1,6 +1,8 @@
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
 fullnameOverride: cloudapi
 postgresql:
+  podAnnotations:
+    sidecar.istio.io/proxyCPU: 10m
   # podLabels:
   #   sidecar.istio.io/inject: "false"
   # Due to bug in Askar (https://github.com/hyperledger/aries-askar/issues/299)
@@ -29,6 +31,8 @@ persistentVolumeClaimRetentionPolicy:
   enabled: true
   whenDeleted: Delete
 pgpool:
+  podAnnotations:
+    sidecar.istio.io/proxyCPU: 10m
   customUsers:
     usernames: trust-registry;governance;multitenant;mediator
     passwords: trust-registry;governance;multitenant;mediator

@@ -125,7 +125,7 @@ them on the trust registry, use the governance role:
 
    ```json
    {
-     "protocol_version": "v1",
+     "protocol_version": "v2",
      "connection_id": "string",
      "schema_id": "string",
      "attributes": {
@@ -171,7 +171,7 @@ schema and issued credential):
 
    ```json
    {
-     "protocol_version": "v1",
+     "protocol_version": "v2",
      "connection_id": "string",
      "indy_proof_request": {
        "requested_attributes": {
@@ -212,7 +212,7 @@ schema and issued credential):
 
    ```json
    {
-     "protocol_version": "v1",
+     "protocol_version": "v2",
      "proof_id": "string",
      "indy_presentation_spec": {
        "requested_attributes": {

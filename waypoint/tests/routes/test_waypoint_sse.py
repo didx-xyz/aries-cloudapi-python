@@ -191,6 +191,7 @@ async def test_nats_event_stream_generator_cancelled_error_handling(
     assert await nats_processor_mock.process_events.stop_event.is_set()
     request_mock.is_disconnected.assert_not_called()
 
+
 @pytest.mark.anyio
 async def test_sse_event_stream(
     async_generator_mock,  # pylint: disable=redefined-outer-name

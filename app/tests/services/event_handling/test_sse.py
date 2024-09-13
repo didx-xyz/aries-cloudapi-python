@@ -13,7 +13,7 @@ from app.services.event_handling.sse import (
     sse_subscribe_wallet_topic,
     yield_lines_with_disconnect_check,
 )
-from shared.constants import MAX_EVENT_AGE_SECONDS, WEBHOOKS_URL
+from shared.constants import MAX_EVENT_AGE_SECONDS, WEBHOOKS_URL, WAYPOINT_URL
 from shared.util.rich_async_client import RichAsyncClient
 
 wallet_id = "some_wallet"
@@ -482,6 +482,6 @@ async def test_sse_subscribe_event_with_field_and_state_success(
 
         mock_stream.assert_called_with(
             "GET",
-            f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{state}",
+            f"{WAYPOINT_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{state}",
             params=expected_params,
         )

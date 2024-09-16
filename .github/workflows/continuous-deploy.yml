@@ -196,7 +196,7 @@ jobs:
         run: mise run poetry:install:all
       - name: Run Pylint
         run: |
-          poetry run pylint app/ endorser/ shared/ trustregistry/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          poetry run pylint app/ endorser/ shared/ trustregistry/ waypoint/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
 
   test:
     if: github.event.pull_request.draft == false
@@ -210,7 +210,7 @@ jobs:
       fail-fast: true
       matrix:
         module:
-          - { test: "app/tests/ endorser trustregistry webhooks --ignore=app/tests/e2e/", id: "1" } # fast tests, ignore e2e
+          - { test: "app/tests/ endorser trustregistry waypoint webhooks --ignore=app/tests/e2e/", id: "1" } # fast tests, ignore e2e
           - { test: "app/tests/e2e/issuer/", id: "2" } # then some individual, slower e2e tests
           - { test: "app/tests/e2e/verifier/", id: "3" }
           - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", id: "4" }

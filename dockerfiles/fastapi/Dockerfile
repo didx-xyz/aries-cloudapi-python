@@ -6,6 +6,7 @@ COPY shared /shared
 WORKDIR /app
 
 ARG POETRY_VERSION=1.8.3
+RUN pip install ddtrace --no-cache-dir
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 # Set Poetry's cache and virtualenvs path to a writable directory
 ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry

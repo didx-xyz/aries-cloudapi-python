@@ -36,6 +36,7 @@ pytest-mock = "~3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-xdist = "^3.6.1"
+ddtrace = "^2.12.2"
 
 [build-system]
 requires = ["poetry-core>=1.8.3"]

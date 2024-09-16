@@ -58,7 +58,7 @@ def async_generator_mock():
 
 
 @pytest.mark.anyio
-async def test_check_disconnection_disconnects():
+async def test_check_disconnection():
     request = AsyncMock(spec=Request)
     request.is_disconnected.return_value = True
 
@@ -66,7 +66,7 @@ async def test_check_disconnection_disconnects():
 
     task = asyncio.create_task(check_disconnect(request, stop_event))
     # Give it enough time to check for disconnection and set the stop event
-    await asyncio.sleep(DISCONNECT_CHECK_PERIOD * 4)
+    await asyncio.sleep(DISCONNECT_CHECK_PERIOD * 1.1)
 
     assert stop_event.is_set()  # Expect stop_event to be set upon disconnection
     assert task.done() is True

@@ -72,7 +72,7 @@ jobs:
             governance-multitenant-agent,
             governance-endorser,
             pytest,
-            waypoint-web
+            waypoint
           ]
         include:
           - image: governance-ga-agent
@@ -127,7 +127,7 @@ jobs:
             context: .
             file: dockerfiles/tests/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: waypoint-web
+          - image: waypoint
             context: .
             file: dockerfiles/waypoint/Dockerfile
             platforms: linux/amd64,linux/arm64

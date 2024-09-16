@@ -257,9 +257,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-  waypoint-web:
-    image: ${REGISTRY:-local}/waypoint-web:${IMAGE_TAG:-latest}
-    container_name: waypoint-web
+  waypoint:
+    image: ${REGISTRY:-local}/waypoint:${IMAGE_TAG:-latest}
+    container_name: waypoint
     build:
       context: .
       dockerfile: ./dockerfiles/waypoint/Dockerfile

@@ -611,7 +611,53 @@ jobs:
             --tls --pass $REDIS_PASSWORD \
             --cluster call --cluster-only-masters \
             $REDIS_HOST:$REDIS_PORT \
-            FLUSHALL
+            FLUSHALL ASYNC
+
+      - name: Reset NATS
+        if: github.event.inputs.run-reset-deployments == 'true'
+        env:
+          NAMESPACE: dev-cloudapi
+        run: |
+          kubectl get secret \
+            -n ${NAMESPACE} \
+            ${{ secrets.NATS_SECRET_NAME }} \
+            -o jsonpath='{.data.cloudapi-nats-admin\.creds}' \
+                | base64 -d > nats.creds
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_sync_locks -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_sync_tracking -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_unique_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm cloudapi_aries_events -f
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_sync_locks --ttl 10s --replicas 3 --storage memory
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_sync_tracking --replicas 3
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_unique_events --replicas 3
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2
+
+          rm -f ./nats.creds
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'

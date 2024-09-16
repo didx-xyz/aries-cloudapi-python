@@ -493,6 +493,19 @@ def setup_cloudapi(build_enabled=True):
         ], enabled=build_enabled)
       },
     },
+    'waypoint': {
+      'depends': ['nats', 'benthos'],
+      'links': [
+        link('http://waypoint.cloudapi.127.0.0.1.nip.io/docs', 'Docs'),
+      ],
+      'image': {
+        'dockerfile': './dockerfiles/waypoint/Dockerfile',
+        'live_update': add_live_update([
+          ('./waypoint', '/waypoint'),
+          ('./shared', '/shared'),
+        ], enabled=build_enabled)
+      },
+    },
     'ledger-browser': {
       'depends': ['ledger-nodes'],
       'enabled': ledger_enabled,

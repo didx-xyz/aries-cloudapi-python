@@ -104,9 +104,6 @@ async def test_process_events(mock_nats_client, group_id):
 
 @pytest.mark.anyio
 async def test_process_events_cancelled_error(mock_nats_client):
-    """
-    Test process_events to handle asyncio.CancelledError.
-    """
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -131,9 +128,6 @@ async def test_process_events_cancelled_error(mock_nats_client):
 
 @pytest.mark.anyio
 async def test_process_events_timeout_error(mock_nats_client):
-    """
-    Test process_events to handle TimeoutError.
-    """
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription

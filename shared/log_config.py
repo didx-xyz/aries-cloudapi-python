@@ -1,4 +1,3 @@
-import copy
 import os
 import sys
 
@@ -84,7 +83,6 @@ def _serialize_record(record):
             },
         },
     }
-
     record["extra"]["serialized"] = orjson.dumps(subset, default=str).decode("utf-8")
     return "{extra[serialized]}\n"
 
@@ -114,11 +112,8 @@ def get_logger(name: str):
     if main_module_name in loggers:
         return loggers[main_module_name].bind(name=name)
 
-    # Remove default handler from global logger
-    logger.remove()
-
-    # Make a deep copy of the global logger
-    logger_ = copy.deepcopy(logger)
+    # Create a new logger instance
+    logger_ = logger.opt(depth=1)
 
     logger_.configure(extra={"body": ""})  # Default values for extra args
 

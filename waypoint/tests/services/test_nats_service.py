@@ -45,7 +45,9 @@ async def test_init_nats_client_error(exception):
 
 
 @pytest.mark.anyio
-async def test_nats_events_processor_subscribe(mock_nats_client):
+async def test_nats_events_processor_subscribe(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_nats_client.pull_subscribe.return_value = AsyncMock(
         spec=JetStreamContext.PullSubscription
@@ -71,7 +73,9 @@ async def test_nats_events_processor_subscribe_error(mock_nats_client, exception
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "group_id"])
-async def test_process_events(mock_nats_client, group_id):
+async def test_process_events(
+    mock_nats_client, group_id  # pylint: disable=redefined-outer-name
+):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -103,7 +107,9 @@ async def test_process_events(mock_nats_client, group_id):
 
 
 @pytest.mark.anyio
-async def test_process_events_cancelled_error(mock_nats_client):
+async def test_process_events_cancelled_error(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -127,7 +133,9 @@ async def test_process_events_cancelled_error(mock_nats_client):
 
 
 @pytest.mark.anyio
-async def test_process_events_timeout_error(mock_nats_client):
+async def test_process_events_timeout_error(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription

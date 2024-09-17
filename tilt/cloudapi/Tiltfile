@@ -157,7 +157,7 @@ def setup_nats(namespace):
   flags=[]
   if config.tilt_subcommand == 'ci':
     flags=[
-      '--set', 'nats.replicaCount=2',
+      '--set', 'nats.replicaCount=1',
     ]
   local_resource(
     name='build-nats',

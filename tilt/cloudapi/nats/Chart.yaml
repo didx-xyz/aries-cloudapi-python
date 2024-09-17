@@ -11,7 +11,7 @@ dependencies:
     repository: oci://registry-1.docker.io/bitnamicharts
     version: 2.x.x
 
-  # https://github.com/bitnami/charts/tree/main/bitnami/keycloak
+  # https://github.com/bitnami/charts/tree/main/bitnami/nats
   - name: nats
     repository: oci://registry-1.docker.io/bitnamicharts
     version: 8.x.x

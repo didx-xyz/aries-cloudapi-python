@@ -1,8 +1,10 @@
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
 fullnameOverride: pgadmin
+
 env:
   email: pgadmin@example.com
   password: pgadmin
+
 serverDefinitions:
   enabled: true
   servers:
@@ -15,6 +17,7 @@ serverDefinitions:
       Group: Servers
       ConnectionParameters:
         sslmode: prefer
+
 ingress:
   enabled: true
   ingressClassName: nginx
@@ -23,7 +26,13 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+
 persistentVolume:
   enabled: false
+
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
+
+readinessProbe:
+  initialDelaySeconds: 1
+  periodSeconds: 10

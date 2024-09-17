@@ -4,8 +4,11 @@ load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
 # https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
 redis_version='11.0.4'
+# https://github.com/mrnim94/redisinsight/tree/master/helm-chart/redisinsight
+redis_insight_version='1.0.1'
+redis_insight_host='redis-insight.127.0.0.1.nip.io'
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
-postgres_version='14.2.27'
+postgres_version='14.2.28'
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
 pgadmin_version='1.29.0'
 pgadmin_host='pgadmin.127.0.0.1.nip.io'
@@ -32,6 +35,47 @@ def setup_redis(namespace):
     labels=['03-streaming'],
     resource_deps=['cloudapi-ns', 'istio'],
     deps=[values_file]
+  )
+
+def setup_redis_insight(namespace):
+  print(color.green('Installing Redis Insight...'))
+
+  values_file='./tilt/cloudapi/redis-insight.yaml'
+
+  ## Setup Redis Insight
+  # https://github.com/mrnim94/redisinsight
+  helm_repo(
+    name='redisinsight',
+    url='https://mrnim94.github.io/redisinsight',
+    resource_name='redisinsight',
+    labels=['10-helm-repos'],
+  )
+  helm_resource(
+    name='redis-insight',
+    chart='redisinsight/redisinsight',
+    release_name='redis-insight',
+    namespace=namespace,
+    flags=[
+      '--values', values_file,
+      '--set', 'ingress.hosts[0].host='+redis_insight_host,
+      '--version', redis_insight_version,
+      '--wait',
+    ],
+    labels=['03-streaming'],
+    resource_deps=[
+      'cloudapi-ns',
+      'redisinsight',
+      'ingress-nginx',
+      'istio',
+    ],
+    deps=[values_file],
+    auto_init=False,
+  )
+  k8s_resource(
+    workload='redis-insight',
+    links=[
+      link('http://'+redis_insight_host, 'Redis Insight'),
+    ],
   )
 
 def setup_postgres(namespace):
@@ -328,6 +372,7 @@ def setup_cloudapi(build_enabled=True):
   )
 
   setup_redis(namespace)
+  setup_redis_insight(namespace)
   setup_postgres(namespace)
   setup_pgadmin(namespace)
   setup_nats(namespace)

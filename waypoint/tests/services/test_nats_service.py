@@ -53,8 +53,9 @@ async def test_nats_events_processor_subscribe(
         spec=JetStreamContext.PullSubscription
     )
 
-    subscription = await processor._subscribe("group_id", "wallet_id") # pylint: disable=protected-access
-
+    subscription = await processor._subscribe(  # pylint: disable=protected-access
+        "group_id", "wallet_id"
+    )
     mock_nats_client.pull_subscribe.assert_called_once_with(
         subject=f"{NATS_SUBJECT}.group_id.wallet_id", stream=NATS_STREAM
     )

@@ -9,7 +9,6 @@ from shared import DISCONNECT_CHECK_PERIOD, SSE_TIMEOUT, APIRouter
 from shared.log_config import get_logger
 from waypoint.services.dependency_injection.container import Container
 from waypoint.services.nats_service import NatsEventsProcessor
-from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
 
 logger = get_logger(__name__)
 
@@ -48,36 +47,27 @@ async def nats_event_stream_generator(
     logger.debug("Starting NATS event stream generator")
     stop_event = asyncio.Event()
 
-    event_generator_wrapper: EventGeneratorWrapper = (
-        await nats_processor.process_events(
-            group_id=group_id,
-            wallet_id=wallet_id,
-            topic=topic,
-            stop_event=stop_event,
-            duration=SSE_TIMEOUT,
-        )
-    )
+    async with nats_processor.process_events(
+        group_id=group_id,
+        wallet_id=wallet_id,
+        topic=topic,
+        stop_event=stop_event,
+        duration=SSE_TIMEOUT,
+    ) as event_generator:
+        background_tasks.add_task(check_disconnect, request, stop_event)
 
-    try:
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnect, request, stop_event)
+        async for event in event_generator:
+            if await request.is_disconnected():
+                logger.debug("Client disconnected")
+                stop_event.set()
+                break
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    logger.debug("Client disconnected")
-                    stop_event.set()
-                    break
-
-                payload = dict(event.payload)
-                if payload[field] == field_id and payload["state"] == desired_state:
-                    logger.trace("Event found yielding event {}", event)
-                    yield event.model_dump_json()
-                    stop_event.set()
-                    break
-
-    except asyncio.CancelledError:
-        logger.debug("Event stream cancelled")
-        stop_event.set()
+            payload = dict(event.payload)
+            if payload[field] == field_id and payload["state"] == desired_state:
+                logger.trace("Event found yielding event {}", event)
+                yield event.model_dump_json()
+                stop_event.set()
+                break
 
 
 @router.get(

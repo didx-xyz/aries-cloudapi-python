@@ -1,12 +1,15 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from dependency_injector.wiring import Provide, inject
+from fastapi import Depends, FastAPI, HTTPException
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
 from waypoint.routers import sse
 from waypoint.services.dependency_injection.container import Container
+from waypoint.services.nats_service import NatsEventsProcessor
 
 logger = get_logger(__name__)
 
@@ -52,12 +55,35 @@ logger.info("Waypoint Service startup")
 app = create_app()
 
 
-# TODO - Improve health checks
 @app.get("/health/live")
 async def health_live():
     return {"status": "live"}
 
 
 @app.get("/health/ready")
-async def health_ready():
-    return {"status": "ready"}
+@inject
+async def health_ready(
+    nats_processor: NatsEventsProcessor = Depends(
+        Provide[Container.nats_events_processor]
+    ),
+):
+    try:
+        jetstream_status = await asyncio.wait_for(
+            nats_processor.check_jetstream(), timeout=5.0
+        )
+        if jetstream_status["is_working"]:
+            return {"status": "ready", "jetstream": jetstream_status}
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail={"status": "not ready", "jetstream": jetstream_status},
+            )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "not ready", "error": "JetStream health check timed out"},
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail={"status": "error", "error": str(e)}
+        )

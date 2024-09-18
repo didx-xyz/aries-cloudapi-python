@@ -404,6 +404,9 @@ jobs:
       - name: Trust Registry Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-trust-registry --tail 10000
+      - name: Waypoint Logs
+        if: always()
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=waypoint --tail 10000
       - name: Webhooks Web Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-webhooks-web --tail 10000

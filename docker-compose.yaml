@@ -280,7 +280,7 @@ services:
     env_file:
       - environments/waypoint/waypoint.env
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3010/health/ready || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3011/health/ready || exit 1"]
       interval: 5s
       timeout: 10s
       retries: 3

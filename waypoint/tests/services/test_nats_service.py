@@ -11,8 +11,6 @@ from nats.js.client import JetStreamContext
 from shared.constants import NATS_STREAM, NATS_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client
-from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
-
 
 @pytest.fixture
 async def mock_nats_client():

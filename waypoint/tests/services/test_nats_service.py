@@ -24,7 +24,7 @@ async def mock_nats_client():
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("nats_creds-file", [None, "some_file"])
+@pytest.mark.parametrize("nats_creds_file", [None, "some_file"])
 async def test_init_nats_client(nats_creds_file):
     mock_nats_client = AsyncMock(spec=NATS)  # pylint: disable=redefined-outer-name
 

@@ -71,13 +71,6 @@ async def health_ready(
         jetstream_status = await asyncio.wait_for(
             nats_processor.check_jetstream(), timeout=5.0
         )
-        if jetstream_status["is_working"]:
-            return {"status": "ready", "jetstream": jetstream_status}
-        else:
-            raise HTTPException(
-                status_code=503,
-                detail={"status": "not ready", "jetstream": "JetStream not ready"},
-            )
     except asyncio.TimeoutError:
         raise HTTPException(
             status_code=503,
@@ -86,4 +79,12 @@ async def health_ready(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail={"status": "error", "error": str(e)}
+        )
+
+    if jetstream_status["is_working"]:
+        return {"status": "ready", "jetstream": jetstream_status}
+    else:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "not ready", "jetstream": "JetStream not ready"},
         )

@@ -76,7 +76,7 @@ async def health_ready(
             status_code=503,
             detail={"status": "not ready", "error": "JetStream health check timed out"},
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         raise HTTPException(
             status_code=500, detail={"status": "error", "error": str(e)}
         )

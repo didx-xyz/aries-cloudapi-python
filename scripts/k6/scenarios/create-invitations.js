@@ -2,11 +2,10 @@
 /* eslint-disable no-undefined, no-console, camelcase */
 
 import { check } from "k6";
-import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptInvitation, createInvitation, waitForSSEEventConnection } from "../libs/functions.js";
+import { acceptInvitation, createInvitation, genericWaitForSSEEvent } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 // import bootstrapIssuer from "./bootstrap-issuer.js";
 
@@ -100,16 +99,7 @@ export default function (data) {
   const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
   const issuer = issuers[issuerIndex];
 
-  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
-  // const holderWalletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-  // check(holderWalletId, {
-  //   "Holder wallet ID is not null": (r) => r !== null
-  // });
-
-  // const holderAccessToken = getAccessTokenByWalletId(bearerToken, holderWalletId);
-  // check(holderAccessToken, {
-  //   "Holder access token is not null": (r) => r !== null
-  // });
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
 
   const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
   check(createInvitationResponse, {
@@ -134,15 +124,22 @@ export default function (data) {
 
   const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
 
-  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(
-    wallet.access_token,
-    wallet.wallet_id,
-    holderInvitationConnectionId,
-  );
+  const waitForSSEEventConnectionResponse = genericWaitForSSEEvent({
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
+    threadId: holderInvitationConnectionId,
+    eventType: 'completed',
+    sseUrlPath: 'connections/connection_id',
+    topic: 'connections',
+    expectedState: 'completed',
+    maxDuration: 10,
+    sseTag: 'connection_ready'
+  });
+
   check(waitForSSEEventConnectionResponse, {
     "SSE Event received successfully: connection-ready": (r) => {
       if (!r) {
-        throw new Error("SSE event was not received successfully");
+        throw new Error("SSE connection event was not received successfully");
       }
       return true;
     },

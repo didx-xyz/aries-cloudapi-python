@@ -8,16 +8,12 @@ import {
   checkRevoked,
   revokeCredentialAutoPublish,
 } from "../libs/functions.js";
-import { bootstrapIssuer } from "../libs/setup.js";
 
 const inputFilepath = "../output/create-credentials.json";
 const data = open(inputFilepath, "r");
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 const testFunctionReqs = new Counter("test_function_reqs");
 
 export const options = {
@@ -63,8 +59,6 @@ export default function (data) {
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = tenants[walletIndex];
 
-  const issuerIndex = 0;
-  const issuer = issuers[issuerIndex];
   const revokeCredentialResponse = revokeCredentialAutoPublish(wallet.issuer_access_token, wallet.credential_exchange_id);
   check(revokeCredentialResponse, {
     "Credential revoked successfully": (r) => {

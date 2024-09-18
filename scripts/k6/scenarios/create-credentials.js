@@ -6,7 +6,7 @@ import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptCredential, createCredential, getCredentialIdByThreadId, waitForSSEEvent } from "../libs/functions.js";
+import { acceptCredential, createCredential, genericWaitForSSEEvent, getCredentialIdByThreadId } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
@@ -96,31 +96,12 @@ function getRandomInt() {
 }
 
 export default function (data) {
-  // const start = Date.now();
   const bearerToken = data.bearerToken;
-  // const issuers = data.issuers;
   const holders = data.holders;
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = holders[walletIndex];
 
-  // const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
-  // const issuer = issuers[issuerIndex];
-
-  // console.log(`isser.accessToken: ${issuer.accessToken}`);
-  // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
-  // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
-
-  // const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, wallet.issuer_connection_id);
-  // check(createCredentialResponse, {
-  //   "Credential created successfully": (r) => {
-  //     if (r.status !== 200) {
-  //       throw new Error(`Unexpected response while creating credential: ${r.response}`);
-  //     }
-  //     return true;
-  //   }
-  // });
-
-  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
 
   let createCredentialResponse;
   try {
@@ -153,9 +134,20 @@ export default function (data) {
   // console.log(`Holer access token: ${wallet.holder_access_token}`);
   // console.log(`Wallet ID: ${wallet.wallet_id}`);
 
-  const waitForSSEEventResponse = waitForSSEEvent(wallet.access_token, wallet.wallet_id, threadId);
+  const waitForSSEEventResponse = genericWaitForSSEEvent({
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
+    threadId: threadId,
+    eventType: 'offer-received',
+    sseUrlPath: 'credentials/thread_id',
+    topic: 'credentials',
+    expectedState: 'offer-received',
+    maxDuration: 10,
+    sseTag: 'credential_offer_received'
+  });
+
   check(waitForSSEEventResponse, {
-    "SSE request received successfully: request-received": (r) => {
+    "SSE request received successfully: offer-received": (r) => {
       if (!r) {
         throw new Error("SSE event was not received successfully");
       }

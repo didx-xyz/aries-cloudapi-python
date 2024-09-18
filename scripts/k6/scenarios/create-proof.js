@@ -6,12 +6,11 @@ import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   acceptProofRequest,
+  genericWaitForSSEEvent,
   getProof,
   getProofIdByThreadId,
   getProofIdCredentials,
-  sendProofRequest,
-  waitForSSEEventReceived,
-  waitForSSEProofDone,
+  sendProofRequest
 } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 
@@ -118,7 +117,17 @@ export default function (data) {
 
   const { thread_id: threadId } = JSON.parse(sendProofRequestResponse.body);
 
-  const waitForSSEEventReceivedResponse = waitForSSEEventReceived(wallet.access_token, wallet.wallet_id, threadId);
+  const waitForSSEEventReceivedResponse = genericWaitForSSEEvent({
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
+    threadId: threadId,
+    eventType: 'request-received',
+    sseUrlPath: 'proofs/thread_id',
+    topic: 'proofs',
+    expectedState: 'request-received',
+    maxDuration: 10,
+    sseTag: 'proof_request_received'
+  });
   check(waitForSSEEventReceivedResponse, {
     "SSE Event received successfully: request-recevied": (r) => {
       if (!r) {
@@ -142,7 +151,18 @@ export default function (data) {
     },
   });
 
-  const waitForSSEProofDoneRequest = waitForSSEProofDone(wallet.issuer_access_token, wallet.issuer_wallet_id, threadId);
+  const waitForSSEProofDoneRequest = genericWaitForSSEEvent({
+    accessToken: wallet.issuer_access_token,
+    walletId: wallet.issuer_wallet_id,
+    threadId: threadId,
+    eventType: 'done',
+    sseUrlPath: 'proofs/thread_id',
+    topic: 'proofs',
+    expectedState: 'done',
+    maxDuration: 10,
+    sseTag: 'proof_done'
+  });
+
   check(waitForSSEProofDoneRequest, {
     "SSE Proof Request state: done": (r) => {
       if (!r) {

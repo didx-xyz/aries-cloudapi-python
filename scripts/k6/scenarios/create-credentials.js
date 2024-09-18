@@ -2,6 +2,7 @@
 /* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
+// import { shuffle } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
@@ -13,6 +14,7 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
+const numIssuers = __ENV.NUM_ISSUERS;
 
 export const options = {
   scenarios: {
@@ -45,25 +47,40 @@ const inputFilepath = "../output/create-invitation.json";
 const data = open(inputFilepath, "r");
 const outputFilepath = "output/create-credentials.json";
 
+// Helper function to get the issuer index using pre-calculated assignments
+function getIssuerIndex(vu, iter) {
+  const walletIndex = getWalletIndex(vu, iter);
+  return issuerAssignments[walletIndex];
+}
 // const specificFunctionReqs = new Counter('specific_function_reqs');
 const testFunctionReqs = new Counter("test_function_reqs");
 // const mainIterationDuration = new Trend('main_iteration_duration');
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 
 export function setup() {
   const bearerToken = getBearerToken();
 
   file.writeString(outputFilepath, "");
-  const holders = data.trim().split("\n").map(JSON.parse);
+  let holders = data.trim().split("\n").map(JSON.parse);
+  holders = shuffleArray(holders); // Randomize the order of holders
 
-  const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
+  // const walletName = issuerPrefix;
+  // const credDefTag = walletName;
+  // const issuers = bootstrapIssuer(numIssuers, walletName, credDefTag, schemaName, schemaVersion);
 
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
+  // if (!issuers || issuers.length === 0) {
+  //   console.error("Failed to bootstrap issuers.");
+  // }
 
-  return { bearerToken, issuers, holders };
+  return { bearerToken, holders };
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;
@@ -81,13 +98,13 @@ function getRandomInt() {
 export default function (data) {
   // const start = Date.now();
   const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
+  // const issuers = data.issuers;
   const holders = data.holders;
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const wallet = holders[walletIndex];
 
-  const issuerIndex = 0;
-  const issuer = issuers[issuerIndex];
+  // const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
+  // const issuer = issuers[issuerIndex];
 
   // console.log(`isser.accessToken: ${issuer.accessToken}`);
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
@@ -103,12 +120,14 @@ export default function (data) {
   //   }
   // });
 
+  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
+
   let createCredentialResponse;
   try {
     createCredentialResponse = createCredential(
       bearerToken,
-      issuer.accessToken,
-      issuer.credentialDefinitionId,
+      wallet.issuer_access_token,
+      wallet.issuer_credential_definition_id,
       wallet.issuer_connection_id,
     );
   } catch (error) {
@@ -158,6 +177,9 @@ export default function (data) {
 
   const issuerData = JSON.stringify({
     credential_exchange_id: credentialExchangeId,
+    issuer_access_token: wallet.issuer_access_token,
+    issuer_credential_definition_id: wallet.issuer_credential_definition_id,
+    issuer_connection_id: wallet.issuer_connection_id,
   });
   file.appendString(outputFilepath, `${issuerData}\n`);
 

@@ -55,20 +55,21 @@ const data = open(inputFilepath, "r");
 const testFunctionReqs = new Counter("test_function_reqs");
 // const mainIterationDuration = new Trend('main_iteration_duration');
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 export function setup() {
   const bearerToken = getBearerToken();
 
-  const holders = data.trim().split("\n").map(JSON.parse);
+  let tenants = data.trim().split("\n").map(JSON.parse);
+  tenants = shuffleArray(tenants);
 
-  const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
-
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
-
-  return { bearerToken, issuers, holders };
+  return { bearerToken, tenants };
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;
@@ -86,21 +87,22 @@ function getRandomInt() {
 export default function (data) {
   // const start = Date.now();
   const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
-  const holders = data.holders;
+  const tenants = data.tenants;
+  // const holders = data.holders;
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
-  const wallet = holders[walletIndex];
+  const wallet = tenants[walletIndex];
 
-  const issuerIndex = 0;
-  const issuer = issuers[issuerIndex];
+  // const issuerIndex = 0;
+  // const issuer = issuers[issuerIndex];
 
   // console.log(`isser.accessToken: ${issuer.accessToken}`);
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
   // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
-    sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+    sendProofRequestResponse = sendProofRequest(wallet.issuer_access_token, wallet.issuer_connection_id);
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     sendProofRequestResponse = { status: 500, response: error.message };
@@ -140,7 +142,7 @@ export default function (data) {
     },
   });
 
-  const waitForSSEProofDoneRequest = waitForSSEProofDone(issuer.accessToken, issuer.walletId, threadId);
+  const waitForSSEProofDoneRequest = waitForSSEProofDone(wallet.issuer_access_token, wallet.issuer_wallet_id, threadId);
   check(waitForSSEProofDoneRequest, {
     "SSE Proof Request state: done": (r) => {
       if (!r) {
@@ -153,7 +155,7 @@ export default function (data) {
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;
   try {
-    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId);
+    getProofResponse = getProof(wallet.issuer_access_token, wallet.issuer_connection_id, threadId);
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     getProofResponse = { status: 500, response: error.message };

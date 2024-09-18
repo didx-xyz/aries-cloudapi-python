@@ -15,6 +15,7 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
+const numIssuers = __ENV.NUM_ISSUERS;
 
 export const options = {
   scenarios: {
@@ -59,7 +60,7 @@ export function setup() {
 
   const walletName = issuerPrefix;
   const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
+  const issuers = bootstrapIssuer(numIssuers, walletName, credDefTag, schemaName, schemaVersion);
 
   if (!issuers || issuers.length === 0) {
     console.error("Failed to bootstrap issuers.");
@@ -73,6 +74,11 @@ const iterationsPerVU = options.scenarios.default.iterations;
 function getWalletIndex(vu, iter) {
   const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
   return walletIndex;
+}
+
+function getIssuerIndex(vu, iter) {
+  const numIssuers = __ENV.NUM_ISSUERS;
+  return (vu + iter - 2) % numIssuers;
 }
 
 const vuStartTimes = {};
@@ -91,9 +97,10 @@ export default function (data) {
   const wallet = holders[walletIndex];
 
   // const issuerIndex = __ITER % numIssuers;
-  const issuerIndex = 0;
+  const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
   const issuer = issuers[issuerIndex];
 
+  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
   // const holderWalletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
   // check(holderWalletId, {
   //   "Holder wallet ID is not null": (r) => r !== null
@@ -152,6 +159,10 @@ export default function (data) {
     access_token: wallet.access_token,
     connection_id: holderInvitationConnectionId,
     issuer_connection_id: issuerConnectionId,
+    issuer_wallet_name: issuer.walletName,
+    issuer_wallet_id: issuer.walletId,
+    issuer_access_token: issuer.accessToken,
+    issuer_credential_definition_id: issuer.credentialDefinitionId,
   });
   file.appendString(outputFilepath, `${holderData}\n`);
 

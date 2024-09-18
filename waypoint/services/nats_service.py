@@ -131,6 +131,6 @@ class NatsEventsProcessor:
             logger.debug("Event generator cancelled")
             stop_event.set()
         finally:
-            logger.debug("Closing subscription...")
+            logger.trace("Closing subscription...")
             await subscription.unsubscribe()
             logger.debug("Subscription closed")

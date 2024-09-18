@@ -89,6 +89,7 @@ class NatsEventsProcessor:
             logger.error(f"Unknown error subscribing to NATS: {e}")
             raise
 
+    @asynccontextmanager
     async def process_events(
         self,
         group_id: str,
@@ -103,7 +104,7 @@ class NatsEventsProcessor:
 
         subscription = await self._subscribe(group_id=group_id, wallet_id=wallet_id)
 
-        async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
+        async def event_generator():
             end_time = time.time() + duration
             while not stop_event.is_set():
                 remaining_time = remaining_time = end_time - time.time()
@@ -123,9 +124,13 @@ class NatsEventsProcessor:
                 except TimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
                     await asyncio.sleep(1)
-                except asyncio.CancelledError:
-                    logger.debug("Event generator cancelled")
-                    stop_event.set()
-                    break
 
-        return EventGeneratorWrapper(generator=event_generator())
+        try:
+            yield event_generator()
+        except asyncio.CancelledError:
+            logger.debug("Event generator cancelled")
+            stop_event.set()
+        finally:
+            logger.debug("Closing subscription...")
+            await subscription.unsubscribe()
+            logger.debug("Subscription closed")

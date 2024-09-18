@@ -28,11 +28,9 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
         }
         if NATS_CREDS_FILE:
             connect_kwargs["user_credentials"] = NATS_CREDS_FILE
-
-            nats_client: NATS = await nats.connect(**connect_kwargs)
         else:
             logger.warning("No NATS credentials file found, assuming local development")
-            nats_client: NATS = await nats.connect(**connect_kwargs)
+        nats_client: NATS = await nats.connect(**connect_kwargs)
 
     except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
         logger.error(f"Error connecting to NATS server: {e}")
@@ -134,3 +132,16 @@ class NatsEventsProcessor:
             logger.trace("Closing subscription...")
             await subscription.unsubscribe()
             logger.debug("Subscription closed")
+
+    async def check_jetstream(self):
+        try:
+            account_info = await self.js_context.account_info()
+            is_working = account_info.streams > 0
+            logger.trace(f"JetStream check completed. Is working: {is_working}")
+            return {
+                "is_working": is_working,
+                "streams_count": account_info.streams,
+                "consumers_count": account_info.consumers,
+            }
+        except Exception as e:
+            return {"is_working": False, "error": str(e)}

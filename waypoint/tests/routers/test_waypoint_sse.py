@@ -5,7 +5,7 @@ import pytest
 from fastapi import BackgroundTasks, Request
 from sse_starlette import EventSourceResponse
 
-from shared.constants import DISCONNECT_CHECK_PERIOD, SSE_TIMEOUT
+from shared.constants import DISCONNECT_CHECK_PERIOD
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from waypoint.routers.sse import (
     check_disconnect,
@@ -80,7 +80,7 @@ async def test_check_disconnection():
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
-    nats_processor_mock, request_mock
+    nats_processor_mock, request_mock  # pylint: disable=redefined-outer-name
 ):
     async def mock_event_generator():
         yield expected_cloudapi_event
@@ -109,7 +109,7 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_disconnects(
-    nats_processor_mock,
+    nats_processor_mock,  # pylint: disable=redefined-outer-name
 ):
     request = AsyncMock(spec=Request)
     request.is_disconnected.return_value = True
@@ -141,8 +141,8 @@ async def test_sse_event_stream_generator_disconnects(
 
 @pytest.mark.anyio
 async def test_nats_event_stream_generator_cancelled_error_handling(
-    nats_processor_mock,
-    request_mock,
+    nats_processor_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     background_tasks = BackgroundTasks()
 
@@ -176,9 +176,9 @@ async def test_nats_event_stream_generator_cancelled_error_handling(
 
 @pytest.mark.anyio
 async def test_sse_event_stream(
-    async_generator_mock,
-    nats_processor_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    nats_processor_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     with patch(
         "waypoint.routers.sse.nats_event_stream_generator"

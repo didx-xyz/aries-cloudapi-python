@@ -29,7 +29,7 @@ nats:
 
   ## @param replicaCount Number of NATS nodes
   ##
-  replicaCount: 3
+  replicaCount: 1
 
   ## Client Authentication
   ## ref: https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro

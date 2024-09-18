@@ -83,8 +83,8 @@ class NatsEventsProcessor:
         except Error as e:
             logger.error(f"Error subscribing to NATS: {e}")
             raise
-        except Exception as e:
-            logger.error(f"Unknown error subscribing to NATS: {e}")
+        except Exception:
+            logger.exception(f"Unknown error subscribing to NATS")
             raise
 
     @asynccontextmanager

@@ -16,6 +16,7 @@ psycopg2-binary = "~=2.9.6"
 pydantic = "~2.9.0"
 sqlalchemy = "~=2.0.19"
 uvicorn = { version = "~0.30.5", extras = ["standard"] }
+ddtrace = "^2.12.2"
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.4.0"

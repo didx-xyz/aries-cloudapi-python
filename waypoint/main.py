@@ -76,7 +76,7 @@ async def health_ready(
         else:
             raise HTTPException(
                 status_code=503,
-                detail={"status": "not ready", "jetstream": jetstream_status},
+                detail={"status": "not ready", "jetstream": "JetStream not ready"},
             )
     except asyncio.TimeoutError:
         raise HTTPException(

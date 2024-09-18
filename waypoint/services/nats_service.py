@@ -143,5 +143,5 @@ class NatsEventsProcessor:
                 "streams_count": account_info.streams,
                 "consumers_count": account_info.consumers,
             }
-        except Exception as e:
-            return {"is_working": False, "error": str(e)}
+        except Exception:
+            return {"is_working": False}

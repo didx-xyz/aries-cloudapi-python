@@ -280,6 +280,12 @@ services:
     #   - nats-3
     env_file:
       - environments/waypoint/waypoint.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3010/health/ready || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   redis-cluster:
     image: redis:latest

@@ -82,7 +82,3 @@ NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats-1:4222")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "cloudapi.aries.events")
 NATS_STREAM = os.getenv("NATS_STREAM", "cloudapi_aries_events")
 NATS_CREDS_FILE = os.getenv("NATS_CREDS_FILE", "")
-NATS_START_TIME = int(os.getenv("NATS_START_TIME", "30"))
-NATS_CONSUMER_INACTIVE_THRESHOLD = float(
-    os.getenv("NATS_CONSUMER_INACTIVE_THRESHOLD", "30")
-)

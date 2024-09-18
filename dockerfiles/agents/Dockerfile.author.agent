@@ -7,9 +7,6 @@ RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-grou
 
 # install redis-events plugin
 RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-08-30#subdirectory=redis_events
-# Install ddtrace
-ARG DDTRACE_VERSION=2.12.2
-RUN pip install --no-cache-dir ddtrace==${DDTRACE_VERSION}
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

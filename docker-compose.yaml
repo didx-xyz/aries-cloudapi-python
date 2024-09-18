@@ -274,10 +274,9 @@ services:
       - nats
     depends_on:
       - governance-endorser
-    # depends_on:
-    #   - nats-1
-    #   - nats-2
-    #   - nats-3
+      - nats-1
+      - nats-2
+      - nats-3
     env_file:
       - environments/waypoint/waypoint.env
     healthcheck:

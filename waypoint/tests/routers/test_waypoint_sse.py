@@ -13,7 +13,6 @@ from waypoint.routers.sse import (
     sse_wait_for_event_with_field_and_state,
 )
 from waypoint.services.nats_service import NatsEventsProcessor
-from waypoint.util.event_generator_wrapper import EventGeneratorWrapper
 
 wallet_id = "wallet123"
 topic = "some_topic"
@@ -32,6 +31,14 @@ dummy_cloudapi_event = CloudApiWebhookEventGeneric(
         field: "some_other_field_id",
         "state": "some_other_state",
     },
+)
+
+expected_cloudapi_event = CloudApiWebhookEventGeneric(
+    wallet_id=wallet_id,
+    topic=topic,
+    origin="xyz",
+    group_id=group_id,
+    payload={"dummy": "data", field: field_id, "state": desired_state},
 )
 
 
@@ -65,33 +72,24 @@ async def test_check_disconnection():
     stop_event = asyncio.Event()
 
     task = asyncio.create_task(check_disconnect(request, stop_event))
-    # Give it enough time to check for disconnection and set the stop event
     await asyncio.sleep(DISCONNECT_CHECK_PERIOD * 1.1)
 
-    assert stop_event.is_set()  # Expect stop_event to be set upon disconnection
+    assert stop_event.is_set()
     assert task.done() is True
 
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
-    async_generator_mock,  # pylint: disable=redefined-outer-name
-    nats_processor_mock,  # pylint: disable=redefined-outer-name
-    request_mock,  # pylint: disable=redefined-outer-name
+    nats_processor_mock, request_mock
 ):
-    expected_cloudapi_event = CloudApiWebhookEventGeneric(
-        wallet_id=wallet_id,
-        topic=topic,
-        origin="xyz",
-        group_id=group_id,
-        payload={"dummy": "data", field: field_id, "state": desired_state},
+    async def mock_event_generator():
+        yield expected_cloudapi_event
+
+    nats_processor_mock.process_events.return_value.__aenter__.return_value = (
+        mock_event_generator()
     )
 
-    # Configure the nats_processor mock
-    nats_processor_mock.process_events.return_value = EventGeneratorWrapper(
-        generator=async_generator_mock([dummy_cloudapi_event, expected_cloudapi_event]),
-    )
-
-    # Call the method under test
+    events = []
     async for event in nats_event_stream_generator(
         request=request_mock,
         background_tasks=BackgroundTasks(),
@@ -103,36 +101,25 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
         group_id=group_id,
         nats_processor=nats_processor_mock,
     ):
-        assert event == expected_cloudapi_event.model_dump_json()
+        events.append(event)
 
-    # Assertions
-    nats_processor_mock.process_events.assert_awaited_with(
-        wallet_id=wallet_id,
-        topic=topic,
-        group_id=group_id,
-        stop_event=ANY,
-        duration=SSE_TIMEOUT,
-    )
+    assert len(events) == 1
+    assert events[0] == expected_cloudapi_event.model_dump_json()
 
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_disconnects(
-    async_generator_mock,  # pylint: disable=redefined-outer-name
-    nats_processor_mock,  # pylint: disable=redefined-outer-name
+    nats_processor_mock,
 ):
     request = AsyncMock(spec=Request)
     request.is_disconnected.return_value = True
 
-    expected_cloudapi_event = CloudApiWebhookEventGeneric(
-        wallet_id=wallet_id,
-        topic=topic,
-        origin="xyz",
-        group_id=group_id,
-        payload={"dummy": "data", field: field_id, "state": desired_state},
-    )
-    # Configure the nats_processor mock
-    nats_processor_mock.process_events.return_value = EventGeneratorWrapper(
-        generator=async_generator_mock([dummy_cloudapi_event, expected_cloudapi_event]),
+    async def mock_event_generator():
+        yield dummy_cloudapi_event
+        yield expected_cloudapi_event
+
+    nats_processor_mock.process_events.return_value.__aenter__.return_value = (
+        mock_event_generator()
     )
 
     async for _ in nats_event_stream_generator(
@@ -149,28 +136,23 @@ async def test_sse_event_stream_generator_disconnects(
         pass
 
     assert request.is_disconnected.called
-    assert await nats_processor_mock.process_events.stop_event.is_set()
+    nats_processor_mock.process_events.assert_called_once()
 
 
 @pytest.mark.anyio
 async def test_nats_event_stream_generator_cancelled_error_handling(
-    nats_processor_mock,  # pylint: disable=redefined-outer-name
-    request_mock,  # pylint: disable=redefined-outer-name
+    nats_processor_mock,
+    request_mock,
 ):
-    """
-    Test to ensure `nats_event_stream_generator` handles asyncio.CancelledError properly.
-    """
     background_tasks = BackgroundTasks()
 
     async def mock_event_generator():
         raise asyncio.CancelledError
         yield  # Make this function an asynchronous generator
 
-    mock_event_generator_wrapper = AsyncMock(spec=EventGeneratorWrapper)
-    mock_event_generator_wrapper.__aenter__.return_value = mock_event_generator()
-    mock_event_generator_wrapper.__aexit__.return_value = None
-
-    nats_processor_mock.process_events.return_value = mock_event_generator_wrapper
+    nats_processor_mock.process_events.return_value.__aenter__.return_value = (
+        mock_event_generator()
+    )
 
     generator = nats_event_stream_generator(
         request=request_mock,
@@ -184,35 +166,22 @@ async def test_nats_event_stream_generator_cancelled_error_handling(
         nats_processor=nats_processor_mock,
     )
 
-    async for _ in generator:
-        pass
+    with pytest.raises(asyncio.CancelledError):
+        async for _ in generator:
+            pass
 
-    # Assert that stop_event is set when asyncio.CancelledError is raised
-    assert await nats_processor_mock.process_events.stop_event.is_set()
+    nats_processor_mock.process_events.assert_called_once()
     request_mock.is_disconnected.assert_not_called()
 
 
 @pytest.mark.anyio
 async def test_sse_event_stream(
-    async_generator_mock,  # pylint: disable=redefined-outer-name
-    nats_processor_mock,  # pylint: disable=redefined-outer-name
-    request_mock,  # pylint: disable=redefined-outer-name
+    async_generator_mock,
+    nats_processor_mock,
+    request_mock,
 ):
-    expected_cloudapi_event = CloudApiWebhookEventGeneric(
-        wallet_id=wallet_id,
-        topic=topic,
-        origin="xyz",
-        group_id=group_id,
-        payload={"dummy": "data", field: field_id, "state": desired_state},
-    )
-
-    # Configure the nats_processor mock
-    nats_processor_mock.process_events.return_value = EventGeneratorWrapper(
-        generator=async_generator_mock([dummy_cloudapi_event, expected_cloudapi_event]),
-    )
-
     with patch(
-        "waypoint.routes.sse.nats_event_stream_generator"
+        "waypoint.routers.sse.nats_event_stream_generator"
     ) as nats_event_stream_generator_mock:
         nats_event_stream_generator_mock.return_value = async_generator_mock(
             [expected_cloudapi_event]

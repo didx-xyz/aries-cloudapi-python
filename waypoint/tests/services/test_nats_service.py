@@ -1,4 +1,5 @@
 import asyncio
+import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -85,19 +86,22 @@ async def test_process_events(
 
     mock_message = AsyncMock()
     mock_message.headers = {"event_topic": "test_topic"}
-    mock_message.data = '{"wallet_id": "some_wallet_id", "group_id": "group_id", "origin":"multitenant", \
-        "topic":"some_topic", "payload": {"field": "value", "state": "state"}}'
+    mock_message.data = json.dumps(
+        {
+            "wallet_id": "some_wallet_id",
+            "group_id": "group_id",
+            "origin": "multitenant",
+            "topic": "some_topic",
+            "payload": {"field": "value", "state": "state"},
+        }
+    )
     mock_subscription.fetch.return_value = [mock_message]
 
     stop_event = asyncio.Event()
-    event_generator_wrapper = await processor.process_events(
+    async with processor.process_events(
         group_id, "wallet_id", "test_topic", stop_event, duration=1
-    )
-
-    assert isinstance(event_generator_wrapper, EventGeneratorWrapper)
-
-    events = []
-    async with event_generator_wrapper as event_generator:
+    ) as event_generator:
+        events = []
         async for event in event_generator:
             events.append(event)
             stop_event.set()
@@ -121,14 +125,10 @@ async def test_process_events_cancelled_error(
     stop_event = asyncio.Event()
 
     with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
-        event_generator_wrapper = await processor.process_events(
+        async with processor.process_events(
             "group_id", "wallet_id", "test_topic", stop_event, duration=1
-        )
-
-        assert isinstance(event_generator_wrapper, EventGeneratorWrapper)
-
-        events = []
-        async with event_generator_wrapper as event_generator:
+        ) as event_generator:
+            events = []
             async for event in event_generator:
                 events.append(event)
 
@@ -147,17 +147,12 @@ async def test_process_events_timeout_error(
     mock_subscription.fetch.side_effect = TimeoutError
 
     stop_event = asyncio.Event()
-    event_generator_wrapper = await processor.process_events(
+    async with processor.process_events(
         "group_id", "wallet_id", "test_topic", stop_event, duration=1
-    )
-
-    assert isinstance(event_generator_wrapper, EventGeneratorWrapper)
-
-    events = []
-    async with event_generator_wrapper as event_generator:
+    ) as event_generator:
+        events = []
         async for event in event_generator:
             events.append(event)
 
     assert len(events) == 0
-    # Will run remaining_time <= 0 block
     assert stop_event.is_set()

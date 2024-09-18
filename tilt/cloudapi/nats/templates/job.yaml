@@ -33,9 +33,9 @@ spec:
             - sh
             - -c
             - |
-              cd /nats
               {{- range $kv := .Values.postInstall.kvs }}
-              nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} kv add {{ $kv }}
+              nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} \
+                kv add {{ $kv }} --replicas={{ $.Values.nats.replicaCount }}
               {{- end }}
 
               {{- range $stream, $config := .Values.postInstall.streams }}
@@ -44,5 +44,6 @@ spec:
                   {{- if $config.defaults }}
                   --defaults \
                   {{- end }}
-                  --storage {{ $config.storage }}
+                  --storage {{ $config.storage }} \
+                  --replicas={{ $.Values.nats.replicaCount }}
               {{- end }}

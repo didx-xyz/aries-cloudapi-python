@@ -5,7 +5,7 @@ load('ext://helm_resource', 'helm_resource', 'helm_repo')
 # https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
 redis_version='11.0.4'
 # https://github.com/mrnim94/redisinsight/tree/master/helm-chart/redisinsight
-redis_insight_version='1.0.1'
+redis_insight_version='1.1.0'
 redis_insight_host='redis-insight.127.0.0.1.nip.io'
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
 postgres_version='14.2.28'

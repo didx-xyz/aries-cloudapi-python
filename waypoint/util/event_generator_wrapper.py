@@ -5,7 +5,7 @@ from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 class EventGeneratorWrapper:
     """
-    A wrapper class for managing an asynchronous generator alongside an asyncio task.
+    A wrapper class for managing an asynchronous generator.
 
     This class encapsulates an async generator and a related asyncio task, providing
     a convenient way to manage their lifecycle together. It is used in the NatsEventsProcessor

@@ -12,6 +12,7 @@ from shared.constants import NATS_STREAM, NATS_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client
 
+
 @pytest.fixture
 async def mock_nats_client():
     with patch("nats.connect") as mock_connect:

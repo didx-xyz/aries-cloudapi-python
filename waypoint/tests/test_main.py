@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI
 
 from waypoint.main import app, app_lifespan, health_live, health_ready
-from waypoint.routes import sse
+from waypoint.routers import sse
 from waypoint.services.nats_service import NatsEventsProcessor
 
 

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
-from waypoint.routes import sse
+from waypoint.routers import sse
 from waypoint.services.dependency_injection.container import Container
 
 logger = get_logger(__name__)

@@ -7,7 +7,7 @@ from sse_starlette import EventSourceResponse
 
 from shared.constants import DISCONNECT_CHECK_PERIOD, SSE_TIMEOUT
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
-from waypoint.routes.sse import (
+from waypoint.routers.sse import (
     check_disconnect,
     nats_event_stream_generator,
     sse_wait_for_event_with_field_and_state,

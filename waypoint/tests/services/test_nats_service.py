@@ -84,7 +84,8 @@ async def test_process_events(
 
     mock_message = AsyncMock()
     mock_message.headers = {"event_topic": "test_topic"}
-    mock_message.data = '{"wallet_id": "some_wallet_id", "group_id": "group_id", "origin":"multitenant","topic":"some_topic","payload": {"field": "value", "state": "state"}}'
+    mock_message.data = '{"wallet_id": "some_wallet_id", "group_id": "group_id", "origin":"multitenant", \
+        "topic":"some_topic", "payload": {"field": "value", "state": "state"}}'
     mock_subscription.fetch.return_value = [mock_message]
 
     stop_event = asyncio.Event()

@@ -144,4 +144,5 @@ class NatsEventsProcessor:
                 "consumers_count": account_info.consumers,
             }
         except Exception:
+            logger.exception("Caught exception while checking jetstream status")
             return {"is_working": False}

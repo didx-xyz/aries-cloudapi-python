@@ -2,7 +2,8 @@ import os
 import sys
 
 import orjson
-from loguru import logger
+from loguru._logger import Core as _Core
+from loguru._logger import Logger as _Logger
 
 STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
@@ -113,7 +114,18 @@ def get_logger(name: str):
         return loggers[main_module_name].bind(name=name)
 
     # Create a new logger instance
-    logger_ = logger.opt(depth=1)
+    logger_ = _Logger(
+        core=_Core(),
+        exception=None,
+        depth=0,
+        record=False,
+        lazy=False,
+        colors=False,
+        raw=False,
+        capture=True,
+        patchers=[],
+        extra={},
+    )
 
     logger_.configure(extra={"body": ""})  # Default values for extra args
 

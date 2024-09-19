@@ -1,7 +1,8 @@
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from waypoint.main import app, app_lifespan, health_live, health_ready
 from waypoint.routers import sse
@@ -54,6 +55,86 @@ async def test_health_live():
 
 
 @pytest.mark.anyio
-async def test_health_ready():
-    response = await health_ready()
-    assert response == {"status": "ready"}
+async def test_health_ready_success(
+    nats_events_processor_mock,  # pylint: disable=redefined-outer-name
+):
+    nats_events_processor_mock.check_jetstream.return_value = {
+        "is_working": True,
+        "streams_count": 1,
+        "consumers_count": 1,
+    }
+
+    response = await health_ready(nats_processor=nats_events_processor_mock)
+
+    assert response == {
+        "status": "ready",
+        "jetstream": {"is_working": True, "streams_count": 1, "consumers_count": 1},
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_jetstream_not_working(
+    nats_events_processor_mock,  # pylint: disable=redefined-outer-name
+):
+    nats_events_processor_mock.check_jetstream.return_value = {
+        "is_working": False,
+        "error": "No streams available",
+    }
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(nats_processor=nats_events_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "jetstream": "JetStream not ready",
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_timeout(
+    nats_events_processor_mock,  # pylint: disable=redefined-outer-name
+):
+    nats_events_processor_mock.check_jetstream.side_effect = asyncio.TimeoutError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(nats_processor=nats_events_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "error": "JetStream health check timed out",
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_unexpected_error(
+    nats_events_processor_mock,  # pylint: disable=redefined-outer-name
+):
+    nats_events_processor_mock.check_jetstream.side_effect = Exception(
+        "Unexpected error"
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(nats_processor=nats_events_processor_mock)
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == {"status": "error", "error": "Unexpected error"}
+
+
+@pytest.mark.anyio
+async def test_health_ready_with_timeout(
+    nats_events_processor_mock,  # pylint: disable=redefined-outer-name
+):
+    nats_events_processor_mock.check_jetstream.side_effect = (
+        asyncio.TimeoutError
+    )  # Simulate a slow response
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(nats_processor=nats_events_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "error": "JetStream health check timed out",
+    }

@@ -11,7 +11,7 @@ run_test() {
         xk6 run ./scenarios/delete-holders.js
         if [ $MULTI_ISSUERS = false ]; then
           export VUS=1 # delete single issuer
-          export ITERATIONS=1
+          export ITERATIONS="${NUM_ISSUERS}"
         fi
         xk6 run ./scenarios/delete-issuers.js
         echo "Exiting with exit code $exit_code ..."
@@ -34,7 +34,7 @@ run_test ./scenarios/create-proof.js
 
 run_test ./scenarios/delete-holders.js
 export VUS=1 # delete single issuer - TODO: improve this
-export ITERATIONS=1
+export ITERATIONS="${NUM_ISSUERS}"
 run_test ./scenarios/delete-issuers.js
 
 # Multiple issuers tests

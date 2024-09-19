@@ -6,14 +6,14 @@ WORKDIR /tests
 COPY app/pyproject.toml app/
 COPY endorser/pyproject.toml endorser/
 COPY trustregistry/pyproject.toml trustregistry/
-COPY waypoints/pyproject.toml waypoints/
+COPY waypoint/pyproject.toml waypoint/
 COPY webhooks/pyproject.toml webhooks/
 
 # Copy the lock files for each submodule
 COPY app/poetry.lock app/
 COPY endorser/poetry.lock endorser/
 COPY trustregistry/poetry.lock trustregistry/
-COPY waypoints/poetry.lock waypoints/
+COPY waypoint/poetry.lock waypoint/
 COPY webhooks/poetry.lock webhooks/
 
 # Install all depedencies

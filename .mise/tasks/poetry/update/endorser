@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Update Endorser dependencies"
+
+echo "Updating Endorser dependencies"
+
+cd ./endorser
+poetry lock

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Update App dependencies"
+
+echo "Updating App dependencies"
+
+cd ./app
+poetry lock

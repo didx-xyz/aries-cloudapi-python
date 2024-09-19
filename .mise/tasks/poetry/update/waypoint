@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Update waypoint dependencies"
+
+echo "Updating Waypoint dependencies"
+
+cd ./waypoint
+poetry lock

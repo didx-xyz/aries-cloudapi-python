@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Update Trust Registry dependencies"
+
+echo "Updating Trust Registry dependencies"
+
+cd ./trustregistry
+poetry lock

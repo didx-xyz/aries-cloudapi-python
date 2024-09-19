@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mise description="Poetry Update Webhooks dependencies"
+
+echo "Installing Webhook dependencies"
+
+cd ./webhooks
+poetry lock

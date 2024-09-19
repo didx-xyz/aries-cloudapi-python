@@ -32,6 +32,10 @@ _.python.venv = { path = ".venv", create = true }
 description = "Poetry Install dependencies for all submodules"
 depends = ["poetry:install:*"]
 
+[tasks."poetry:update:all"]
+description = "Poetry Update dependencies for all submodules"
+depends = ["poetry:update:*"]
+
 [tasks."tilt:up"]
 description = "Start Tilt"
 depends = ["kind:create"]

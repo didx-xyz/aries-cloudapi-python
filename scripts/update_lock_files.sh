@@ -19,7 +19,7 @@ else
 fi
 
 # Array of submodules
-submodules=("app" "endorser" "trustregistry" "webhooks")
+submodules=("app" "endorser" "trustregistry" "waypoint" "webhooks")
 
 # Generate lock files for each submodule
 for submodule in "${submodules[@]}"; do

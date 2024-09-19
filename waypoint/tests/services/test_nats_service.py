@@ -155,3 +155,50 @@ async def test_process_events_timeout_error(
 
     assert len(events) == 0
     assert stop_event.is_set()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_working(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_nats_client.account_info.return_value = AsyncMock(streams=2, consumers=5)
+
+    result = await processor.check_jetstream()
+
+    assert result == {
+        "is_working": True,
+        "streams_count": 2,
+        "consumers_count": 5,
+    }
+    mock_nats_client.account_info.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_no_streams(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_nats_client.account_info.return_value = AsyncMock(streams=0, consumers=0)
+
+    result = await processor.check_jetstream()
+
+    assert result == {
+        "is_working": False,
+        "streams_count": 0,
+        "consumers_count": 0,
+    }
+    mock_nats_client.account_info.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_exception(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_nats_client.account_info.side_effect = Exception("Test exception")
+
+    result = await processor.check_jetstream()
+
+    assert result == {"is_working": False}
+    mock_nats_client.account_info.assert_called_once()

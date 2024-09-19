@@ -33,7 +33,7 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
         nats_client: NATS = await nats.connect(**connect_kwargs)
 
     except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
-        logger.error(f"Error connecting to NATS server: {e}")
+        logger.error("Error connecting to NATS server: {}", e)
         raise e
     logger.debug("Connected to NATS server")
 
@@ -78,10 +78,10 @@ class NatsEventsProcessor:
             return subscription
 
         except BadSubscriptionError as e:
-            logger.error(f"BadSubscriptionError subscribing to NATS: {e}")
+            logger.error("BadSubscriptionError subscribing to NATS: {}", e)
             raise
         except Error as e:
-            logger.error(f"Error subscribing to NATS: {e}")
+            logger.error("Error subscribing to NATS: {}", e)
             raise
         except Exception:
             logger.exception("Unknown error subscribing to NATS")
@@ -97,7 +97,10 @@ class NatsEventsProcessor:
         duration: int = 10,
     ):
         logger.debug(
-            f"Processing events for group {group_id} and wallet {wallet_id} on topic {topic}"
+            "Processing events for group {} and wallet {} on topic {}",
+            group_id,
+            wallet_id,
+            topic,
         )
 
         subscription = await self._subscribe(group_id=group_id, wallet_id=wallet_id)
@@ -106,7 +109,7 @@ class NatsEventsProcessor:
             end_time = time.time() + duration
             while not stop_event.is_set():
                 remaining_time = remaining_time = end_time - time.time()
-                logger.trace(f"remaining_time: {remaining_time}")
+                logger.trace("remaining_time: {}", remaining_time)
                 if remaining_time <= 0:
                     logger.debug("Timeout reached")
                     stop_event.set()
@@ -137,7 +140,7 @@ class NatsEventsProcessor:
         try:
             account_info = await self.js_context.account_info()
             is_working = account_info.streams > 0
-            logger.trace(f"JetStream check completed. Is working: {is_working}")
+            logger.trace("JetStream check completed. Is working: {}", is_working)
             return {
                 "is_working": is_working,
                 "streams_count": account_info.streams,

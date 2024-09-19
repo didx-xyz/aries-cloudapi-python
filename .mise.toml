@@ -33,7 +33,7 @@ description = "Poetry Install dependencies for all submodules"
 depends = ["poetry:install:*"]
 
 [tasks."poetry:update:all"]
-description = "Poetry Update dependencies for all submodules"
+description = "Poetry Update lockfiles for all submodules"
 depends = ["poetry:update:*"]
 
 [tasks."tilt:up"]

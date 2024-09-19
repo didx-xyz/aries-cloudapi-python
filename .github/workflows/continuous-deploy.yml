@@ -730,6 +730,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get install -y redis-tools
+
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
@@ -914,6 +917,14 @@ jobs:
         env:
           JOB_NAME: cloudapi-pytest-regression
           NAMESPACE: dev-cloudapi
+
+      - name: Expire Elasticache Redis Keys
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        run: |
+          bash ./scripts/redis-expire.sh
 
       - name: Copy k8s pytest results
         if: steps.pytest.outcome == 'success'

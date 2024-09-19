@@ -928,7 +928,7 @@ jobs:
           DEBUG=true ./scripts/redis-expire.sh
 
       - name: Copy k8s pytest results
-        if: steps.pytest.outcome == 'success'
+        if: steps.pytest.outcome == 'success' || steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         run: |
           echo "apiVersion: v1
           kind: Pod
@@ -936,7 +936,6 @@ jobs:
             name: $POD_NAME
             namespace: $NAMESPACE
             labels:
-              # Disable Istio sidecar injection
               sidecar.istio.io/inject: \"false\"
           spec:
             containers:
@@ -944,25 +943,32 @@ jobs:
               image: $CONTAINER_IMAGE
               command: [\"sleep\", \"3600\"]
               volumeMounts:
-              - name: my-volume
-                mountPath: $MOUNT_PATH
+              - name: pytest-volume
+                mountPath: $MOUNT_PATH/pytest
+              - name: pytest-regression-volume
+                mountPath: $MOUNT_PATH/pytest-regression
             volumes:
-            - name: my-volume
+            - name: pytest-volume
               persistentVolumeClaim:
                 claimName: $PVC_NAME
-            restartPolicy: Never" > busybox-pod.yaml
+            - name: pytest-regression-volume
+              persistentVolumeClaim:
+                claimName: $PVC_NAME_REGRESSION
+            restartPolicy: Never" > pytest-results-pod.yaml
 
-          kubectl apply -f busybox-pod.yaml
+          kubectl apply -f pytest-results-pod.yaml
 
           # Wait for the pod to be ready
           echo "Waiting for pod to be ready..."
           kubectl -n $NAMESPACE wait --for=condition=ready pod/$POD_NAME --timeout=60s
 
-          # Copy the file from the pod to your local system
-          echo "Copying file from pod..."
-          mkdir -p $LOCAL_PATH
-          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$OUTPUT_FILE $LOCAL_PATH/$OUTPUT_FILE
-          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$COVERAGE_FILE $LOCAL_PATH/$COVERAGE_FILE
+          # Copy the files from the pod to your local system
+          echo "Copying files from pod..."
+          mkdir -p $LOCAL_PATH $LOCAL_PATH_REGRESSION
+          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/pytest/$OUTPUT_FILE $LOCAL_PATH/$OUTPUT_FILE
+          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/pytest/$COVERAGE_FILE $LOCAL_PATH/$COVERAGE_FILE
+          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/pytest-regression/$OUTPUT_FILE $LOCAL_PATH_REGRESSION/$OUTPUT_FILE
+          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/pytest-regression/$COVERAGE_FILE $LOCAL_PATH_REGRESSION/$COVERAGE_FILE
 
           # Clean up: delete the temporary pod
           echo "Cleaning up..."
@@ -971,61 +977,15 @@ jobs:
           echo "Done!"
         env:
           PVC_NAME: cloudapi-pytest
-          POD_NAME: pytest-results
+          PVC_NAME_REGRESSION: cloudapi-pytest-regression
+          POD_NAME: pytest-results-pod
           CONTAINER_IMAGE: busybox
           MOUNT_PATH: /mnt
           LOCAL_PATH: ./pytest
+          LOCAL_PATH_REGRESSION: ./pytest-regression
           NAMESPACE: dev-cloudapi
-
-      - name: Copy k8s pytest regression results
-        if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
-        run: |
-          echo "apiVersion: v1
-          kind: Pod
-          metadata:
-            name: $POD_NAME
-            namespace: $NAMESPACE
-            labels:
-              # Disable Istio sidecar injection
-              sidecar.istio.io/inject: \"false\"
-          spec:
-            containers:
-            - name: $POD_NAME
-              image: $CONTAINER_IMAGE
-              command: [\"sleep\", \"3600\"]
-              volumeMounts:
-              - name: my-volume
-                mountPath: $MOUNT_PATH
-            volumes:
-            - name: my-volume
-              persistentVolumeClaim:
-                claimName: $PVC_NAME
-            restartPolicy: Never" > busybox-pod.yaml
-
-          kubectl apply -f busybox-pod.yaml
-
-          # Wait for the pod to be ready
-          echo "Waiting for pod to be ready..."
-          kubectl -n $NAMESPACE wait --for=condition=ready pod/$POD_NAME --timeout=60s
-
-          # Copy the file from the pod to your local system
-          echo "Copying file from pod..."
-          mkdir -p $LOCAL_PATH
-          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$OUTPUT_FILE $LOCAL_PATH/$OUTPUT_FILE
-          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$COVERAGE_FILE $LOCAL_PATH/$COVERAGE_FILE
-
-          # Clean up: delete the temporary pod
-          echo "Cleaning up..."
-          kubectl -n $NAMESPACE delete pod $POD_NAME
-
-          echo "Done!"
-        env:
-          PVC_NAME: cloudapi-pytest-regression
-          POD_NAME: pytest-results-regression
-          CONTAINER_IMAGE: busybox
-          MOUNT_PATH: /mnt
-          LOCAL_PATH: ./pytest-regression
-          NAMESPACE: dev-cloudapi
+          OUTPUT_FILE: test_output.xml
+          COVERAGE_FILE: test_coverage.txt
 
       - name: Publish Pytest Report
         uses: mikepenz/action-junit-report@v4
@@ -1059,7 +1019,7 @@ jobs:
           hide-report: ${{ github.event_name != 'pull_request' }}
           hide-comment: ${{ github.event_name != 'pull_request' }}
 
-      - name: Pytest coverage comment
+      - name: Pytest regression coverage comment
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         uses: MishaKav/pytest-coverage-comment@v1.1.52
         with:

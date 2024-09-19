@@ -924,7 +924,8 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         run: |
-          bash ./scripts/redis-expire.sh
+          chmod +x ./scripts/redis-expire.sh
+          DEBUG=true ./scripts/redis-expire.sh
 
       - name: Copy k8s pytest results
         if: steps.pytest.outcome == 'success'

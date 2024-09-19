@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import List, Optional
 from uuid import UUID
 
@@ -47,6 +48,9 @@ from shared.models.credential_exchange import (
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
+
+# Config for /publish-revocations
+publish_revocations_timeout_seconds = int(os.getenv("PUBLISH_REVOCATIONS_TIMEOUT", 60))
 
 
 @router.post("", summary="Send Holder a Credential", response_model=CredentialExchange)
@@ -696,7 +700,7 @@ async def publish_revocations(
                     field_name="state",
                     expected_value="transaction_acked",
                     logger=bound_logger,
-                    max_attempts=30,
+                    max_attempts=publish_revocations_timeout_seconds,
                     retry_delay=1,
                 )
             except asyncio.TimeoutError as e:

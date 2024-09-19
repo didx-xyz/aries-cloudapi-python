@@ -9,6 +9,7 @@ config() {
   export ITERATIONS=10
   export ISSUER_PREFIX="k6_issuer_proof"
   export HOLDER_PREFIX="k6_holder_proof"
+  export NUM_ISSUERS=1
 }
 
 init() {
@@ -23,9 +24,9 @@ scenario() {
 }
 
 cleanup() {
-    log "Cleaning up..."
+    log "Skipping clean up..."
     xk6 run ./scenarios/delete-holders.js
-    xk6 run ./scenarios/delete-issuers.js -e ITERATIONS=1 -e VUS=1
+    xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {

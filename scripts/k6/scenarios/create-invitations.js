@@ -2,11 +2,10 @@
 /* eslint-disable no-undefined, no-console, camelcase */
 
 import { check } from "k6";
-import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptInvitation, createInvitation, waitForSSEEventConnection } from "../libs/functions.js";
+import { acceptInvitation, createInvitation, genericWaitForSSEEvent } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 // import bootstrapIssuer from "./bootstrap-issuer.js";
 
@@ -15,6 +14,7 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
+const numIssuers = __ENV.NUM_ISSUERS;
 
 export const options = {
   scenarios: {
@@ -59,7 +59,7 @@ export function setup() {
 
   const walletName = issuerPrefix;
   const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
+  const issuers = bootstrapIssuer(numIssuers, walletName, credDefTag, schemaName, schemaVersion);
 
   if (!issuers || issuers.length === 0) {
     console.error("Failed to bootstrap issuers.");
@@ -73,6 +73,11 @@ const iterationsPerVU = options.scenarios.default.iterations;
 function getWalletIndex(vu, iter) {
   const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
   return walletIndex;
+}
+
+function getIssuerIndex(vu, iter) {
+  const numIssuers = __ENV.NUM_ISSUERS;
+  return (vu + iter - 2) % numIssuers;
 }
 
 const vuStartTimes = {};
@@ -91,18 +96,10 @@ export default function (data) {
   const wallet = holders[walletIndex];
 
   // const issuerIndex = __ITER % numIssuers;
-  const issuerIndex = 0;
+  const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
   const issuer = issuers[issuerIndex];
 
-  // const holderWalletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-  // check(holderWalletId, {
-  //   "Holder wallet ID is not null": (r) => r !== null
-  // });
-
-  // const holderAccessToken = getAccessTokenByWalletId(bearerToken, holderWalletId);
-  // check(holderAccessToken, {
-  //   "Holder access token is not null": (r) => r !== null
-  // });
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
 
   const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
   check(createInvitationResponse, {
@@ -127,15 +124,22 @@ export default function (data) {
 
   const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
 
-  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(
-    wallet.access_token,
-    wallet.wallet_id,
-    holderInvitationConnectionId,
-  );
+  const waitForSSEEventConnectionResponse = genericWaitForSSEEvent({
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
+    threadId: holderInvitationConnectionId,
+    eventType: 'completed',
+    sseUrlPath: 'connections/connection_id',
+    topic: 'connections',
+    expectedState: 'completed',
+    maxDuration: 10,
+    sseTag: 'connection_ready'
+  });
+
   check(waitForSSEEventConnectionResponse, {
     "SSE Event received successfully: connection-ready": (r) => {
       if (!r) {
-        throw new Error("SSE event was not received successfully");
+        throw new Error("SSE connection event was not received successfully");
       }
       return true;
     },
@@ -152,6 +156,10 @@ export default function (data) {
     access_token: wallet.access_token,
     connection_id: holderInvitationConnectionId,
     issuer_connection_id: issuerConnectionId,
+    issuer_wallet_name: issuer.walletName,
+    issuer_wallet_id: issuer.walletId,
+    issuer_access_token: issuer.accessToken,
+    issuer_credential_definition_id: issuer.credentialDefinitionId,
   });
   file.appendString(outputFilepath, `${holderData}\n`);
 

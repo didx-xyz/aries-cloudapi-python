@@ -20,7 +20,7 @@ scenario() {
 
 cleanup() {
     echo "Cleaning up..."
-    export ITERATIONS=$((INITIAL_ITERATIONS * INTIAL_VUS))
+    export ITERATIONS=$((ITERATIONS * VUS))
     export VUS=1
     xk6 run ./scenarios/delete-issuers.js
 }

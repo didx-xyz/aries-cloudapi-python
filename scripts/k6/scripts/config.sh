@@ -9,10 +9,11 @@ export VUS=$INTIAL_VUS
 export ITERATIONS=$INITIAL_ITERATIONS
 export WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"
 export AGENT="governance-ga-agent governance-multitenant-agent"
-export SERVICE="governance-endorser tails-server governance-trust-registry"
+export SERVICE="governance-endorser tails-server governance-trust-registry waypoint"
 export AUTH="inquisitor"
 export INVALID="governance-webhooks-web"
 export HA_TEST_ITERATIONS=1 # Configurable number of HA test iterations
+export NUM_ISSUERS=1
 
 # Combine all stacks into one variable
 ALL="$WEBS $AGENT $SERVICE $AUTH"

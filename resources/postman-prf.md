@@ -51,6 +51,7 @@ graph TD
  WaitConnectionReady[Wait for SSE connection-ready]:::sseHolder
  WaitProofDone[Wait for SSE proof done]:::sseIssuer
  WaitInvitationSent[Wait for SSE invitation-sent]:::sseIssuer
+ WaitForSSERevoked[Wait for SSE revoked]:::sseIssuer
  %% Assertions
  AssertVerifiedTrue>Assert: verified = true]:::assertion
  AssertVerifiedFalse>Assert: verified = false]:::assertion
@@ -71,7 +72,7 @@ graph TD
  ListCredentials --> SendProofRequest --> WaitRequestReceived --> GetProofID --> GetReferent --> AcceptProofRequest --> WaitProofDone --> GetProof
  GetProof -->|Is revokedFlag true| AssertVerifiedFalse
  GetProof -->|Is revokedFlag false| AssertVerifiedTrue
- AssertVerifiedTrue --> RevokeCredential --> CheckRevoked -->|Set revokedFlag = true| SendProofRequest
+ AssertVerifiedTrue --> RevokeCredential --> CheckRevoked -->|Set revokedFlag = true| WaitForSSERevoked --> SendProofRequest
  AssertVerifiedFalse -->|Is deleteTenantFlag true| DeleteIssuer --> DeleteHolder --> End
  AssertVerifiedFalse -->|Is deleteTenantFlag false| End
  %% Legend

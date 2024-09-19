@@ -370,117 +370,6 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   }
 }
 
-export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/credentials/thread_id/${threadId}/offer-received`;
-  const headers = {
-    "x-api-key": holderAccessToken,
-  };
-
-  let eventReceived = false;
-
-  const response = sse.open(
-    sseUrl,
-    {
-      headers,
-      tags: { k6_sse_tag: "credential_offer_received" },
-    },
-    (client) => {
-      client.on("event", (event) => {
-        // console.log(`event data=${event.data}`);
-        const eventData = JSON.parse(event.data);
-        if (eventData.topic === "credentials" && eventData.payload.state === "offer-received") {
-          check(eventData, {
-            "Event received": (e) => e.payload.state === "offer-received",
-          });
-          eventReceived = true;
-          client.close();
-        }
-      });
-
-      client.on("error", (e) => {
-        console.log("An unexpected error occurred: ", e.error());
-        client.close();
-      });
-    },
-  );
-
-  check(response, {
-    "SSE connection established": (r) => r && r.status === 200,
-  });
-
-  // Wait for the event to be received or a maximum duration
-  const maxDuration = 10; // 10 seconds
-  const checkInterval = 1; // 1 second
-  let elapsedTime = 0;
-
-  while (!eventReceived && elapsedTime < maxDuration) {
-    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
-    elapsedTime += checkInterval;
-    sleep(checkInterval);
-  }
-
-  return eventReceived;
-}
-
-export function waitForSSEEventConnection(holderAccessToken, holderWalletId, invitationConnectionId) {
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/connections/connection_id/${invitationConnectionId}/completed`;
-  const headers = {
-    "x-api-key": holderAccessToken,
-  };
-
-  let eventReceived = false;
-
-  const response = sse.open(
-    sseUrl,
-    {
-      headers,
-      tags: { k6_sse_tag: "connection_ready" },
-    },
-    (client) => {
-      client.on("event", (event) => {
-        // console.log(`event data=${event.data}`);
-        const eventData = JSON.parse(event.data);
-        if (eventData.topic === "connections" && eventData.payload.state === "completed") {
-          check(eventData, {
-            "Event received": (e) => e.payload.state === "completed",
-          });
-          eventReceived = true;
-          client.close();
-        }
-      });
-
-      client.on("error", (e) => {
-        console.log("An unexpected error occurred: ", e.error());
-        client.close();
-      });
-    },
-  );
-
-  check(response, {
-    "SSE connection established": (r) => r && r.status === 200,
-  });
-
-  // Create random number between 1 and 3
-  // const random = Math.floor(Math.random() * 3) + 1;
-
-  // Wait for the event to be received or a maximum duration
-  const maxDuration = 10; // 10 seconds
-  const checkInterval = 1; // 1 second
-  let elapsedTime = 0;
-
-  while (!eventReceived && elapsedTime < maxDuration) {
-    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
-    elapsedTime += checkInterval;
-    sleep(checkInterval);
-  }
-  // if number equals 1, sleep for 1 second
-  // if (random === 1) {
-  //   console.log("Sleeping for 1 second");
-  //   eventReceived = false
-  // }
-  return eventReceived;
-}
-
 export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
   const params = {
@@ -542,58 +431,6 @@ export function sendProofRequest(issuerAccessToken, issuerConnectionId) {
     console.error(`Error accepting invitation: ${error.message}`);
     throw error;
   }
-}
-
-export function waitForSSEEventReceived(holderAccessToken, holderWalletId, threadId) {
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/proofs/thread_id/${threadId}/request-received`;
-  const headers = {
-    "x-api-key": holderAccessToken,
-  };
-
-  let eventReceived = false;
-
-  const response = sse.open(
-    sseUrl,
-    {
-      headers,
-      // tags: { 'k6_sse_tag': 'proof_request_received' },
-    },
-    (client) => {
-      client.on("event", (event) => {
-        // console.log(`event data=${event.data}`);
-        const eventData = JSON.parse(event.data);
-        if (eventData.topic === "proofs" && eventData.payload.state === "request-received") {
-          check(eventData, {
-            "Request received": (e) => e.payload.state === "request-received",
-          });
-          eventReceived = true;
-          client.close();
-        }
-      });
-
-      client.on("error", (e) => {
-        console.log("An unexpected error occurred: ", e.error());
-        client.close();
-      });
-    },
-  );
-
-  check(response, {
-    "SSE connection established": (r) => r && r.status === 200,
-  });
-
-  // Wait for the event to be received or a maximum duration
-  const maxDuration = 10; // 10 seconds
-  const checkInterval = 1; // 1 second
-  let elapsedTime = 0;
-
-  while (!eventReceived && elapsedTime < maxDuration) {
-    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
-    elapsedTime += checkInterval;
-    sleep(checkInterval);
-  }
-
-  return eventReceived;
 }
 
 export function getProofIdByThreadId(holderAccessToken, threadId) {
@@ -696,58 +533,6 @@ export function acceptProofRequest(holderAccessToken, proofId, referent) {
     console.error(`Error accepting proof request: ${error.message}`);
     throw error;
   }
-}
-
-export function waitForSSEProofDone(issuerAccessToken, issuerWalletId, proofThreadId) {
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${issuerWalletId}/proofs/thread_id/${proofThreadId}/done`;
-  const headers = {
-    "x-api-key": issuerAccessToken,
-  };
-
-  let eventReceived = false;
-
-  const response = sse.open(
-    sseUrl,
-    {
-      headers,
-      tags: { k6_sse_tag: "proof_done" },
-    },
-    (client) => {
-      client.on("event", (event) => {
-        // console.log(`event data=${event.data}`);
-        const eventData = JSON.parse(event.data);
-        if (eventData.topic === "proofs" && eventData.payload.state === "done") {
-          check(eventData, {
-            "Request received": (e) => e.payload.state === "done",
-          });
-          eventReceived = true;
-          client.close();
-        }
-      });
-
-      client.on("error", (e) => {
-        console.log("An unexpected error occurred: ", e.error());
-        client.close();
-      });
-    },
-  );
-
-  check(response, {
-    "SSE connection established": (r) => r && r.status === 200,
-  });
-
-  // Wait for the event to be received or a maximum duration
-  const maxDuration = 10; // 10 seconds
-  const checkInterval = 1; // 1 second
-  let elapsedTime = 0;
-
-  while (!eventReceived && elapsedTime < maxDuration) {
-    console.log(`Waiting for event... Elapsed time: ${elapsedTime}ms`);
-    elapsedTime += checkInterval;
-    sleep(checkInterval);
-  }
-
-  return eventReceived;
 }
 
 export function getProof(issuerAccessToken, issuerConnectionId, proofThreadId) {
@@ -950,6 +735,87 @@ export function checkRevoked(issuerAccessToken, credentialExchangeId) {
     console.error(`Error checking if credential is revoked: ${error.message}`);
     throw error;
   }
+}
+
+export function genericWaitForSSEEvent(config) {
+  const {
+    accessToken,
+    walletId,
+    threadId,
+    eventType,
+    sseUrlPath,
+    topic,
+    expectedState,
+    maxDuration = 60,
+    checkInterval = 1,
+    sseTag
+  } = config;
+
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}`;
+  const headers = {
+    "x-api-key": accessToken,
+  };
+
+  // console.log(`Connecting to SSE URL: ${sseUrl}`);
+  // console.log(`Using headers: ${JSON.stringify(headers)}`);
+
+  let eventReceived = false;
+
+  const response = sse.open(
+    sseUrl,
+    {
+      headers,
+      tags: sseTag ? { k6_sse_tag: sseTag } : undefined,
+    },
+    (client) => {
+      client.on("event", (event) => {
+        if (!event.data || event.data.trim() === '') {
+          console.log('Received empty event data');
+          return;
+        }
+
+        let eventData;
+        try {
+          eventData = JSON.parse(event.data);
+        } catch (error) {
+          console.error(`Error parsing event data: ${error.message}`);
+          eventData = event.data;
+        }
+
+        if (typeof eventData === 'object' && eventData.topic === topic && eventData.payload && eventData.payload.state === expectedState) {
+          check(eventData, {
+            "Event received": (e) => e.payload.state === expectedState,
+          });
+          eventReceived = true;
+          client.close();
+        } else {
+          console.log(`Received unexpected event format: ${JSON.stringify(eventData)}`);
+        }
+      });
+
+      client.on("error", (e) => {
+        console.log("An unexpected error occurred: ", e.error());
+        client.close();
+      });
+
+      client.on("end", () => {
+        console.log("SSE connection closed");
+      });
+    },
+  );
+
+  check(response, {
+    "SSE connection established": (r) => r && r.status === 200,
+  });
+
+  let elapsedTime = 0;
+  while (!eventReceived && elapsedTime < maxDuration) {
+    console.log(`Waiting for event... Elapsed time: ${elapsedTime}s`);
+    elapsedTime += checkInterval;
+    sleep(checkInterval);
+  }
+
+  return eventReceived;
 }
 
 // {

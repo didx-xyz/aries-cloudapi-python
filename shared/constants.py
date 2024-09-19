@@ -39,6 +39,8 @@ TRUST_REGISTRY_FASTAPI_ENDPOINT = os.getenv(
 WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", f"{url}:3010")
 WEBHOOKS_PUBSUB_URL = os.getenv("WEBHOOKS_PUBSUB_URL", f"ws://{host}:3010/pubsub")
 
+WAYPOINT_URL = os.getenv("WAYPOINT_URL", f"{url}:3011")
+
 ACAPY_MULTITENANT_JWT_SECRET = os.getenv("ACAPY_MULTITENANT_JWT_SECRET", "jwtSecret")
 ACAPY_ENDORSER_ALIAS = os.getenv("ACAPY_ENDORSER_ALIAS", "endorser")
 
@@ -74,3 +76,9 @@ REGISTRY_SIZE = int(os.getenv("REGISTRY_SIZE", "32767"))
 # Billing Service
 LAGO_URL = os.getenv("LAGO_URL", "")
 LAGO_API_KEY = os.getenv("LAGO_API_KEY", "")
+
+# NATS
+NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats-1:4222")
+NATS_SUBJECT = os.getenv("NATS_SUBJECT", "cloudapi.aries.events")
+NATS_STREAM = os.getenv("NATS_STREAM", "cloudapi_aries_events")
+NATS_CREDS_FILE = os.getenv("NATS_CREDS_FILE", "")

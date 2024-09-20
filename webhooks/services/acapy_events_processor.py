@@ -165,7 +165,7 @@ class AcaPyEventsProcessor:
                     attempts_without_events = 0  # Reset the counter
                     for list_key in batch_event_keys:  # the keys are of LIST type
                         logger.debug("Attempt to process list key: {}", list_key)
-                        self._attempt_process_list_events(list_key)
+                        await self._attempt_process_list_events(list_key)
 
                 else:
                     attempts_without_events += 1
@@ -193,7 +193,7 @@ class AcaPyEventsProcessor:
                 if exception_count >= max_exception_count:
                     raise  # exit inf loop
 
-    def _attempt_process_list_events(self, list_key: str) -> None:
+    async def _attempt_process_list_events(self, list_key: str) -> None:
         """
         Attempts to process a list-based event in Redis, ensuring that only one instance processes
         the event at a time by acquiring a lock.
@@ -225,7 +225,7 @@ class AcaPyEventsProcessor:
             extend_lock_task = None
 
         try:
-            self._process_list_events(list_key)
+            await self._process_list_events(list_key)
         except Exception as e:  # pylint: disable=W0718
             # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
             logger.error("Processing {} raised an exception: {}", list_key, e)
@@ -247,7 +247,7 @@ class AcaPyEventsProcessor:
         else:
             logger.trace("Deleted lock key: {}", lock_key)
 
-    def _process_list_events(self, list_key) -> None:
+    async def _process_list_events(self, list_key) -> None:
         """
         Processes all events in a Redis list until the list is empty. Each event is processed individually,
         and upon successful processing, it's removed from the list.
@@ -263,7 +263,7 @@ class AcaPyEventsProcessor:
                 # Read 0th index of list:
                 event_data = self.redis_service.lindex(list_key)
                 if event_data:
-                    self._process_event(event_data.decode())
+                    await self._process_event(event_data.decode())
 
                     # Cleanup: remove the element from the list and delete the lock if successfully processed
                     if self.redis_service.pop_first_list_element(list_key):
@@ -285,7 +285,7 @@ class AcaPyEventsProcessor:
             logger.exception("Could not process list key {}", list_key)
             raise
 
-    def _process_event(self, event_json: str) -> None:
+    async def _process_event(self, event_json: str) -> None:
         """
         Processes an individual ACA-Py event, transforming it to our CloudAPI format and saving/broadcasting to redis
 

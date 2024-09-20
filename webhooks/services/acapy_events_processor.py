@@ -4,17 +4,27 @@ import sys
 from typing import Any, Dict, List, NoReturn, Optional
 from uuid import uuid4
 
+import nats
 import orjson
+import xxhash
+from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
+from nats.js.client import JetStreamContext
 
 from shared import APIRouter
-from shared.constants import GOVERNANCE_LABEL, SET_LOCKS
+from shared.constants import (
+    GOVERNANCE_LABEL,
+    NATS_CREDS_FILE,
+    NATS_SERVER,
+    SET_LOCKS,
+)
 from shared.log_config import get_logger
 from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,
     payload_is_applicable_for_endorser,
 )
 from shared.util.rich_parsing import parse_json_with_error_handling
-from webhooks.models import AcaPyWebhookEvent, topic_mapping
+from webhooks.models import AcaPyWebhookEvent, CloudApiWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
 from webhooks.services.billing_manager import is_applicable_for_billing

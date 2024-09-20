@@ -402,6 +402,13 @@ class AcaPyEventsProcessor:
             wallet_id=wallet_id,
             timestamp_ns=event.metadata.time_ns,
         )
+        await self.publish_cloud_api_event_to_nats(
+            event_str=webhook_event_json,
+            event_json=cloudapi_webhook_event,
+            time_stamp=event.metadata.time_ns,
+            group_id=group_id,
+            wallet_id=wallet_id,
+        )
 
         bound_logger.trace("Successfully processed ACA-Py Redis webhook event.")
 

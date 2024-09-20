@@ -31,6 +31,7 @@ async def app_lifespan(_: FastAPI):
 
     sse_manager.start()
     events_processor.start()  # should start after SSE Manager is listening
+    await events_processor.start_nats_client()
     billing_manager.start()
 
     yield

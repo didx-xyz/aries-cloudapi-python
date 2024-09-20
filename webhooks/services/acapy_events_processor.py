@@ -363,6 +363,7 @@ class AcaPyEventsProcessor:
             self.redis_service.add_endorsement_event(
                 event_json=webhook_event_json, transaction_id=transaction_id
             )
+            await self.publish_endorsement_to_nats(transaction_id, webhook_event_json)
 
         # Check if event is billable, and get operation_type if it is an endorsement event
         is_billable, operation_type = is_applicable_for_billing(

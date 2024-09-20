@@ -1,5 +1,6 @@
 load("./tilt/cloudapi/Tiltfile", "setup_cloudapi")
 load("./tilt/metrics/Tiltfile", "setup_metrics_server")
+load("./tilt/utils/Tiltfile", "run_command")
 load("ext://color", "color")
 load("ext://helm_resource", "helm_repo")
 
@@ -48,29 +49,19 @@ charts_dir = "tilt/.charts"
 if not os.path.exists(charts_dir):
     print(color.yellow("Charts not found, cloning charts repo"))
 
-    ssh_result = str(
-        local(
-            "git clone git@github.com:didx-xyz/charts.git "
-            + charts_dir
-            + " 2>&1 | tee /dev/stdout",
-            dir=os.path.dirname(__file__),
-            quiet=True,
-            echo_off=True,
-        )
-    ).strip()
+    ssh_result = run_command(
+        "git clone git@github.com:didx-xyz/charts.git " + charts_dir,
+        dir=os.path.dirname(__file__),
+    )
 
     if "fatal" in ssh_result:
         print(color.red("Failed to clone charts repo via SSH, retrying with HTTPS"))
 
-        https_result = str(
-            local(
-                "git clone https://github.com/didx-xyz/charts.git "
-                + charts_dir
-                + " 2>&1 | tee /dev/stdout",
-                dir=os.path.dirname(__file__),
-                quiet=True,
-                echo_off=True,
-            )
+        https_result = run_command(
+            "git clone https://github.com/didx-xyz/charts.git "
+            + charts_dir
+            + " 2>&1 | tee /dev/stdout",
+            dir=os.path.dirname(__file__),
         )
 
         if "fatal" in https_result:

@@ -452,6 +452,86 @@ class AcaPyEventsProcessor:
 
         # No modification:
         return payload
+
+    async def publish_endorsement_to_nats(
+        self, transaction_id: str, event: str
+    ) -> None:
+        """
+        Publishes an endorsement event to the NATS server.
+
+        Args:
+            event: The endorsement event to publish.
+        """
+        logger.debug("Publishing endorsement event to NATS")
+        try:
+            ack = await self.jetstream.publish(
+                f"cloudapi.endorser.endorse.{transaction_id}", event.encode()
+            )
+            if not ack:
+                logger.error("Error publishing endorsement event to NATS: {}", ack)
+                raise Exception("Error publishing endorsement event to NATS")
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error publishing endorsement event to NATS: {}", e)
+            raise e
+
+    async def publish_cloud_api_event_to_nats(
+        self,
+        event_str: str,
+        event_json: CloudApiWebhookEvent,
+        time_stamp: int,
+        group_id: str,
+        wallet_id: str,
+    ) -> None:
+        """
+        Publishes a cloud api event to the NATS server.
+
+        Args:
+            event: The cloud api event to publish.
+        """
+        h = xxhash.xxh64()
+        h.update(event_str.encode())
+        event_hash = h.intdigest()
+        headers = {
+            "Content-Type": "application/json",
+            "Nats-Msg-Id": str(event_hash),
+            "event_hash": str(event_hash),
+            "event_processed_at": str(time_stamp),
+            "event_origin": event_json.origin,
+            "event_topic": event_json.topic,
+            "event_payload_state": (
+                event_json.payload.state if event_json.payload.state else "deleted?"
+            ),
+            "event_payload_connection_id": (
+                event_json.payload.connection_id
+                if hasattr(event_json.payload, "connection_id")
+                and event_json.payload.connection_id != None
+                else "None"
+            ),
+            "event_payload_created_at": (
+                event_json.payload.created_at
+                if hasattr(event_json.payload, "created_at")
+                else str(time_stamp)
+            ),
+            "event_payload_updated_at": (
+                event_json.payload.updated_at
+                if hasattr(event_json.payload, "updated_at")
+                else str(time_stamp)
+            ),
+        }
+        logger.debug("Publishing cloud api event to NATS")
+        try:
+            ack = await self.jetstream.publish(
+                f"cloudapi.aries.events.{group_id if group_id else event_json.origin}.{wallet_id}",
+                event_str.encode(),
+                headers=headers,
+            )
+            if not ack:
+                logger.error("Error publishing cloud api event to NATS: {}", ack)
+                raise Exception("Error publishing cloud api event to NATS")
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error publishing cloud api event to NATS: {}", e)
+            raise e
+
     async def start_nats_client(self) -> None:
         """
         Starts the NATS client for the endorsement processor.

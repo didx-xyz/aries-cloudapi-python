@@ -31,9 +31,9 @@ process_keys() {
         # Prepare batch command
         commands=""
         for key in $keys; do
-            commands+="EXPIRE $key 60\n"
+            commands+="EXPIRE $key 1\n"
             if $DEBUG; then
-                echo "Adding command: EXPIRE $key 60"
+                echo "Adding command: EXPIRE $key 1"
             fi
             ((total_processed++))
         done

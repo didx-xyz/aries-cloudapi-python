@@ -42,12 +42,16 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
-      redis-cluster:
+      nats-1:
+        condition: service_started
+      nats-2:
+        condition: service_started
+      nats-3:
         condition: service_started
     networks:
       - governance-ga
       - host
-      - redis-cluster-network
+      - nats
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -426,13 +430,17 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
-      redis-cluster:
+      nats-1:
+        condition: service_started
+      nats-2:
+        condition: service_started
+      nats-3:
         condition: service_started
     networks:
       - governance-multitenant
       - governance-ga
       - host
-      - redis-cluster-network
+      - nats
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
       interval: 15s

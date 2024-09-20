@@ -54,6 +54,9 @@ class AcaPyEventsProcessor:
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
+        self.nats_client: NATS = None
+        self.jetstream: JetStreamContext = None
+
     def start(self) -> None:
         """
         Start the background tasks as part of AcaPyEventsProcessor's lifecycle
@@ -449,3 +452,26 @@ class AcaPyEventsProcessor:
 
         # No modification:
         return payload
+    async def start_nats_client(self) -> None:
+        """
+        Starts the NATS client for the endorsement processor.
+        """
+        logger.info("Starting NATS client")
+        try:
+            connect_kwargs = {
+                "servers": [NATS_SERVER],
+            }
+            if NATS_CREDS_FILE:
+                connect_kwargs["user_credentials"] = NATS_CREDS_FILE
+            else:
+                logger.warning(
+                    "No NATS credentials file found, assuming local development"
+                )
+            self.nats_client: NATS = await nats.connect(**connect_kwargs)
+
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error connecting to NATS server: {}", e)
+            raise e
+        logger.debug("Connected to NATS server")
+
+        self.jetstream: JetStreamContext = self.nats_client.jetstream()

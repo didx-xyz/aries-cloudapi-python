@@ -6,7 +6,13 @@ load("ext://helm_resource", "helm_repo")
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
 config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker cache")
+config.define_bool(
+    "expose",
+    False,
+    "Detect Host IP and set Ingress Domain Name to expose services outside of 'localhost' context",
+)
 cfg = config.parse()
+
 
 update_settings(
     k8s_upsert_timeout_secs=600,
@@ -76,7 +82,8 @@ else:
 
 # Setup CloudAPI
 build_enabled = not cfg.get("no-build")
-setup_cloudapi(build_enabled)
+expose = cfg.get("expose")
+setup_cloudapi(build_enabled, expose)
 
 if config.tilt_subcommand not in ("down"):
     # _FORCE_ Kube Context to `kind-aries-cloudapi`

@@ -76,7 +76,17 @@ def disable_all_resources():
 ###
 # Generate Ingress Domain based on Tailscale IP or Primary Network Interface IP
 ###
-def generate_ingress_domain():
+def generate_ingress_domain(expose):
+    if not expose:
+        print(
+            color.yellow(
+                "Expose flag not set. Using '127.0.0.1.nip.io' as Ingress Domain."
+            )
+        )
+        return "127.0.0.1.nip.io"
+
+    print(color.yellow("Detecting Host IP and setting Ingress Domain Name..."))
+
     def run_command(cmd):
         full_cmd = cmd + " 2>&1 || true"
         result = local(full_cmd, quiet=True, echo_off=True)

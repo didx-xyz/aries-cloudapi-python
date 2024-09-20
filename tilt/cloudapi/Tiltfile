@@ -14,17 +14,6 @@ pgadmin_version = "1.29.0"
 registry = "localhost:5001"
 
 
-ingress_domain = ""
-if config.tilt_subcommand == "ci":
-    ingress_domain += "127.0.0.1.nip.io"
-else:
-    ingress_domain += generate_ingress_domain()
-print(color.green("Ingress Domain: " + ingress_domain))
-
-redis_insight_host = "redis-insight." + ingress_domain
-pgadmin_host = "pgadmin." + ingress_domain
-
-
 def setup_redis(namespace):
     print(color.green("Installing Redis..."))
 
@@ -50,10 +39,11 @@ def setup_redis(namespace):
     )
 
 
-def setup_redis_insight(namespace):
+def setup_redis_insight(namespace, ingress_domain):
     print(color.green("Installing Redis Insight..."))
 
     values_file = "./tilt/cloudapi/redis-insight.yaml"
+    redis_insight_host = "redis-insight." + ingress_domain
 
     ## Setup Redis Insight
     # https://github.com/mrnim94/redisinsight
@@ -126,10 +116,11 @@ def setup_postgres(namespace):
     )
 
 
-def setup_pgadmin(namespace):
+def setup_pgadmin(namespace, ingress_domain):
     print(color.green("Installing pgAdmin..."))
 
     values_file = "./tilt/cloudapi/pgadmin.yaml"
+    pgadmin_host = "pgadmin." + ingress_domain
 
     ## Setup pgAdmin
     # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
@@ -279,7 +270,7 @@ def build_cloudapi_service(service, image={}):
 
 
 def setup_cloudapi_service(
-    release, chart, namespace, release_config={}, build_enabled=True
+    release, chart, namespace, ingress_domain, release_config={}, build_enabled=True
 ):
     print(color.green("Installing " + release + "..."))
 
@@ -336,7 +327,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, build_enabled):
+def setup_ledger(namespace, ingress_domain, build_enabled=True):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -412,7 +403,7 @@ def add_live_update(live_update_config, enabled):
     return []
 
 
-def setup_cloudapi(build_enabled):
+def setup_cloudapi(build_enabled, expose):
     print(color.green("Installing CloudAPI..."))
 
     # Adopt and manage CloudAPI namespace
@@ -422,10 +413,13 @@ def setup_cloudapi(build_enabled):
         allow_duplicates=True,
     )
 
+    ingress_domain = generate_ingress_domain(expose)
+    print(color.green("Ingress Domain: " + ingress_domain))
+
     setup_redis(namespace)
-    setup_redis_insight(namespace)
+    setup_redis_insight(namespace, ingress_domain)
     setup_postgres(namespace)
-    setup_pgadmin(namespace)
+    setup_pgadmin(namespace, ingress_domain)
     setup_nats(namespace)
     setup_benthos(namespace)
 
@@ -639,6 +633,7 @@ def setup_cloudapi(build_enabled):
             release,
             "./tilt/.charts/charts/aries-cloudapi-python",
             namespace,
+            ingress_domain,
             releases[release],
             build_enabled,
         )

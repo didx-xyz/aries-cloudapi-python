@@ -41,6 +41,11 @@ description = "Start Tilt"
 depends = ["kind:create"]
 run = "tilt up"
 
+[tasks."tilt:up:expose"]
+description = "Start Tilt with `--expose` flag"
+depends = ["kind:create"]
+run = "tilt up -- --expose"
+
 [tasks."tilt:down"]
 description = "Tilt Down"
 run = "tilt down"

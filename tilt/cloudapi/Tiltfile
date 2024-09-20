@@ -256,6 +256,7 @@ def setup_benthos(namespace):
             chart_dir + "/Chart.yaml",
             chart_dir + "/Chart.lock",
         ],
+        auto_init=False,
     )
 
 
@@ -587,7 +588,7 @@ def setup_cloudapi(build_enabled, expose):
             },
         },
         "waypoint": {
-            "depends": ["nats", "benthos"],
+            "depends": ["nats"],
             "links": [
                 link("http://waypoint.cloudapi." + ingress_domain + "/docs", "Docs"),
             ],

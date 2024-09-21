@@ -38,7 +38,7 @@ async def alice_member_client(
     alice_tenant: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
     async with get_tenant_client(
-        token=alice_tenant.access_token, name="Alice"
+        token=alice_tenant.access_token, name=alice_tenant.wallet_label
     ) as alice_async_client:
         yield alice_async_client
 

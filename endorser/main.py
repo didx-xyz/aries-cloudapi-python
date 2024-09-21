@@ -24,8 +24,8 @@ async def app_lifespan(_: FastAPI):
     container.redis_service()
 
     endorsement_processor = container.endorsement_processor()
+    await endorsement_processor.start_nats_client()
     endorsement_processor.start()
-
     yield
 
     logger.info("Shutting down Endorser services ...")

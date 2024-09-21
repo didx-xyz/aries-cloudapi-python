@@ -166,6 +166,7 @@ async def test_send_jsonld_oob_sov(
 
     data = response.json()
     cred_ex_id = data["credential_exchange_id"]
+    thread_id = data["thread_id"]
 
     try:
         assert_that(data).contains("credential_exchange_id")
@@ -202,6 +203,9 @@ async def test_send_jsonld_oob_sov(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",
+            filter_map={
+                "thread_id": thread_id
+            }
         )
 
     finally:

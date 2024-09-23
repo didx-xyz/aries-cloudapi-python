@@ -154,7 +154,7 @@ class EndorsementProcessor:
             )
             await accept_endorsement(client, endorsement)
 
-    def _handle_unprocessable_endorse_event(
+    async def _handle_unprocessable_endorse_event(
         self, key: str, event_json: str, error: Exception
     ) -> None:
         """
@@ -168,7 +168,7 @@ class EndorsementProcessor:
         bound_logger = logger.bind(body={"key": key})
         bound_logger.warning("Handling problematic endorsement event")
 
-        unprocessable_key = f"unprocessable:{key}"
+        unprocessable_key = f"unprocessable.{key}"
         error_message = f"Could not process: {event_json}. Error: {error}"
 
         bound_logger.info(
@@ -176,10 +176,7 @@ class EndorsementProcessor:
             unprocessable_key,
             error_message,
         )
-        self.redis_service.set(key=unprocessable_key, value=error_message)
-
-        bound_logger.info("Deleting original problematic event")
-        self.redis_service.delete_key(key=key)
+        await self.jetstream.publish(unprocessable_key, error_message.encode())
         bound_logger.info("Successfully handled unprocessable event.")
 
     async def start_nats_client(self) -> None:

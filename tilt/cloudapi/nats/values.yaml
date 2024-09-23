@@ -17,7 +17,7 @@ postInstall:
       storage: file
     cloudapi_aries_endorsements:
       subjects:
-        - cloudapi.endorser.*.*
+        - cloudapi.endorse.*
       defaults: true
       storage: file
 

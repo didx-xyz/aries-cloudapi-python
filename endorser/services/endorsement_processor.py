@@ -1,6 +1,4 @@
 import asyncio
-import datetime
-import sys
 from typing import List, NoReturn
 
 import nats

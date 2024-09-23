@@ -82,22 +82,14 @@ class EndorsementProcessor:
         """
         logger.debug("Checking if all tasks are running")
 
-        # todo: disabling pubsub thread check as it's currently unused and disconnects periodically on test env
-        pubsub_thread_running = (
-            True  # self._pubsub_thread and self._pubsub_thread.is_alive()
-        )
-
         tasks_running = self._tasks and all(not task.done() for task in self._tasks)
-
-        if not pubsub_thread_running:
-            logger.error("Pubsub thread is not running")
 
         if not tasks_running:
             for task in self._tasks:
                 if task.done():
                     logger.error("Task `{}` is not running", task.get_name())
 
-        all_running = tasks_running and pubsub_thread_running
+        all_running = tasks_running
 
         logger.debug("All tasks running: {}", all_running)
         return all_running

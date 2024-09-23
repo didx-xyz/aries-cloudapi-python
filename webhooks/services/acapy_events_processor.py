@@ -473,7 +473,7 @@ class AcaPyEventsProcessor:
         logger.debug("Publishing endorsement event to NATS")
         try:
             ack = await self.jetstream.publish(
-                f"cloudapi.endorse.{transaction_id}", event.encode()
+                f"cloudapi.aries.events.endorser.{transaction_id}", event.encode()
             )
             if not ack:
                 logger.error("Error publishing endorsement event to NATS: {}", ack)

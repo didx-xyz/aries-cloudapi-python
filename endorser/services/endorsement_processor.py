@@ -34,7 +34,7 @@ class EndorsementProcessor:
     """
 
     def __init__(self, redis_service: RedisService) -> None:
-        self.redis_service = redis_service # TODO replace with NATS
+        self.redis_service = redis_service  # TODO replace with NATS
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 

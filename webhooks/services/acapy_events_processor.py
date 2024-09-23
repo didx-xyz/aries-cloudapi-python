@@ -12,12 +12,7 @@ from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.js.client import JetStreamContext
 
 from shared import APIRouter
-from shared.constants import (
-    GOVERNANCE_LABEL,
-    NATS_CREDS_FILE,
-    NATS_SERVER,
-    SET_LOCKS,
-)
+from shared.constants import GOVERNANCE_LABEL, NATS_CREDS_FILE, NATS_SERVER, SET_LOCKS
 from shared.log_config import get_logger
 from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,

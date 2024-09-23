@@ -203,9 +203,7 @@ async def test_send_jsonld_oob_sov(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",
-            filter_map={
-                "thread_id": thread_id
-            }
+            filter_map={"thread_id": thread_id},
         )
 
     finally:
@@ -276,16 +274,16 @@ async def test_send_jsonld_request_sov(
             topic="credentials",
             state="request-sent",
             filter_map={
-            "thread_id": thread_id,
-        },
+                "thread_id": thread_id,
+            },
         ),
         check_webhook_state(
             client=faber_client,
             topic="credentials",
             state="request-received",
             filter_map={
-            "thread_id": thread_id,
-        },
+                "thread_id": thread_id,
+            },
         ),
     )
     assert all(result), "An expected webhook event was not returned"

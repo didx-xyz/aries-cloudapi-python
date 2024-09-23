@@ -136,7 +136,7 @@ async def test_accept_proof_request_verifier_oob_connection(
     verifier_actor = await fetch_actor_by_id(acme_wallet_id)
 
     their_label = alice_member_client.name[7:-7]
-    
+
     assert verifier_actor
     assert verifier_actor.didcomm_invitation
 
@@ -154,9 +154,7 @@ async def test_accept_proof_request_verifier_oob_connection(
         client=acme_client,
         topic="connections",
         state="completed",
-        filter_map={
-            "their_label": their_label
-        }
+        filter_map={"their_label": their_label},
     )
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]

@@ -255,8 +255,8 @@ async def test_send_jsonld_request(
             topic="credentials",
             state="offer-received",
             filter_map={
-            "thread_id": thread_id,
-        },
+                "thread_id": thread_id,
+            },
         ),
     )
     assert all(result), "An expected webhook event was not returned"
@@ -324,8 +324,8 @@ async def test_issue_jsonld_ed(
             topic="credentials",
             state="offer-received",
             filter_map={
-            "thread_id": thread_id,
-        },
+                "thread_id": thread_id,
+            },
         ),
     )
     assert all(result), "An expected webhook event was not returned"

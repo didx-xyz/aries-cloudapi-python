@@ -95,9 +95,7 @@ async def test_proof_model_failures(
             client=alice_member_client,
             topic="proofs",
             state="request-received",
-            filter_map={
-                "connection_id":alice_connection_id
-            }
+            filter_map={"connection_id": alice_connection_id},
         )
 
         # Get proof exchange id

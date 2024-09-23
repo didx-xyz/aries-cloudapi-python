@@ -523,9 +523,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
-        filter_map={
-            "thread_id": thread_id
-        }
+        filter_map={"thread_id": thread_id},
     )
     alice_proof_id = alice_payload["proof_id"]
 

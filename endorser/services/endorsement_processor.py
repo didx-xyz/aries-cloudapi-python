@@ -44,6 +44,9 @@ class EndorsementProcessor:
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
+        self.nats_client: NATS = None
+        self.jetstream: JetStreamContext = None
+
     def start(self) -> None:
         """
         Starts the background tasks for processing endorsement events.

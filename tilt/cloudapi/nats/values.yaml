@@ -15,9 +15,9 @@ postInstall:
         - cloudapi.aries.events.*.*
       defaults: true
       storage: file
-    cloudapi_aries_endorsements:
+    unprocessable_endorsements:
       subjects:
-        - cloudapi.endorse.*
+        - unprocessable.>
       defaults: true
       storage: file
 

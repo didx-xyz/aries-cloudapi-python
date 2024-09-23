@@ -80,7 +80,6 @@ LAGO_API_KEY = os.getenv("LAGO_API_KEY", "")
 # NATS
 NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats-1:4222")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "cloudapi.aries.events")
-ENDORSER_SUBJECT = os.getenv("ENDORSER_SUBJECT", "cloudapi.endorse")
-ENDORSER_STREAM = os.getenv("ENDORSER_STREAM", "cloudapi_aries_endorsements")
 NATS_STREAM = os.getenv("NATS_STREAM", "cloudapi_aries_events")
 NATS_CREDS_FILE = os.getenv("NATS_CREDS_FILE", "")
+ENDORSER_DURABLE_CONSUMER = os.getenv("ENDORSER_DURABLE_CONSUMER", "endorser")

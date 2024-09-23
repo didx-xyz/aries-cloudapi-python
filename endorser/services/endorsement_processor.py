@@ -95,106 +95,28 @@ class EndorsementProcessor:
         return all_running
 
     async def _process_endorsement_requests(self) -> NoReturn:
-        """
-        Processing handler for incoming endorsement events
-        """
-        logger.info("Starting endorsement processor")
-
-        exception_count = 0
-        max_exception_count = 5  # break inf loop after 5 consecutive exceptions
-
-        attempts_without_events = 0
-        max_attempts_without_events = sys.maxsize  # use max int to never stop
-        sleep_duration = 0.1
-
+        subscription = await self._subscribe()
         while True:
             try:
-                batch_keys = self.redis_service.scan_keys(
-                    match_pattern=f"{self.endorse_prefix}:*", count=5000
-                )
-                if batch_keys:
-                    attempts_without_events = 0  # Reset the counter
-                    for key in batch_keys:
-                        await self._attempt_process_endorsement(key)
-
-                else:
-                    attempts_without_events += 1
-                    if attempts_without_events >= max_attempts_without_events:
-                        # Wait for a keyspace notification before continuing
-                        logger.debug(
-                            (
-                                "Scan has returned no keys {} times in a row. "
-                                "Waiting for keyspace notification..."
-                            ),
-                            max_attempts_without_events,
-                        )
-                        await self._new_event_notification.wait()
-                        logger.info("Keyspace notification triggered")
-                        self._new_event_notification.clear()  # Reset the event for the next wait
-                        attempts_without_events = 0  # Reset the counter
-                    else:
-                        await asyncio.sleep(sleep_duration)  # prevent a busy loop
-                exception_count = 0  # reset exception count after successful loop
-            except Exception:  # pylint: disable=W0718
-                exception_count += 1
-                logger.exception(
-                    "Something went wrong while processing endorsement events. Continuing..."
-                )
-                if exception_count >= max_exception_count:
-                    raise  # exit inf loop
-
-    async def _attempt_process_endorsement(self, event_key: str) -> None:
-        """
-        Attempts to process an endorsement event from Redis, ensuring that only one instance
-        processes the event at a time by acquiring a lock.
-
-        Args:
-            list_key: The Redis key of the list to process.
-        """
-        logger.trace("Attempt process: {}", event_key)
-        lock_key = f"lock:{event_key}"
-        extend_lock_task = None
-
-        lock_duration = 1  # second
-
-        if self.redis_service.set_lock(
-            key=lock_key,
-            px=lock_duration * 1000,  # to milliseconds
-        ):
-            logger.trace("Successfully set lock for {}", event_key)
-            event_json = self.redis_service.get(event_key)
-            if not event_json:
-                logger.warning(
-                    "Tried to read an event from key {}, but event has been deleted:",
-                    event_key,
-                )
-                return
-
-            try:
-                # Start a background task to extend the lock periodically
-                extend_lock_task = self.redis_service.extend_lock_task(
-                    lock_key, interval=datetime.timedelta(seconds=lock_duration)
-                )
-
-                await self._process_endorsement_event(event_json)
-                if self.redis_service.delete_key(event_key):
-                    logger.info("Deleted processed endorsement event: {}", event_key)
-                else:
-                    logger.warning(
-                        "Couldn't delete processed endorsement event: {}", event_key
+                messages = await subscription.fetch(10, 1)
+                for message in messages:
+                    message_subject = message.subject
+                    message_data = message.data.decode()
+                    logger.trace(
+                        "received message: {} with subject {}",
+                        message_data,
+                        message_subject,
                     )
-            except Exception as e:  # pylint: disable=W0718
-                # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                logger.error("Processing {} raised an exception: {}", event_key, e)
-                self._handle_unprocessable_endorse_event(event_key, event_json, e)
-            finally:
-                # Cancel the lock extension task if it's still running
-                if extend_lock_task:
-                    extend_lock_task.cancel()
-        else:
-            logger.debug(
-                "Event {} is currently being processed by another instance.", event_key
-            )
+                    await self._process_endorsement_event(message_data)
+                    await message.ack()
+            except TimeoutError:
+                logger.trace("Timeout fetching messages continuing...")
+                await asyncio.sleep(1)
+            except Exception as e:  # pylint: disable=W0703
+                logger.error("Error processing endorsement event: {}", e)
+                await self._handle_unprocessable_endorse_event(
+                    message_subject, message_data, e
+                )
 
     async def _process_endorsement_event(self, event_json: str) -> None:
         """

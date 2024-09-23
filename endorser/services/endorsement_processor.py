@@ -51,12 +51,12 @@ class EndorsementProcessor:
         """
         Starts the background tasks for processing endorsement events.
         """
-        # self._start_notification_listener()  # disable as it is currently unused
         self._tasks.append(
             asyncio.create_task(
                 self._process_endorsement_requests(), name="Process endorsements"
             )
         )
+
         logger.info("Endorsement processing started.")
 
     async def stop(self) -> None:

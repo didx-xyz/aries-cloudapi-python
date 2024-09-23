@@ -287,3 +287,49 @@ class EndorsementProcessor:
         bound_logger.info("Deleting original problematic event")
         self.redis_service.delete_key(key=key)
         bound_logger.info("Successfully handled unprocessable event.")
+
+    async def start_nats_client(self) -> None:
+        """
+        Starts the NATS client for the endorsement processor.
+        """
+        logger.info("Starting NATS client")
+        try:
+            connect_kwargs = {
+                "servers": [NATS_SERVER],
+            }
+            if NATS_CREDS_FILE:
+                connect_kwargs["user_credentials"] = NATS_CREDS_FILE
+            else:
+                logger.warning(
+                    "No NATS credentials file found, assuming local development"
+                )
+            self.nats_client: NATS = await nats.connect(**connect_kwargs)
+
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error connecting to NATS server: {}", e)
+            raise e
+        logger.debug("Connected to NATS server")
+
+        self.jetstream: JetStreamContext = self.nats_client.jetstream()
+
+    async def _subscribe(self) -> JetStreamContext.PullSubscription:
+        """
+        Subscribes to the NATS subject for endorsement events.
+        """
+        logger.info("Subscribing to NATS subject: cloudapi.aries.events.endorser.>")
+        try:
+            subscribe_kwargs = {
+                "durable": ENDORSER_DURABLE_CONSUMER,
+                "subject": f"{NATS_SUBJECT}.endorser.>",
+                "stream": NATS_STREAM,
+            }
+            subscription = await self.jetstream.pull_subscribe(**subscribe_kwargs)
+        except (BadSubscriptionError, Error) as e:
+            logger.error("Error subscribing to NATS subject: {}", e)
+            raise e
+        except Exception as e:
+            logger.error("Unknown error subscribing to NATS subject: {}", e)
+            raise e
+        logger.debug("Subscribed to NATS subject")
+
+        return subscription

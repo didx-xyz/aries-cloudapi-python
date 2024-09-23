@@ -71,14 +71,6 @@ class EndorsementProcessor:
                 pass  # Expected error upon cancellation, can be ignored
         self._tasks.clear()  # Clear the list of tasks
 
-        if self._pubsub_thread:
-            self._pubsub_thread.stop()
-            logger.info("Stopped Endorsement pubsub thread")
-
-        if self._pubsub:
-            await asyncio.sleep(0.1)  # allow thread to stop before disconnecting
-            self._pubsub.disconnect()
-            logger.info("Disconnected Endorsement pubsub instance")
         logger.info("Endorsement processing stopped.")
 
     def are_tasks_running(self) -> bool:

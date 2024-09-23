@@ -94,29 +94,6 @@ class EndorsementProcessor:
         logger.debug("All tasks running: {}", all_running)
         return all_running
 
-    def _set_notification_handler(self, msg) -> None:
-        """
-        Processing handler for when set notifications are received
-        """
-        if f"{self.endorse_prefix}:" in msg["data"].decode():
-            logger.trace("Received endorse set notification: {}", msg)
-            self._new_event_notification.set()
-
-    def _start_notification_listener(self) -> None:
-        """
-        Listens for keyspace notifications related to endorsements and sets an event to resume processing.
-        """
-        self._pubsub = self.redis_service.redis.pubsub()
-
-        # Subscribe this pubsub channel to the notification pattern (set may represent endorsement events)
-        notification_pattern = "__keyevent@0__:set"
-        self._pubsub.psubscribe(
-            **{notification_pattern: self._set_notification_handler}
-        )
-        self._pubsub_thread = self._pubsub.run_in_thread(sleep_time=0.01)
-
-        logger.info("Notification listener subscribed to redis keyspace notifications")
-
     async def _process_endorsement_requests(self) -> NoReturn:
         """
         Processing handler for incoming endorsement events

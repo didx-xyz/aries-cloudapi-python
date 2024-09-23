@@ -3,13 +3,23 @@ import datetime
 import sys
 from typing import List, NoReturn
 
+import nats
 from aries_cloudcontroller import AcaPyClient
+from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
+from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.client import JetStreamContext
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import (
+    ENDORSER_DURABLE_CONSUMER,
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     GOVERNANCE_LABEL,
+    NATS_CREDS_FILE,
+    NATS_SERVER,
+    NATS_STREAM,
+    NATS_SUBJECT,
 )
 from shared.log_config import get_logger
 from shared.models.endorsement import Endorsement

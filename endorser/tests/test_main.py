@@ -22,8 +22,8 @@ def test_create_app():
 async def test_app_lifespan():
     # Mocks for services and container
     endorsement_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
-    container_mock = MagicMock(
-        endorsement_processor=MagicMock(return_value=endorsement_processor_mock),
+    container_mock = AsyncMock(
+        endorsement_processor=AsyncMock(return_value=endorsement_processor_mock),
         wire=MagicMock(),
         shutdown_resources=Mock(),
     )

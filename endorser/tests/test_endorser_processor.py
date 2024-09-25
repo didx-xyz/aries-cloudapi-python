@@ -4,16 +4,15 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-
 from nats.aio.client import Client as NATS
-from nats.js.client import JetStreamContext
 from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.client import JetStreamContext
 
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import (
-    GOVERNANCE_LABEL,
     ENDORSER_DURABLE_CONSUMER,
+    GOVERNANCE_LABEL,
     NATS_STREAM,
     NATS_SUBJECT,
 )
@@ -86,31 +85,34 @@ async def test_are_tasks_running_x(endorsement_processor_mock):
 
 
 @pytest.mark.anyio
-async def test_process_endorsement_requests_success(endorsement_processor_mock, mock_nats_client):
+async def test_process_endorsement_requests_success(
+    endorsement_processor_mock, mock_nats_client
+):
     # Setup
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
 
     mock_message = AsyncMock()
-    mock_message.data = json.dumps({
-        "wallet_id": "governance",
-        "topic": "endorsements",
-        "origin": "governance",
-        "payload": {
-            "state": "request-received",
-            "transaction_id": "test-txn-id",
-        },
-    }).encode()
+    mock_message.data = json.dumps(
+        {
+            "wallet_id": "governance",
+            "topic": "endorsements",
+            "origin": "governance",
+            "payload": {
+                "state": "request-received",
+                "transaction_id": "test-txn-id",
+            },
+        }
+    ).encode()
     mock_message.subject = "test.subject"
 
     # Set up the fetch method to return a message once, then raise asyncio.CancelledError
-    mock_subscription.fetch.side_effect = [
-        [mock_message],
-        asyncio.CancelledError
-    ]
+    mock_subscription.fetch.side_effect = [[mock_message], asyncio.CancelledError]
 
     # Test
-    with patch.object(endorsement_processor_mock, '_process_endorsement_event') as mock_process_event:
+    with patch.object(
+        endorsement_processor_mock, "_process_endorsement_event"
+    ) as mock_process_event:
         with pytest.raises(asyncio.CancelledError):
             await endorsement_processor_mock._process_endorsement_requests()
 
@@ -118,8 +120,11 @@ async def test_process_endorsement_requests_success(endorsement_processor_mock, 
     mock_process_event.assert_called_once_with(mock_message.data.decode())
     mock_message.ack.assert_called_once()
 
+
 @pytest.mark.anyio
-async def test_process_endorsement_requests_timeout(endorsement_processor_mock, mock_nats_client):
+async def test_process_endorsement_requests_timeout(
+    endorsement_processor_mock, mock_nats_client
+):
     # Setup
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -128,15 +133,18 @@ async def test_process_endorsement_requests_timeout(endorsement_processor_mock, 
     mock_subscription.fetch.side_effect = [TimeoutError, asyncio.CancelledError]
 
     # Test
-    with patch('asyncio.sleep') as mock_sleep:
+    with patch("asyncio.sleep") as mock_sleep:
         with pytest.raises(asyncio.CancelledError):
             await endorsement_processor_mock._process_endorsement_requests()
 
     # Assertions
     mock_sleep.assert_called_once_with(1)
 
+
 @pytest.mark.anyio
-async def test_process_endorsement_requests_error(endorsement_processor_mock, mock_nats_client):
+async def test_process_endorsement_requests_error(
+    endorsement_processor_mock, mock_nats_client
+):
     # Setup
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -149,7 +157,9 @@ async def test_process_endorsement_requests_error(endorsement_processor_mock, mo
     mock_subscription.fetch.side_effect = [[mock_message], asyncio.CancelledError]
 
     # Test
-    with patch.object(endorsement_processor_mock, '_handle_unprocessable_endorse_event') as mock_handle_error:
+    with patch.object(
+        endorsement_processor_mock, "_handle_unprocessable_endorse_event"
+    ) as mock_handle_error:
         with pytest.raises(asyncio.CancelledError):
             await endorsement_processor_mock._process_endorsement_requests()
 
@@ -157,30 +167,37 @@ async def test_process_endorsement_requests_error(endorsement_processor_mock, mo
     mock_handle_error.assert_called_once()
     assert isinstance(mock_handle_error.call_args[0][2], Exception)
 
+
 @pytest.mark.anyio
-async def test_process_endorsement_requests_multiple_messages(endorsement_processor_mock, mock_nats_client):
+async def test_process_endorsement_requests_multiple_messages(
+    endorsement_processor_mock, mock_nats_client
+):
     # Setup
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
 
     mock_messages = [AsyncMock() for _ in range(3)]
     for i, msg in enumerate(mock_messages):
-        msg.data = json.dumps({
-            "wallet_id": "governance",
-            "topic": "endorsements",
-            "origin": "governance",
-            "payload": {
-                "state": "request-received",
-                "transaction_id": f"test-txn-id-{i}",
-            },
-        }).encode()
+        msg.data = json.dumps(
+            {
+                "wallet_id": "governance",
+                "topic": "endorsements",
+                "origin": "governance",
+                "payload": {
+                    "state": "request-received",
+                    "transaction_id": f"test-txn-id-{i}",
+                },
+            }
+        ).encode()
         msg.subject = f"test.subject.{i}"
 
     # Return multiple messages, then raise CancelledError
     mock_subscription.fetch.side_effect = [mock_messages, asyncio.CancelledError]
 
     # Test
-    with patch.object(endorsement_processor_mock, '_process_endorsement_event') as mock_process_event:
+    with patch.object(
+        endorsement_processor_mock, "_process_endorsement_event"
+    ) as mock_process_event:
         with pytest.raises(asyncio.CancelledError):
             await endorsement_processor_mock._process_endorsement_requests()
 
@@ -189,8 +206,11 @@ async def test_process_endorsement_requests_multiple_messages(endorsement_proces
     for msg in mock_messages:
         msg.ack.assert_called_once()
 
+
 @pytest.mark.anyio
-async def test_process_endorsement_requests_loop_exit(endorsement_processor_mock, mock_nats_client):
+async def test_process_endorsement_requests_loop_exit(
+    endorsement_processor_mock, mock_nats_client
+):
     # Setup
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
@@ -209,6 +229,7 @@ async def test_process_endorsement_requests_loop_exit(endorsement_processor_mock
 
     # Assertions
     assert mock_subscription.fetch.call_count == 3
+
 
 @pytest.mark.anyio
 async def test_process_endorsement_event_governance(endorsement_processor_mock):

@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
-from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client
+from shared.services.nats_jetstream import init_nats_client
+from waypoint.services.nats_service import NatsEventsProcessor
 
 
 class Container(containers.DeclarativeContainer):

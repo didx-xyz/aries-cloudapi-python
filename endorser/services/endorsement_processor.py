@@ -1,10 +1,7 @@
 import asyncio
 from typing import List, NoReturn
 
-import nats
 from aries_cloudcontroller import AcaPyClient
-from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 
@@ -14,15 +11,12 @@ from shared.constants import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     GOVERNANCE_LABEL,
-    NATS_CREDS_FILE,
-    NATS_SERVER,
     NATS_STREAM,
     NATS_SUBJECT,
 )
 from shared.log_config import get_logger
 from shared.models.endorsement import Endorsement
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
-from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_json_with_error_handling
 
 logger = get_logger(__name__)
@@ -33,13 +27,10 @@ class EndorsementProcessor:
     Class to process endorsement webhook events that the Webhooks service writes to `endorsement_redis_prefix`
     """
 
-    def __init__(self, redis_service: RedisService) -> None:
-        self.redis_service = redis_service  # TODO replace with NATS
+    def __init__(self, jetstream: JetStreamContext) -> None:
+        self.jetstream: JetStreamContext = jetstream
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
-
-        self.nats_client: NATS = None
-        self.jetstream: JetStreamContext = None
 
     def start(self) -> None:
         """
@@ -172,30 +163,6 @@ class EndorsementProcessor:
         )
         await self.jetstream.publish(unprocessable_key, error_message.encode())
         bound_logger.info("Successfully handled unprocessable event.")
-
-    async def start_nats_client(self) -> None:
-        """
-        Starts the NATS client for the endorsement processor.
-        """
-        logger.info("Starting NATS client")
-        try:
-            connect_kwargs = {
-                "servers": [NATS_SERVER],
-            }
-            if NATS_CREDS_FILE:
-                connect_kwargs["user_credentials"] = NATS_CREDS_FILE
-            else:
-                logger.warning(
-                    "No NATS credentials file found, assuming local development"
-                )
-            self.nats_client: NATS = await nats.connect(**connect_kwargs)
-
-        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
-            logger.error("Error connecting to NATS server: {}", e)
-            raise e
-        logger.debug("Connected to NATS server")
-
-        self.jetstream: JetStreamContext = self.nats_client.jetstream()
 
     async def _subscribe(self) -> JetStreamContext.PullSubscription:
         """

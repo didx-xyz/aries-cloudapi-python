@@ -3,6 +3,7 @@ load("./tilt/metrics/Tiltfile", "setup_metrics_server")
 load("./tilt/utils/Tiltfile", "run_command")
 load("ext://color", "color")
 load("ext://helm_resource", "helm_repo")
+load("ext://uibutton", "cmd_button", "location", "choice_input")
 
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
@@ -70,6 +71,36 @@ if not os.path.exists(charts_dir):
     print(color.green("Charts repo cloned"))
 else:
     print(color.green("Charts repo already cloned"))
+
+cmd_button(
+    name="expose",
+    icon_name="public",  # https://fonts.google.com/icons
+    text="Expose Ingresses (Tailscale or Local Network)",
+    location=location.NAV,
+    argv=[
+        "tilt",
+        "patch",
+        "tiltfile",
+        "(Tiltfile)",
+        "--patch",
+        '{"spec": {"args": ["--expose=True"]}}',
+    ],
+)
+
+cmd_button(
+    name="unexpose",
+    icon_name="public_off",
+    text="Switch Ingresses back to 'localhost'",
+    location=location.NAV,
+    argv=[
+        "tilt",
+        "patch",
+        "tiltfile",
+        "(Tiltfile)",
+        "--patch",
+        '{"spec": {"args": ["--expose=False"]}}',
+    ],
+)
 
 # Setup CloudAPI
 build_enabled = not cfg.get("no-build")

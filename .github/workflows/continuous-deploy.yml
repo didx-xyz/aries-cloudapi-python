@@ -564,7 +564,7 @@ jobs:
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             destroy \
@@ -669,7 +669,7 @@ jobs:
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             apply \
@@ -686,7 +686,7 @@ jobs:
 
       - name: Helmfile Apply (RDS Proxy)
         if: github.event.inputs.run-reset-deployments != 'true'
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             apply \
@@ -791,7 +791,7 @@ jobs:
       - name: Helmfile init regression pytest
         if: github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-regression-tests == 'true'
         id: pytest-init-regression
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             apply \
@@ -814,7 +814,7 @@ jobs:
       - name: Helmfile run regression pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-reset-deployments == 'false' && github.event.inputs.run-regression-tests == 'true') }}
         id: pytest-run-regression
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             apply \
@@ -838,7 +838,7 @@ jobs:
       - name: Helmfile run pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
         id: pytest
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         with:
           helmfile-args: |
             apply \
@@ -1085,7 +1085,7 @@ jobs:
           hide-comment: ${{ github.event_name != 'pull_request' }}
 
       - name: Helmfile destroy pytest
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         if: always()
         with:
           helmfile-args: |
@@ -1101,7 +1101,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile destroy pytest regression
-        uses: helmfile/helmfile-action@v1.9.1
+        uses: helmfile/helmfile-action@v1.9.2
         if: always()
         with:
           helmfile-args: |

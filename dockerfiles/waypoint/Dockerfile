@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
-COPY waypoint /waypoint
-COPY shared /shared
-
 WORKDIR /waypoint
+
+COPY waypoint/poetry.lock /waypoint
+COPY waypoint/pyproject.toml /waypoint
 
 ARG POETRY_VERSION=1.8.3
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
@@ -12,6 +12,9 @@ ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry
 RUN poetry config cache-dir $POETRY_CACHE_DIR && \
   poetry config virtualenvs.path $POETRY_CACHE_DIR/virtualenvs && \
   poetry install
+
+COPY waypoint /waypoint
+COPY shared /shared
 
 EXPOSE 3011
 

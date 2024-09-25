@@ -18,13 +18,10 @@ async def app_lifespan(_: FastAPI):
 
     # Initialize the container
     container = Container()
+    await container.init_resources()
     container.wire(modules=[__name__])
 
-    # Start singleton services
-    container.redis_service()
-
-    endorsement_processor = container.endorsement_processor()
-    await endorsement_processor.start_nats_client()
+    endorsement_processor = await container.endorsement_processor()
     endorsement_processor.start()
     yield
 

@@ -56,7 +56,7 @@ run = "tilt down -- --destroy-all"
 [tasks."tilt:ci"]
 description = "Start Tilt in CI mode"
 depends = ["kind:create"]
-run = "tilt ci"
+run = "tilt ci -- --no-build"
 
 [tasks."kind:destroy:all"]
 description = "Destroy Kind and delete Docker Cache"

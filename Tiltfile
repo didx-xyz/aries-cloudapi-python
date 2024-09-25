@@ -75,7 +75,7 @@ else:
 cmd_button(
     name="expose",
     icon_name="public",  # https://fonts.google.com/icons
-    text="Expose Ingresses (Tailscale or Local Network)",
+    text="Expose Ingresses via Tailscale or Local Network",
     location=location.NAV,
     argv=[
         "tilt",

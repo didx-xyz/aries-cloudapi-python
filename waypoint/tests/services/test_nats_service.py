@@ -10,7 +10,8 @@ from nats.js.client import JetStreamContext
 
 from shared.constants import NATS_STREAM, NATS_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
-from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client
+from waypoint.services.nats_service import NatsEventsProcessor
+from shared.services.nats_jetstream import init_nats_client
 
 
 @pytest.fixture

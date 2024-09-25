@@ -1,4 +1,4 @@
-load("../utils/Tiltfile", "namespace_create_wrap")
+load("../utils/Tiltfile", "namespace_create_wrap", "generate_ingress_domain")
 load("ext://color", "color")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
@@ -6,12 +6,10 @@ load("ext://helm_resource", "helm_resource", "helm_repo")
 redis_version = "11.0.4"
 # https://github.com/mrnim94/redisinsight/tree/master/helm-chart/redisinsight
 redis_insight_version = "1.1.0"
-redis_insight_host = "redis-insight.127.0.0.1.nip.io"
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
 postgres_version = "14.2.28"
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
 pgadmin_version = "1.29.0"
-pgadmin_host = "pgadmin.127.0.0.1.nip.io"
 
 registry = "localhost:5001"
 
@@ -41,10 +39,11 @@ def setup_redis(namespace):
     )
 
 
-def setup_redis_insight(namespace):
+def setup_redis_insight(namespace, ingress_domain):
     print(color.green("Installing Redis Insight..."))
 
     values_file = "./tilt/cloudapi/redis-insight.yaml"
+    redis_insight_host = "redis-insight." + ingress_domain
 
     ## Setup Redis Insight
     # https://github.com/mrnim94/redisinsight
@@ -117,10 +116,11 @@ def setup_postgres(namespace):
     )
 
 
-def setup_pgadmin(namespace):
+def setup_pgadmin(namespace, ingress_domain):
     print(color.green("Installing pgAdmin..."))
 
     values_file = "./tilt/cloudapi/pgadmin.yaml"
+    pgadmin_host = "pgadmin." + ingress_domain
 
     ## Setup pgAdmin
     # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
@@ -270,7 +270,7 @@ def build_cloudapi_service(service, image={}):
 
 
 def setup_cloudapi_service(
-    release, chart, namespace, release_config={}, build_enabled=True
+    release, chart, namespace, ingress_domain, release_config={}, build_enabled=True
 ):
     print(color.green("Installing " + release + "..."))
 
@@ -308,6 +308,8 @@ def setup_cloudapi_service(
                 values_file,
                 "--set",
                 "replicaCount=" + str(release_config.get("replicaCount", 1)),
+                "--set",
+                "ingressDomain=cloudapi." + ingress_domain,
                 "--wait",
             ]
             + flags,
@@ -325,7 +327,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, build_enabled):
+def setup_ledger(namespace, ingress_domain, build_enabled=True):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -342,6 +344,8 @@ def setup_ledger(namespace, build_enabled):
             flags=[
                 "--values",
                 values_file,
+                "--set",
+                "ingressDomain=cloudapi." + ingress_domain,
                 "--wait",
             ],
             labels=["02-indy-ledger"],
@@ -399,7 +403,7 @@ def add_live_update(live_update_config, enabled):
     return []
 
 
-def setup_cloudapi(build_enabled):
+def setup_cloudapi(build_enabled, expose):
     print(color.green("Installing CloudAPI..."))
 
     # Adopt and manage CloudAPI namespace
@@ -409,10 +413,13 @@ def setup_cloudapi(build_enabled):
         allow_duplicates=True,
     )
 
+    ingress_domain = generate_ingress_domain(expose)
+    print(color.green("Ingress Domain: " + ingress_domain))
+
     setup_redis(namespace)
-    setup_redis_insight(namespace)
+    setup_redis_insight(namespace, ingress_domain)
     setup_postgres(namespace)
-    setup_pgadmin(namespace)
+    setup_pgadmin(namespace, ingress_domain)
     setup_nats(namespace)
     setup_benthos(namespace)
 
@@ -436,7 +443,7 @@ def setup_cloudapi(build_enabled):
             "depends": ["postgres", "ledger-browser"],
             "links": [
                 link(
-                    "http://governance-agent.cloudapi.127.0.0.1.nip.io",
+                    "http://governance-agent.cloudapi." + ingress_domain,
                     "Governance Agent",
                 ),
             ],
@@ -447,9 +454,12 @@ def setup_cloudapi(build_enabled):
         "governance-ga-web": {
             "depends": ["governance-ga-agent", "governance-multitenant-agent"],
             "links": [
-                link("http://cloudapi.127.0.0.1.nip.io/governance", "Governance Web"),
                 link(
-                    "http://cloudapi.127.0.0.1.nip.io/governance/docs",
+                    "http://cloudapi." + ingress_domain + "/governance",
+                    "Governance Web",
+                ),
+                link(
+                    "http://cloudapi." + ingress_domain + "/governance/docs",
                     "Governance Web Docs",
                 ),
             ],
@@ -468,7 +478,7 @@ def setup_cloudapi(build_enabled):
             "depends": ["postgres", "ledger-browser"],
             "links": [
                 link(
-                    "http://multitenant-agent.cloudapi.127.0.0.1.nip.io",
+                    "http://multitenant-agent.cloudapi." + ingress_domain,
                     "Multitenant Agent",
                 ),
             ],
@@ -479,9 +489,12 @@ def setup_cloudapi(build_enabled):
         "governance-multitenant-web": {
             "depends": ["governance-ga-agent", "governance-multitenant-agent"],
             "links": [
-                link("http://cloudapi.127.0.0.1.nip.io/tenant-admin", "Tenant Admin"),
                 link(
-                    "http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs",
+                    "http://cloudapi." + ingress_domain + "/tenant-admin",
+                    "Tenant Admin",
+                ),
+                link(
+                    "http://cloudapi." + ingress_domain + "/tenant-admin/docs",
                     "Tenant Admin Docs",
                 ),
             ],
@@ -499,8 +512,10 @@ def setup_cloudapi(build_enabled):
         "governance-tenant-web": {
             "depends": ["governance-ga-agent", "governance-multitenant-agent"],
             "links": [
-                link("http://cloudapi.127.0.0.1.nip.io/tenant", "Tenant"),
-                link("http://cloudapi.127.0.0.1.nip.io/tenant/docs", "Tenant Docs"),
+                link("http://cloudapi." + ingress_domain + "/tenant", "Tenant"),
+                link(
+                    "http://cloudapi." + ingress_domain + "/tenant/docs", "Tenant Docs"
+                ),
             ],
             "image": {
                 "dockerfile": "./dockerfiles/fastapi/Dockerfile",
@@ -516,8 +531,10 @@ def setup_cloudapi(build_enabled):
         "governance-trust-registry-web": {
             "depends": ["governance-trust-registry"],
             "links": [
-                link("http://cloudapi.127.0.0.1.nip.io/public", "Public"),
-                link("http://cloudapi.127.0.0.1.nip.io/public/docs", "Public Docs"),
+                link("http://cloudapi." + ingress_domain + "/public", "Public"),
+                link(
+                    "http://cloudapi." + ingress_domain + "/public/docs", "Public Docs"
+                ),
             ],
             "image": {
                 "dockerfile": "./dockerfiles/fastapi/Dockerfile",
@@ -534,10 +551,10 @@ def setup_cloudapi(build_enabled):
             "depends": ["postgres"],
             "links": [
                 link(
-                    "http://trust-registry.cloudapi.127.0.0.1.nip.io", "Trust Registry"
+                    "http://trust-registry.cloudapi." + ingress_domain, "Trust Registry"
                 ),
                 link(
-                    "http://trust-registry.cloudapi.127.0.0.1.nip.io/docs",
+                    "http://trust-registry.cloudapi." + ingress_domain + "/docs",
                     "Trust Registry Docs",
                 ),
             ],
@@ -556,7 +573,7 @@ def setup_cloudapi(build_enabled):
             "depends": ["redis"],
             "replicaCount": 1,
             "links": [
-                link("http://webhooks.cloudapi.127.0.0.1.nip.io/docs", "Docs"),
+                link("http://webhooks.cloudapi." + ingress_domain + "/docs", "Docs"),
             ],
             "image": {
                 "dockerfile": "./dockerfiles/webhooks/Dockerfile",
@@ -572,7 +589,7 @@ def setup_cloudapi(build_enabled):
         "waypoint": {
             "depends": ["nats", "benthos"],
             "links": [
-                link("http://waypoint.cloudapi.127.0.0.1.nip.io/docs", "Docs"),
+                link("http://waypoint.cloudapi." + ingress_domain + "/docs", "Docs"),
             ],
             "image": {
                 "dockerfile": "./dockerfiles/waypoint/Dockerfile",
@@ -590,7 +607,7 @@ def setup_cloudapi(build_enabled):
             "enabled": ledger_enabled,
             "links": [
                 link(
-                    "http://ledger-browser.cloudapi.127.0.0.1.nip.io", "Ledger Browser"
+                    "http://ledger-browser.cloudapi." + ingress_domain, "Ledger Browser"
                 ),
             ],
         },
@@ -601,12 +618,12 @@ def setup_cloudapi(build_enabled):
                 "governance-multitenant-agent",
             ],
             "links": [
-                link("http://mediator.cloudapi.127.0.0.1.nip.io", "Mediator"),
+                link("http://mediator.cloudapi." + ingress_domain, "Mediator"),
             ],
         },
         "tails-server": {
             "links": [
-                link("http://tails.cloudapi.127.0.0.1.nip.io", "Tails"),
+                link("http://tails.cloudapi." + ingress_domain, "Tails"),
             ]
         },
     }
@@ -616,6 +633,7 @@ def setup_cloudapi(build_enabled):
             release,
             "./tilt/.charts/charts/aries-cloudapi-python",
             namespace,
+            ingress_domain,
             releases[release],
             build_enabled,
         )

@@ -325,7 +325,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, build_enabled=True):
+def setup_ledger(namespace, build_enabled):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -399,7 +399,7 @@ def add_live_update(live_update_config, enabled):
     return []
 
 
-def setup_cloudapi(build_enabled=True):
+def setup_cloudapi(build_enabled):
     print(color.green("Installing CloudAPI..."))
 
     # Adopt and manage CloudAPI namespace

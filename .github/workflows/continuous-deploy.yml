@@ -272,7 +272,7 @@ jobs:
           path: tilt/.charts
           ref: ${{ env.branch_name }}
       - name: Start Test Harness
-        run: mise run tilt:ci -- -- --no-build
+        run: mise run tilt:ci
         shell: bash
         env:
           REGISTRY: ghcr.io/${{ github.repository_owner }}

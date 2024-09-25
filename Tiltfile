@@ -6,6 +6,7 @@ load("ext://helm_resource", "helm_repo")
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
 config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker cache")
+cfg = config.parse()
 
 update_settings(
     k8s_upsert_timeout_secs=600,
@@ -74,7 +75,7 @@ else:
     print(color.green("Charts repo already cloned"))
 
 # Setup CloudAPI
-build_enabled = not config.parse().get("no-build")
+build_enabled = not cfg.get("no-build")
 setup_cloudapi(build_enabled)
 
 if config.tilt_subcommand not in ("down"):

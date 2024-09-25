@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
-COPY endorser /endorser
-COPY shared /shared
-
 WORKDIR /endorser
+
+COPY endorser/poetry.lock /endorser
+COPY endorser/pyproject.toml /endorser
 
 ARG POETRY_VERSION=1.8.3
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
@@ -12,6 +12,9 @@ ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry
 RUN poetry config cache-dir $POETRY_CACHE_DIR && \
   poetry config virtualenvs.path $POETRY_CACHE_DIR/virtualenvs && \
   poetry install
+
+COPY endorser /endorser
+COPY shared /shared
 
 EXPOSE 3009
 

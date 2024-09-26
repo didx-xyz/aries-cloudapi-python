@@ -24,7 +24,7 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
-def check_migrations(engine: Engine) -> bool:
+def check_migrations(engine: Engine) -> bool:  # pylint: disable=redefined-outer-name
     # Check if alembic_version table exists
     with engine.connect() as connection:
         inspector = inspect(connection)

@@ -308,11 +308,6 @@ async def test_process_endorsement_event_not_governance(endorsement_processor_mo
 
 
 @pytest.mark.anyio
-async def test_handle_unprocessable_endorse_event(endorsement_processor_mock):
-    pass
-
-
-@pytest.mark.anyio
 async def test_endorsement_processor_subscribe(
     mock_nats_client,
 ):

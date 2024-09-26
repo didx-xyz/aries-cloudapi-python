@@ -1,14 +1,19 @@
 import os
 from contextlib import asynccontextmanager
 
+from alembic import command
+from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from fastapi import Depends, FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy import inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
-from trustregistry import crud, db
+from trustregistry import crud
 from trustregistry.database import engine
 from trustregistry.db import get_db
 from trustregistry.registry import registry_actors, registry_schemas
@@ -19,10 +24,42 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
+def check_migrations(engine: Engine) -> bool:
+    # Check if alembic_version table exists
+    with engine.connect() as connection:
+        inspector = inspect(connection)
+        has_alembic_version = "alembic_version" in inspector.get_table_names()
+
+    if not has_alembic_version:
+        return False
+
+    # Get current revision
+    with engine.connect() as connection:
+        context = MigrationContext.configure(connection)
+        current_rev = context.get_current_revision()
+
+    # Get head revision
+    alembic_cfg = Config("alembic.ini")
+    script = ScriptDirectory.from_config(alembic_cfg)
+    head_rev = script.get_current_head()
+
+    return current_rev == head_rev
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    db.Base.metadata.create_all(bind=engine)
-    engine.dispose()
+    alembic_cfg = Config("alembic.ini")
+
+    if not check_migrations(engine):
+        logger.info("Applying database migrations...")
+        try:
+            command.upgrade(alembic_cfg, "head")
+        except Exception as e:
+            logger.error("Error applying database migrations: {}", e)
+            raise e
+        logger.info("Database migrations applied successfully.")
+    else:
+        logger.info("Database is up to date. No migrations needed.")
 
     logger.debug("TrustRegistry startup: Validate tables are created")
     with engine.connect() as connection:

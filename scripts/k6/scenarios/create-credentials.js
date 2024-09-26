@@ -2,19 +2,13 @@
 /* eslint-disable no-undefined, no-console, camelcase */
 
 import { check, sleep } from "k6";
-// import { shuffle } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptCredential, createCredential, genericWaitForSSEEvent, getCredentialIdByThreadId } from "../libs/functions.js";
-import { bootstrapIssuer } from "../libs/setup.js";
+import { acceptCredential, createCredential, genericWaitForSSEEvent, getCredentialIdByThreadId, getWalletIndex } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
-const numIssuers = __ENV.NUM_ISSUERS;
 
 export const options = {
   scenarios: {
@@ -64,7 +58,6 @@ function shuffleArray(array) {
   return array;
 }
 
-
 export function setup() {
   const bearerToken = getBearerToken();
 
@@ -72,36 +65,16 @@ export function setup() {
   let holders = data.trim().split("\n").map(JSON.parse);
   holders = shuffleArray(holders); // Randomize the order of holders
 
-  // const walletName = issuerPrefix;
-  // const credDefTag = walletName;
-  // const issuers = bootstrapIssuer(numIssuers, walletName, credDefTag, schemaName, schemaVersion);
-
-  // if (!issuers || issuers.length === 0) {
-  //   console.error("Failed to bootstrap issuers.");
-  // }
-
   return { bearerToken, holders };
-}
-
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
-}
-
-//random number between 0 and 100 (including 0 and 100 as options)
-function getRandomInt() {
-  return Math.floor(Math.random() * 101);
 }
 
 export default function (data) {
   const bearerToken = data.bearerToken;
   const holders = data.holders;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
+  const walletIndex = getWalletIndex(__VU, __ITER);
   const wallet = holders[walletIndex];
 
-  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
 
   let createCredentialResponse;
   try {

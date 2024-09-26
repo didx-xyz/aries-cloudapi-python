@@ -7,6 +7,11 @@ import { Counter, Trend } from "k6/metrics";
 import sse from "k6/x/sse";
 // let customDuration = new Trend('custom_duration', true);
 
+// Helper function to generate a unique, zero-based index for even distribution of operations
+export function getWalletIndex(vu, iter) {
+  return (vu - 1) * (iter + 1) + iter;
+}
+
 function logError(response, requestBody) {
   console.error(`Response status: ${response.status}`);
   console.error(`Response body: ${response.body}`);

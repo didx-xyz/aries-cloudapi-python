@@ -40,7 +40,8 @@ else:
 # Verify that we have a valid database URL
 if not db_url:
     raise ValueError(
-        "Database URL is not set. Please set POSTGRES_DATABASE_URL environment variable or provide a valid sqlalchemy.url in alembic.ini"
+        "Database URL is not set. Please set POSTGRES_DATABASE_URL environment \
+          variable or provide a valid sqlalchemy.url in alembic.ini"
     )
 
 # add your model's MetaData object here

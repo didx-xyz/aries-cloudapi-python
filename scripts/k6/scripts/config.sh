@@ -13,6 +13,7 @@ export SERVICE="governance-endorser tails-server governance-trust-registry waypo
 export AUTH="inquisitor"
 export INVALID="governance-webhooks-web"
 export HA_TEST_ITERATIONS=1 # Configurable number of HA test iterations
+export RESTART_ITERATIONS=1 # Configurable number of restart iterations
 export NUM_ISSUERS=1
 
 # Combine all stacks into one variable

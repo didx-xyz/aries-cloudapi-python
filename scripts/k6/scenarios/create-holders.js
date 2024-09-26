@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
@@ -11,6 +11,7 @@ import { createTenant } from "../libs/functions.js";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
+const sleepDuration = Number.parseInt(__ENV.SLEEP_DURATION, 0);
 
 export const options = {
   scenarios: {
@@ -101,6 +102,6 @@ export default function (data) {
   const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
   mainIterationDuration.add(duration);
-  // sleep(1);
+  sleep(sleepDuration);
   testFunctionReqs.add(1);
 }

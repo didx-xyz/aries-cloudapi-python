@@ -6,7 +6,8 @@ import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   checkRevoked,
-  revokeCredentialAutoPublish,
+  getWalletIndex,
+  revokeCredentialAutoPublish
 } from "../libs/functions.js";
 
 const inputFilepath = "../output/create-credentials.json";
@@ -47,16 +48,9 @@ export function setup() {
   return { bearerToken, tenants }; // eslint-disable-line no-eval
 }
 
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
-}
-
 export default function (data) {
   const tenants = data.tenants;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
+  const walletIndex = getWalletIndex(__VU, __ITER);
   const wallet = tenants[walletIndex];
 
   const revokeCredentialResponse = revokeCredentialAutoPublish(wallet.issuer_access_token, wallet.credential_exchange_id);

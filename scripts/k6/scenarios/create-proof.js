@@ -10,15 +10,12 @@ import {
   getProof,
   getProofIdByThreadId,
   getProofIdCredentials,
+  getWalletIndex,
   sendProofRequest
 } from "../libs/functions.js";
-import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export const options = {
   scenarios: {
@@ -71,34 +68,15 @@ export function setup() {
   return { bearerToken, tenants };
 }
 
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
-}
-
-//random number between 0 and 100 (including 0 and 100 as options)
-function getRandomInt() {
-  return Math.floor(Math.random() * 101);
-}
-
 export default function (data) {
-  // const start = Date.now();
   const bearerToken = data.bearerToken;
   const tenants = data.tenants;
-  // const holders = data.holders;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
+  const walletIndex = getWalletIndex(__VU, __ITER);
   const wallet = tenants[walletIndex];
 
-  // const issuerIndex = 0;
-  // const issuer = issuers[issuerIndex];
-
-  // console.log(`isser.accessToken: ${issuer.accessToken}`);
-  // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
   // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
-  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
     sendProofRequestResponse = sendProofRequest(wallet.issuer_access_token, wallet.issuer_connection_id);

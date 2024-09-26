@@ -1,11 +1,9 @@
 import asyncio
 import json
-import unittest
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 
@@ -315,7 +313,7 @@ async def test_handle_unprocessable_endorse_event(endorsement_processor_mock):
 
 
 @pytest.mark.anyio
-async def test_endorsement_Processor_subscribe(
+async def test_endorsement_processor_subscribe(
     mock_nats_client,
 ):
     processor = EndorsementProcessor(jetstream=mock_nats_client)
@@ -334,7 +332,7 @@ async def test_endorsement_Processor_subscribe(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("exception", [BadSubscriptionError, Error, Exception])
-async def test_endorsement_Processor_subscribe_error(
+async def test_endorsement_processor_subscribe_error(
     mock_nats_client, exception  # pylint: disable=redefined-outer-name
 ):
     processor = EndorsementProcessor(mock_nats_client)

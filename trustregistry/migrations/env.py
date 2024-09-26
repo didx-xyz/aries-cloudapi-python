@@ -12,8 +12,8 @@ from trustregistry.db import Base
 config = context.config
 
 # Get db url from environment variable
-db_url = os.environ.get("POSTGRES_DATABASE_URL", "test123")
-print(f"db_url: {db_url}")
+db_url = os.environ.get("POSTGRES_DATABASE_URL")
+
 if db_url:
     config.set_main_option("sqlalchemy.url", db_url)
 

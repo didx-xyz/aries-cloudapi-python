@@ -98,7 +98,7 @@ export default function (data) {
   // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
   // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
-  console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
     sendProofRequestResponse = sendProofRequest(wallet.issuer_access_token, wallet.issuer_connection_id);

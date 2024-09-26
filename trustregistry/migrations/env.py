@@ -1,21 +1,21 @@
 import os
 from logging.config import fileConfig
-from shared.log_config import get_logger
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
+
+from shared.log_config import get_logger
 from trustregistry.db import Base
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-#Get db url from environment variable
-db_url = os.environ.get('POSTGRES_DATABASE_URL', "test123")
+# Get db url from environment variable
+db_url = os.environ.get("POSTGRES_DATABASE_URL", "test123")
 print(f"db_url: {db_url}")
 if db_url:
-    config.set_main_option('sqlalchemy.url', db_url)
+    config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -26,18 +26,22 @@ logger = get_logger(__name__)
 
 
 # Get the database URL from environment variable
-db_url = os.environ.get('POSTGRES_DATABASE_URL')
+db_url = os.environ.get("POSTGRES_DATABASE_URL")
 
 if db_url:
     logger.info(f"Using database URL from environment: {db_url}")
-    config.set_main_option('sqlalchemy.url', db_url)
+    config.set_main_option("sqlalchemy.url", db_url)
 else:
-    logger.warning("POSTGRES_DATABASE_URL not set in environment. Using default URL from alembic.ini")
-    db_url = config.get_main_option('sqlalchemy.url')
+    logger.warning(
+        "POSTGRES_DATABASE_URL not set in environment. Using default URL from alembic.ini"
+    )
+    db_url = config.get_main_option("sqlalchemy.url")
 
 # Verify that we have a valid database URL
 if not db_url:
-    raise ValueError("Database URL is not set. Please set POSTGRES_DATABASE_URL environment variable or provide a valid sqlalchemy.url in alembic.ini")
+    raise ValueError(
+        "Database URL is not set. Please set POSTGRES_DATABASE_URL environment variable or provide a valid sqlalchemy.url in alembic.ini"
+    )
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -89,9 +93,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

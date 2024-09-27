@@ -22,6 +22,7 @@ PyYAML = "~6.0.2"
 typing-extensions = "~4.12.0"
 uvicorn = { version = "~0.30.5", extras = ["standard"] }
 ddtrace = "^2.12.2"
+scalar-fastapi = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.6.0"

@@ -73,10 +73,14 @@ async def nats_event_stream_generator(
 @router.get(
     "/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
     response_class=EventSourceResponse,
-    summary="Wait for a desired state to be reached for some event for this wallet and topic "
-    "The `relevant_id` refers to a `transaction_id` when using topic `endorsements,"
-    "or a `connection_id` on topics: `connections`, `credentials`, or `proofs`, etc."
-    "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
+    summary="""
+    Wait for a desired state to be reached for some event for this wallet and topic.
+    """,
+    description="""
+    The `relevant_id` refers to a `transaction_id` when using topic `endorsements`,
+    or a `connection_id` on topics: `connections`, `credentials`, or `proofs`, etc.
+    `desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.
+    """,
 )
 @inject
 async def sse_wait_for_event_with_field_and_state(

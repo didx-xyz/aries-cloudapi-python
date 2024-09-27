@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -40,6 +41,8 @@ def create_app():
         version=PROJECT_VERSION,
         description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
         lifespan=lifespan,
+        redoc_url=None,
+        docs_url=None,
     )
     application.include_router(registry_actors.router)
     application.include_router(registry_schemas.router)
@@ -47,6 +50,15 @@ def create_app():
 
 
 app = create_app()
+
+
+# Use Scalar instead of Swagger
+@app.get("/docs", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 
 @app.get("/")

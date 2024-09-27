@@ -18,6 +18,7 @@ pydantic = "~2.9.0"
 redis = "~=5.0.8"
 uvicorn = { version = "~0.30.5", extras = ["standard"] }
 ddtrace = "^2.12.2"
+scalar-fastapi = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.6.0"

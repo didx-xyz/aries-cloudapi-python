@@ -256,7 +256,6 @@ def setup_benthos(namespace):
             chart_dir + "/Chart.yaml",
             chart_dir + "/Chart.lock",
         ],
-        auto_init=False,
     )
 
 

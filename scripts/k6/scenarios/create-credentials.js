@@ -71,7 +71,7 @@ export function setup() {
 export default function (data) {
   const bearerToken = data.bearerToken;
   const holders = data.holders;
-  const walletIndex = getWalletIndex(__VU, __ITER);
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
   const wallet = holders[walletIndex];
 
   // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
@@ -127,6 +127,8 @@ export default function (data) {
       return true;
     },
   });
+
+  // sleep(1);
 
   const credentialId = getCredentialIdByThreadId(wallet.access_token, threadId);
 

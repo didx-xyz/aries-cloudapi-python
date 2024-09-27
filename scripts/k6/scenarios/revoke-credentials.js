@@ -50,7 +50,7 @@ export function setup() {
 
 export default function (data) {
   const tenants = data.tenants;
-  const walletIndex = getWalletIndex(__VU, __ITER);
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
   const wallet = tenants[walletIndex];
 
   const revokeCredentialResponse = revokeCredentialAutoPublish(wallet.issuer_access_token, wallet.credential_exchange_id);

@@ -83,7 +83,9 @@ export default function (data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  const walletIndex = getWalletIndex(__VU, __ITER);
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
+
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}`);
 
   const holders = data.holders;
   const wallet = holders[walletIndex];

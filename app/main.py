@@ -154,6 +154,7 @@ async def scalar_html():
     return get_scalar_api_reference(
         openapi_url=openapi_url,
         title=app.title,
+        servers=app.servers,
     )
 
 

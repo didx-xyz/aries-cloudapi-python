@@ -470,7 +470,6 @@ class AcaPyEventsProcessor:
             logger.error("Error publishing endorsement event to NATS: {}", e)
             raise e
 
-
     async def start_nats_client(self) -> None:
         """
         Starts the NATS client for the endorsement processor.

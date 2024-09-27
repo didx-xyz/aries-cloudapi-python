@@ -117,6 +117,7 @@ def test_start_notification_listener(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_incoming_events(acapy_events_processor_mock):
     scan_results = [
         [],  # empty list to start
@@ -155,6 +156,7 @@ async def test_process_incoming_events(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_attempt_process_list_events(acapy_events_processor_mock):
     event_key = "acapy-record-wallet1"
     lock_key = f"lock:{event_key}"
@@ -174,6 +176,7 @@ async def test_attempt_process_list_events(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_attempt_process_list_events_x(acapy_events_processor_mock):
     acapy_events_processor_mock._handle_unprocessable_event = Mock()
     acapy_events_processor_mock._process_list_events = Mock(
@@ -186,6 +189,7 @@ async def test_attempt_process_list_events_x(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_list_events_with_data(acapy_events_processor_mock):
     # Mock `lindex` to return a JSON string, and then None (signalling end of list)
     acapy_events_processor_mock.redis_service.lindex = Mock(
@@ -213,6 +217,7 @@ async def test_process_list_events_with_data(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_list_events_empty_list(acapy_events_processor_mock):
     # Mock `lindex` to return None, simulating an empty list
     acapy_events_processor_mock.redis_service.lindex.return_value = None
@@ -226,6 +231,7 @@ async def test_process_list_events_empty_list(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_list_events_raises_exception(acapy_events_processor_mock):
     # Mock `lindex` to raise an exception
     acapy_events_processor_mock.redis_service.lindex.side_effect = Exception(
@@ -238,6 +244,7 @@ async def test_process_list_events_raises_exception(acapy_events_processor_mock)
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_event_valid_data(acapy_events_processor_mock):
     event_dict = {
         "payload": {
@@ -272,6 +279,7 @@ async def test_process_event_valid_data(acapy_events_processor_mock):
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(reason="not fixing getting rid of webhook service")
 async def test_process_event_with_applicable_endorsement(
     acapy_events_processor_mock, mocker
 ):

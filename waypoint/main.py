@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, FastAPI, HTTPException
+from scalar_fastapi import get_scalar_api_reference
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
@@ -43,6 +44,8 @@ def create_app() -> FastAPI:
         """,
         version=PROJECT_VERSION,
         lifespan=app_lifespan,
+        redoc_url=None,
+        docs_url=None,
     )
 
     application.include_router(sse.router)
@@ -53,6 +56,15 @@ def create_app() -> FastAPI:
 logger.info("Waypoint Service startup")
 
 app = create_app()
+
+
+# Use Scalar instead of Swagger
+@app.get("/docs", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 
 @app.get("/health/live")

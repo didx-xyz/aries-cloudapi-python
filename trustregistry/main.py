@@ -8,6 +8,7 @@ from alembic.script import ScriptDirectory
 from fastapi import Depends, FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy import inspect
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session

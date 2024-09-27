@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -71,7 +71,7 @@ export function setup() {
 export default function (data) {
   const bearerToken = data.bearerToken;
   const tenants = data.tenants;
-  const walletIndex = getWalletIndex(__VU, __ITER);
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
   const wallet = tenants[walletIndex];
 
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
@@ -117,6 +117,7 @@ export default function (data) {
 
   // TODO: return object and add check for the response
   const proofId = getProofIdByThreadId(wallet.access_token, threadId);
+  // console.log(`Proof ID: ${proofId}`);
   const referent = getProofIdCredentials(wallet.access_token, proofId);
 
   const acceptProofResponse = acceptProofRequest(wallet.access_token, proofId, referent);

@@ -150,8 +150,9 @@ app = create_app()
 # Use Scalar instead of Swagger
 @app.get("/docs", include_in_schema=False)
 async def scalar_html():
+    openapi_url = os.path.join(ROOT_PATH, app.openapi_url.lstrip("/"))
     return get_scalar_api_reference(
-        openapi_url=ROOT_PATH + app.openapi_url,
+        openapi_url=openapi_url,
         title=app.title,
     )
 

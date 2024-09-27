@@ -8,8 +8,8 @@ from alembic.script import ScriptDirectory
 from fastapi import Depends, FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy import inspect
-from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from shared.constants import PROJECT_VERSION
@@ -58,8 +58,10 @@ async def lifespan(_: FastAPI):
             command.upgrade(alembic_cfg, "head")
             logger.info("Database schema is up to date.")
         except ProgrammingError as e:
-            if 'already exists' in str(e):
-                logger.warning("Database schema already exists. Stamping with current version.")
+            if "already exists" in str(e):
+                logger.warning(
+                    "Database schema already exists. Stamping with current version."
+                )
                 command.stamp(alembic_cfg, "head")
                 logger.info("Database stamped with current migration version.")
             else:

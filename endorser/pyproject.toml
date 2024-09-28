@@ -16,7 +16,7 @@ loguru = "~0.7.2"
 orjson = "~3.10.7"
 pydantic = "~2.9.0"
 redis = "~=5.0.8"
-uvicorn = { version = "~0.30.5", extras = ["standard"] }
+uvicorn = { version = "~0.31.0", extras = ["standard"] }
 ddtrace = "^2.12.2"
 scalar-fastapi = "^1.0.3"
 

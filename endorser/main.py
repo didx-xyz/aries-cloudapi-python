@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, FastAPI, HTTPException
+from scalar_fastapi import get_scalar_api_reference
 
 from endorser.services.dependency_injection.container import Container
 from endorser.services.endorsement_processor import EndorsementProcessor
@@ -41,12 +42,23 @@ def create_app() -> FastAPI:
         title=openapi_name,
         version=PROJECT_VERSION,
         lifespan=app_lifespan,
+        redoc_url=None,
+        docs_url=None,
     )
 
     return application
 
 
 app = create_app()
+
+
+# Use Scalar instead of Swagger
+@app.get("/docs", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 
 @app.get("/health")

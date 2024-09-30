@@ -9,7 +9,7 @@ config() {
     export ITERATIONS=10
     export HOLDER_PREFIX="k6_holder_credential"
     export ISSUER_PREFIX="k6_issuer_credential"
-    export NUM_ISSUERS=1
+    export NUM_ISSUERS=2
 }
 
 init() {

@@ -5,7 +5,7 @@ import { check } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptInvitation, createInvitation, genericWaitForSSEEvent } from "../libs/functions.js";
+import { acceptInvitation, createInvitation, genericWaitForSSEEvent, getWalletIndex } from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 // import bootstrapIssuer from "./bootstrap-issuer.js";
 
@@ -68,13 +68,6 @@ export function setup() {
   return { bearerToken, issuers, holders };
 }
 
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
-}
-
 function getIssuerIndex(vu, iter) {
   const numIssuers = __ENV.NUM_ISSUERS;
   return (vu + iter - 2) % numIssuers;
@@ -90,7 +83,9 @@ export default function (data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
+
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}`);
 
   const holders = data.holders;
   const wallet = holders[walletIndex];
@@ -99,7 +94,7 @@ export default function (data) {
   const issuerIndex = getIssuerIndex(__VU, __ITER + 1);
   const issuer = issuers[issuerIndex];
 
-  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
 
   const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
   check(createInvitationResponse, {

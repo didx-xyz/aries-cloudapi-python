@@ -7,6 +7,11 @@ import { Counter, Trend } from "k6/metrics";
 import sse from "k6/x/sse";
 // let customDuration = new Trend('custom_duration', true);
 
+// Helper function to generate a unique, zero-based index for even distribution of operations
+export function getWalletIndex(vu, iter, iterationsPerVu) {
+  return (vu - 1) * iterationsPerVu + iter;
+}
+
 function logError(response, requestBody) {
   console.error(`Response status: ${response.status}`);
   console.error(`Response body: ${response.body}`);
@@ -453,6 +458,7 @@ export function getProofIdByThreadId(holderAccessToken, threadId) {
       // Check if the current object has a matching thread_id
       if (obj.thread_id === threadId) {
         // Return the credential_id if a match is found
+        // console.log(`Log of the request made: ${JSON.stringify(response.request)}`);
         return obj.proof_id;
       }
     }
@@ -489,6 +495,7 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
       return referent;
     }
     // Throw an error if no match is found
+    console.log(`Log of the request made: ${JSON.stringify(response.request)}`);
     throw new Error(`No match found for proofId: ${proofId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`);
   } catch (error) {
     console.error("Error in getProofIdCredentials:", error);

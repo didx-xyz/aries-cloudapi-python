@@ -52,7 +52,7 @@ run_ha_iterations() {
     local scenario_pid=$!
 
     if [[ -n "${deployments}" ]]; then
-      for ((j=1; j<=2; j++)); do
+      for ((j=1; j<=RESTART_ITERATIONS; j++)); do
         local deployment_pids=()
         for deployment in ${deployments}; do
           restart_deployment "${deployment}" &
@@ -67,6 +67,13 @@ run_ha_iterations() {
           fi
         done
       done
+
+        # Check if scenario is still running after deployments restart
+        if kill -0 "${scenario_pid}" 2>/dev/null; then
+            log "Scenario is still running after all deployments were restarted"
+        else
+            wrn "WARNING: Scenario completed too quickly, before all deployments were restarted"
+        fi
     else
       log "No stack specified. Skipping restarts."
     fi

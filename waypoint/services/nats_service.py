@@ -1,10 +1,10 @@
 import asyncio
-import json
 import time
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
 import nats
+import orjson
 from nats.aio.client import Client as NATS
 from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
@@ -119,7 +119,7 @@ class NatsEventsProcessor:
                     messages = await subscription.fetch(10, 1)
                     for message in messages:
                         if message.headers.get("event_topic") == topic:
-                            event = json.loads(message.data)
+                            event = orjson.loads(message.data)
                             yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
                 except TimeoutError:

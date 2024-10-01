@@ -25,7 +25,7 @@ async def test_app_lifespan():
     container_mock = AsyncMock(
         endorsement_processor=AsyncMock(return_value=endorsement_processor_mock),
         wire=MagicMock(),
-        shutdown_resources=Mock(),
+        shutdown_resources=AsyncMock(),
     )
 
     # Patch the Container to return the mocked container
@@ -42,7 +42,7 @@ async def test_app_lifespan():
 
         # Assert the shutdown logic was called correctly
         endorsement_processor_mock.stop.assert_awaited_once()
-        container_mock.shutdown_resources.assert_called_once()
+        container_mock.shutdown_resources.assert_awaited_once()
 
 
 @pytest.mark.anyio

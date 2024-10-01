@@ -56,7 +56,7 @@ async def test_app_lifespan(
         sse_manager=MagicMock(return_value=sse_manager_mock),
         billing_manager=MagicMock(return_value=billing_manager_mock),
         wire=MagicMock(),
-        shutdown_resources=Mock(),
+        shutdown_resources=AsyncMock(),
     )
 
     # Patch the Container to return the mocked container
@@ -78,7 +78,7 @@ async def test_app_lifespan(
         sse_manager_mock.stop.assert_awaited_once()
         billing_manager_mock.stop.assert_called_once()
 
-        container_mock.shutdown_resources.assert_called_once()
+        container_mock.shutdown_resources.assert_awaited_once()
 
 
 @pytest.mark.anyio

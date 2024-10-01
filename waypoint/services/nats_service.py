@@ -116,7 +116,7 @@ class NatsEventsProcessor:
                     break
 
                 try:
-                    messages = await subscription.fetch(10, 1)
+                    messages = await subscription.fetch(1000, 1)
                     for message in messages:
                         if message.headers.get("event_topic") == topic:
                             event = orjson.loads(message.data)

@@ -40,7 +40,7 @@ async def app_lifespan(_: FastAPI):
     await events_processor.stop()
     await sse_manager.stop()
     await billing_manager.stop()
-    container.shutdown_resources()  # shutdown redis instance
+    await container.shutdown_resources()  # shutdown redis instance
     logger.info("Shut down Webhooks services.")
 
 

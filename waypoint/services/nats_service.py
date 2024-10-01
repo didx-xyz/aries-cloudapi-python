@@ -2,10 +2,7 @@ import asyncio
 import time
 from contextlib import asynccontextmanager
 
-import nats
 import orjson
-from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 

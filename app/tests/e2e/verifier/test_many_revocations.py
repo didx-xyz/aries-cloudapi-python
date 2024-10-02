@@ -17,6 +17,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skip("This test exists for local testing")
 @pytest.mark.parametrize(
     "revoke_many_creds_and_publish", ["auto_publish_true"], indirect=True
 )

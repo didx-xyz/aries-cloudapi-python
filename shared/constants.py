@@ -78,7 +78,7 @@ LAGO_URL = os.getenv("LAGO_URL", "")
 LAGO_API_KEY = os.getenv("LAGO_API_KEY", "")
 
 # NATS
-NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats-1:4222")
+NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats:4222")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "cloudapi.aries.events")
 NATS_STREAM = os.getenv("NATS_STREAM", "cloudapi_aries_events")
 NATS_CREDS_FILE = os.getenv("NATS_CREDS_FILE", "")

@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 
-from app.routes.issuer import router
+from app.routes.issuer import router as issuer_router
 from app.routes.verifier import router as verifier_router
 from app.tests.util.connections import AcmeAliceConnect, FaberAliceConnect
 from app.tests.util.verifier import send_proof_request
@@ -12,7 +12,7 @@ from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
-CREDENTIALS_BASE_PATH = router.prefix
+CREDENTIALS_BASE_PATH = issuer_router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
 

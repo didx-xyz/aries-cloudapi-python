@@ -18,13 +18,11 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.skip("This test exists for local testing")
-@pytest.mark.parametrize(
-    "revoke_many_creds_and_publish", ["auto_publish_true"], indirect=True
-)
+@pytest.mark.parametrize("revoke_many", ["auto_publish_true"], indirect=True)
 async def test_revoke_many_credentials(
-    revoke_many_creds_and_publish: List[
+    revoke_many: List[  # pylint: disable=unused-argument, redefined-outer-name
         CredentialExchange
-    ],  # pylint: disable=unused-argument
+    ],
     credential_definition_id_revocable: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
@@ -111,7 +109,7 @@ async def test_revoke_many_credentials(
 
 
 @pytest.fixture(scope="function")
-async def revoke_many_creds_and_publish(
+async def revoke_many(
     request,
     faber_client: RichAsyncClient,
     issue_many_creds: List[CredentialExchange],  # pylint: disable=redefined-outer-name

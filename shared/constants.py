@@ -9,7 +9,7 @@ adminApiKey = "adminApiKey"
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "1.0.0")
 
 # the ACAPY_LABEL field with which the governance agent is initialised
-GOVERNANCE_LABEL = os.getenv("GOVERNANCE_ACAPY_LABEL", "Governance").lower()
+GOVERNANCE_LABEL = os.getenv("GOVERNANCE_ACAPY_LABEL", "Governance")
 
 GOVERNANCE_AGENT_URL = os.getenv("ACAPY_GOVERNANCE_AGENT_URL", f"{url}:3021")
 GOVERNANCE_AGENT_API_KEY = os.getenv("ACAPY_GOVERNANCE_AGENT_API_KEY", adminApiKey)

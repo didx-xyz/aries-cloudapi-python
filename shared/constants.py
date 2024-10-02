@@ -59,7 +59,7 @@ SET_LOCKS = bool(os.getenv("SET_LOCKS", ""))
 
 # Sse
 SSE_TIMEOUT = int(
-    os.getenv("SSE_TIMEOUT", "15")
+    os.getenv("SSE_TIMEOUT", "60")
 )  # maximum duration of an SSE connection
 DISCONNECT_CHECK_PERIOD = float(
     os.getenv("DISCONNECT_CHECK_PERIOD", "0.2")

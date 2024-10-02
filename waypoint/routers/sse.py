@@ -62,8 +62,8 @@ async def nats_event_stream_generator(
                 stop_event.set()
                 break
 
-            payload = dict(event.payload)
-            if payload[field] == field_id and payload["state"] == desired_state:
+            payload = event.payload
+            if payload.get(field) == field_id and payload.get("state") == desired_state:
                 logger.trace("Event found yielding event {}", event)
                 yield event.model_dump_json()
                 stop_event.set()

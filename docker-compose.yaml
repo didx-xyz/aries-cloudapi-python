@@ -411,8 +411,8 @@ services:
     #   - sh
     #   - -c
     #   - |
-    #     pip3 install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@test/feat/pagination-ordering
-    #     pip3 install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@test/feat/pagination-ordering#subdirectory=redis_events
+    #     pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@test/feat/pagination-ordering
+    #     pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@test/feat/pagination-ordering#subdirectory=redis_events
     #     aca-py start \
     #       -it http "0.0.0.0" "3020" \
     #       -e http://governance-multitenant-agent:3020 \

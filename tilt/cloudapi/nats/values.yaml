@@ -17,12 +17,12 @@ postInstall:
       storage: file
     acapy_events:
       subjects:
-        - acapy.*
+        - acapy.>
       defaults: true
       storage: file
     unprocessable_endorsements:
       subjects:
-        - unprocessable.*
+        - unprocessable.>
       defaults: true
       storage: file
 

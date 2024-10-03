@@ -644,6 +644,9 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
               stream rm cloudapi_aries_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm acapy_events -f
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
@@ -660,6 +663,14 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
             stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add acapy_events --subjects "acapy.>" \
             --defaults \
             --storage file \
             --replicas 3 \
@@ -953,6 +964,9 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
               stream rm cloudapi_aries_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm acapy_events -f
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
@@ -969,6 +983,14 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
             stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add acapy_events --subjects "acapy.>" \
             --defaults \
             --storage file \
             --replicas 3 \

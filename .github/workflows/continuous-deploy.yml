@@ -1136,6 +1136,58 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Get Pods
+        if: always()
+        run: kubectl get pods -n dev-cloudapi
+      - name: Benthos Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=benthos --tail 10000
+      - name: Endorser Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-endorser --tail 10000
+      - name: Governance Agent Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-ga-agent --tail 10000
+      - name: Governance Web Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-ga-web --tail 10000
+      - name: Ledger Browser Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=ledger-browser --tail 10000
+      - name: Ledger Nodes Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=ledger-nodes --tail 10000
+      - name: Mediator Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=mediator --tail 10000
+      - name: Multitenant Agent Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-multitenant-agent --tail 10000
+      - name: Multitenant Web Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-multitenant-web --tail 10000
+      - name: NATS Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=nats --tail 10000
+      - name: Public Web Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-trust-registry-web --tail 10000
+      - name: Tails Server Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=tails-server --tail 10000
+      - name: Tenant Web Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-tenant-web --tail 10000
+      - name: Trust Registry Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-trust-registry --tail 10000
+      - name: Waypoint Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=waypoint --tail 10000
+      - name: Webhooks Web Logs
+        if: always()
+        run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-webhooks-web --tail 10000
   k6:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: K6

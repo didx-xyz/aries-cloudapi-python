@@ -319,7 +319,7 @@ async def test_endorsement_processor_subscribe(
     subscription = await processor._subscribe()
     mock_nats_client.pull_subscribe.assert_called_once_with(
         durable=ENDORSER_DURABLE_CONSUMER,
-        subject=f"{NATS_SUBJECT}.endorser.>",
+        subject=f"{NATS_SUBJECT}.endorser.*",
         stream=NATS_STREAM,
     )
     assert isinstance(subscription, JetStreamContext.PullSubscription)

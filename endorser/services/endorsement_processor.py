@@ -97,7 +97,7 @@ class EndorsementProcessor:
                     except Exception as e:  # pylint: disable=W0703
                         logger.error("Error processing endorsement event: {}", e)
                         await self._handle_unprocessable_endorse_event(
-                        message_subject, message_data, e
+                            message_subject, message_data, e
                         )
                     finally:
                         await message.ack()

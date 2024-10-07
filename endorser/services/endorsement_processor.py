@@ -92,16 +92,21 @@ class EndorsementProcessor:
                         message_data,
                         message_subject,
                     )
-                    await self._process_endorsement_event(message_data)
-                    await message.ack()
+                    try:
+                        await self._process_endorsement_event(message_data)
+                    except Exception as e:  # pylint: disable=W0703
+                        logger.error("Error processing endorsement event: {}", e)
+                        await self._handle_unprocessable_endorse_event(
+                        message_subject, message_data, e
+                        )
+                    finally:
+                        await message.ack()
             except TimeoutError:
                 logger.trace("Timeout fetching messages continuing...")
                 await asyncio.sleep(1)
-            except Exception as e:  # pylint: disable=W0703
-                logger.error("Error processing endorsement event: {}", e)
-                await self._handle_unprocessable_endorse_event(
-                    message_subject, message_data, e
-                )
+            except Exception:
+                logger.exception("Unexpected error in endorsement processing loop")
+                await asyncio.sleep(5)
 
     async def _process_endorsement_event(self, event_json: str) -> None:
         """

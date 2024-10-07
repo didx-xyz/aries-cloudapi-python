@@ -168,11 +168,11 @@ class EndorsementProcessor:
         """
         Subscribes to the NATS subject for endorsement events.
         """
-        logger.info("Subscribing to NATS subject: cloudapi.aries.events.endorser.>")
+        logger.info(f"Subscribing to NATS subject: {NATS_SUBJECT}.endorser.*")
         try:
             subscribe_kwargs = {
                 "durable": ENDORSER_DURABLE_CONSUMER,
-                "subject": f"{NATS_SUBJECT}.endorser.>",
+                "subject": f"{NATS_SUBJECT}.endorser.*",
                 "stream": NATS_STREAM,
             }
             subscription = await self.jetstream.pull_subscribe(**subscribe_kwargs)

@@ -30,6 +30,8 @@ class EndorsementProcessor:
     def __init__(self, jetstream: JetStreamContext) -> None:
         self.jetstream: JetStreamContext = jetstream
 
+        self.endorser_nats_subject = f"{NATS_SUBJECT}.endorser.*"
+
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
     def start(self) -> None:
@@ -173,10 +175,10 @@ class EndorsementProcessor:
         """
         Subscribes to the NATS subject for endorsement events.
         """
-        logger.info(f"Subscribing to NATS subject: {NATS_SUBJECT}.endorser.*")
+        logger.info("Subscribing to NATS subject: {}", self.endorser_nats_subject)
         try:
             subscribe_kwargs = {
-                "subject": f"{NATS_SUBJECT}.endorser.*",
+                "subject": self.endorser_nats_subject,
                 "durable": ENDORSER_DURABLE_CONSUMER,
                 "stream": NATS_STREAM,
             }

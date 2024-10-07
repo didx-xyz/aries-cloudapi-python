@@ -179,9 +179,9 @@ class EndorsementProcessor:
         except (BadSubscriptionError, Error) as e:
             logger.error("Error subscribing to NATS subject: {}", e)
             raise e
-        except Exception as e:
-            logger.error("Unknown error subscribing to NATS subject: {}", e)
-            raise e
+        except Exception:  # pylint: disable=W0703
+            logger.exception("Unknown error subscribing to NATS subject")
+            raise
         logger.debug("Subscribed to NATS subject")
 
         return subscription

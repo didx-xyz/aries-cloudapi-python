@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1.0.0b1
 
 # install nats-events plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-10-04#subdirectory=nats_events
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-10-08#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

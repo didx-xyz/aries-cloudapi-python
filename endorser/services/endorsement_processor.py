@@ -168,7 +168,7 @@ class EndorsementProcessor:
         """
         Subscribes to the NATS subject for endorsement events.
         """
-        logger.info("Subscribing to NATS subject: cloudapi.aries.events.endorser.*")
+        logger.info(f"Subscribing to NATS subject: {NATS_SUBJECT}.endorser.*")
         try:
             subscribe_kwargs = {
                 "subject": f"{NATS_SUBJECT}.endorser.*",

@@ -928,79 +928,6 @@ jobs:
           JOB_NAME: cloudapi-pytest-regression
           NAMESPACE: dev-cloudapi
 
-      - name: Expire Elasticache Redis Keys
-        env:
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        run: |
-          chmod +x ./scripts/redis-expire.sh
-          DEBUG=true ./scripts/redis-expire.sh
-
-      - name: Scale down benthos
-        run: |
-          kubectl scale deployment benthos -n dev-cloudapi --replicas=0
-
-      - name: Reset NATS
-        env:
-          NAMESPACE: dev-cloudapi
-        run: |
-          kubectl get secret \
-            -n ${NAMESPACE} \
-            ${{ secrets.NATS_SECRET_NAME }} \
-            -o jsonpath='{.data.cloudapi-nats-admin\.creds}' \
-                | base64 -d > nats.creds
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_sync_locks -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_sync_tracking -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_unique_events -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              stream rm cloudapi_aries_events -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              stream rm acapy_events -f
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_sync_locks --ttl 10s --replicas 3 --storage memory
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_sync_tracking --replicas 3
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_unique_events --replicas 3
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
-            --defaults \
-            --storage file \
-            --replicas 3 \
-            --compression s2
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            stream add acapy_events --subjects "acapy.>" \
-            --defaults \
-            --storage file \
-            --replicas 3 \
-            --compression s2
-
-          rm -f ./nats.creds
-
-      - name: Scale benthos back up
-        run: |
-          kubectl scale deployment benthos -n dev-cloudapi --replicas=1
-
       - name: Copy k8s pytest results
         if: steps.pytest.outcome == 'success' || steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         run: |
@@ -1188,6 +1115,79 @@ jobs:
       - name: Webhooks Web Logs
         if: always()
         run: kubectl logs -n dev-cloudapi -l app.kubernetes.io/instance=governance-webhooks-web --tail 10000
+
+      - name: Expire Elasticache Redis Keys
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        run: |
+          chmod +x ./scripts/redis-expire.sh
+          DEBUG=true ./scripts/redis-expire.sh
+
+      - name: Scale down benthos
+        run: |
+          kubectl scale deployment benthos -n dev-cloudapi --replicas=0
+
+      - name: Reset NATS
+        env:
+          NAMESPACE: dev-cloudapi
+        run: |
+          kubectl get secret \
+            -n ${NAMESPACE} \
+            ${{ secrets.NATS_SECRET_NAME }} \
+            -o jsonpath='{.data.cloudapi-nats-admin\.creds}' \
+                | base64 -d > nats.creds
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_sync_locks -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_sync_tracking -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              kv rm cloudapi_aries_unique_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm cloudapi_aries_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm acapy_events -f
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_sync_locks --ttl 10s --replicas 3 --storage memory
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_sync_tracking --replicas 3
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            kv add cloudapi_aries_unique_events --replicas 3
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add acapy_events --subjects "acapy.>" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2
+
+          rm -f ./nats.creds
+
+      - name: Scale benthos back up
+        run: |
+          kubectl scale deployment benthos -n dev-cloudapi --replicas=1
   k6:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: K6

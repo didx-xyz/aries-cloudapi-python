@@ -136,7 +136,7 @@ async def test_process_endorsement_requests_timeout(
             await endorsement_processor_mock._process_endorsement_requests()
 
     # Assertions
-    mock_sleep.assert_called_once_with(1)
+    mock_sleep.assert_called_once_with(0.1)
 
 
 @pytest.mark.anyio

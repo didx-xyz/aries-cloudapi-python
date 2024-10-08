@@ -75,7 +75,7 @@ class NatsEventsProcessor:
         async def event_generator():
             end_time = time.time() + duration
             while not stop_event.is_set():
-                remaining_time = remaining_time = end_time - time.time()
+                remaining_time = end_time - time.time()
                 logger.trace("remaining_time: {}", remaining_time)
                 if remaining_time <= 0:
                     logger.debug("Timeout reached")

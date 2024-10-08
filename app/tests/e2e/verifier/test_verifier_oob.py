@@ -12,6 +12,7 @@ from app.routes.verifier import AcceptProofRequest, CreateProofRequest
 from app.routes.verifier import router as verifier_router
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.services.verifier.utils import sample_indy_proof_request
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.string import base64_to_json
@@ -122,6 +123,10 @@ async def test_accept_proof_request_oob(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Verifier trust registry OOB connection already tested in test_verifier",
+)
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_accept_proof_request_verifier_oob_connection(
     credential_definition_id: str,

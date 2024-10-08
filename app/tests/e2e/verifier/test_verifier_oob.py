@@ -135,6 +135,8 @@ async def test_accept_proof_request_verifier_oob_connection(
     acme_wallet_id = get_wallet_id_from_async_client(acme_client)
     verifier_actor = await fetch_actor_by_id(acme_wallet_id)
 
+    # Get Alice's wallet_label from RichAsyncClient instance, striping prefix and suffix added by fixtures
+    # Example of RichAsyncClient name format: "Tenant alice_VCPSU - HTTP"
     their_label = alice_member_client.name[7:-7]
 
     assert verifier_actor

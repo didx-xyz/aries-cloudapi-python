@@ -83,7 +83,7 @@ class NatsEventsProcessor:
                     break
 
                 try:
-                    messages = await subscription.fetch(1000, 1)
+                    messages = await subscription.fetch(batch=5, timeout=0.2)
                     for message in messages:
                         if message.headers.get("event_topic") == topic:
                             event = orjson.loads(message.data)
@@ -91,7 +91,7 @@ class NatsEventsProcessor:
                         await message.ack()
                 except TimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.1)
 
         try:
             yield event_generator()

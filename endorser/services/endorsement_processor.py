@@ -85,7 +85,7 @@ class EndorsementProcessor:
         subscription = await self._subscribe()
         while True:
             try:
-                messages = await subscription.fetch(10, 1)
+                messages = await subscription.fetch(batch=1, timeout=60)
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()
@@ -105,7 +105,7 @@ class EndorsementProcessor:
                         await message.ack()
             except TimeoutError:
                 logger.trace("Timeout fetching messages continuing...")
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.1)
             except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error in endorsement processing loop")
                 await asyncio.sleep(2)

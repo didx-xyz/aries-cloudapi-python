@@ -1,10 +1,11 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "CloudAPI-Tenant",
+    "title": "CloudAPI Tenant",
     "description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for\nreal-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish\na WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the\nability to subscribe by topic, or to any wallet in their group.\n\nOur WebSocket endpoints are as follows:\n\n1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.\n\n2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook\nevents for a specific wallet ID.\n\n3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.\n\n4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.\n`connections`, `credentials`, `proofs`, `endorsements`).\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information\nabout the available topics.\n",
     "version": "1.0.0"
   },
+  "servers": [{ "url": "/tenant" }],
   "paths": {
     "/v1/connections/create-invitation": {
       "post": {
@@ -2103,7 +2104,7 @@
       "AcceptProofRequest": {
         "properties": {
           "proof_id": { "type": "string", "title": "Proof Id" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_presentation_spec": { "anyOf": [{ "$ref": "#/components/schemas/IndyPresSpec" }, { "type": "null" }] },
           "dif_presentation_spec": { "anyOf": [{ "$ref": "#/components/schemas/DIFPresSpec" }, { "type": "null" }] },
           "save_exchange_record": {
@@ -2552,7 +2553,7 @@
       },
       "CreateOffer": {
         "properties": {
-          "type": { "allOf": [{ "$ref": "#/components/schemas/CredentialType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/CredentialType", "default": "indy" },
           "indy_credential_detail": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyCredential" }, { "type": "null" }]
           },
@@ -2563,10 +2564,7 @@
             "description": "Whether the credential exchange record should be saved on completion",
             "default": false
           },
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/IssueCredentialProtocolVersion" }],
-            "default": "v2"
-          }
+          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion", "default": "v2" }
         },
         "type": "object",
         "title": "CreateOffer"
@@ -2590,12 +2588,9 @@
       },
       "CreateProofRequest": {
         "properties": {
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/PresentProofProtocolVersion" }],
-            "default": "v2"
-          },
+          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion", "default": "v2" },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
           },
@@ -3073,7 +3068,7 @@
       },
       "IndyCredPrecis": {
         "properties": {
-          "cred_info": { "allOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }], "description": "Credential info" },
+          "cred_info": { "$ref": "#/components/schemas/IndyCredInfo", "description": "Credential info" },
           "interval": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocationInterval" }, { "type": "null" }],
             "description": "Non-revocation interval from presentation request"
@@ -4015,11 +4010,11 @@
       "LDProofVCDetail": {
         "properties": {
           "credential": {
-            "allOf": [{ "$ref": "#/components/schemas/Credential" }],
+            "$ref": "#/components/schemas/Credential",
             "description": "Detail of the JSON-LD Credential to be issued"
           },
           "options": {
-            "allOf": [{ "$ref": "#/components/schemas/LDProofVCOptions" }],
+            "$ref": "#/components/schemas/LDProofVCOptions",
             "description": "Options for specifying how the linked data proof is created."
           },
           "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
@@ -4149,7 +4144,7 @@
           },
           "invi_msg_id": { "type": "string", "title": "Invi Msg Id", "description": "Invitation message identifier" },
           "invitation": {
-            "allOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }],
+            "$ref": "#/components/schemas/InvitationMessage-Output",
             "description": "Out of band invitation message"
           },
           "multi_use": {
@@ -4538,7 +4533,7 @@
       },
       "SendCredential": {
         "properties": {
-          "type": { "allOf": [{ "$ref": "#/components/schemas/CredentialType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/CredentialType", "default": "indy" },
           "indy_credential_detail": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyCredential" }, { "type": "null" }]
           },
@@ -4550,10 +4545,7 @@
             "default": false
           },
           "connection_id": { "type": "string", "title": "Connection Id" },
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/IssueCredentialProtocolVersion" }],
-            "default": "v2"
-          }
+          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion", "default": "v2" }
         },
         "type": "object",
         "required": ["connection_id"],
@@ -4561,12 +4553,9 @@
       },
       "SendProofRequest": {
         "properties": {
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/PresentProofProtocolVersion" }],
-            "default": "v2"
-          },
+          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion", "default": "v2" },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
           },

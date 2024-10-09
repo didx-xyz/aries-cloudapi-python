@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: CloudAPI-Tenant
+  title: CloudAPI Tenant
   description: "
 
     Welcome to the Aries CloudAPI Python project.
@@ -54,6 +54,8 @@ info:
 
     "
   version: 1.0.0
+servers:
+  - url: /tenant
 paths:
   /v1/connections/create-invitation:
     post:
@@ -2956,8 +2958,7 @@ components:
           type: string
           title: Proof Id
         type:
-          allOf:
-            - $ref: "#/components/schemas/ProofRequestType"
+          $ref: "#/components/schemas/ProofRequestType"
           default: indy
         indy_presentation_spec:
           anyOf:
@@ -3605,8 +3606,7 @@ components:
     CreateOffer:
       properties:
         type:
-          allOf:
-            - $ref: "#/components/schemas/CredentialType"
+          $ref: "#/components/schemas/CredentialType"
           default: indy
         indy_credential_detail:
           anyOf:
@@ -3622,8 +3622,7 @@ components:
           description: Whether the credential exchange record should be saved on completion
           default: false
         protocol_version:
-          allOf:
-            - $ref: "#/components/schemas/IssueCredentialProtocolVersion"
+          $ref: "#/components/schemas/IssueCredentialProtocolVersion"
           default: v2
       type: object
       title: CreateOffer
@@ -3661,8 +3660,7 @@ components:
     CreateProofRequest:
       properties:
         protocol_version:
-          allOf:
-            - $ref: "#/components/schemas/PresentProofProtocolVersion"
+          $ref: "#/components/schemas/PresentProofProtocolVersion"
           default: v2
         comment:
           anyOf:
@@ -3670,8 +3668,7 @@ components:
             - type: "null"
           title: Comment
         type:
-          allOf:
-            - $ref: "#/components/schemas/ProofRequestType"
+          $ref: "#/components/schemas/ProofRequestType"
           default: indy
         indy_proof_request:
           anyOf:
@@ -4343,8 +4340,7 @@ components:
     IndyCredPrecis:
       properties:
         cred_info:
-          allOf:
-            - $ref: "#/components/schemas/IndyCredInfo"
+          $ref: "#/components/schemas/IndyCredInfo"
           description: Credential info
         interval:
           anyOf:
@@ -5506,12 +5502,10 @@ components:
     LDProofVCDetail:
       properties:
         credential:
-          allOf:
-            - $ref: "#/components/schemas/Credential"
+          $ref: "#/components/schemas/Credential"
           description: Detail of the JSON-LD Credential to be issued
         options:
-          allOf:
-            - $ref: "#/components/schemas/LDProofVCOptions"
+          $ref: "#/components/schemas/LDProofVCOptions"
           description: Options for specifying how the linked data proof is created.
         additional_properties:
           type: object
@@ -5682,8 +5676,7 @@ components:
           title: Invi Msg Id
           description: Invitation message identifier
         invitation:
-          allOf:
-            - $ref: "#/components/schemas/InvitationMessage-Output"
+          $ref: "#/components/schemas/InvitationMessage-Output"
           description: Out of band invitation message
         multi_use:
           anyOf:
@@ -6186,8 +6179,7 @@ components:
     SendCredential:
       properties:
         type:
-          allOf:
-            - $ref: "#/components/schemas/CredentialType"
+          $ref: "#/components/schemas/CredentialType"
           default: indy
         indy_credential_detail:
           anyOf:
@@ -6206,8 +6198,7 @@ components:
           type: string
           title: Connection Id
         protocol_version:
-          allOf:
-            - $ref: "#/components/schemas/IssueCredentialProtocolVersion"
+          $ref: "#/components/schemas/IssueCredentialProtocolVersion"
           default: v2
       type: object
       required:
@@ -6216,8 +6207,7 @@ components:
     SendProofRequest:
       properties:
         protocol_version:
-          allOf:
-            - $ref: "#/components/schemas/PresentProofProtocolVersion"
+          $ref: "#/components/schemas/PresentProofProtocolVersion"
           default: v2
         comment:
           anyOf:
@@ -6225,8 +6215,7 @@ components:
             - type: "null"
           title: Comment
         type:
-          allOf:
-            - $ref: "#/components/schemas/ProofRequestType"
+          $ref: "#/components/schemas/ProofRequestType"
           default: indy
         indy_proof_request:
           anyOf:

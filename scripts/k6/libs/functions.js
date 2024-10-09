@@ -755,7 +755,7 @@ export function genericWaitForSSEEvent(config) {
     sseTag
   } = config;
 
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}`;
+  const sseUrl = `${__ENV.WAYPOINT_URL}/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}`;
   const headers = {
     "x-api-key": accessToken,
   };

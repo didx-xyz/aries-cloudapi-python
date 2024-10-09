@@ -1158,6 +1158,7 @@ jobs:
             -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
             -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
             -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
+            -e WAYPOINT_URL=${{ secrets.WAYPOINT_URL }} \
             -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
             -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
             --workdir /scripts \

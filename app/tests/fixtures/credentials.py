@@ -240,6 +240,7 @@ async def revoke_alice_creds_and_publish(
                 "auto_publish_on_ledger": auto_publish,
             },
         )
+        await asyncio.sleep(2)
 
     if not auto_publish:
         await faber_client.post(

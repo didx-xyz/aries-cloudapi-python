@@ -10,6 +10,7 @@ omit = [
   "app/tests/*",
   "endorser/tests/*",
   "trustregistry/tests/*",
+  "waypoint/tests/*",
   "webhooks/tests/*",
 ]
 

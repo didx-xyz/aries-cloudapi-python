@@ -33,6 +33,7 @@ async def test_proof_model_failures(
     version: str,
 ):
     acme_connection_id = acme_and_alice_connection.acme_connection_id
+    alice_connection_id = acme_and_alice_connection.alice_connection_id
 
     request_body = V20PresSendRequestRequest(
         auto_remove=False,
@@ -63,6 +64,7 @@ async def test_proof_model_failures(
             client=alice_member_client,
             topic="proofs",
             state="request-received",
+            filter_map={"connection_id": alice_connection_id},
         )
 
         # Get proof exchange id

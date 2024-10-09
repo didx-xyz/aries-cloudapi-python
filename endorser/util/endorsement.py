@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any, Dict, Optional
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
@@ -18,10 +19,7 @@ logger = get_logger(__name__)
 
 
 async def should_accept_endorsement(
-    client: AcaPyClient,
-    endorsement: Endorsement,
-    max_retries: int = 5,
-    retry_delay: float = 1.0,
+    client: AcaPyClient, endorsement: Endorsement
 ) -> bool:
     """Check whether a transaction endorsement request should be endorsed.
 
@@ -32,8 +30,6 @@ async def should_accept_endorsement(
 
     Args:
         endorsement (Endorsement): The endorsement event model
-        max_retries: The max number of times to attempt fetching from the trust registry
-        retry_delay: The time delay in seconds between fetching from the trust registry
 
     Returns:
         bool: Whether the endorsement request should be accepted
@@ -62,15 +58,36 @@ async def should_accept_endorsement(
         bound_logger.warning("Could not extract attachment from transaction.")
         return False
 
+    operation_type = await extract_operation_type(attachment)
+    if not operation_type:
+        return False
+
+    return await check_applicable_operation_type(
+        client, endorsement, operation_type, attachment
+    )
+
+
+async def extract_operation_type(attachment) -> Optional[str]:
     operation = attachment.get("operation")
     if not operation:
         logger.debug("Key `operation` not in attachment: `{}`.", attachment)
-        return False
+        return None
 
     operation_type = operation.get("type")
     if not operation_type:
         logger.debug("Key `type` not in operation attachment.")
-        return False
+        return None
+
+    return operation_type
+
+
+async def check_applicable_operation_type(
+    client: AcaPyClient,
+    endorsement: Endorsement,
+    operation_type: str,
+    attachment: Dict[str, Any],
+) -> bool:
+    bound_logger = logger.bind(body=endorsement)
 
     if is_revocation_def_or_entry(operation_type):
         bound_logger.debug("Endorsement request is for revocation definition or entry.")
@@ -80,14 +97,26 @@ async def should_accept_endorsement(
         bound_logger.debug("Endorsement request is for ATTRIB type.")
         return True
 
-    if not is_credential_definition_transaction(operation_type):
+    if not is_credential_definition_transaction(operation_type, attachment):
         bound_logger.warning("Endorsement request is not for credential definition.")
         return False
 
+    # Here, endorsement request is for credential definition
     did, schema_id = await get_did_and_schema_id_from_cred_def_attachment(
         client, attachment
     )
 
+    return await retry_is_valid_issuer(did, schema_id, endorsement)
+
+
+async def retry_is_valid_issuer(
+    did: str,
+    schema_id: str,
+    endorsement: Endorsement,
+    max_retries: int = 5,
+    retry_delay: float = 1.0,
+) -> bool:
+    bound_logger = logger.bind(body=endorsement)
     for attempt in range(max_retries):
         try:
             valid_issuer = await is_valid_issuer(did, schema_id)
@@ -96,7 +125,7 @@ async def should_accept_endorsement(
                 bound_logger.warning(
                     "Endorsement request with transaction id `{}` is not for did "
                     "and schema registered in the trust registry.",
-                    transaction_id,
+                    endorsement.transaction_id,
                 )
                 return False
 

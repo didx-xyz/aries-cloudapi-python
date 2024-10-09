@@ -2,11 +2,15 @@ FROM ghcr.io/didx-xyz/aries-cloudagent-bbs:py3.12-1.0.0b1
 
 USER root
 
-# Install wallet group id plugin
-RUN pip3 install git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1.0.0b1
+# Install Google Protobuf
+ARG PROTOBUF_VERSION=5.28.1
+RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
-# install redis-events plugin
-RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-08-30#subdirectory=redis_events
+# Install wallet group id plugin
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1.0.0b1
+
+# install nats-events plugin
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-10-09#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
@@ -16,4 +20,4 @@ USER aries
 ENTRYPOINT [ "./startup.sh" ]
 CMD [ "--wallet-type", "askar", "--auto-promote-author-did", \
   "--plugin", "acapy_wallet_groups_plugin", \
-  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config-value", "redis_queue.connection.connection_url=\"redis://172.29.0.101:6377\""]
+  "--plugin", "nats_events.v1_0.nats_queue.events", "--plugin-config-value", "nats_queue.connection.connection_url=\"nats://nats-1:4222\""]

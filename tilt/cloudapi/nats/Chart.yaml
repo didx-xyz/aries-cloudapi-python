@@ -1,0 +1,17 @@
+apiVersion: v2
+name: nats
+description: A small wrapper Helm chart for bitnami/nats
+type: application
+version: "8"
+appVersion: 2.10.20
+
+dependencies:
+  # https://github.com/bitnami/charts/tree/main/bitnami/common
+  - name: common
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 2.x.x
+
+  # https://github.com/bitnami/charts/tree/main/bitnami/nats
+  - name: nats
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 8.x.x

@@ -4,10 +4,14 @@ import sys
 from typing import Any, Dict, List, NoReturn, Optional
 from uuid import uuid4
 
+import nats
 import orjson
+from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
+from nats.js.client import JetStreamContext
 
 from shared import APIRouter
-from shared.constants import GOVERNANCE_LABEL, SET_LOCKS
+from shared.constants import GOVERNANCE_LABEL, NATS_CREDS_FILE, NATS_SERVER, SET_LOCKS
 from shared.log_config import get_logger
 from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,
@@ -43,6 +47,9 @@ class AcaPyEventsProcessor:
         self._pubsub_thread = None
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
+
+        self.nats_client: NATS = None
+        self.jetstream: JetStreamContext = None
 
     def start(self) -> None:
         """
@@ -152,7 +159,7 @@ class AcaPyEventsProcessor:
                     attempts_without_events = 0  # Reset the counter
                     for list_key in batch_event_keys:  # the keys are of LIST type
                         logger.debug("Attempt to process list key: {}", list_key)
-                        self._attempt_process_list_events(list_key)
+                        await self._attempt_process_list_events(list_key)
 
                 else:
                     attempts_without_events += 1
@@ -180,7 +187,7 @@ class AcaPyEventsProcessor:
                 if exception_count >= max_exception_count:
                     raise  # exit inf loop
 
-    def _attempt_process_list_events(self, list_key: str) -> None:
+    async def _attempt_process_list_events(self, list_key: str) -> None:
         """
         Attempts to process a list-based event in Redis, ensuring that only one instance processes
         the event at a time by acquiring a lock.
@@ -212,7 +219,7 @@ class AcaPyEventsProcessor:
             extend_lock_task = None
 
         try:
-            self._process_list_events(list_key)
+            await self._process_list_events(list_key)
         except Exception as e:  # pylint: disable=W0718
             # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
             logger.error("Processing {} raised an exception: {}", list_key, e)
@@ -234,7 +241,7 @@ class AcaPyEventsProcessor:
         else:
             logger.trace("Deleted lock key: {}", lock_key)
 
-    def _process_list_events(self, list_key) -> None:
+    async def _process_list_events(self, list_key) -> None:
         """
         Processes all events in a Redis list until the list is empty. Each event is processed individually,
         and upon successful processing, it's removed from the list.
@@ -250,7 +257,7 @@ class AcaPyEventsProcessor:
                 # Read 0th index of list:
                 event_data = self.redis_service.lindex(list_key)
                 if event_data:
-                    self._process_event(event_data.decode())
+                    await self._process_event(event_data.decode())
 
                     # Cleanup: remove the element from the list and delete the lock if successfully processed
                     if self.redis_service.pop_first_list_element(list_key):
@@ -272,7 +279,7 @@ class AcaPyEventsProcessor:
             logger.exception("Could not process list key {}", list_key)
             raise
 
-    def _process_event(self, event_json: str) -> None:
+    async def _process_event(self, event_json: str) -> None:
         """
         Processes an individual ACA-Py event, transforming it to our CloudAPI format and saving/broadcasting to redis
 
@@ -350,6 +357,7 @@ class AcaPyEventsProcessor:
             self.redis_service.add_endorsement_event(
                 event_json=webhook_event_json, transaction_id=transaction_id
             )
+            await self.publish_endorsement_to_nats(transaction_id, webhook_event_json)
 
         # Check if event is billable, and get operation_type if it is an endorsement event
         is_billable, operation_type = is_applicable_for_billing(
@@ -439,3 +447,48 @@ class AcaPyEventsProcessor:
 
         # No modification:
         return payload
+
+    async def publish_endorsement_to_nats(
+        self, transaction_id: str, event: str
+    ) -> None:
+        """
+        Publishes an endorsement event to the NATS server.
+
+        Args:
+            event: The endorsement event to publish.
+        """
+        logger.debug("Publishing endorsement event to NATS")
+        try:
+            ack = await self.jetstream.publish(
+                f"cloudapi.aries.events.endorser.{transaction_id}", event.encode()
+            )
+            if not ack:
+                logger.error("Error publishing endorsement event to NATS: {}", ack)
+                raise Exception("Error publishing endorsement event to NATS")
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error publishing endorsement event to NATS: {}", e)
+            raise e
+
+    async def start_nats_client(self) -> None:
+        """
+        Starts the NATS client for the endorsement processor.
+        """
+        logger.info("Starting NATS client")
+        try:
+            connect_kwargs = {
+                "servers": [NATS_SERVER],
+            }
+            if NATS_CREDS_FILE:
+                connect_kwargs["user_credentials"] = NATS_CREDS_FILE
+            else:
+                logger.warning(
+                    "No NATS credentials file found, assuming local development"
+                )
+            self.nats_client: NATS = await nats.connect(**connect_kwargs)
+
+        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+            logger.error("Error connecting to NATS server: {}", e)
+            raise e
+        logger.debug("Connected to NATS server")
+
+        self.jetstream: JetStreamContext = self.nats_client.jetstream()

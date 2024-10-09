@@ -13,11 +13,14 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 1);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
+const numIssuers = __ENV.NUM_ISSUERS;
+
+console.log(`Number of Issuers: ${numIssuers}`);
 
 export default function () {
   const walletName = issuerPrefix;
   const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
+  const issuers = bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName, schemaVersion);
   issuers.forEach((issuerData) => {
     console.log(`Wallet ID: ${issuerData.walletId}`);
     console.log(`Credential Definition ID: ${issuerData.credentialDefinitionId}`);

@@ -1,0 +1,30 @@
+load("../utils/Tiltfile", "namespace_create_wrap")
+load("ext://helm_resource", "helm_resource")
+
+
+def setup_metrics_server():
+    namespace = namespace_create_wrap(
+        namespace="monitoring",
+        namespace_labels=["istio-injection: disabled"],
+    )
+
+    # https://github.com/bitnami/charts/tree/main/bitnami/metrics-server
+    helm_resource(
+        name="metrics-server",
+        chart="oci://registry-1.docker.io/bitnamicharts/metrics-server",
+        release_name="metrics-server",
+        namespace=namespace,
+        flags=[
+            "--set",
+            "apiService.create=true",
+            "--set",
+            "extraArgs[0]=--metric-resolution=15s",
+            "--set",
+            "extraArgs[1]=--kubelet-insecure-tls",
+            "--version",
+            "7.2.14",
+            "--wait",
+        ],
+        labels=["30-monitoring"],
+        auto_init=False,
+    )

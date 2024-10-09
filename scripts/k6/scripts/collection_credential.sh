@@ -9,11 +9,12 @@ config() {
     export ITERATIONS=10
     export HOLDER_PREFIX="k6_holder_credential"
     export ISSUER_PREFIX="k6_issuer_credential"
+    export NUM_ISSUERS=2
 }
 
 init() {
   log "Initializing..."
-  xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
+  xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1q -e VUS=1
   run_test ./scenarios/create-holders.js
   run_test ./scenarios/create-invitations.js
 }
@@ -26,7 +27,7 @@ scenario() {
 cleanup() {
   log "Cleaning up..."
   xk6 run ./scenarios/delete-holders.js
-  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS=1 -e VUS=1
+  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {

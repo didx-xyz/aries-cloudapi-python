@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "common.names.fullname" . }}-setup
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.nats.commonLabels "context" $ ) | nindent 4 }}
+  annotations:
+    {{- with .Values.annotations }}
+    {{- tpl (toYaml .) $ | nindent 4 }}
+    {{- end }}
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "99"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.nats.podAnnotations }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: {{ default "Never" .Values.postInstall.restartPolicy }}
+      initContainers:
+        - name: wait-for-nats
+          image: busybox
+          command:
+            - sh
+            - -c
+            - while ! nc -z {{ template "common.names.fullname" . }} {{ default 4222 .Values.nats.service.ports.client }}; do sleep 1; done
+      containers:
+        - name: natscli
+          image: bitnami/natscli:{{ default "latest" .Values.postInstall.cli.version }}
+          command:
+            - sh
+            - -c
+            - |
+              {{- range $kv := .Values.postInstall.kvs }}
+              nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} \
+                kv add {{ $kv }} --replicas={{ $.Values.nats.replicaCount }}
+              {{- end }}
+
+              {{- range $stream, $config := .Values.postInstall.streams }}
+              nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} stream add {{ $stream }} \
+                  --subjects {{ join "," $config.subjects | quote }} \
+                  {{- if $config.defaults }}
+                  --defaults \
+                  {{- end }}
+                  --storage {{ $config.storage }} \
+                  --replicas={{ $.Values.nats.replicaCount }}
+              {{- end }}

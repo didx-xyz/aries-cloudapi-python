@@ -1,0 +1,38 @@
+# https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
+fullnameOverride: pgadmin
+
+env:
+  email: pgadmin@example.com
+  password: pgadmin
+
+serverDefinitions:
+  enabled: true
+  servers:
+    postgres:
+      Name: postgres
+      Host: cloudapi-pgpool
+      Port: 5432
+      Username: postgres
+      MaintenanceDB: postgres
+      Group: Servers
+      ConnectionParameters:
+        sslmode: prefer
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: pgadmin.127.0.0.1.nip.io
+      paths:
+        - path: /
+          pathType: Prefix
+
+persistentVolume:
+  enabled: false
+
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+
+readinessProbe:
+  initialDelaySeconds: 1
+  periodSeconds: 10

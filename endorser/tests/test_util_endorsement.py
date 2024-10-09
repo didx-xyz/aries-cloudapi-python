@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import MagicMock
 
 import pytest
@@ -267,15 +268,34 @@ async def test_should_accept_endorsement_retries_on_http_exception(
         transaction_mock
     )
 
-    # Use the mocker to mock is_valid_issuer function behaviour - first exception, then True
+    # Mock is_valid_issuer function behaviour - first exception, then True
     mock_is_valid_issuer = mocker.patch(
         "endorser.util.endorsement.is_valid_issuer",
         side_effect=[HTTPException(status_code=500), True],
     )
 
-    result = await should_accept_endorsement(
-        mock_acapy_client, valid_endorsement, retry_delay=0.01
+    # Mock retry_is_valid_issuer to use a shorter retry delay
+    async def mock_retry_is_valid_issuer(
+        did, schema_id, _, max_retries=5, retry_delay=0.01
+    ):
+        for attempt in range(max_retries):
+            try:
+                valid_issuer = await mock_is_valid_issuer(did, schema_id)
+                if valid_issuer:
+                    return True
+                return False
+            except HTTPException:
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay)
+                else:
+                    return False
+
+    mocker.patch(
+        "endorser.util.endorsement.retry_is_valid_issuer",
+        side_effect=mock_retry_is_valid_issuer,
     )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
     # Assertions
     assert (
@@ -314,15 +334,34 @@ async def test_should_accept_endorsement_fails_after_max_retries(
         transaction_mock
     )
 
-    # Use the mocker to mock is_valid_issuer function behaviour - first exception, then True
+    # Mock is_valid_issuer function behaviour - always exception
     mock_is_valid_issuer = mocker.patch(
         "endorser.util.endorsement.is_valid_issuer",
         side_effect=HTTPException(status_code=500),
     )
 
-    result = await should_accept_endorsement(
-        mock_acapy_client, valid_endorsement, retry_delay=0.01
+    # Mock retry_is_valid_issuer to use a shorter retry delay
+    async def mock_retry_is_valid_issuer(
+        did, schema_id, _, max_retries=5, retry_delay=0.01
+    ):
+        for attempt in range(max_retries):
+            try:
+                valid_issuer = await mock_is_valid_issuer(did, schema_id)
+                if valid_issuer:
+                    return True
+                return False
+            except HTTPException:
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay)
+                else:
+                    return False
+
+    mocker.patch(
+        "endorser.util.endorsement.retry_is_valid_issuer",
+        side_effect=mock_retry_is_valid_issuer,
     )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
     # Assertions
     assert (

@@ -1,0 +1,148 @@
+load("ext://color", "color")
+load("ext://namespace", "namespace_inject", "namespace_create")
+load("ext://uibutton", "cmd_button", "location", "text_input")
+
+
+###
+# Namespace Manipulation
+###
+def namespace_create_wrap(
+    namespace, allow_duplicates=False, namespace_labels=[], resource_labels=[]
+):
+    ns = namespace_create(
+        name=namespace,
+        allow_duplicates=allow_duplicates,
+        annotations=[],
+        labels=namespace_labels,
+    )
+
+    k8s_resource(
+        new_name=namespace + "-ns",
+        objects=[namespace + ":namespace"],
+        labels=["20-namespaces"] + resource_labels,
+    )
+
+    return namespace
+
+
+def namespace_patch(x, ns):
+    """This is a wrapper of the namespace_inject function from the default tilt extension (ext://namespace) for convenience.
+     It useTakes K8s yaml, sets its namespace to `ns`, and returns it as a blob.
+
+    This modifies the yaml in two ways:
+    1. Sets .metadata.namespace to `ns`
+    2. Sets ..template.metadata.namespace to `ns`
+       This ensures the namespace in, e.g., Deployment Pod Template Specs is
+       set, but might have false positives if you have a CRD with some other
+       element named 'template'.
+
+    Args:
+      x: K8s yaml. Either a filename (string) or the yaml itself (Blob)
+      ns: The namespace to set the K8s objects to.
+
+    Returns:
+      Blob containing the K8s objects as yaml, with namespaces set to `ns`.
+    """
+    return namespace_inject(x, ns)
+
+
+###
+# String Manipulation
+###
+def truncate_from_char(original, char):
+    index = original.find(char)
+    if index >= 0:
+        return original[:index]
+    return original
+
+
+###
+# Tilt CLI Functions
+###
+# Enable all resources
+def enable_all_resources():
+    print("Enabling all resources...")
+    local("tilt enable --all")
+    print("Enabled all resources. By Order!!!")
+
+
+# Disable all resources
+def disable_all_resources():
+    print("Diabling all resources...")
+    local("tilt disable --all")
+    print("Disabled all resources. By Order!!!")
+
+
+###
+# Run a command and return the output as a String
+###
+def run_command(cmd, dir=os.path.dirname(__file__)):
+    full_cmd = cmd + " 2>&1 || true"
+    result = local(full_cmd, dir=dir, quiet=True, echo_off=True)
+    return str(result).strip()
+
+
+###
+# Generate Ingress Domain based on Tailscale IP or Primary Network Interface IP
+###
+def generate_ingress_domain(expose):
+    if not expose:
+        print(
+            color.yellow(
+                "Expose flag not set. Using '127.0.0.1.nip.io' as Ingress Domain."
+            )
+        )
+        return "127.0.0.1.nip.io"
+
+    print(color.yellow("Detecting Host IP and setting Ingress Domain Name..."))
+
+    def get_primary_ip():
+        os_name = os.name
+        if os_name == "posix":
+            # Attempt to get IP for macOS
+            interfaces = run_command(
+                "networksetup -listallhardwareports | grep -A 1 'Hardware Port: Wi-Fi' | grep 'Device:' | awk '{print $2}'"
+            ).split()
+            for interface in interfaces:
+                ip = run_command("ipconfig getifaddr " + interface)
+                if ip:
+                    return ip
+
+            # If macOS method fails, try Linux method
+            ip = run_command("ip route get 1 | awk '{print $7;exit}'")
+            if ip:
+                return ip
+
+        print(color.yellow("Warning: Failed to detect IP address."))
+        return None
+
+    def parse_tailscale_ip(output):
+        # Split the output into lines and look for an IP address
+        lines = output.split("\n")
+        for line in lines:
+            parts = line.split()
+            if len(parts) > 0 and parts[0].startswith("100."):
+                return parts[0]
+        return None
+
+    # Check if Tailscale CLI is installed
+    tailscale_installed = run_command("which tailscale")
+    if tailscale_installed and "not found" not in tailscale_installed:
+        # Check if Tailscale is running
+        tailscale_status = run_command("tailscale status")
+        if "failed to connect to local Tailscale service" not in tailscale_status:
+            # Tailscale is running, get the IP address
+            tailscale_ip = parse_tailscale_ip(tailscale_status)
+            if tailscale_ip:
+                return tailscale_ip + ".nip.io"
+        else:
+            print(color.yellow("Warning: Tailscale is installed but not running."))
+
+    # Fallback to primary network interface IP
+    primary_ip = get_primary_ip()
+    if primary_ip:
+        return primary_ip + ".nip.io"
+
+    # Default to localhost if all else fails
+    print(color.yellow("Warning: Failed to detect IP address. Using localhost."))
+    return "127.0.0.1.nip.io"

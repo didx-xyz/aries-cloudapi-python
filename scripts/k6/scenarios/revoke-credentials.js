@@ -6,18 +6,15 @@ import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   checkRevoked,
-  revokeCredentialAutoPublish,
+  getWalletIndex,
+  revokeCredentialAutoPublish
 } from "../libs/functions.js";
-import { bootstrapIssuer } from "../libs/setup.js";
 
 const inputFilepath = "../output/create-credentials.json";
 const data = open(inputFilepath, "r");
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 const testFunctionReqs = new Counter("test_function_reqs");
 
 export const options = {
@@ -46,34 +43,17 @@ export const options = {
 };
 
 export function setup() {
-  const ids = data.trim().split("\n").map(JSON.parse);
+  const tenants = data.trim().split("\n").map(JSON.parse);
   const bearerToken = getBearerToken();
-  const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
-
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
-  return { bearerToken, ids, issuers }; // eslint-disable-line no-eval
-}
-
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
+  return { bearerToken, tenants }; // eslint-disable-line no-eval
 }
 
 export default function (data) {
-  const issuers = data.issuers;
-  const ids = data.ids;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
-  const id = ids[walletIndex];
+  const tenants = data.tenants;
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
+  const wallet = tenants[walletIndex];
 
-  const issuerIndex = 0;
-  const issuer = issuers[issuerIndex];
-  const revokeCredentialResponse = revokeCredentialAutoPublish(issuer.accessToken, id.credential_exchange_id);
+  const revokeCredentialResponse = revokeCredentialAutoPublish(wallet.issuer_access_token, wallet.credential_exchange_id);
   check(revokeCredentialResponse, {
     "Credential revoked successfully": (r) => {
       if (r.status !== 200) {
@@ -82,7 +62,7 @@ export default function (data) {
       return true;
     },
   });
-  const checkRevokedCredentialResponse = checkRevoked(issuer.accessToken, id.credential_exchange_id);
+  const checkRevokedCredentialResponse = checkRevoked(wallet.issuer_access_token, wallet.credential_exchange_id);
   check(checkRevokedCredentialResponse, {
     "Credential state is revoked": (r) => {
       if (r.status !== 200) {

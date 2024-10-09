@@ -3,7 +3,7 @@ from typing import AsyncGenerator, Optional
 from fastapi import Request
 from httpx import HTTPError, Response, Timeout
 
-from shared import WEBHOOKS_URL
+from shared import WAYPOINT_URL, WEBHOOKS_URL
 from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient
@@ -260,7 +260,7 @@ async def sse_subscribe_event_with_field_and_state(
             )
             async with client.stream(
                 "GET",
-                f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
+                f"{WAYPOINT_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
                 params=params,
             ) as response:
                 async for line in yield_lines_with_disconnect_check(request, response):

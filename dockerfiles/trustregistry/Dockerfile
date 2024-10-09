@@ -1,16 +1,20 @@
 FROM python:3.12-slim
 
-COPY trustregistry /trustregistry
-COPY shared /shared
-
 WORKDIR /trustregistry
 
-RUN pip install "poetry==1.8.3"
+COPY trustregistry/poetry.lock /trustregistry
+COPY trustregistry/pyproject.toml /trustregistry
+
+ARG POETRY_VERSION=1.8.3
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 # Set Poetry's cache and virtualenvs path to a writable directory
 ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry
 RUN poetry config cache-dir $POETRY_CACHE_DIR && \
   poetry config virtualenvs.path $POETRY_CACHE_DIR/virtualenvs && \
   poetry install
+
+COPY trustregistry /trustregistry
+COPY shared /shared
 
 EXPOSE 8001
 

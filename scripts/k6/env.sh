@@ -13,3 +13,4 @@ export HOLDER_PREFIX=k6_holder
 export SCHEMA_PREFIX=k6_schema
 export SCHEMA_NAME="proof_of_person"
 export SCHEMA_VERSION="0.1.0"
+export NUM_ISSUERS=2

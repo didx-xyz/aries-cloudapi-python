@@ -3,13 +3,13 @@ from typing import Any, Dict
 
 from httpx import Timeout
 
-from shared import WEBHOOKS_URL
+from shared import WAYPOINT_URL, WEBHOOKS_URL
 from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 base_url = f"{WEBHOOKS_URL}/sse"
-
+waypoint_base_url = f"{WAYPOINT_URL}/sse"
 DEFAULT_LISTENER_TIMEOUT = 30  # seconds
 
 
@@ -65,7 +65,7 @@ class SseListener:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
-        url = f"{base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
+        url = f"{waypoint_base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
 
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:

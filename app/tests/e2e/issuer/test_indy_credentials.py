@@ -201,6 +201,9 @@ async def test_send_credential_request(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
+        filter_map={
+            "thread_id": thread_id,
+        },
     )
 
     await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
@@ -222,11 +225,17 @@ async def test_send_credential_request(
             client=alice_member_client,
             topic="credentials",
             state="request-sent",
+            filter_map={
+                "thread_id": thread_id,
+            },
         ),
         check_webhook_state(
             client=faber_client,
             topic="credentials",
             state="request-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
         ),
     )
     assert all(result), "An expected webhook event was not returned"

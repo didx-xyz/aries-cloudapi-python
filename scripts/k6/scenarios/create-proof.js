@@ -1,25 +1,21 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
   acceptProofRequest,
+  genericWaitForSSEEvent,
   getProof,
   getProofIdByThreadId,
   getProofIdCredentials,
-  sendProofRequest,
-  waitForSSEEventReceived,
-  waitForSSEProofDone,
+  getWalletIndex,
+  sendProofRequest
 } from "../libs/functions.js";
-import { bootstrapIssuer } from "../libs/setup.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const issuerPrefix = __ENV.ISSUER_PREFIX;
-const schemaName = __ENV.SCHEMA_NAME;
-const schemaVersion = __ENV.SCHEMA_VERSION;
 
 export const options = {
   scenarios: {
@@ -55,52 +51,35 @@ const data = open(inputFilepath, "r");
 const testFunctionReqs = new Counter("test_function_reqs");
 // const mainIterationDuration = new Trend('main_iteration_duration');
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 export function setup() {
   const bearerToken = getBearerToken();
 
-  const holders = data.trim().split("\n").map(JSON.parse);
+  let tenants = data.trim().split("\n").map(JSON.parse);
+  tenants = shuffleArray(tenants);
 
-  const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(walletName, credDefTag, schemaName, schemaVersion);
-
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
-
-  return { bearerToken, issuers, holders };
-}
-
-const iterationsPerVU = options.scenarios.default.iterations;
-// Helper function to calculate the wallet index based on VU and iteration
-function getWalletIndex(vu, iter) {
-  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
-  return walletIndex;
-}
-
-//random number between 0 and 100 (including 0 and 100 as options)
-function getRandomInt() {
-  return Math.floor(Math.random() * 101);
+  return { bearerToken, tenants };
 }
 
 export default function (data) {
-  // const start = Date.now();
   const bearerToken = data.bearerToken;
-  const issuers = data.issuers;
-  const holders = data.holders;
-  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
-  const wallet = holders[walletIndex];
+  const tenants = data.tenants;
+  const walletIndex = getWalletIndex(__VU, __ITER, iterations);
+  const wallet = tenants[walletIndex];
 
-  const issuerIndex = 0;
-  const issuer = issuers[issuerIndex];
-
-  // console.log(`isser.accessToken: ${issuer.accessToken}`);
-  // console.log(`issuer.credentialDefinitionId: ${issuer.credentialDefinitionId}`);
   // console.log(`wallet.issuer_connection_id: ${wallet.issuer_connection_id}`);
   // const sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+  // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
-    sendProofRequestResponse = sendProofRequest(issuer.accessToken, wallet.issuer_connection_id);
+    sendProofRequestResponse = sendProofRequest(wallet.issuer_access_token, wallet.issuer_connection_id);
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     sendProofRequestResponse = { status: 500, response: error.message };
@@ -116,7 +95,17 @@ export default function (data) {
 
   const { thread_id: threadId } = JSON.parse(sendProofRequestResponse.body);
 
-  const waitForSSEEventReceivedResponse = waitForSSEEventReceived(wallet.access_token, wallet.wallet_id, threadId);
+  const waitForSSEEventReceivedResponse = genericWaitForSSEEvent({
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
+    threadId: threadId,
+    eventType: 'request-received',
+    sseUrlPath: 'proofs/thread_id',
+    topic: 'proofs',
+    expectedState: 'request-received',
+    maxDuration: 10,
+    sseTag: 'proof_request_received'
+  });
   check(waitForSSEEventReceivedResponse, {
     "SSE Event received successfully: request-recevied": (r) => {
       if (!r) {
@@ -128,6 +117,7 @@ export default function (data) {
 
   // TODO: return object and add check for the response
   const proofId = getProofIdByThreadId(wallet.access_token, threadId);
+  // console.log(`Proof ID: ${proofId}`);
   const referent = getProofIdCredentials(wallet.access_token, proofId);
 
   const acceptProofResponse = acceptProofRequest(wallet.access_token, proofId, referent);
@@ -140,7 +130,18 @@ export default function (data) {
     },
   });
 
-  const waitForSSEProofDoneRequest = waitForSSEProofDone(issuer.accessToken, issuer.walletId, threadId);
+  const waitForSSEProofDoneRequest = genericWaitForSSEEvent({
+    accessToken: wallet.issuer_access_token,
+    walletId: wallet.issuer_wallet_id,
+    threadId: threadId,
+    eventType: 'done',
+    sseUrlPath: 'proofs/thread_id',
+    topic: 'proofs',
+    expectedState: 'done',
+    maxDuration: 10,
+    sseTag: 'proof_done'
+  });
+
   check(waitForSSEProofDoneRequest, {
     "SSE Proof Request state: done": (r) => {
       if (!r) {
@@ -153,7 +154,7 @@ export default function (data) {
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;
   try {
-    getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId);
+    getProofResponse = getProof(wallet.issuer_access_token, wallet.issuer_connection_id, threadId);
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     getProofResponse = { status: 500, response: error.message };

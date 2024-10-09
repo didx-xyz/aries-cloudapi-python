@@ -1,18 +1,23 @@
 # Trust Registry
 
-As a client, you can retrieve the trust registry but not alter it. This design is intentional as only administrative actions should modify the trust registry, and such actions are only possible with an admin role.
+As a client, you can retrieve the trust registry but not alter it. This design is intentional as only administrative
+actions should modify the trust registry, and such actions are only possible with an admin role.
 
->NOTE: The Trust Registry GET API endpoint is not protected and should not be publicly accessible.
+> NOTE: The Trust Registry GET API endpoint is not protected and should not be publicly accessible.
 
-The [Trust Registry](http://localhost:8001/docs) serves as a gatekeeper interface for interactions, maintaining the truth states about actors, their respective roles as issuers and/or verifiers, and schemas.
+The [Trust Registry](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs) serves
+as a gatekeeper interface for interactions, maintaining the truth states about
+actors, their respective roles as issuers and/or verifiers, and schemas.
 
-The [Swagger docs](http://localhost:8001/docs) are divided into three main sections:
+The [Swagger docs](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs) are
+divided into three main sections:
 
 - Actor - For actor information and actions on the ledger
 - Schema - For schema information and actions on the ledger
 - Default - To retrieve all information from the registry
 
-The trust registry provides access to this data via `actors` and `schemas` keys, which can be found in the JSON blob retrieved from requesting the endpoint. Their structures are as follows:
+The trust registry provides access to this data via `actors` and `schemas` keys, which can be found in the JSON blob
+retrieved from requesting the endpoint. Their structures are as follows:
 
 ```json
 {
@@ -48,4 +53,6 @@ And,
 
 where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name, and version respectively.
 
->**_NOTE_**: In a production environment, this should not be exposed to the internet or interacted with directly. It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.
+> **_NOTE_**: In a production environment, this should not be exposed to the internet or interacted with directly.
+> It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
+> registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.

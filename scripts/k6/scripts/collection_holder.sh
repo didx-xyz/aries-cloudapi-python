@@ -5,8 +5,8 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=5
-    export ITERATIONS=5
+    export VUS=1
+    export ITERATIONS=1000
     export HOLDER_PREFIX="k6_holder_holder"
 }
 

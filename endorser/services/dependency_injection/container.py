@@ -5,11 +5,7 @@ from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
 from endorser.services.endorsement_processor import EndorsementProcessor
-from shared.services.redis_service import (
-    RedisService,
-    init_redis_cluster_pool,
-    parse_redis_nodes,
-)
+from shared.services.nats_jetstream import init_nats_client
 
 
 class Container(containers.DeclarativeContainer):
@@ -20,25 +16,10 @@ class Container(containers.DeclarativeContainer):
     the Redis and EndorsementProcessor services
     """
 
-    redis_nodes = os.getenv("REDIS_NODES", "localhost:6379")
-    nodes: List[ClusterNode] = parse_redis_nodes(redis_nodes)
-
-    # Resource provider for the Redis connection pool
-    redis_cluster = providers.Resource(
-        init_redis_cluster_pool,
-        nodes=nodes,
-        logger_name="endorser.redis",
-    )
-
-    # Singleton provider for the WebhooksRedisService
-    redis_service = providers.Singleton(
-        RedisService,
-        redis=redis_cluster,
-        logger_name="endorser.redis",
-    )
+    jetstream = providers.Resource(init_nats_client)
 
     # Singleton provider for the ACA-Py Redis events processor
     endorsement_processor = providers.Singleton(
         EndorsementProcessor,
-        redis_service=redis_service,
+        jetstream=jetstream,
     )

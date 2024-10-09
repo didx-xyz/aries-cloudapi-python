@@ -1,0 +1,88 @@
+# https://mise.jdx.dev
+[tools]
+"go:github.com/nats-io/natscli/nats" = "0.1"
+go = "1.23"
+helm = "3"
+helmfile = "0.168"
+istioctl = "1.23"
+kind = "0.24"
+kubectl = "1.31"
+poetry = { version = "1.8", pyproject = "pyproject.toml" }
+pre-commit = "3.8"
+python = "3.12"
+tilt = "0.33"
+usage = "latest"
+
+[settings]
+experimental = true
+# Prevent Mise from running multiple jobs at the same time.
+# Prevents `poetry install` from running in parallel which
+#   results in multiple threads trying to write to the same file.
+jobs = 1
+# Install precompiled python binary
+python_compile = false
+
+[env]
+# Use Python/Mise managed virtual environment
+POETRY_VIRTUALENVS_CREATE = "false"
+# Setup Python Virtual Environment
+_.python.venv = { path = ".venv", create = true }
+
+[tasks."poetry:install:all"]
+description = "Poetry Install dependencies for all submodules"
+depends = ["poetry:install:*"]
+
+[tasks."poetry:update:all"]
+description = "Poetry Update lockfiles for all submodules"
+depends = ["poetry:update:*"]
+
+[tasks."tilt:up"]
+description = "Start Tilt"
+depends = ["kind:create"]
+run = "tilt up"
+
+[tasks."tilt:up:expose"]
+description = "Start Tilt with `--expose` flag"
+depends = ["kind:create"]
+run = "tilt up -- --expose"
+
+[tasks."tilt:down"]
+description = "Tilt Down"
+run = "tilt down"
+
+[tasks."tilt:down:destroy"]
+description = "Tilt Down Destroy"
+run = "tilt down -- --destroy"
+
+[tasks."tilt:down:destroy:all"]
+description = "Tilt Down Destroy everything, including Docker Cache"
+run = "tilt down -- --destroy-all"
+
+[tasks."tilt:ci"]
+description = "Start Tilt in CI mode"
+depends = ["kind:create"]
+run = "tilt ci -- --no-build"
+
+[tasks."kind:destroy:all"]
+description = "Destroy Kind and delete Docker Cache"
+depends = ["kind:destroy"]
+run = """
+docker rm -f kind-registry
+docker rm -f cache-docker
+rm -rf tilt/docker
+"""
+
+[tasks.tests]
+description = "Run all tests"
+depends = ["poetry:install:all"]
+run = """
+#!/bin/bash
+cp .env.example .env
+source .env
+poetry run pytest . --ignore ./tilt
+"""
+
+[tasks."tests:unit"]
+description = "Run unit tests"
+depends = ["poetry:install:all"]
+run = "poetry run pytest app --ignore=app/tests/e2e"

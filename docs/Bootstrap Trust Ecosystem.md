@@ -8,7 +8,7 @@
 
 ## 2. Generate a New DID
 
-1. Access the API through [CloudAPI-Governance](http://localhost:8200/docs)
+1. Access the API through [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 2. Authenticate with `governance.`+`APIKEY` role
 3. Generate a new DID with a `POST` to the following API endpoint: `/v1/wallet/dids/`
 4. An example successful response to generate a DID would look like this:
@@ -41,7 +41,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 ## 4. Accept Transaction Author Agreement
 
-1. Connect to AcaPy [Governance Agent API](http://localhost:3021/api/doc)
+1. Connect to AcaPy [Governance Agent API](http://governance-agent.cloudapi.127.0.0.1.nip.io/api/doc)
 2. Authenticate by setting the `x-api-key` header with the API Key of the Governance Agent via Swagger/Postman/Insomnia
 3. Get the TAA from the following endpoint `/ledger/taa`. An example response would be like this:
 
@@ -90,10 +90,11 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 ## 5. Set Public DID
 
-1. Go to the [CloudAPI-Governance](http://localhost:8200/docs)
+1. Go to the [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 2. Execute the PUT endpoint to set a Public DID: `/v1/wallet/dids/public?did=`
 3. Use the DID that you anchored to the ledger in step 3
-4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the Governance Agent to confirm that the public DID is now set:
+4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the
+   Governance Agent to confirm that the public DID is now set:
 
 ```json
 {

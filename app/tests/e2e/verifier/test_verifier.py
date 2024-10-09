@@ -55,7 +55,7 @@ async def test_send_proof_request(
         thread_id = send_proof_response["thread_id"]
         assert thread_id
 
-        alice_proof_event = await check_webhook_state(
+        await check_webhook_state(
             client=alice_member_client,
             topic="proofs",
             state="request-received",
@@ -63,7 +63,6 @@ async def test_send_proof_request(
                 "thread_id": thread_id,
             },
         )
-        assert alice_proof_event["protocol_version"] == "v2"
 
     finally:
         # Clean up:
@@ -98,8 +97,6 @@ async def test_accept_proof_request(
         },
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
-
-    assert send_proof_response["protocol_version"] == "v2"
 
     acme_proof_id = send_proof_response["proof_id"]
     thread_id = send_proof_response["thread_id"]
@@ -188,7 +185,6 @@ async def test_reject_proof_request(
             "thread_id": thread_id,
         },
     )
-    assert alice_exchange["protocol_version"] == "v2"
 
     reject_proof_request = RejectProofRequest(
         proof_id=alice_exchange["proof_id"],
@@ -270,7 +266,6 @@ async def test_get_proof_and_get_proofs(
     assert "updated_at" in result
     assert "presentation" in result
     assert "presentation_request" in result
-    assert result["protocol_version"] == "v2"
 
     await asyncio.sleep(0.3)  # allow moment for alice records to update
 
@@ -448,7 +443,6 @@ async def test_get_credentials_for_request(
                 "thread_id": thread_id,
             },
         )
-        assert alice_exchange["protocol_version"] == "v2"
 
         proof_id = alice_exchange["proof_id"]
 

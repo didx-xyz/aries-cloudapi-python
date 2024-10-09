@@ -46,7 +46,6 @@ pres_exchange = PresentationExchange(
     presentation_request=sample_indy_proof_request(),
     role="prover",
     state="proposal-sent",
-    protocol_version="v2",
     updated_at=None,
     verified="false",
 )

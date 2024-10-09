@@ -37,7 +37,6 @@ async def test_send_credential_oob(
     data = response.json()
     assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -104,7 +103,6 @@ async def test_send_credential(
     data = response.json()
     assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -145,7 +143,6 @@ async def test_create_offer(
     data = response.json()
     assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -186,7 +183,6 @@ async def test_send_credential_request(
     )
     credential_exchange = response.json()
     thread_id = credential_exchange["thread_id"]
-    assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
         client=faber_client,

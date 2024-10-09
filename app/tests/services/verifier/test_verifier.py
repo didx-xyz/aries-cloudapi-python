@@ -24,7 +24,6 @@ presentation_exchange_record_2 = PresentationExchange(
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version="v2",
     presentation={},
     role="prover",
     state="presentation-sent",

@@ -33,7 +33,6 @@ async def test_revoke_many_credentials(
 
     # Do proof request
     request_body = {
-        "protocol_version": "v2",
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {
@@ -147,7 +146,6 @@ async def issue_many_creds(
     num_to_issue = 75
     for i in range(num_to_issue):  # Adjust the number as needed
         credential = {
-            "protocol_version": "v2",
             "connection_id": faber_conn_id,
             "save_exchange_record": True,
             "indy_credential_detail": {

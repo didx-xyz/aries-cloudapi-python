@@ -40,7 +40,6 @@ async def test_accept_proof_request_oob(
         json=create_proof_request.model_dump(by_alias=True),
     )
     bob_exchange = create_proof_response.json()
-    assert bob_exchange["protocol_version"] == "v2"
     thread_id = bob_exchange["thread_id"]
 
     create_oob_invitation_request = CreateOobInvitation(

@@ -104,7 +104,6 @@ async def test_send_jsonld_credential_sov(
         thread_id = data["thread_id"]
         assert_that(data).contains("credential_exchange_id")
         assert_that(data).has_state("offer-sent")
-        assert_that(data).has_protocol_version("v2")
 
         assert await check_webhook_state(
             client=alice_member_client,
@@ -169,7 +168,6 @@ async def test_send_jsonld_oob_sov(
     try:
         assert_that(data).contains("credential_exchange_id")
         assert_that(data).has_state("offer-sent")
-        assert_that(data).has_protocol_version("v2")
 
         invitation_response = await faber_client.post(
             OOB_BASE_PATH + "/create-invitation",
@@ -232,7 +230,6 @@ async def test_send_jsonld_request_sov(
     )
     credential_exchange = response.json()
     thread_id = credential_exchange["thread_id"]
-    assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
         client=faber_client,
@@ -311,7 +308,6 @@ async def test_issue_jsonld_sov(
     credential_exchange = response.json()
     thread_id = credential_exchange["thread_id"]
     faber_cred_ex_id = credential_exchange["credential_exchange_id"]
-    assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
         client=faber_client,

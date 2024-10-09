@@ -5,8 +5,6 @@ from aries_cloudcontroller import (
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     OobRecord,
-    V10CredentialExchange,
-    V10PresentationExchange,
     V20CredExRecord,
     V20PresExRecord,
 )
@@ -14,7 +12,6 @@ from aries_cloudcontroller import (
 from shared.models.connection_record import Connection, conn_record_to_connection
 from shared.models.credential_exchange import (
     CredentialExchange,
-    credential_record_to_model_v1,
     credential_record_to_model_v2,
 )
 from shared.models.endorsement import Endorsement
@@ -71,12 +68,7 @@ def to_problem_report_model(event: AcaPyWebhookEvent) -> ProblemReport:
 
 
 def to_credential_model(event: AcaPyWebhookEvent) -> CredentialExchange:
-    # v1
-    if event.acapy_topic == "issue_credential":
-        cred_exchange = V10CredentialExchange(**event.payload)
-        cred_model = credential_record_to_model_v1(cred_exchange)
-    # v2
-    elif event.acapy_topic == "issue_credential_v2_0":
+    if event.acapy_topic == "issue_credential_v2_0":
         cred_exchange = V20CredExRecord(**event.payload)
         cred_model = credential_record_to_model_v2(cred_exchange)
     else:
@@ -100,12 +92,7 @@ def to_credential_ld_model(event: AcaPyWebhookEvent) -> CredExRecordLDProof:
 
 
 def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
-    # v1
-    if event.acapy_topic == "present_proof":
-        presentation_exchange = V10PresentationExchange(**event.payload)
-        presentation_exchange = presentation_record_to_model(presentation_exchange)
-    # v2
-    elif event.acapy_topic == "present_proof_v2_0":
+    if event.acapy_topic == "present_proof_v2_0":
         presentation_exchange = V20PresExRecord(**event.payload)
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     else:

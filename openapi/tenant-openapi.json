@@ -1,10 +1,11 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "CloudAPI-Tenant",
+    "title": "CloudAPI Tenant",
     "description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for\nreal-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish\na WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the\nability to subscribe by topic, or to any wallet in their group.\n\nOur WebSocket endpoints are as follows:\n\n1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.\n\n2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook\nevents for a specific wallet ID.\n\n3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.\n\n4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.\n`connections`, `credentials`, `proofs`, `endorsements`).\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information\nabout the available topics.\n",
     "version": "1.0.0"
   },
+  "servers": [{ "url": "/tenant" }],
   "paths": {
     "/v1/connections/create-invitation": {
       "post": {
@@ -467,7 +468,7 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Send Holder a Credential",
-        "description": "Create and send a credential, automating the issuer-side flow\n---\nNB: Only a tenant with the issuer role can send credentials.\n\nWhen creating a credential, the credential type must be one of `indy` or `ld_proof`.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"connection_id\": \"string\", <-- The issuer's reference to the connection they want to submit the credential to.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nSetting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.\nThe default behaviour is to only save exchange records while they are in pending state.\n\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: SendCredential\n        The payload for sending a credential\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
+        "description": "Create and send a credential, automating the issuer-side flow\n---\nNB: Only a tenant with the issuer role can send credentials.\n\nWhen creating a credential, the credential type must be one of `indy` or `ld_proof`.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"connection_id\": \"string\", <-- The issuer's reference to the connection they want to submit the credential to.\n}\n```\nSetting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.\nThe default behaviour is to only save exchange records while they are in pending state.\n\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: SendCredential\n        The payload for sending a credential\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
         "operationId": "send_credential_v1_issuer_credentials_post",
         "security": [{ "APIKeyHeader": [] }],
         "requestBody": {
@@ -602,7 +603,7 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Create a Credential Offer (not bound to a connection)",
-        "description": "Create a credential offer, not bound to any connection\n---\nNB: Only a tenant with the issuer role can create credential offers.\n\nThis endpoint takes the same body as the send credential endpoint, but without a connection id. This\nmeans the credential will not be sent, but it will do the initial step of creating a credential exchange record,\nwhich the issuer can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and issuer.\n\nThe credential type must be one of indy or ld_proof.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: CreateOffer\n        The payload for creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
+        "description": "Create a credential offer, not bound to any connection\n---\nNB: Only a tenant with the issuer role can create credential offers.\n\nThis endpoint takes the same body as the send credential endpoint, but without a connection id. This\nmeans the credential will not be sent, but it will do the initial step of creating a credential exchange record,\nwhich the issuer can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and issuer.\n\nThe credential type must be one of indy or ld_proof.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n}\n```\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: CreateOffer\n        The payload for creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
         "operationId": "create_offer_v1_issuer_credentials_create_offer_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOffer" } } },
@@ -1029,7 +1030,7 @@
       "post": {
         "tags": ["verifier"],
         "summary": "Send a Proof Request to a connection",
-        "description": "Send proof request\n---\nNB: Only a tenant with the verifier role can send a proof request.\n\nThe verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n        \"connection_id\": \"string\", <-- The verifier's reference to the connection to send this proof request to\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: SendProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
+        "description": "Send proof request\n---\nNB: Only a tenant with the verifier role can send a proof request.\n\nThe verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"connection_id\": \"string\", <-- The verifier's reference to the connection to send this proof request to\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: SendProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
         "operationId": "send_proof_request_v1_verifier_send_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendProofRequest" } } },
@@ -1052,7 +1053,7 @@
       "post": {
         "tags": ["verifier"],
         "summary": "Create a Proof Request (not bound to a connection)",
-        "description": "Creates a presentation request that is not bound to any specific proposal or connection\n---\nThis endpoint is used to create a proof request that is not bound to a connection. This means the proof request is\nnot sent directly, but it will do the initial step of creating a proof exchange record,\nwhich the verifier can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and verifier.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
+        "description": "Creates a presentation request that is not bound to any specific proposal or connection\n---\nThis endpoint is used to create a proof request that is not bound to a connection. This means the proof request is\nnot sent directly, but it will do the initial step of creating a proof exchange record,\nwhich the verifier can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and verifier.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
         "operationId": "create_proof_request_v1_verifier_create_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateProofRequest" } } },
@@ -1905,10 +1906,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -1939,10 +1940,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -1979,10 +1980,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -2015,10 +2016,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -2057,10 +2058,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -2103,7 +2104,7 @@
       "AcceptProofRequest": {
         "properties": {
           "proof_id": { "type": "string", "title": "Proof Id" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_presentation_spec": { "anyOf": [{ "$ref": "#/components/schemas/IndyPresSpec" }, { "type": "null" }] },
           "dif_presentation_spec": { "anyOf": [{ "$ref": "#/components/schemas/DIFPresSpec" }, { "type": "null" }] },
           "save_exchange_record": {
@@ -2552,7 +2553,7 @@
       },
       "CreateOffer": {
         "properties": {
-          "type": { "allOf": [{ "$ref": "#/components/schemas/CredentialType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/CredentialType", "default": "indy" },
           "indy_credential_detail": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyCredential" }, { "type": "null" }]
           },
@@ -2562,10 +2563,6 @@
             "title": "Save Exchange Record",
             "description": "Whether the credential exchange record should be saved on completion",
             "default": false
-          },
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/IssueCredentialProtocolVersion" }],
-            "default": "v2"
           }
         },
         "type": "object",
@@ -2590,12 +2587,8 @@
       },
       "CreateProofRequest": {
         "properties": {
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/PresentProofProtocolVersion" }],
-            "default": "v2"
-          },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
           },
@@ -2724,7 +2717,6 @@
           "credential_exchange_id": { "type": "string", "title": "Credential Exchange Id" },
           "did": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Did" },
           "error_msg": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Error Msg" },
-          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion" },
           "role": { "type": "string", "enum": ["issuer", "holder"], "title": "Role" },
           "schema_id": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Id" },
           "state": {
@@ -2755,7 +2747,7 @@
           "updated_at": { "type": "string", "title": "Updated At" }
         },
         "type": "object",
-        "required": ["created_at", "credential_id", "credential_exchange_id", "protocol_version", "role", "updated_at"],
+        "required": ["created_at", "credential_id", "credential_exchange_id", "role", "updated_at"],
         "title": "CredentialExchange"
       },
       "CredentialSchema": {
@@ -3073,7 +3065,7 @@
       },
       "IndyCredPrecis": {
         "properties": {
-          "cred_info": { "allOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }], "description": "Credential info" },
+          "cred_info": { "$ref": "#/components/schemas/IndyCredInfo", "description": "Credential info" },
           "interval": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocationInterval" }, { "type": "null" }],
             "description": "Non-revocation interval from presentation request"
@@ -3178,12 +3170,12 @@
       "IndyNonRevocationInterval": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3280,7 +3272,7 @@
             "description": "Schema identifier"
           },
           "timestamp": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "Timestamp",
             "description": "Timestamp epoch"
           }
@@ -3374,12 +3366,12 @@
       "IndyProofReqAttrSpecNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3413,12 +3405,12 @@
       "IndyProofReqPredSpecNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3489,12 +3481,12 @@
       "IndyProofRequestNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3629,7 +3621,7 @@
             "description": "Wallet credential identifier (typically but not necessarily a UUID)"
           },
           "timestamp": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "Timestamp",
             "description": "Epoch timestamp of interest for non-revocation proof"
           }
@@ -3851,11 +3843,6 @@
         "title": "InvitationResult",
         "description": "InvitationResult"
       },
-      "IssueCredentialProtocolVersion": {
-        "type": "string",
-        "enum": ["v1", "v2"],
-        "title": "IssueCredentialProtocolVersion"
-      },
       "IssuerCredRevRecord": {
         "properties": {
           "created_at": {
@@ -4015,11 +4002,11 @@
       "LDProofVCDetail": {
         "properties": {
           "credential": {
-            "allOf": [{ "$ref": "#/components/schemas/Credential" }],
+            "$ref": "#/components/schemas/Credential",
             "description": "Detail of the JSON-LD Credential to be issued"
           },
           "options": {
-            "allOf": [{ "$ref": "#/components/schemas/LDProofVCOptions" }],
+            "$ref": "#/components/schemas/LDProofVCOptions",
             "description": "Options for specifying how the linked data proof is created."
           },
           "additional_properties": { "type": "object", "title": "Additional Properties", "default": {} }
@@ -4149,7 +4136,7 @@
           },
           "invi_msg_id": { "type": "string", "title": "Invi Msg Id", "description": "Invitation message identifier" },
           "invitation": {
-            "allOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }],
+            "$ref": "#/components/schemas/InvitationMessage-Output",
             "description": "Out of band invitation message"
           },
           "multi_use": {
@@ -4206,7 +4193,6 @@
         "title": "PingRequestResponse",
         "description": "PingRequestResponse"
       },
-      "PresentProofProtocolVersion": { "type": "string", "enum": ["v1", "v2"], "title": "PresentProofProtocolVersion" },
       "PresentationDefinition": {
         "properties": {
           "format": { "anyOf": [{ "$ref": "#/components/schemas/ClaimFormat" }, { "type": "null" }] },
@@ -4255,7 +4241,6 @@
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Output" }, { "type": "null" }]
           },
           "proof_id": { "type": "string", "title": "Proof Id" },
-          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion" },
           "role": { "type": "string", "enum": ["prover", "verifier"], "title": "Role" },
           "state": {
             "anyOf": [
@@ -4282,7 +4267,7 @@
           "verified": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Verified" }
         },
         "type": "object",
-        "required": ["created_at", "proof_id", "protocol_version", "role"],
+        "required": ["created_at", "proof_id", "role"],
         "title": "PresentationExchange"
       },
       "ProofRequestType": { "type": "string", "enum": ["indy", "jwt", "ld_proof"], "title": "ProofRequestType" },
@@ -4538,7 +4523,7 @@
       },
       "SendCredential": {
         "properties": {
-          "type": { "allOf": [{ "$ref": "#/components/schemas/CredentialType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/CredentialType", "default": "indy" },
           "indy_credential_detail": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyCredential" }, { "type": "null" }]
           },
@@ -4549,11 +4534,7 @@
             "description": "Whether the credential exchange record should be saved on completion",
             "default": false
           },
-          "connection_id": { "type": "string", "title": "Connection Id" },
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/IssueCredentialProtocolVersion" }],
-            "default": "v2"
-          }
+          "connection_id": { "type": "string", "title": "Connection Id" }
         },
         "type": "object",
         "required": ["connection_id"],
@@ -4561,12 +4542,8 @@
       },
       "SendProofRequest": {
         "properties": {
-          "protocol_version": {
-            "allOf": [{ "$ref": "#/components/schemas/PresentProofProtocolVersion" }],
-            "default": "v2"
-          },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
-          "type": { "allOf": [{ "$ref": "#/components/schemas/ProofRequestType" }], "default": "indy" },
+          "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Input" }, { "type": "null" }]
           },

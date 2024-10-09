@@ -22,12 +22,8 @@ from app.models.issuer import (
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
+from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.services.trust_registry.util.issuer import assert_valid_issuer
-from app.util.acapy_issuer_utils import (
-    IssueCredentialFacades,
-    issuer_from_id,
-    issuer_from_protocol_version,
-)
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from app.util.pagination import (
     descending_query_parameter,
@@ -37,12 +33,7 @@ from app.util.pagination import (
 )
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
-from shared.models.credential_exchange import (
-    CredentialExchange,
-    Role,
-    State,
-    back_to_v1_credential_state,
-)
+from shared.models.credential_exchange import CredentialExchange, Role, State
 
 logger = get_logger(__name__)
 
@@ -67,7 +58,6 @@ async def send_credential(
         "ld_credential_detail": {...}, <-- Required if type is ld_proof
         "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
         "connection_id": "string", <-- The issuer's reference to the connection they want to submit the credential to.
-        "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
     Setting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.
@@ -90,13 +80,10 @@ async def send_credential(
         body={
             # Do not log credential attributes:
             "connection_id": credential.connection_id,
-            "protocol_version": credential.protocol_version,
             "credential_type": credential.type,
         }
     )
     bound_logger.debug("POST request received: Send credential")
-
-    issuer = issuer_from_protocol_version(credential.protocol_version)
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
@@ -122,7 +109,7 @@ async def send_credential(
 
         try:
             bound_logger.debug("Sending credential")
-            result = await issuer.send_credential(
+            result = await IssuerV2.send_credential(
                 controller=aries_controller, credential=credential
             )
         except CloudApiException as e:
@@ -162,7 +149,6 @@ async def create_offer(
         "indy_credential_detail": {...}, <-- Required if type is indy
         "ld_credential_detail": {...}, <-- Required if type is ld_proof
         "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
-        "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
     For a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2
@@ -181,13 +167,10 @@ async def create_offer(
     bound_logger = logger.bind(
         body={
             # Do not log credential attributes:
-            "protocol_version": credential.protocol_version,
             "credential_type": credential.type,
         }
     )
     bound_logger.debug("POST request received: Create credential offer")
-
-    issuer = issuer_from_protocol_version(credential.protocol_version)
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
@@ -212,7 +195,7 @@ async def create_offer(
         await assert_valid_issuer(public_did, schema_id)
 
         bound_logger.debug("Creating offer")
-        result = await issuer.create_offer(
+        result = await IssuerV2.create_offer(
             controller=aries_controller,
             credential=credential,
         )
@@ -251,11 +234,9 @@ async def request_credential(
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.debug("POST request received: Send credential request")
 
-    issuer = issuer_from_id(credential_exchange_id)
-
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching records")
-        record = await issuer.get_record(aries_controller, credential_exchange_id)
+        record = await IssuerV2.get_record(aries_controller, credential_exchange_id)
 
         schema_id = None
         if record.type == "indy":
@@ -279,7 +260,7 @@ async def request_credential(
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
 
         bound_logger.debug("Requesting credential")
-        result = await issuer.request_credential(
+        result = await IssuerV2.request_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
@@ -323,11 +304,9 @@ async def store_credential(
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.debug("POST request received: Store credential")
 
-    issuer = issuer_from_id(credential_exchange_id)
-
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Storing credential")
-        result = await issuer.store_credential(
+        result = await IssuerV2.store_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
@@ -389,21 +368,8 @@ async def get_credentials(
     bound_logger.debug("GET request received: Get credentials")
 
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching v1 records")
-        v1_records = await IssueCredentialFacades.V1.value.get_records(
-            controller=aries_controller,
-            limit=limit,
-            offset=offset,
-            order_by=order_by,
-            descending=descending,
-            connection_id=connection_id,
-            role=role,
-            state=back_to_v1_credential_state(state) if state else None,
-            thread_id=str(thread_id) if thread_id else None,
-        )
-
         bound_logger.debug("Fetching v2 records")
-        v2_records = await IssueCredentialFacades.V2.value.get_records(
+        result = await IssuerV2.get_records(
             controller=aries_controller,
             limit=limit,
             offset=offset,
@@ -415,11 +381,10 @@ async def get_credentials(
             thread_id=str(thread_id) if thread_id else None,
         )
 
-    result = v1_records + v2_records
     if result:
-        bound_logger.debug("Successfully fetched v1 and v2 records.")
+        bound_logger.debug("Successfully fetched records.")
     else:
-        bound_logger.debug("No v1 or v2 records returned.")
+        bound_logger.debug("No records returned.")
     return result
 
 
@@ -462,11 +427,9 @@ async def get_credential(
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.debug("GET request received: Get credentials by credential id")
 
-    issuer = issuer_from_id(credential_exchange_id)
-
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential record")
-        result = await issuer.get_record(
+        result = await IssuerV2.get_record(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
@@ -500,11 +463,9 @@ async def remove_credential_exchange_record(
         "DELETE request received: Remove credential exchange record by id"
     )
 
-    issuer = issuer_from_id(credential_exchange_id)
-
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting credential")
-        await issuer.delete_credential_exchange_record(
+        await IssuerV2.delete_credential_exchange_record(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 

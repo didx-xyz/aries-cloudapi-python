@@ -42,12 +42,10 @@ ld_cred = LDProofVCDetail(
     "credential",
     [
         CreateOffer(
-            protocol_version="v2",
             type=CredentialType.INDY,
             indy_credential_detail=indy_cred,
         ),
         CreateOffer(
-            protocol_version="v2",
             type=CredentialType.LD_PROOF,
             ld_credential_detail=ld_cred,
         ),
@@ -59,8 +57,7 @@ async def test_create_offer_success(credential):
     issuer.create_offer = AsyncMock()
 
     with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
-        "app.routes.issuer.issuer_from_protocol_version",
-        return_value=issuer,
+        "app.routes.issuer.IssuerV2", new=issuer
     ), patch("app.routes.issuer.assert_public_did", return_value="public_did"), patch(
         "app.routes.issuer.schema_id_from_credential_definition_id",
         return_value="schema_id",
@@ -113,7 +110,6 @@ async def test_create_offer_fail_acapy_error(
 
         await create_offer(
             credential=CreateOffer(
-                protocol_version="v2",
                 type=CredentialType.LD_PROOF,
                 ld_credential_detail=ld_cred,
             ),
@@ -126,7 +122,6 @@ async def test_create_offer_fail_acapy_error(
 @pytest.mark.anyio
 async def test_create_offer_fail_bad_public_did():
     credential = CreateOffer(
-        protocol_version="v2",
         type=CredentialType.INDY,
         indy_credential_detail=indy_cred,
     )

@@ -5,7 +5,6 @@ from aries_cloudcontroller import LDProofVCDetail, TxnOrPublishRevocationsResult
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
-from shared.models.protocol import IssueCredentialProtocolVersion
 
 
 class CredentialType(str, Enum):
@@ -51,15 +50,11 @@ class CredentialWithConnection(CredentialBase):
     connection_id: str
 
 
-class CredentialWithProtocol(CredentialBase):
-    protocol_version: IssueCredentialProtocolVersion = IssueCredentialProtocolVersion.V2
-
-
-class SendCredential(CredentialWithProtocol, CredentialWithConnection):
+class SendCredential(CredentialWithConnection):
     pass
 
 
-class CreateOffer(CredentialWithProtocol):
+class CreateOffer(CredentialBase):
     pass
 
 

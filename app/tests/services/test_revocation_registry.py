@@ -13,7 +13,6 @@ from aries_cloudcontroller import (
     RevRegResult,
     TransactionRecord,
     TxnOrPublishRevocationsResult,
-    V10CredentialExchange,
     V20CredExRecordDetail,
     V20CredExRecordIndy,
 )
@@ -308,29 +307,7 @@ async def test_get_credential_revocation_record_invalid_result_type(
 async def test_get_credential_definition_id_from_exchange_id(
     mock_agent_controller: AcaPyClient,
 ):
-    # Success v1
-    when(mock_agent_controller.issue_credential_v1_0).get_record(
-        cred_ex_id=cred_ex_id
-    ).thenReturn(
-        to_async(
-            V10CredentialExchange(
-                credential_exchange_id=cred_ex_id, credential_definition_id=cred_def_id
-            )
-        )
-    )
-
-    cred_def_id_result = await rg.get_credential_definition_id_from_exchange_id(
-        controller=mock_agent_controller, credential_exchange_id=cred_ex_id
-    )
-
-    assert cred_def_id_result
-    assert isinstance(cred_def_id_result, str)
-    assert cred_def_id_result == cred_def_id
-
     # Success v2
-    when(mock_agent_controller.issue_credential_v1_0).get_record(
-        cred_ex_id=cred_ex_id
-    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenReturn(
@@ -350,9 +327,6 @@ async def test_get_credential_definition_id_from_exchange_id(
     assert cred_def_id_result == cred_def_id
 
     # Not found
-    when(mock_agent_controller.issue_credential_v1_0).get_record(
-        cred_ex_id=cred_ex_id
-    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenRaise(CloudApiException(detail=""))
@@ -364,9 +338,6 @@ async def test_get_credential_definition_id_from_exchange_id(
     assert cred_def_id_result is None
 
     # Not found general exception
-    when(mock_agent_controller.issue_credential_v1_0).get_record(
-        cred_ex_id=cred_ex_id
-    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenRaise(Exception())

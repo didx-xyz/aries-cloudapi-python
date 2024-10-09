@@ -6,7 +6,6 @@ from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
-from shared.models.protocol import PresentProofProtocolVersion
 
 
 class ProofRequestType(str, Enum):
@@ -60,7 +59,6 @@ class ProofRequestBase(BaseModel):
 
 
 class ProofRequestMetadata(BaseModel):
-    protocol_version: PresentProofProtocolVersion = PresentProofProtocolVersion.V2
     comment: Optional[str] = None
 
 

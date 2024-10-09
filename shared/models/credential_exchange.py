@@ -1,6 +1,6 @@
 from typing import Dict, Literal, Optional, Tuple
 
-from aries_cloudcontroller import V10CredentialExchange, V20CredExRecord
+from aries_cloudcontroller import V20CredExRecord
 from pydantic import BaseModel, Field
 
 from shared.models.protocol import IssueCredentialProtocolVersion
@@ -40,7 +40,6 @@ class CredentialExchange(BaseModel):
     credential_exchange_id: str = Field(...)
     did: Optional[str] = None
     error_msg: Optional[str] = None
-    protocol_version: IssueCredentialProtocolVersion
     role: Role
     schema_id: Optional[str] = None
     # state can be None in proposed state
@@ -49,70 +48,6 @@ class CredentialExchange(BaseModel):
     thread_id: Optional[str] = None
     type: str = "indy"
     updated_at: str
-
-
-def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialExchange:
-    attributes = attributes_from_record_v1(record)
-    credential_exchange_id = f"v1-{record.credential_exchange_id}"
-
-    return CredentialExchange(
-        attributes=attributes,
-        connection_id=record.connection_id,
-        created_at=record.created_at,
-        credential_definition_id=record.credential_definition_id,
-        credential_id=credential_exchange_id,
-        credential_exchange_id=credential_exchange_id,
-        error_msg=record.error_msg,
-        protocol_version=IssueCredentialProtocolVersion.V1,
-        role=record.role,
-        schema_id=record.schema_id,
-        state=v1_credential_state_to_rfc_state(record.state),
-        thread_id=record.thread_id,
-        updated_at=record.updated_at,
-        type="indy",
-    )
-
-
-def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
-    translation_dict = {
-        "abandoned": "abandoned",
-        "credential_acked": "done",
-        "credential_issued": "credential-issued",
-        "credential_received": "credential-received",
-        "credential_revoked": "credential-revoked",
-        "deleted": "deleted",
-        "done": "done",
-        "offer_received": "offer-received",
-        "offer_sent": "offer-sent",
-        "proposal_received": "proposal-received",
-        "proposal_sent": "proposal-sent",
-        "request_received": "request-received",
-        "request_sent": "request-sent",
-    }
-
-    if not state or state not in translation_dict:
-        return None
-
-    return translation_dict[state]
-
-
-def back_to_v1_credential_state(state: Optional[str]) -> Optional[str]:
-    translation_dict = {
-        "abandoned": "abandoned",
-        "deleted": "deleted",
-        "done": "credential_acked",
-        "credential-issued": "credential_issued",
-        "credential-received": "credential_received",
-        "credential-revoked": "credential_revoked",
-        "offer-received": "offer_received",
-        "offer-sent": "offer_sent",
-        "proposal-received": "proposal_received",
-        "proposal-sent": "proposal_sent",
-        "request-received": "request_received",
-        "request-sent": "request_sent",
-    }
-
-    return translation_dict[state]
 
 
 def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange:
@@ -133,7 +68,6 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
             else None
         ),
         error_msg=record.error_msg,
-        protocol_version=IssueCredentialProtocolVersion.V2,
         role=record.role,
         schema_id=schema_id,
         state=record.state,
@@ -159,20 +93,6 @@ def schema_cred_def_from_record(
     credential_definition_id = indy.get("cred_def_id", None)
 
     return schema_id, credential_definition_id
-
-
-def attributes_from_record_v1(
-    record: V10CredentialExchange,
-) -> Optional[Dict[str, str]]:
-    preview = None
-
-    if (
-        record.credential_proposal_dict
-        and record.credential_proposal_dict.credential_proposal
-    ):
-        preview = record.credential_proposal_dict.credential_proposal
-
-    return {attr.name: attr.value for attr in preview.attributes} if preview else None
 
 
 def attributes_from_record_v2(record: V20CredExRecord) -> Optional[Dict[str, str]]:

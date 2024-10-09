@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set
 
 from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 
@@ -8,43 +7,17 @@ from app.models.verifier import AcceptProofRequest, ProofRequestType, SendProofR
 from app.services.acapy_wallet import assert_public_did
 from app.services.trust_registry.actors import fetch_actor_by_did, fetch_actor_by_name
 from app.services.trust_registry.schemas import fetch_schemas
-from app.services.verifier.acapy_verifier import Verifier
-from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key, qualified_did_sov
 from app.util.tenants import get_wallet_label_from_controller
-from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
-from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
 
 
-class VerifierFacade(Enum):
-    V1 = VerifierV1
-    V2 = VerifierV2
-
-
-def get_verifier_by_version(
-    version_candidate: Union[str, PresentProofProtocolVersion]
-) -> Verifier:
-    if version_candidate == PresentProofProtocolVersion.V1 or (
-        isinstance(version_candidate, str) and version_candidate.startswith("v1-")
-    ):
-        return VerifierFacade.V1.value
-    elif version_candidate == PresentProofProtocolVersion.V2 or (
-        isinstance(version_candidate, str) and version_candidate.startswith("v2-")
-    ):
-        return VerifierFacade.V2.value
-    else:
-        raise CloudApiValueError(
-            f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."
-        )
-
-
 async def assert_valid_prover(
-    aries_controller: AcaPyClient, presentation: AcceptProofRequest, verifier: Verifier
+    aries_controller: AcaPyClient, presentation: AcceptProofRequest
 ) -> None:
     """Check transaction requirements against trust registry for prover"""
     # get connection record
@@ -55,7 +28,7 @@ async def assert_valid_prover(
 
     bound_logger.debug("Getting connection from proof")
     connection_id = await get_connection_from_proof(
-        aries_controller=aries_controller, proof_id=proof_id, verifier=verifier
+        aries_controller=aries_controller, proof_id=proof_id
     )
 
     if not connection_id:
@@ -274,9 +247,9 @@ async def get_schema_ids(
 
 
 async def get_connection_from_proof(
-    aries_controller: AcaPyClient, verifier: Verifier, proof_id: str
+    aries_controller: AcaPyClient, proof_id: str
 ) -> Optional[str]:
-    proof_record = await verifier.get_proof_record(
+    proof_record = await VerifierV2.get_proof_record(
         controller=aries_controller, proof_id=proof_id
     )
     return proof_record.connection_id

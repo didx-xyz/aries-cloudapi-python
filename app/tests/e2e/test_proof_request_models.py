@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    V10PresentationSendRequestRequest,
     V20PresRequestByFormat,
     V20PresSendRequestRequest,
 )
@@ -18,14 +17,11 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "name, version, protocol_version",
+    "name, version",
     [
-        ("Proof", None, "v1"),
-        (None, "1.0", "v1"),
-        (None, None, "v1"),
-        ("Proof", None, "v2"),
-        (None, "1.0", "v2"),
-        (None, None, "v2"),
+        ("Proof", None),
+        (None, "1.0"),
+        (None, None),
     ],
 )
 async def test_proof_model_failures(
@@ -35,18 +31,16 @@ async def test_proof_model_failures(
     alice_member_client: RichAsyncClient,
     name: str,
     version: str,
-    protocol_version: str,
 ):
     acme_connection_id = acme_and_alice_connection.acme_connection_id
     alice_connection_id = acme_and_alice_connection.alice_connection_id
 
-    if protocol_version == "v1":
-
-        request_body = V10PresentationSendRequestRequest(
-            auto_remove=False,
-            connection_id=acme_connection_id,
-            comment="Test proof",
-            proof_request={
+    request_body = V20PresSendRequestRequest(
+        auto_remove=False,
+        connection_id=acme_connection_id,
+        comment="Test proof",
+        presentation_request=V20PresRequestByFormat(
+            indy={
                 "name": name,
                 "version": version,
                 "requested_attributes": {
@@ -57,38 +51,13 @@ async def test_proof_model_failures(
                 },
                 "requested_predicates": {},
             },
-            auto_verify=True,
-        )
+        ),
+        auto_verify=True,
+    )
 
-        acme_exchange_v1 = await acme_acapy_client.present_proof_v1_0.send_request_free(
-            body=request_body
-        )
-        acme_exchange_v2 = None
-    else:
-        request_body = V20PresSendRequestRequest(
-            auto_remove=False,
-            connection_id=acme_connection_id,
-            comment="Test proof",
-            presentation_request=V20PresRequestByFormat(
-                indy={
-                    "name": name,
-                    "version": version,
-                    "requested_attributes": {
-                        "THE_SPEED": {
-                            "name": "speed",
-                            "restrictions": [],
-                        }
-                    },
-                    "requested_predicates": {},
-                },
-            ),
-            auto_verify=True,
-        )
-
-        acme_exchange_v2 = await acme_acapy_client.present_proof_v2_0.send_request_free(
-            body=request_body
-        )
-        acme_exchange_v1 = None
+    acme_exchange_v2 = await acme_acapy_client.present_proof_v2_0.send_request_free(
+        body=request_body
+    )
 
     try:
         await check_webhook_state(
@@ -133,11 +102,6 @@ async def test_proof_model_failures(
 
     finally:
         # Clean up:
-        if protocol_version == "v1" and acme_exchange_v1:
-            await acme_acapy_client.present_proof_v1_0.delete_record(
-                acme_exchange_v1.presentation_exchange_id
-            )
-        if protocol_version == "v2" and acme_exchange_v2:
-            await acme_acapy_client.present_proof_v2_0.delete_record(
-                acme_exchange_v2.pres_ex_id
-            )
+        await acme_acapy_client.present_proof_v2_0.delete_record(
+            acme_exchange_v2.pres_ex_id
+        )

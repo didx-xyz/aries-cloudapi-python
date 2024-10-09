@@ -139,20 +139,6 @@ oob_event_payload = {
     "role": "sender",
 }
 
-issue_credential_v1_0_event_payload = {
-    "role": "issuer",
-    "initiator": "self",
-    "auto_offer": False,
-    "auto_remove": True,
-    "thread_id": "678e4f38-9452-498f-ad60-3176c95b429a",
-    "state": "offer_sent",
-    "credential_definition_id": "VDhakWxAru5YGvr2EEEWfp:3:CL:16:tag",
-    "schema_id": "VmMUGgYqNoeMffPyhkhqep:2:test_schema:56.72.72",
-    "created_at": "2024-03-06T20:26:16.551320Z",
-    "updated_at": "2024-03-06T20:26:16.551320Z",
-    "credential_exchange_id": "b4d4a8a4-ec27-4c0e-b46a-e67f9b5b0388",
-}
-
 issue_credential_v2_0_event_payload = {
     "role": "issuer",
     "initiator": "self",
@@ -196,20 +182,6 @@ issue_credential_v2_0_ld_event_payload = {
     "cred_ex_ld_proof_id": "d8ec9521-b48f-45ec-82a8-333a14c041ee",
     "cred_ex_id": "99fd311a-ec90-4b3e-ba30-a461dbae606b",
     "cred_id_stored": "642e52c9172a491286bad16b209936e7",
-}
-
-present_proof_v1_0_event_payload = {
-    "connection_id": "e6c87053-e25e-4bee-bc23-048c7da43fbd",
-    "role": "verifier",
-    "initiator": "self",
-    "auto_present": False,
-    "auto_verify": True,
-    "state": "request_sent",
-    "thread_id": "dc7425cb-a260-490f-8c02-0c25ca1bb095",
-    "trace": False,
-    "created_at": "2024-03-07T07:40:20.148247Z",
-    "updated_at": "2024-03-07T07:40:20.148247Z",
-    "presentation_exchange_id": "550d3c83-fc62-4b48-9161-4c608530d159",
 }
 
 present_proof_v2_0_event_payload = {
@@ -322,31 +294,6 @@ def test_credential_model():
     unused_fields = ["initiator", "auto_offer", "auto_remove", "credential_exchange_id"]
     skip_fields = ["state"] + unused_fields
 
-    ### V1
-    event_v1 = acapy_webhook.model_copy(
-        update={
-            "topic": "credentials",
-            "acapy_topic": "issue_credential",
-            "payload": issue_credential_v1_0_event_payload,
-        }
-    )
-    cloudapi_event_v1 = acapy_to_cloudapi_event(event_v1)
-
-    result_v1 = cloudapi_event_v1.payload
-    assert isinstance(result_v1, CredentialExchange)
-
-    validate_result(result_v1, issue_credential_v1_0_event_payload, skip=skip_fields)
-
-    # validate state separately
-    modified_state = issue_credential_v1_0_event_payload["state"].replace("_", "-")
-    assert result_v1.state == modified_state
-
-    # validate modified credential_exchange_id
-    cred_ex_id = issue_credential_v1_0_event_payload["credential_exchange_id"]
-    modified_cred_ex_id = f"v1-{cred_ex_id}"
-    assert result_v1.credential_exchange_id == modified_cred_ex_id
-
-    ### V2
     event_v2 = acapy_webhook.model_copy(
         update={
             "topic": "credentials",
@@ -410,31 +357,6 @@ def test_proof_model():
     ]
     skip_fields = ["state"] + unused_fields
 
-    ### V1
-    event_v1 = acapy_webhook.model_copy(
-        update={
-            "topic": "proofs",
-            "acapy_topic": "present_proof",
-            "payload": present_proof_v1_0_event_payload,
-        }
-    )
-    cloudapi_event_v1 = acapy_to_cloudapi_event(event_v1)
-
-    result_v1 = cloudapi_event_v1.payload
-    assert isinstance(result_v1, PresentationExchange)
-
-    validate_result(result_v1, present_proof_v1_0_event_payload, skip=skip_fields)
-
-    # validate state separately
-    modified_state = present_proof_v1_0_event_payload["state"].replace("_", "-")
-    assert result_v1.state == modified_state
-
-    # validate modified presentation_exchange_id
-    pres_ex_id = present_proof_v1_0_event_payload["presentation_exchange_id"]
-    modified_pres_ex_id = f"v1-{pres_ex_id}"
-    assert result_v1.proof_id == modified_pres_ex_id
-
-    ### V2
     event_v2 = acapy_webhook.model_copy(
         update={
             "topic": "proofs",

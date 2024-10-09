@@ -27,7 +27,6 @@ CONNECTIONS_BASE_PATH = con_router.prefix
 credential_ = SendCredential(
     type="ld_proof",
     connection_id="",
-    protocol_version="v2",
     ld_credential_detail=LDProofVCDetail(
         credential=Credential(
             context=[
@@ -53,7 +52,6 @@ credential_ = SendCredential(
 # {
 #     "type": "ld_proof",
 #     "connection_id": "",
-#     "protocol_version": "v2",
 #     "ld_credential_detail": {
 #         "credential": {
 #             "@context": [
@@ -104,7 +102,6 @@ async def test_send_jsonld_key_bbs(
         thread_id = data["thread_id"]
         assert_that(data).contains("credential_exchange_id")
         assert_that(data).has_state("offer-sent")
-        assert_that(data).has_protocol_version("v2")
 
         assert await check_webhook_state(
             client=alice_member_client,
@@ -202,7 +199,6 @@ async def test_send_jsonld_bbs_oob(
     try:
         assert_that(data).contains("credential_exchange_id")
         assert_that(data).has_state("offer-sent")
-        assert_that(data).has_protocol_version("v2")
 
         assert await check_webhook_state(
             client=alice_member_client,
@@ -238,7 +234,6 @@ async def test_send_jsonld_request(
     )
     credential_exchange = response.json()
     thread_id = credential_exchange["thread_id"]
-    assert credential_exchange["protocol_version"] == "v2"
 
     result = await asyncio.gather(
         check_webhook_state(
@@ -313,7 +308,6 @@ async def test_issue_jsonld_bbs(
         json=credential,
     )
     credential_exchange = response.json()
-    assert credential_exchange["protocol_version"] == "v2"
     thread_id = credential_exchange["thread_id"]
     faber_cred_ex_id = credential_exchange["credential_exchange_id"]
 

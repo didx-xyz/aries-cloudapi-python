@@ -27,7 +27,7 @@ async def test_request_credential_success(record_type):
     mock_aries_controller.issue_credential_v2_0.send_request = AsyncMock()
 
     with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
-        "app.routes.issuer.issuer_from_id", return_value=issuer
+        "app.routes.issuer.IssuerV2", new=issuer
     ), patch(
         "app.routes.issuer.did_from_credential_definition_id", return_value="issuer_did"
     ), patch(
@@ -90,7 +90,7 @@ async def test_request_credential_fail_acapy_error(
     ) as mock_client_from_auth, pytest.raises(
         HTTPException, match=expected_detail
     ) as exc, patch(
-        "app.routes.issuer.issuer_from_id", return_value=issuer
+        "app.routes.issuer.IssuerV2", new=issuer
     ), patch(
         "app.services.issuer.acapy_issuer_v2.credential_record_to_model_v2"
     ), patch(
@@ -123,7 +123,7 @@ async def test_request_credential_fail_bad_record():
     issuer.get_record = AsyncMock(return_value=record)
 
     with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
-        "app.routes.issuer.issuer_from_id", return_value=issuer
+        "app.routes.issuer.IssuerV2", new=issuer
     ), patch(
         "app.services.issuer.acapy_issuer_v2.credential_record_to_model_v2"
     ), pytest.raises(

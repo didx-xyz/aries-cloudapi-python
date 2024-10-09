@@ -10,7 +10,7 @@ services:
       DOCKERHOST: ledger-nodes
       LEDGER_INSTANCE_NAME: Indy Ledger Browser
       LEDGER_SEED: ${LEDGER_SEED:-000000000000000000000000Trustee1}
-      LOG_LEVEL: INFO
+      LOG_LEVEL: WARN
       MAX_FETCH: 50000
       # POOL_CONNECTION_ATTEMPTS: ${POOL_CONNECTION_ATTEMPTS:-5}
       # POOL_CONNECTION_DELAY: ${POOL_CONNECTION_DELAY:-10}
@@ -50,7 +50,7 @@ services:
       - 0.0.0.0:9708:9708
     environment:
       DOCKERHOST: ledger-nodes
-      LOG_LEVEL: INFO
+      LOG_LEVEL: WARN
     volumes:
       - ledger-nodes:/home/indy/ledger
       - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh

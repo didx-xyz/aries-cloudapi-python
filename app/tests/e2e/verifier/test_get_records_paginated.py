@@ -34,7 +34,6 @@ async def test_get_presentation_exchange_records_paginated(
             request_body = {
                 "save_exchange_record": True,
                 "connection_id": acme_and_alice_connection.acme_connection_id,
-                "protocol_version": "v2",
                 "indy_proof_request": sample_indy_proof_request(
                     restrictions=[{"cred_def_id": credential_definition_id}]
                 ).to_dict(),

@@ -21,7 +21,6 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 @pytest.mark.parametrize(
     "revoke_alice_creds_and_publish", ["auto_publish_true", "default"], indirect=True
 )
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 @pytest.mark.skipif(
     TestMode.regression_run in TestMode.fixture_params,
     reason="Proving revoked credentials is currently non-deterministic",
@@ -34,14 +33,12 @@ async def test_proof_revoked_credential(
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
-    protocol_version: str,
 ):
     time.sleep(10)  # moment for revocation registry to update
     # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
 
     # Do proof request
     request_body = {
-        "protocol_version": protocol_version,
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {
@@ -137,7 +134,6 @@ async def test_regression_proof_revoked_credential(
 
     # Do proof request
     request_body = {
-        "protocol_version": "v2",
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {

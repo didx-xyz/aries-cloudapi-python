@@ -18,7 +18,7 @@ After spinning up the containers following the [Quick Start Guide](Quick%20Start
 - [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 - [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
 
- provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and webhooks endpoints.
+ provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.
 
 >NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 

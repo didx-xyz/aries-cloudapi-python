@@ -468,7 +468,7 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Send Holder a Credential",
-        "description": "Create and send a credential, automating the issuer-side flow\n---\nNB: Only a tenant with the issuer role can send credentials.\n\nWhen creating a credential, the credential type must be one of `indy` or `ld_proof`.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"connection_id\": \"string\", <-- The issuer's reference to the connection they want to submit the credential to.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nSetting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.\nThe default behaviour is to only save exchange records while they are in pending state.\n\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: SendCredential\n        The payload for sending a credential\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
+        "description": "Create and send a credential, automating the issuer-side flow\n---\nNB: Only a tenant with the issuer role can send credentials.\n\nWhen creating a credential, the credential type must be one of `indy` or `ld_proof`.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"connection_id\": \"string\", <-- The issuer's reference to the connection they want to submit the credential to.\n}\n```\nSetting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.\nThe default behaviour is to only save exchange records while they are in pending state.\n\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: SendCredential\n        The payload for sending a credential\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
         "operationId": "send_credential_v1_issuer_credentials_post",
         "security": [{ "APIKeyHeader": [] }],
         "requestBody": {
@@ -603,7 +603,7 @@
       "post": {
         "tags": ["issuer"],
         "summary": "Create a Credential Offer (not bound to a connection)",
-        "description": "Create a credential offer, not bound to any connection\n---\nNB: Only a tenant with the issuer role can create credential offers.\n\nThis endpoint takes the same body as the send credential endpoint, but without a connection id. This\nmeans the credential will not be sent, but it will do the initial step of creating a credential exchange record,\nwhich the issuer can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and issuer.\n\nThe credential type must be one of indy or ld_proof.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n    \"protocol_version\": \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: CreateOffer\n        The payload for creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
+        "description": "Create a credential offer, not bound to any connection\n---\nNB: Only a tenant with the issuer role can create credential offers.\n\nThis endpoint takes the same body as the send credential endpoint, but without a connection id. This\nmeans the credential will not be sent, but it will do the initial step of creating a credential exchange record,\nwhich the issuer can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and issuer.\n\nThe credential type must be one of indy or ld_proof.\n```json\n{\n    \"type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...}, <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the credential exchange record should be saved on completion.\n}\n```\nFor a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\nRequest Body:\n---\n    credential: CreateOffer\n        The payload for creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n        A record of this credential exchange",
         "operationId": "create_offer_v1_issuer_credentials_create_offer_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOffer" } } },
@@ -1030,7 +1030,7 @@
       "post": {
         "tags": ["verifier"],
         "summary": "Send a Proof Request to a connection",
-        "description": "Send proof request\n---\nNB: Only a tenant with the verifier role can send a proof request.\n\nThe verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n        \"connection_id\": \"string\", <-- The verifier's reference to the connection to send this proof request to\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: SendProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
+        "description": "Send proof request\n---\nNB: Only a tenant with the verifier role can send a proof request.\n\nThe verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"connection_id\": \"string\", <-- The verifier's reference to the connection to send this proof request to\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: SendProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
         "operationId": "send_proof_request_v1_verifier_send_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendProofRequest" } } },
@@ -1053,7 +1053,7 @@
       "post": {
         "tags": ["verifier"],
         "summary": "Create a Proof Request (not bound to a connection)",
-        "description": "Creates a presentation request that is not bound to any specific proposal or connection\n---\nThis endpoint is used to create a proof request that is not bound to a connection. This means the proof request is\nnot sent directly, but it will do the initial step of creating a proof exchange record,\nwhich the verifier can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and verifier.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n        \"protocol_version\": \"v2\", <-- \"v1\" is supported, but deprecated\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
+        "description": "Creates a presentation request that is not bound to any specific proposal or connection\n---\nThis endpoint is used to create a proof request that is not bound to a connection. This means the proof request is\nnot sent directly, but it will do the initial step of creating a proof exchange record,\nwhich the verifier can then use in the out of band (OOB) protocol.\n\nThe OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a\nconnection does not yet exist between holder and verifier.\n\nThe proof request type must be one of indy or ld_proof.\n```json\n    {\n        \"type\": \"indy\" or \"ld_proof\",\n        \"indy_proof_request\": {...}, <-- Required if type is \"indy\"\n        \"dif_proof_request\": {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\": true <-- Whether the proof exchange record should be preserved after completion.\n        \"comment\": \"string\", <-- This comment will appear in the proof record for the recipient as well\n    }\n```\nFor a detailed technical specification and informative diagrams\nrelated to the present proof process, refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request object\n\nReturns:\n---\n    PresentationExchange\n        The presentation exchange record for this request",
         "operationId": "create_proof_request_v1_verifier_create_request_post",
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateProofRequest" } } },
@@ -2563,8 +2563,7 @@
             "title": "Save Exchange Record",
             "description": "Whether the credential exchange record should be saved on completion",
             "default": false
-          },
-          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion", "default": "v2" }
+          }
         },
         "type": "object",
         "title": "CreateOffer"
@@ -2588,7 +2587,6 @@
       },
       "CreateProofRequest": {
         "properties": {
-          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion", "default": "v2" },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
           "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {
@@ -2719,7 +2717,6 @@
           "credential_exchange_id": { "type": "string", "title": "Credential Exchange Id" },
           "did": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Did" },
           "error_msg": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Error Msg" },
-          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion" },
           "role": { "type": "string", "enum": ["issuer", "holder"], "title": "Role" },
           "schema_id": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Schema Id" },
           "state": {
@@ -2750,7 +2747,7 @@
           "updated_at": { "type": "string", "title": "Updated At" }
         },
         "type": "object",
-        "required": ["created_at", "credential_id", "credential_exchange_id", "protocol_version", "role", "updated_at"],
+        "required": ["created_at", "credential_id", "credential_exchange_id", "role", "updated_at"],
         "title": "CredentialExchange"
       },
       "CredentialSchema": {
@@ -3846,11 +3843,6 @@
         "title": "InvitationResult",
         "description": "InvitationResult"
       },
-      "IssueCredentialProtocolVersion": {
-        "type": "string",
-        "enum": ["v1", "v2"],
-        "title": "IssueCredentialProtocolVersion"
-      },
       "IssuerCredRevRecord": {
         "properties": {
           "created_at": {
@@ -4201,7 +4193,6 @@
         "title": "PingRequestResponse",
         "description": "PingRequestResponse"
       },
-      "PresentProofProtocolVersion": { "type": "string", "enum": ["v1", "v2"], "title": "PresentProofProtocolVersion" },
       "PresentationDefinition": {
         "properties": {
           "format": { "anyOf": [{ "$ref": "#/components/schemas/ClaimFormat" }, { "type": "null" }] },
@@ -4250,7 +4241,6 @@
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequest-Output" }, { "type": "null" }]
           },
           "proof_id": { "type": "string", "title": "Proof Id" },
-          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion" },
           "role": { "type": "string", "enum": ["prover", "verifier"], "title": "Role" },
           "state": {
             "anyOf": [
@@ -4277,7 +4267,7 @@
           "verified": { "anyOf": [{ "type": "boolean" }, { "type": "null" }], "title": "Verified" }
         },
         "type": "object",
-        "required": ["created_at", "proof_id", "protocol_version", "role"],
+        "required": ["created_at", "proof_id", "role"],
         "title": "PresentationExchange"
       },
       "ProofRequestType": { "type": "string", "enum": ["indy", "jwt", "ld_proof"], "title": "ProofRequestType" },
@@ -4544,8 +4534,7 @@
             "description": "Whether the credential exchange record should be saved on completion",
             "default": false
           },
-          "connection_id": { "type": "string", "title": "Connection Id" },
-          "protocol_version": { "$ref": "#/components/schemas/IssueCredentialProtocolVersion", "default": "v2" }
+          "connection_id": { "type": "string", "title": "Connection Id" }
         },
         "type": "object",
         "required": ["connection_id"],
@@ -4553,7 +4542,6 @@
       },
       "SendProofRequest": {
         "properties": {
-          "protocol_version": { "$ref": "#/components/schemas/PresentProofProtocolVersion", "default": "v2" },
           "comment": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Comment" },
           "type": { "$ref": "#/components/schemas/ProofRequestType", "default": "indy" },
           "indy_proof_request": {

@@ -681,8 +681,7 @@ paths:
         \ <-- Required if type is ld_proof\n    \"save_exchange_record\": true, <--\
         \ Whether the credential exchange record should be saved on completion.\n\
         \    \"connection_id\": \"string\", <-- The issuer's reference to the connection\
-        \ they want to submit the credential to.\n    \"protocol_version\": \"v2\"\
-        \ <-- v1 is supported, but deprecated.\n}\n```\nSetting the `save_exchange_record`\
+        \ they want to submit the credential to.\n}\n```\nSetting the `save_exchange_record`\
         \ field to True will save the exchange record after the credential is accepted.\n\
         The default behaviour is to only save exchange records while they are in pending\
         \ state.\n\nFor a detailed technical specification of the credential issuing\
@@ -861,10 +860,9 @@ paths:
         type\": \"indy\" or \"ld_proof\",\n    \"indy_credential_detail\": {...},\
         \ <-- Required if type is indy\n    \"ld_credential_detail\": {...}, <-- Required\
         \ if type is ld_proof\n    \"save_exchange_record\": true, <-- Whether the\
-        \ credential exchange record should be saved on completion.\n    \"protocol_version\"\
-        : \"v2\" <-- v1 is supported, but deprecated.\n}\n```\nFor a detailed technical\
-        \ specification of the credential issuing process, refer to the [Aries Issue\
-        \ Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\
+        \ credential exchange record should be saved on completion.\n}\n```\nFor a\
+        \ detailed technical specification of the credential issuing process, refer\
+        \ to the [Aries Issue Credential v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).\n\
         \nRequest Body:\n---\n    credential: CreateOffer\n        The payload for\
         \ creating a credential offer\n\nReturns:\n---\n    CredentialExchange\n \
         \       A record of this credential exchange"
@@ -1511,8 +1509,7 @@ paths:
         \ {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\"\
         : true <-- Whether the proof exchange record should be preserved after completion.\n\
         \        \"comment\": \"string\", <-- This comment will appear in the proof\
-        \ record for the recipient as well\n        \"protocol_version\": \"v2\",\
-        \ <-- \"v1\" is supported, but deprecated\n        \"connection_id\": \"string\"\
+        \ record for the recipient as well\n        \"connection_id\": \"string\"\
         , <-- The verifier's reference to the connection to send this proof request\
         \ to\n    }\n```\nFor a detailed technical specification and informative diagrams\n\
         related to the present proof process, refer to the [Aries Present Proof v2\n\
@@ -1561,10 +1558,9 @@ paths:
         \ {...}, <-- Required if type is \"ld_proof\"\n        \"save_exchange_record\"\
         : true <-- Whether the proof exchange record should be preserved after completion.\n\
         \        \"comment\": \"string\", <-- This comment will appear in the proof\
-        \ record for the recipient as well\n        \"protocol_version\": \"v2\",\
-        \ <-- \"v1\" is supported, but deprecated\n    }\n```\nFor a detailed technical\
-        \ specification and informative diagrams\nrelated to the present proof process,\
-        \ refer to the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md)\
+        \ record for the recipient as well\n    }\n```\nFor a detailed technical specification\
+        \ and informative diagrams\nrelated to the present proof process, refer to\
+        \ the [Aries Present Proof v2\nRFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md)\
         \ and the [LD Proof\nAttachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).\n\
         \nRequest Body:\n---\n    body: CreateProofRequest\n        The proof request\
         \ object\n\nReturns:\n---\n    PresentationExchange\n        The presentation\
@@ -3621,9 +3617,6 @@ components:
           title: Save Exchange Record
           description: Whether the credential exchange record should be saved on completion
           default: false
-        protocol_version:
-          $ref: "#/components/schemas/IssueCredentialProtocolVersion"
-          default: v2
       type: object
       title: CreateOffer
     CreateOobInvitation:
@@ -3659,9 +3652,6 @@ components:
       title: CreateOobInvitation
     CreateProofRequest:
       properties:
-        protocol_version:
-          $ref: "#/components/schemas/PresentProofProtocolVersion"
-          default: v2
         comment:
           anyOf:
             - type: string
@@ -3862,8 +3852,6 @@ components:
             - type: string
             - type: "null"
           title: Error Msg
-        protocol_version:
-          $ref: "#/components/schemas/IssueCredentialProtocolVersion"
         role:
           type: string
           enum:
@@ -3910,7 +3898,6 @@ components:
         - created_at
         - credential_id
         - credential_exchange_id
-        - protocol_version
         - role
         - updated_at
       title: CredentialExchange
@@ -5302,12 +5289,6 @@ components:
         - invitation_url
       title: InvitationResult
       description: InvitationResult
-    IssueCredentialProtocolVersion:
-      type: string
-      enum:
-        - v1
-        - v2
-      title: IssueCredentialProtocolVersion
     IssuerCredRevRecord:
       properties:
         created_at:
@@ -5751,12 +5732,6 @@ components:
       type: object
       title: PingRequestResponse
       description: PingRequestResponse
-    PresentProofProtocolVersion:
-      type: string
-      enum:
-        - v1
-        - v2
-      title: PresentProofProtocolVersion
     PresentationDefinition:
       properties:
         format:
@@ -5831,8 +5806,6 @@ components:
         proof_id:
           type: string
           title: Proof Id
-        protocol_version:
-          $ref: "#/components/schemas/PresentProofProtocolVersion"
         role:
           type: string
           enum:
@@ -5873,7 +5846,6 @@ components:
       required:
         - created_at
         - proof_id
-        - protocol_version
         - role
       title: PresentationExchange
     ProofRequestType:
@@ -6197,18 +6169,12 @@ components:
         connection_id:
           type: string
           title: Connection Id
-        protocol_version:
-          $ref: "#/components/schemas/IssueCredentialProtocolVersion"
-          default: v2
       type: object
       required:
         - connection_id
       title: SendCredential
     SendProofRequest:
       properties:
-        protocol_version:
-          $ref: "#/components/schemas/PresentProofProtocolVersion"
-          default: v2
         comment:
           anyOf:
             - type: string

@@ -1,7 +1,6 @@
 import io
 import os
 import traceback
-from contextlib import asynccontextmanager
 
 import pydantic
 import yaml
@@ -19,17 +18,14 @@ from app.routes import (
     jsonld,
     messaging,
     oob,
-    sse,
     trust_registry,
     verifier,
-    websocket_endpoint,
 )
 from app.routes.admin import tenants
 from app.routes.wallet import credentials as wallet_credentials
 from app.routes.wallet import dids as wallet_dids
 from app.routes.wallet import jws as wallet_jws
 from app.routes.wallet import sd_jws as wallet_sd_jws
-from app.services.event_handling.websocket_manager import WebsocketManager
 from app.util.extract_validation_error import extract_validation_error_msg
 from shared.constants import PROJECT_VERSION
 from shared.exceptions import CloudApiValueError
@@ -40,31 +36,10 @@ ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 cloud_api_docs_description = """
-Welcome to the Aries CloudAPI Python project.
+Welcome to the Aries CloudAPI Python project!
 
-In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for
-real-time interfacing with webhook events.
-
-WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish
-a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the
-ability to subscribe by topic, or to any wallet in their group.
-
-Our WebSocket endpoints are as follows:
-
-1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.
-
-2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook
-events for a specific wallet ID.
-
-3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.
-
-4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.
-`connections`, `credentials`, `proofs`, `endorsements`).
-
-For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
-
-Please refer to our API documentation for more details about our authentication mechanism, as well as for information
-about the available topics.
+For detailed guidance on using the API, please visit our official documentation:
+https://www.didx.co.za/ssi-dev-portal/docs/Welcome.
 """
 
 default_docs_description = """
@@ -76,19 +51,8 @@ prod = os.environ.get("prod", "true").upper() == "TRUE"
 debug = not prod
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    # Startup logic occurs before yield
-    yield
-    # Shutdown logic occurs after yield
-    logger.info("Calling WebsocketManager shutdown")
-    await WebsocketManager.disconnect_all()
-
-
-webhook_routes = [sse, websocket_endpoint]
-
 trust_registry_routes = [trust_registry]
-tenant_admin_routes = [tenants] + webhook_routes
+tenant_admin_routes = [tenants]
 tenant_routes = [
     connections,
     definitions,
@@ -101,7 +65,7 @@ tenant_routes = [
     wallet_dids,
     wallet_jws,
     wallet_sd_jws,
-] + webhook_routes
+]
 
 
 def routes_for_role(role: str) -> list:
@@ -130,7 +94,6 @@ def create_app() -> FastAPI:
         title=OPENAPI_NAME,
         version=PROJECT_VERSION,
         description=cloud_api_description(ROLE),
-        lifespan=lifespan,
         debug=debug,
         redoc_url=None,
         docs_url=None,

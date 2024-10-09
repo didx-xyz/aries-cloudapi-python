@@ -19,19 +19,16 @@ async def app_lifespan(_: FastAPI):
 
     # Initialize the container
     container = Container()
+    await container.init_resources()
     container.wire(modules=[__name__])
 
-    # Start singleton services
-    container.redis_service()
-
-    endorsement_processor = container.endorsement_processor()
+    endorsement_processor = await container.endorsement_processor()
     endorsement_processor.start()
-
     yield
 
     logger.info("Shutting down Endorser services ...")
     await endorsement_processor.stop()
-    container.shutdown_resources()  # shutdown redis instance
+    await container.shutdown_resources()  # shutdown redis instance
     logger.info("Shutdown Endorser services.")
 
 

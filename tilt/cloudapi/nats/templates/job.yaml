@@ -40,7 +40,7 @@ spec:
 
               {{- range $stream, $config := .Values.postInstall.streams }}
               nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} stream add {{ $stream }} \
-                  --subjects {{ join "," $config.subjects }} \
+                  --subjects {{ join "," $config.subjects | quote }} \
                   {{- if $config.defaults }}
                   --defaults \
                   {{- end }}

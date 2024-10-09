@@ -9,6 +9,7 @@ from endorser.util.transaction_record import (
     get_endorsement_request_attachment,
     is_credential_definition_transaction,
 )
+from shared.models.endorsement import TransactionTypes
 
 
 def test_get_endorsement_request_attachment_with_valid_attachment():
@@ -75,19 +76,33 @@ def test_get_endorsement_request_attachment_exception():
 
 
 def test_is_credential_definition_transaction_true():
-    operation_type = "102"
-    assert is_credential_definition_transaction(operation_type) is True
+    operation_type = TransactionTypes.CLAIM_DEF
+    assert (
+        is_credential_definition_transaction(
+            operation_type,
+            attachment={
+                "identifier": "identifier_value",
+                "operation": {"ref": "ref_value"},
+            },
+        )
+        is True
+    )
 
 
 def test_is_credential_definition_transaction_false():
     operation_type = "100"
-    assert is_credential_definition_transaction(operation_type) is False
+    assert is_credential_definition_transaction(operation_type, attachment={}) is False
 
 
 def test_is_credential_definition_transaction_exception():
     attachment = MagicMock(side_effect=KeyError("Exception"))
 
-    assert is_credential_definition_transaction(attachment) is False
+    assert (
+        is_credential_definition_transaction(
+            operation_type=TransactionTypes.CLAIM_DEF, attachment=attachment
+        )
+        is False
+    )
 
 
 @pytest.mark.anyio
@@ -107,34 +122,28 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(mock_acapy_client)
 
 
 @pytest.mark.anyio
-async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_identifier(
-    mock_acapy_client,
-):
-    mock_acapy_client.schema.get_schema.return_value = MagicMock(
-        var_schema=MagicMock(id="schema_id")
-    )
-
+async def test_is_credential_definition_transaction_fail_no_identifier():
     assert (
-        await get_did_and_schema_id_from_cred_def_attachment(
-            mock_acapy_client,
-            {"not_identifier": "identifier_value", "operation": {"ref": "ref_value"}},
+        is_credential_definition_transaction(
+            operation_type=TransactionTypes.CLAIM_DEF,
+            attachment={
+                "not_identifier": "identifier_value",
+                "operation": {"ref": "ref_value"},
+            },
         )
         is False
     )
 
 
 @pytest.mark.anyio
-async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_ref(
-    mock_acapy_client,
-):
-    mock_acapy_client.schema.get_schema.return_value = MagicMock(
-        var_schema=MagicMock(id="schema_id")
-    )
-
+async def test_is_credential_definition_transaction_fail_no_ref():
     assert (
-        await get_did_and_schema_id_from_cred_def_attachment(
-            mock_acapy_client,
-            {"identifier": "identifier_value", "operation": {"no_ref": "ref_value"}},
+        is_credential_definition_transaction(
+            operation_type=TransactionTypes.CLAIM_DEF,
+            attachment={
+                "identifier": "identifier_value",
+                "operation": {"no_ref": "ref_value"},
+            },
         )
         is False
     )

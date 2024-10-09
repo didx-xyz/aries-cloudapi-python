@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 look_back = 0.5
 
 
+@pytest.mark.skip("Skip SSE tests -- to be removed")
 @pytest.mark.anyio
 async def test_sse_subscribe_wallet_topic(
     alice_member_client: RichAsyncClient,
@@ -51,6 +52,7 @@ async def test_sse_subscribe_wallet_topic(
     )
 
 
+@pytest.mark.skip("Skip SSE tests -- to be removed")
 @pytest.mark.anyio
 async def test_sse_subscribe_event_state(
     alice_member_client: RichAsyncClient,
@@ -84,6 +86,7 @@ async def test_sse_subscribe_event_state(
     )
 
 
+@pytest.mark.skip("Skip SSE tests -- to be removed")
 @pytest.mark.anyio
 async def test_sse_subscribe_filtered_stream(
     alice_member_client: RichAsyncClient,
@@ -120,6 +123,7 @@ async def test_sse_subscribe_filtered_stream(
     )
 
 
+@pytest.mark.skip("Skip SSE tests -- to be removed")
 @pytest.mark.anyio
 async def test_sse_subscribe_event(
     alice_member_client: RichAsyncClient,

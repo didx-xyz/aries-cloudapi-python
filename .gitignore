@@ -1,8 +1,6 @@
 # data
 data/
 **.db
-# Nats credentials
-**.creds
 
 # Mise Kind Kubeconfig
 .mise/kubeconfig.yaml

@@ -58,7 +58,7 @@ async def test_send_proof_request(
         thread_id = send_proof_response["thread_id"]
         assert thread_id
 
-        alice_connection_event = await check_webhook_state(
+        alice_proof_event = await check_webhook_state(
             client=alice_member_client,
             topic="proofs",
             state="request-received",
@@ -66,7 +66,7 @@ async def test_send_proof_request(
                 "thread_id": thread_id,
             },
         )
-        assert alice_connection_event["protocol_version"] == protocol_version
+        assert alice_proof_event["protocol_version"] == protocol_version
 
     finally:
         # Clean up:
@@ -517,11 +517,13 @@ async def test_accept_proof_request_verifier_has_issuer_role(
     send_proof_response = await send_proof_request(meld_co_client, request_body)
 
     meld_co_proof_id = send_proof_response["proof_id"]
+    thread_id = send_proof_response["thread_id"]
 
     alice_payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
+        filter_map={"thread_id": thread_id},
     )
     alice_proof_id = alice_payload["proof_id"]
 

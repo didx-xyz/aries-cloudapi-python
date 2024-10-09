@@ -1,49 +1,16 @@
 import asyncio
-import json
 import time
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
 
-import nats
-from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
+import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 
-from shared.constants import NATS_CREDS_FILE, NATS_SERVER, NATS_STREAM, NATS_SUBJECT
+from shared.constants import NATS_STREAM, NATS_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 logger = get_logger(__name__)
-
-
-async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
-    """
-    Initialize a connection to the NATS server.
-    """
-    logger.debug("Connecting to NATS server...")
-    try:
-        connect_kwargs = {
-            "servers": [NATS_SERVER],
-        }
-        if NATS_CREDS_FILE:
-            connect_kwargs["user_credentials"] = NATS_CREDS_FILE
-        else:
-            logger.warning("No NATS credentials file found, assuming local development")
-        nats_client: NATS = await nats.connect(**connect_kwargs)
-
-    except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
-        logger.error("Error connecting to NATS server: {}", e)
-        raise e
-    logger.debug("Connected to NATS server")
-
-    jetstream: JetStreamContext = nats_client.jetstream()
-    logger.debug("Yielding JetStream context...")
-    yield jetstream
-
-    logger.debug("Closing NATS connection...")
-    await nats_client.close()
-    logger.debug("NATS connection closed")
 
 
 class NatsEventsProcessor:
@@ -108,7 +75,7 @@ class NatsEventsProcessor:
         async def event_generator():
             end_time = time.time() + duration
             while not stop_event.is_set():
-                remaining_time = remaining_time = end_time - time.time()
+                remaining_time = end_time - time.time()
                 logger.trace("remaining_time: {}", remaining_time)
                 if remaining_time <= 0:
                     logger.debug("Timeout reached")
@@ -116,15 +83,15 @@ class NatsEventsProcessor:
                     break
 
                 try:
-                    messages = await subscription.fetch(10, 1)
+                    messages = await subscription.fetch(batch=5, timeout=0.2)
                     for message in messages:
                         if message.headers.get("event_topic") == topic:
-                            event = json.loads(message.data)
+                            event = orjson.loads(message.data)
                             yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
                 except TimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.1)
 
         try:
             yield event_generator()

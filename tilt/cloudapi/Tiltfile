@@ -440,7 +440,7 @@ def setup_cloudapi(build_enabled, expose):
             },
         },
         "governance-ga-agent": {
-            "depends": ["postgres", "ledger-browser"],
+            "depends": ["nats", "postgres", "ledger-browser"],
             "links": [
                 link(
                     "http://governance-agent.cloudapi." + ingress_domain,
@@ -475,7 +475,7 @@ def setup_cloudapi(build_enabled, expose):
             },
         },
         "governance-multitenant-agent": {
-            "depends": ["postgres", "ledger-browser"],
+            "depends": ["nats", "postgres", "ledger-browser"],
             "links": [
                 link(
                     "http://multitenant-agent.cloudapi." + ingress_domain,
@@ -587,7 +587,7 @@ def setup_cloudapi(build_enabled, expose):
             },
         },
         "waypoint": {
-            "depends": ["nats", "benthos"],
+            "depends": ["nats"],
             "links": [
                 link("http://waypoint.cloudapi." + ingress_domain + "/docs", "Docs"),
             ],

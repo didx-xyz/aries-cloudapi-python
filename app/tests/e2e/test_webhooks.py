@@ -10,6 +10,7 @@ BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skip("Bulk fetching of webhooks to be removed")
 async def test_get_webhooks_for_wallet_by_topic(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
@@ -24,6 +25,7 @@ async def test_get_webhooks_for_wallet_by_topic(
 
 
 @pytest.mark.anyio
+@pytest.mark.skip("Bulk fetching of webhooks to be removed")
 async def test_get_webhooks_for_wallet(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument

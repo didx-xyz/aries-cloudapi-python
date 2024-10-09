@@ -8,6 +8,7 @@ from shared import WEBHOOKS_URL, RichAsyncClient
 CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
+@pytest.mark.skip("Skip Webhooks tests -- to be removed")
 @pytest.mark.anyio
 async def test_wallets_webhooks(
     alice_member_client: RichAsyncClient, bob_member_client: RichAsyncClient
@@ -39,6 +40,7 @@ async def test_wallets_webhooks(
         )
 
 
+@pytest.mark.skip("Skip Webhooks tests -- to be removed")
 @pytest.mark.anyio
 async def test_connection_webhooks(
     alice_member_client: RichAsyncClient, bob_member_client: RichAsyncClient

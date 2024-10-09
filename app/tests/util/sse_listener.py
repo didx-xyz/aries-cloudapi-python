@@ -65,7 +65,7 @@ class SseListener:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
-        url = f"{base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
+        url = f"{waypoint_base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
 
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:

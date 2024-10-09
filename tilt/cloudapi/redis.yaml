@@ -4,6 +4,9 @@ fullnameOverride: redis
 redis:
   podAnnotations:
     sidecar.istio.io/proxyCPU: 10m
+    proxy.istio.io/config: |-
+      proxyMetadata:
+        ISTIO_META_IDLE_TIMEOUT: 0s
   # podLabels:
   #   sidecar.istio.io/inject: "false"
   # https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15

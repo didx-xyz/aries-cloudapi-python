@@ -10,7 +10,8 @@ from nats.js.client import JetStreamContext
 
 from shared.constants import NATS_STREAM, NATS_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
-from waypoint.services.nats_service import NatsEventsProcessor, init_nats_client
+from shared.services.nats_jetstream import init_nats_client
+from waypoint.services.nats_service import NatsEventsProcessor
 
 
 @pytest.fixture
@@ -29,7 +30,7 @@ async def test_init_nats_client(nats_creds_file):
     mock_nats_client = AsyncMock(spec=NATS)  # pylint: disable=redefined-outer-name
 
     with patch("nats.connect", return_value=mock_nats_client), patch(
-        "waypoint.services.nats_service.NATS_CREDS_FILE", new=nats_creds_file
+        "shared.services.nats_jetstream.NATS_CREDS_FILE", new=nats_creds_file
     ):
         async for jetstream in init_nats_client():
             assert jetstream == mock_nats_client.jetstream.return_value

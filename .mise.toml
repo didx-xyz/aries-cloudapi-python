@@ -76,6 +76,7 @@ rm -rf tilt/docker
 description = "Run all tests"
 depends = ["poetry:install:all"]
 run = """
+#!/bin/bash
 cp .env.example .env
 source .env
 poetry run pytest . --ignore ./tilt

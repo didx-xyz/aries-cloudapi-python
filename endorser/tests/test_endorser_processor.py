@@ -1,14 +1,19 @@
 import asyncio
 import json
-import unittest
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from redis.client import PubSubWorkerThread
-from redis.cluster import ClusterPubSub
+from nats.aio.client import Client as NATS
+from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.client import JetStreamContext
 
 from endorser.services.endorsement_processor import EndorsementProcessor
-from shared.constants import GOVERNANCE_LABEL
+from shared.constants import (
+    ENDORSER_DURABLE_CONSUMER,
+    GOVERNANCE_LABEL,
+    NATS_STREAM,
+    NATS_SUBJECT,
+)
 
 # pylint: disable=redefined-outer-name
 # because re-using fixtures in same module
@@ -17,23 +22,19 @@ from shared.constants import GOVERNANCE_LABEL
 
 
 @pytest.fixture
-def redis_service_mock():
-    redis_service = MagicMock()
-    redis_service.endorsement_redis_prefix = "endorse:"
-    redis_service.scan_keys = Mock(return_value=["endorse:key1", "endorse:key2"])
-    redis_service.get = Mock(side_effect=["event_json1", "event_json2"])
-    return redis_service
+async def mock_nats_client():
+    with patch("nats.connect") as mock_connect:
+        mock_nats = AsyncMock(spec=NATS)
+        mock_jetstream = AsyncMock(spec=JetStreamContext)
+        mock_nats.jetstream.return_value = mock_jetstream
+        mock_connect.return_value = mock_nats
+        yield mock_jetstream
 
 
 @pytest.fixture
-def endorsement_processor_mock(redis_service_mock):
-    processor = EndorsementProcessor(redis_service=redis_service_mock)
-    # Mock pubsub
-    processor._pubsub_thread = Mock(spec=PubSubWorkerThread)
-    processor._pubsub_thread.is_alive.return_value = True
-    processor._pubsub = Mock(spec=ClusterPubSub)
+def endorsement_processor_mock(mock_nats_client):
+    processor = EndorsementProcessor(jetstream=mock_nats_client)
 
-    processor.endorse_prefix = "endorse"
     return processor
 
 
@@ -53,10 +54,6 @@ async def test_stop(endorsement_processor_mock):
     dummy_task = asyncio.create_task(asyncio.sleep(1))
     endorsement_processor_mock._tasks.append(dummy_task)
 
-    # Simulate an existing pubsub_thread and pubsub instance
-    # endorsement_processor_mock._pubsub_thread = Mock(spec=PubSubWorkerThread)
-    endorsement_processor_mock._pubsub = Mock()
-
     await endorsement_processor_mock.stop()
 
     # Check that all tasks were attempted to be cancelled
@@ -64,10 +61,6 @@ async def test_stop(endorsement_processor_mock):
 
     # Ensure tasks list is cleared
     assert len(endorsement_processor_mock._tasks) == 0
-
-    # Verify that pubsub_thread stop and pubsub disconnect methods were called
-    endorsement_processor_mock._pubsub_thread.stop.assert_called_once()
-    endorsement_processor_mock._pubsub.disconnect.assert_called_once()
 
 
 @pytest.mark.anyio
@@ -87,172 +80,153 @@ async def test_are_tasks_running_x(endorsement_processor_mock):
     # Now reset task to appear as still running, to test pubsub thread case
     dummy_done_task.done.return_value = False
     endorsement_processor_mock._tasks = [dummy_done_task]
-    # when pubsub thread stops, tasks should be not running
-
-    # todo: uncomment these tests after reimplemented:
-    # endorsement_processor_mock._pubsub_thread.is_alive.return_value = False
-    # assert not endorsement_processor_mock.are_tasks_running()
 
 
 @pytest.mark.anyio
-async def test_set_notification_handler(endorsement_processor_mock):
-    # Mock the Redis message to simulate a keyspace notification
-    mock_msg = {
-        "type": "pmessage",
-        "pattern": None,
-        "channel": b"__keyevent@0__:set",
-        "data": b"endorse:sample_key",
-    }
+async def test_process_endorsement_requests_success(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
 
-    # Mock the _new_event_notification event inside the processor
-    endorsement_processor_mock._new_event_notification = Mock()
+    mock_message = AsyncMock()
+    mock_message.data = json.dumps(
+        {
+            "wallet_id": "governance",
+            "topic": "endorsements",
+            "origin": "governance",
+            "payload": {
+                "state": "request-received",
+                "transaction_id": "test-txn-id",
+            },
+        }
+    ).encode()
+    mock_message.subject = "test.subject"
 
-    # Call the method with the mocked message
-    endorsement_processor_mock._set_notification_handler(mock_msg)
+    # Set up the fetch method to return a message once, then raise asyncio.CancelledError
+    mock_subscription.fetch.side_effect = [[mock_message], asyncio.CancelledError]
 
-    # Verify that _new_event_notification.set() was called
-    endorsement_processor_mock._new_event_notification.set.assert_called_once_with()
+    # Test
+    with patch.object(
+        endorsement_processor_mock, "_process_endorsement_event"
+    ) as mock_process_event:
+        with pytest.raises(asyncio.CancelledError):
+            await endorsement_processor_mock._process_endorsement_requests()
 
-    # Test with a non-matching message to ensure the set() method is not called
-    non_matching_msg = mock_msg.copy()
-    non_matching_msg["data"] = b"non-matching:sample_key"
-    endorsement_processor_mock._set_notification_handler(non_matching_msg)
-
-    # Verify that set() method is still called only once from the first call
-    endorsement_processor_mock._new_event_notification.set.assert_called_once()
-
-
-def test_start_notification_listener(endorsement_processor_mock):
-    endorsement_processor_mock._pubsub.psubscribe = Mock()
-    endorsement_processor_mock._pubsub.run_in_thread = Mock()
-
-    # Call the method
-    endorsement_processor_mock._start_notification_listener()
-
-    # Verify psubscribe and run_in_thread was called correctly
-    endorsement_processor_mock._pubsub.psubscribe.assert_called_once()
-    endorsement_processor_mock._pubsub.run_in_thread.assert_called_once()
+    # Assertions
+    mock_process_event.assert_called_once_with(mock_message.data.decode())
+    mock_message.ack.assert_called_once()
 
 
 @pytest.mark.anyio
-async def test_process_endorsement_requests(endorsement_processor_mock):
-    scan_results = [
-        [],  # empty list to start
-        ["endorse:key1"],  # Then a key returned from the scan
-        ["endorse:key2", "endorse:key3"],  # Then 2 keys in a batch
-        Exception(
-            "Force inf loop to stop"
-        ),  # force loop to exit after processing available keys
+async def test_process_endorsement_requests_timeout(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Simulate a timeout, then a CancelledError to stop the loop
+    mock_subscription.fetch.side_effect = [TimeoutError, asyncio.CancelledError]
+
+    # Test
+    with patch("asyncio.sleep") as mock_sleep:
+        with pytest.raises(asyncio.CancelledError):
+            await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assertions
+    mock_sleep.assert_called_once_with(0.1)
+
+
+@pytest.mark.anyio
+async def test_process_endorsement_requests_error(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    mock_message = AsyncMock()
+    mock_message.data = b"invalid data"
+    mock_message.subject = "test.subject"
+
+    # Return a message that will cause an error, then raise CancelledError
+    mock_subscription.fetch.side_effect = [[mock_message], asyncio.CancelledError]
+
+    # Test
+    with patch.object(
+        endorsement_processor_mock, "_handle_unprocessable_endorse_event"
+    ) as mock_handle_error:
+        with pytest.raises(asyncio.CancelledError):
+            await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assertions
+    mock_handle_error.assert_called_once()
+    assert isinstance(mock_handle_error.call_args[0][2], Exception)
+
+
+@pytest.mark.anyio
+async def test_process_endorsement_requests_multiple_messages(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    mock_messages = [AsyncMock() for _ in range(3)]
+    for i, msg in enumerate(mock_messages):
+        msg.data = json.dumps(
+            {
+                "wallet_id": "governance",
+                "topic": "endorsements",
+                "origin": "governance",
+                "payload": {
+                    "state": "request-received",
+                    "transaction_id": f"test-txn-id-{i}",
+                },
+            }
+        ).encode()
+        msg.subject = f"test.subject.{i}"
+
+    # Return multiple messages, then raise CancelledError
+    mock_subscription.fetch.side_effect = [mock_messages, asyncio.CancelledError]
+
+    # Test
+    with patch.object(
+        endorsement_processor_mock, "_process_endorsement_event"
+    ) as mock_process_event:
+        with pytest.raises(asyncio.CancelledError):
+            await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assertions
+    assert mock_process_event.call_count == 3
+    for msg in mock_messages:
+        msg.ack.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_process_endorsement_requests_loop_exit(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Simulate the loop running a few times before we stop it
+    side_effects = [
+        [AsyncMock(data=b'{"valid": "data"}', subject="test.subject")],
+        TimeoutError,
+        asyncio.CancelledError,
     ]
-    redis_service = Mock()
-    redis_service.scan_keys = Mock(side_effect=scan_results)
-    endorsement_processor_mock.redis_service = redis_service
+    mock_subscription.fetch.side_effect = side_effects
 
-    # Store processed keys for assertion
-    processed_keys = []
-
-    # Override _attempt_process_endorsement to track keys and then set the done_event
-    async def mock_attempt_process_endorsement(key):
-        processed_keys.append(key)
-
-    endorsement_processor_mock._attempt_process_endorsement = (
-        mock_attempt_process_endorsement
-    )
-
-    # Exception is to force the NoReturn function to exit
-    with pytest.raises(Exception):
+    # Test
+    with pytest.raises(asyncio.CancelledError):
         await endorsement_processor_mock._process_endorsement_requests()
 
-    # Assert that the keys were processed
-    assert len(processed_keys) == 3
-    assert processed_keys == ["endorse:key1", "endorse:key2", "endorse:key3"]
-
-
-@pytest.mark.anyio
-async def test_attempt_process_endorsement(endorsement_processor_mock):
-    event_key = "endorse:key"
-    lock_key = f"lock:{event_key}"
-    endorsement_processor_mock.redis_service.set_lock.return_value = True
-    endorsement_processor_mock._process_endorsement_event = AsyncMock()
-
-    await endorsement_processor_mock._attempt_process_endorsement(event_key)
-
-    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
-        key=lock_key, px=1000
-    )
-    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
-    endorsement_processor_mock.redis_service.delete_key.assert_called_with(event_key)
-    endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
-        "event_json1"
-    )
-
-
-@pytest.mark.anyio
-async def test_attempt_process_endorsement_no_event(endorsement_processor_mock):
-    event_key = "endorse:key"
-    lock_key = f"lock:{event_key}"
-    endorsement_processor_mock.redis_service.set_lock.return_value = True
-    endorsement_processor_mock._process_endorsement_event = AsyncMock()
-
-    endorsement_processor_mock.redis_service.get = Mock(return_value=[])
-
-    await endorsement_processor_mock._attempt_process_endorsement(event_key)
-
-    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
-        key=lock_key, px=1000
-    )
-    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
-    endorsement_processor_mock._process_endorsement_event.assert_not_called()
-
-
-@pytest.mark.anyio
-async def test_attempt_process_endorsement_delete_failure(endorsement_processor_mock):
-    event_key = "endorse:key"
-    lock_key = f"lock:{event_key}"
-    endorsement_processor_mock.redis_service.set_lock.return_value = True
-    endorsement_processor_mock._process_endorsement_event = AsyncMock()
-
-    endorsement_processor_mock.redis_service.delete_key = Mock(return_value=False)
-
-    await endorsement_processor_mock._attempt_process_endorsement(event_key)
-
-    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
-        key=lock_key, px=1000
-    )
-    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
-    endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
-        "event_json1"
-    )
-
-
-@pytest.mark.anyio
-async def test_attempt_process_endorsement_key_locked(endorsement_processor_mock):
-    event_key = "endorse:key"
-    lock_key = f"lock:{event_key}"
-    endorsement_processor_mock.redis_service.set_lock.return_value = False
-    endorsement_processor_mock._process_endorsement_event = AsyncMock()
-
-    endorsement_processor_mock.redis_service.delete_key = Mock(return_value=False)
-
-    await endorsement_processor_mock._attempt_process_endorsement(event_key)
-
-    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
-        key=lock_key, px=1000
-    )
-    endorsement_processor_mock.redis_service.get.assert_not_called()
-    endorsement_processor_mock._process_endorsement_event.assert_not_called()
-
-
-@pytest.mark.anyio
-async def test_attempt_process_endorsement_x(endorsement_processor_mock):
-    endorsement_processor_mock._handle_unprocessable_endorse_event = Mock()
-    endorsement_processor_mock._process_endorsement_event = AsyncMock(
-        side_effect=Exception("Test")
-    )
-    await endorsement_processor_mock._attempt_process_endorsement("key")
-
-    # Assert _handle_unprocessable_endorse_event is called when exception was raised
-    endorsement_processor_mock._handle_unprocessable_endorse_event.assert_called_once()
+    # Assertions
+    assert mock_subscription.fetch.call_count == 3
 
 
 @pytest.mark.anyio
@@ -334,19 +308,30 @@ async def test_process_endorsement_event_not_governance(endorsement_processor_mo
 
 
 @pytest.mark.anyio
-async def test_handle_unprocessable_endorse_event(endorsement_processor_mock):
-    key = "endorse:key"
-    event_json = "event_json"
-    error = Exception("Processing error")
-
-    endorsement_processor_mock._handle_unprocessable_endorse_event(
-        key, event_json, error
+async def test_endorsement_processor_subscribe(
+    mock_nats_client,
+):
+    processor = EndorsementProcessor(jetstream=mock_nats_client)
+    mock_nats_client.pull_subscribe.return_value = AsyncMock(
+        spec=JetStreamContext.PullSubscription
     )
 
-    unprocessable_key_prefix = "unprocessable:endorse:key"
-    # unprocessable key is set:
-    endorsement_processor_mock.redis_service.set.assert_called_with(
-        key=unprocessable_key_prefix, value=unittest.mock.ANY
+    subscription = await processor._subscribe()
+    mock_nats_client.pull_subscribe.assert_called_once_with(
+        durable=ENDORSER_DURABLE_CONSUMER,
+        subject=f"{NATS_SUBJECT}.endorser.*",
+        stream=NATS_STREAM,
     )
-    # original event deleted:
-    endorsement_processor_mock.redis_service.delete_key.assert_called_with(key=key)
+    assert isinstance(subscription, JetStreamContext.PullSubscription)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("exception", [BadSubscriptionError, Error, Exception])
+async def test_endorsement_processor_subscribe_error(
+    mock_nats_client, exception  # pylint: disable=redefined-outer-name
+):
+    processor = EndorsementProcessor(mock_nats_client)
+    mock_nats_client.pull_subscribe.side_effect = exception
+
+    with pytest.raises(exception):
+        await processor._subscribe()

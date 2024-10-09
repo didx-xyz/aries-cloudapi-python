@@ -6,7 +6,6 @@ from httpx import HTTPError
 from app.tests.util.sse_listener import SseListener, SseListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
-from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiTopics
 
@@ -69,11 +68,8 @@ async def check_webhook_state(
                     look_back=look_back_duration,
                 )
             else:
-                bound_logger.info("Waiting for event with state {}", state)
-                event = await listener.wait_for_state(
-                    desired_state=state,
-                    timeout=max_duration,
-                    look_back=look_back_duration,
+                raise Exception(
+                    "No longer implement: cannot wait for webhook without field:field_id"
                 )
         except SseListenerTimeout:
             bound_logger.error(

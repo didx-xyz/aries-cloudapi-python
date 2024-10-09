@@ -3,12 +3,11 @@ from typing import Any, Dict
 
 from httpx import Timeout
 
-from shared import WAYPOINT_URL, WEBHOOKS_URL
+from shared import WAYPOINT_URL
 from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
-base_url = f"{WEBHOOKS_URL}/sse"
 waypoint_base_url = f"{WAYPOINT_URL}/sse"
 DEFAULT_LISTENER_TIMEOUT = 30  # seconds
 
@@ -29,30 +28,6 @@ class SseListener:
         )
         self.wallet_id = wallet_id
         self.topic = topic
-
-    async def wait_for_state(
-        self, desired_state, timeout: int = DEFAULT_LISTENER_TIMEOUT, look_back=1
-    ) -> Dict[str, Any]:
-        """
-        Start listening for SSE events. When an event is received that matches the specified parameters.
-        """
-        url = f"{base_url}/{self.wallet_id}/{self.topic}/{desired_state}"
-
-        timeout = Timeout(timeout)
-        async with RichAsyncClient(timeout=timeout) as client:
-            async with client.stream(
-                "GET", url, params={"look_back": look_back}
-            ) as response:
-                async for line in response.aiter_lines():
-                    if line.startswith("data: "):
-                        data = json.loads(line[6:])
-                        return data["payload"]
-                    elif line == "" or line.startswith(": ping"):
-                        pass  # ignore newlines and pings
-                    else:
-                        logger.warning("Unexpected SSE line: {}", line)
-
-        raise SseListenerTimeout("Event with request state was not returned by server.")
 
     async def wait_for_event(
         self,

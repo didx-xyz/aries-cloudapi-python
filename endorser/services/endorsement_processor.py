@@ -154,7 +154,7 @@ class EndorsementProcessor:
         to a separate key for further investigation.
 
         Args:
-            key: The Redis key where the problematic event was found.
+            key: The Nats subject key where the problematic event was found.
             error: The exception that occurred during event processing.
         """
         bound_logger = logger.bind(body={"key": key})

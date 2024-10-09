@@ -92,9 +92,7 @@ async def test_lifespan_unexpected_error(
 @pytest.mark.anyio
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.logger")
-async def test_lifespan_no_migrations_needed(
-    mock_logger, mock_check_migrations
-):
+async def test_lifespan_no_migrations_needed(mock_logger, mock_check_migrations):
     mock_check_migrations.return_value = True
 
     async with lifespan(FastAPI()):

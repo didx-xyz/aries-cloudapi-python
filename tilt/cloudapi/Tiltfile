@@ -3,9 +3,9 @@ load("ext://color", "color")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
-postgres_version = "14.2.28"
+postgres_version = "14.2.33"
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
-pgadmin_version = "1.29.0"
+pgadmin_version = "1.31.0"
 
 registry = "localhost:5001"
 

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# mise description="Poetry Update Webhooks lockfile"
-
-echo "Installing Webhook lockfile"
-
-cd ./webhooks
-poetry lock

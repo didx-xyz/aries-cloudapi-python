@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 class EndorsementProcessor:
     """
-    Class to process endorsement webhook events that the Webhooks service writes to `endorsement_redis_prefix`
+    Class to process endorsement webhook events that Benthos acapy-events-processor writes to `endorser_nats_subject`
     """
 
     def __init__(self, jetstream: JetStreamContext) -> None:

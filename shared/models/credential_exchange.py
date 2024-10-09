@@ -40,7 +40,6 @@ class CredentialExchange(BaseModel):
     credential_exchange_id: str = Field(...)
     did: Optional[str] = None
     error_msg: Optional[str] = None
-    protocol_version: IssueCredentialProtocolVersion
     role: Role
     schema_id: Optional[str] = None
     # state can be None in proposed state
@@ -69,7 +68,6 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
             else None
         ),
         error_msg=record.error_msg,
-        protocol_version=IssueCredentialProtocolVersion.V2,
         role=record.role,
         schema_id=schema_id,
         state=record.state,

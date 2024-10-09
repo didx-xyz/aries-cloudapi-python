@@ -37,7 +37,6 @@ class PresentationExchange(BaseModel):
     presentation: Optional[IndyProof] = None
     presentation_request: Optional[IndyProofRequest] = None
     proof_id: str
-    protocol_version: PresentProofProtocolVersion
     role: Role
     state: Optional[State] = None
     thread_id: Optional[str] = None
@@ -73,7 +72,6 @@ def presentation_record_to_model(record: V20PresExRecord) -> PresentationExchang
             presentation=presentation,
             presentation_request=presentation_request,
             proof_id="v2-" + str(record.pres_ex_id),
-            protocol_version=PresentProofProtocolVersion.V2.value,
             role=record.role,
             state=record.state,
             thread_id=record.thread_id,

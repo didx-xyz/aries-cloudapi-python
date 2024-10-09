@@ -274,10 +274,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -308,10 +308,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -348,10 +348,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -384,10 +384,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -426,10 +426,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."

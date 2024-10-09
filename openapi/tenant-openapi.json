@@ -1906,10 +1906,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -1940,10 +1940,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -1980,10 +1980,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -2016,10 +2016,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -2058,10 +2058,10 @@
             "required": false,
             "schema": {
               "type": "number",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned.",
-              "default": 10.0,
+              "default": 10,
               "title": "Look Back"
             },
             "description": "The duration in seconds to look back in time, defining the window of additional webhook events that should be included, prior to the initial connection of the stream. The default value will include events up to 10.0 seconds ago, and represents the maximum value for this setting. Setting to 0 means only events after the connection is established will be returned."
@@ -3173,12 +3173,12 @@
       "IndyNonRevocationInterval": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3275,7 +3275,7 @@
             "description": "Schema identifier"
           },
           "timestamp": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "Timestamp",
             "description": "Timestamp epoch"
           }
@@ -3369,12 +3369,12 @@
       "IndyProofReqAttrSpecNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3408,12 +3408,12 @@
       "IndyProofReqPredSpecNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3484,12 +3484,12 @@
       "IndyProofRequestNonRevoked": {
         "properties": {
           "from": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "From",
             "description": "Earliest time of interest in non-revocation interval"
           },
           "to": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "To",
             "description": "Latest time of interest in non-revocation interval"
           }
@@ -3624,7 +3624,7 @@
             "description": "Wallet credential identifier (typically but not necessarily a UUID)"
           },
           "timestamp": {
-            "anyOf": [{ "type": "integer", "maximum": 1.8446744073709552e19, "minimum": 0.0 }, { "type": "null" }],
+            "anyOf": [{ "type": "integer", "maximum": 18446744073709552000, "minimum": 0 }, { "type": "null" }],
             "title": "Timestamp",
             "description": "Epoch timestamp of interest for non-revocation proof"
           }

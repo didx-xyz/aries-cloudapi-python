@@ -32,7 +32,7 @@ def test_create_app():
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_migrations_needed(
-    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine # pylint: disable=unused-argument
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -52,7 +52,7 @@ async def test_lifespan_migrations_needed(
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_already_exists_error(
-    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine # pylint: disable=unused-argument
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -79,7 +79,7 @@ async def test_lifespan_already_exists_error(
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_unexpected_error(
-    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine # pylint: disable=unused-argument
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -97,7 +97,7 @@ async def test_lifespan_unexpected_error(
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.logger")
 async def test_lifespan_no_migrations_needed(
-    mock_logger, mock_check_migrations, mock_engine
+    mock_logger, mock_check_migrations, mock_engine # pylint: disable=unused-argument
 ):
     mock_check_migrations.return_value = True
 

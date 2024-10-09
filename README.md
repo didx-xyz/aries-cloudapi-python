@@ -196,7 +196,7 @@ method. For example:
 
 ```bash
 poetry run pytest \
-  app/tests/e2e/test_verifier.py::test_accept_proof_request_oob \
+  app/tests/e2e/test_verifier_oob.py::test_accept_proof_request_oob \
   --log-cli-level=1
 ```
 

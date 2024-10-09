@@ -2,87 +2,12 @@ load("../utils/Tiltfile", "namespace_create_wrap", "generate_ingress_domain")
 load("ext://color", "color")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
-# https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
-redis_version = "11.0.4"
-# https://github.com/mrnim94/redisinsight/tree/master/helm-chart/redisinsight
-redis_insight_version = "1.1.0"
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
-postgres_version = "14.2.28"
+postgres_version = "14.2.33"
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
-pgadmin_version = "1.29.0"
+pgadmin_version = "1.31.0"
 
 registry = "localhost:5001"
-
-
-def setup_redis(namespace):
-    print(color.green("Installing Redis..."))
-
-    values_file = "./tilt/cloudapi/redis.yaml"
-
-    ## Setup Clustered Redis
-    # https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster
-    helm_resource(
-        name="redis",
-        chart="oci://registry-1.docker.io/bitnamicharts/redis-cluster",
-        release_name="redis",
-        namespace=namespace,
-        flags=[
-            "--values",
-            values_file,
-            "--version",
-            redis_version,
-            "--wait",
-        ],
-        labels=["03-streaming"],
-        resource_deps=["cloudapi-ns", "istio"],
-        deps=[values_file],
-    )
-
-
-def setup_redis_insight(namespace, ingress_domain):
-    print(color.green("Installing Redis Insight..."))
-
-    values_file = "./tilt/cloudapi/redis-insight.yaml"
-    redis_insight_host = "redis-insight." + ingress_domain
-
-    ## Setup Redis Insight
-    # https://github.com/mrnim94/redisinsight
-    helm_repo(
-        name="redisinsight",
-        url="https://mrnim94.github.io/redisinsight",
-        resource_name="redisinsight",
-        labels=["10-helm-repos"],
-    )
-    helm_resource(
-        name="redis-insight",
-        chart="redisinsight/redisinsight",
-        release_name="redis-insight",
-        namespace=namespace,
-        flags=[
-            "--values",
-            values_file,
-            "--set",
-            "ingress.hosts[0].host=" + redis_insight_host,
-            "--version",
-            redis_insight_version,
-            "--wait",
-        ],
-        labels=["03-streaming"],
-        resource_deps=[
-            "cloudapi-ns",
-            "redisinsight",
-            "ingress-nginx",
-            "istio",
-        ],
-        deps=[values_file],
-        auto_init=False,
-    )
-    k8s_resource(
-        workload="redis-insight",
-        links=[
-            link("http://" + redis_insight_host, "Redis Insight"),
-        ],
-    )
 
 
 def setup_postgres(namespace):
@@ -247,7 +172,6 @@ def setup_benthos(namespace):
         resource_deps=[
             "cloudapi-ns",
             "build-benthos",
-            "redis",
             "nats",
             "istio",
         ],
@@ -416,8 +340,6 @@ def setup_cloudapi(build_enabled, expose):
     ingress_domain = generate_ingress_domain(expose)
     print(color.green("Ingress Domain: " + ingress_domain))
 
-    setup_redis(namespace)
-    setup_redis_insight(namespace, ingress_domain)
     setup_postgres(namespace)
     setup_pgadmin(namespace, ingress_domain)
     setup_nats(namespace)
@@ -427,7 +349,7 @@ def setup_cloudapi(build_enabled, expose):
 
     releases = {
         "governance-endorser": {
-            "depends": ["redis"],
+            "depends": ["nats"],
             "image": {
                 "dockerfile": "./dockerfiles/endorser/Dockerfile",
                 "live_update": add_live_update(
@@ -563,23 +485,6 @@ def setup_cloudapi(build_enabled, expose):
                 "live_update": add_live_update(
                     [
                         ("./trustregistry", "/trustregistry"),
-                        ("./shared", "/shared"),
-                    ],
-                    enabled=build_enabled,
-                ),
-            },
-        },
-        "governance-webhooks-web": {
-            "depends": ["redis"],
-            "replicaCount": 1,
-            "links": [
-                link("http://webhooks.cloudapi." + ingress_domain + "/docs", "Docs"),
-            ],
-            "image": {
-                "dockerfile": "./dockerfiles/webhooks/Dockerfile",
-                "live_update": add_live_update(
-                    [
-                        ("./webhooks", "/app"),
                         ("./shared", "/shared"),
                     ],
                     enabled=build_enabled,

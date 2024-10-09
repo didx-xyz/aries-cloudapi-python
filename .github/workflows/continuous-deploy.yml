@@ -210,7 +210,7 @@ jobs:
       fail-fast: true
       matrix:
         module:
-          - { test: "app/tests/ endorser trustregistry waypoint webhooks --ignore=app/tests/e2e/", id: "1" } # fast tests, ignore e2e
+          - { test: "app/tests/ endorser trustregistry waypoint --ignore=app/tests/e2e/", id: "1" } # fast tests, ignore e2e
           - { test: "app/tests/e2e/issuer/", id: "2" } # then some individual, slower e2e tests
           - { test: "app/tests/e2e/verifier/", id: "3" }
           - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", id: "4" }
@@ -391,9 +391,6 @@ jobs:
       - name: Public Web Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-trust-registry-web --tail 10000
-      - name: Redis Logs
-        if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=redis --tail 10000
       - name: Tails Server Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=tails-server --tail 10000
@@ -406,9 +403,6 @@ jobs:
       - name: Waypoint Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=waypoint --tail 10000
-      - name: Webhooks Web Logs
-        if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-webhooks-web --tail 10000
 
       - name: Tilt Down Destroy
         if: always()

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudapi-endorser"
-version = "3.3.0"
+version = "3.4.0"
 description = "Endorser submodule for cloudapi"
 authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false

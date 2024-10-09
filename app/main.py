@@ -22,7 +22,6 @@ from app.routes import (
     sse,
     trust_registry,
     verifier,
-    webhooks,
     websocket_endpoint,
 )
 from app.routes.admin import tenants
@@ -86,7 +85,7 @@ async def lifespan(_: FastAPI):
     await WebsocketManager.disconnect_all()
 
 
-webhook_routes = [webhooks, sse, websocket_endpoint]
+webhook_routes = [sse, websocket_endpoint]
 
 trust_registry_routes = [trust_registry]
 tenant_admin_routes = [tenants] + webhook_routes

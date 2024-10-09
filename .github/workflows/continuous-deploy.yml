@@ -68,7 +68,6 @@ jobs:
             governance-ga-web,
             governance-tenant-web,
             governance-public-web,
-            governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
             pytest,
@@ -98,10 +97,6 @@ jobs:
           - image: governance-public-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
-            platforms: linux/amd64,linux/arm64
-          - image: governance-webhooks-web
-            context: .
-            file: dockerfiles/webhooks/Dockerfile
             platforms: linux/amd64,linux/arm64
           - image: governance-multitenant-agent
             context: .
@@ -196,7 +191,7 @@ jobs:
         run: mise run poetry:install:all
       - name: Run Pylint
         run: |
-          poetry run pylint app/ endorser/ shared/ trustregistry/ waypoint/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          poetry run pylint app/ endorser/ shared/ trustregistry/ waypoint/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
 
   test:
     if: github.event.pull_request.draft == false

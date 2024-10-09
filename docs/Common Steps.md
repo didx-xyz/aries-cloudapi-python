@@ -151,8 +151,7 @@ state of being offered. Providing the connection ID again, you can now use the
 holder to store the credential by posting to
 `/v1/issuer/credentials/{credential_exchange_id}/store`
 8. (Optional) Get yor credentials from your wallet (`wallet/credentials`) check
-whether the credential is actually stored. You can also check this via the
-webhooks/sse.
+whether the credential is actually stored. You can also check this via waypoint.
 
 ## Verifying a Credential
 
@@ -233,7 +232,7 @@ schema and issued credential):
    }
    ```
 
-7. (Optional) Look through the prover and verifier's webhooks and see that the
+7. (Optional) Wait for the prover and verifier's webhook, using waypoint, and see that the
 presentation is acknowledged. Alternatively, GET the proof records and check the
 `state` field.
 

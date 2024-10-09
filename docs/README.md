@@ -20,7 +20,7 @@ After spinning up the containers following the [Quick Start Guide](Quick%20Start
 
  provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and webhooks endpoints.
 
->NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+>NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 
 ### Using the Swagger UI
 
@@ -34,7 +34,7 @@ It can be handy to follow the logs of a specific container. A convenient way to 
 kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
 ```
 
-And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-webhooks-web). You can find the container name in the docker-compose.yaml.
+And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-endorser-web). You can find the container name in the docker-compose.yaml.
 
 ### Authentication
 

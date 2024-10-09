@@ -42,11 +42,3 @@ updates:
       interval: weekly
       day: saturday
       time: "07:00"
-
-  # Maintain dependencies for Webhooks Service submodule
-  - package-ecosystem: pip
-    directory: /webhooks
-    schedule:
-      interval: weekly
-      day: saturday
-      time: "07:00"

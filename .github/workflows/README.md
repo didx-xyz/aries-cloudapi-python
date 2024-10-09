@@ -21,7 +21,6 @@ PROJECTS=(
   governance-ga-agent
   governance-trust-registry
   governance-multitenant-web
-  governance-webhooks-web
   governance-multitenant-agent
   governance-endorser
 )

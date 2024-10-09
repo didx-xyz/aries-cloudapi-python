@@ -44,7 +44,7 @@ interfaces. These can be found at the following URLs:
 - [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
 - [ACA-Py Governance Agent Admin](http://governance-agent.cloudapi.127.0.0.1.nip.io)
 - [ACA-Py Multitenant Agent Admin](http://multitenant-agent.cloudapi.127.0.0.1.nip.io)
-- [Webhooks](http://webhooks.cloudapi.127.0.0.1.nip.io/docs)
+- [Waypoint](http://waypoint.cloudapi.127.0.0.1.nip.io/docs)
 - [Trust Registry](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs)
 
 ## Customization

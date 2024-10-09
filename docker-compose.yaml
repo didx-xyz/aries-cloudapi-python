@@ -209,29 +209,7 @@ services:
       - host
     env_file:
       - environments/governance-public/fastapi.default.env
-  governance-webhooks-web:
-    image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
-    container_name: governance-webhooks-web
-    build:
-      context: .
-      dockerfile: ./dockerfiles/webhooks/Dockerfile
-    ports:
-      - 0.0.0.0:3010:3010
-    volumes:
-      - ./webhooks:/webhooks
-      - ./logs:/logs
-    networks:
-      - governance-multitenant
-      - governance-ga
-      - host
-    env_file:
-      - environments/webhooks/fastapi.webhooks.env
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
   governance-endorser:
     image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
     container_name: governance-endorser
@@ -467,7 +445,6 @@ services:
       ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:3021
       ACAPY_TENANT_AGENT_API_KEY: adminApiKey
       TRUST_REGISTRY_URL: http://governance-trust-registry:8001
-      WEBHOOKS_URL: http://governance-webhooks-web:3010
       ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
       GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       GOVERNANCE_ACAPY_API_KEY: adminApiKey
@@ -501,7 +478,6 @@ services:
       ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:3021
       ACAPY_TENANT_AGENT_API_KEY: adminApiKey
       TRUST_REGISTRY_URL: http://governance-trust-registry:8001
-      WEBHOOKS_URL: http://governance-webhooks-web:3010
       ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
       GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       GOVERNANCE_ACAPY_API_KEY: adminApiKey

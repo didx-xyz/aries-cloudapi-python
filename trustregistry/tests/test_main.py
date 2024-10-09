@@ -26,12 +26,13 @@ def test_create_app():
 
 
 @pytest.mark.anyio
+@patch("trustregistry.main.engine")
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.Config")
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_migrations_needed(
-    mock_logger, mock_command, mock_config, mock_check_migrations
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -45,12 +46,13 @@ async def test_lifespan_migrations_needed(
 
 
 @pytest.mark.anyio
+@patch("trustregistry.main.engine")
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.Config")
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_already_exists_error(
-    mock_logger, mock_command, mock_config, mock_check_migrations
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -71,12 +73,13 @@ async def test_lifespan_already_exists_error(
 
 
 @pytest.mark.anyio
+@patch("trustregistry.main.engine")
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.Config")
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
 async def test_lifespan_unexpected_error(
-    mock_logger, mock_command, mock_config, mock_check_migrations
+    mock_logger, mock_command, mock_config, mock_check_migrations, mock_engine
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
@@ -90,9 +93,12 @@ async def test_lifespan_unexpected_error(
 
 
 @pytest.mark.anyio
+@patch("trustregistry.main.engine")
 @patch("trustregistry.main.check_migrations")
 @patch("trustregistry.main.logger")
-async def test_lifespan_no_migrations_needed(mock_logger, mock_check_migrations):
+async def test_lifespan_no_migrations_needed(
+    mock_logger, mock_check_migrations, mock_engine
+):
     mock_check_migrations.return_value = True
 
     async with lifespan(FastAPI()):

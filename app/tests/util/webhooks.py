@@ -29,7 +29,6 @@ async def check_webhook_state(
     state: str,
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 30,
-    look_back: float = 1,
     max_tries: int = 2,
     delay: float = 0.5,
 ) -> Dict[str, Any]:
@@ -45,10 +44,6 @@ async def check_webhook_state(
     attempt = 0
 
     while not event and attempt < max_tries:
-        look_back_duration = min(
-            MAX_EVENT_AGE_SECONDS,
-            look_back + attempt * max_duration,
-        )
         try:
             if filter_map:
                 # Assuming that filter_map contains 1 key-value pair
@@ -65,7 +60,6 @@ async def check_webhook_state(
                     field_id=field_id,
                     desired_state=state,
                     timeout=max_duration,
-                    look_back=look_back_duration,
                 )
             else:
                 raise Exception(

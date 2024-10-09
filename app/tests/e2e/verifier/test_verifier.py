@@ -155,7 +155,6 @@ async def test_accept_proof_request(
         filter_map={
             "proof_id": acme_proof_id,
         },
-
     )
     assert acme_proof_event["verified"] is True
 
@@ -217,7 +216,6 @@ async def test_reject_proof_request(
         filter_map={
             "thread_id": thread_id,
         },
-
     )
     assert acme_abandoned_webhook["error_msg"] == "abandoned: rejected"
 
@@ -230,7 +228,6 @@ async def test_reject_proof_request(
             filter_map={
                 "thread_id": thread_id,
             },
-
         )
 
 

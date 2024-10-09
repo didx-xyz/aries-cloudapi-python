@@ -537,7 +537,7 @@ jobs:
           ref: ${{ env.branch_name }}
 
       - name: Install dependencies
-        run: sudo apt-get install -y postgresql-client redis-tools
+        run: sudo apt-get install -y postgresql-client
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -587,32 +587,6 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $MT_ACAPY_WALLET_NAME -d
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -d
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
-
-      - name: List Elasticache Redis
-        if: github.event.inputs.run-reset-deployments == 'true'
-        env:
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        run: |
-          redis-cli \
-            -h $REDIS_HOST \
-            -p $REDIS_PORT \
-            --tls --pass $REDIS_PASSWORD \
-            --scan --pattern '*'
-
-      - name: Clean Elasticache Redis
-        if: github.event.inputs.run-reset-deployments == 'true'
-        env:
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        run: |
-          redis-cli \
-            --tls --pass $REDIS_PASSWORD \
-            --cluster call --cluster-only-masters \
-            $REDIS_HOST:$REDIS_PORT \
-            FLUSHALL ASYNC
 
       - name: Reset NATS
         if: github.event.inputs.run-reset-deployments == 'true'
@@ -733,9 +707,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get install -y redis-tools
 
       - name: Set up Mise
         uses: jdx/mise-action@v2
@@ -1057,15 +1028,6 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      - name: Expire Elasticache Redis Keys
-        env:
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        run: |
-          chmod +x ./scripts/redis-expire.sh
-          DEBUG=true ./scripts/redis-expire.sh
 
       - name: Scale down benthos
         run: |

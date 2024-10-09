@@ -3,15 +3,15 @@ repos:
       rev: 24.8.0
       hooks:
           - id: black
-            stages: [push]
+            stages: [pre-push]
             language_version: python3
 
     - repo: https://github.com/asottile/blacken-docs
-      rev: 1.15.0
+      rev: 1.19.0
       hooks:
           - id: blacken-docs
-            stages: [push]
-            additional_dependencies: [black==24.8.0]
+            stages: [pre-push]
+            additional_dependencies: [black~=24.8.0]
             language_version: python3
             files: '\.(rst|md|markdown|py|tex)$'
 
@@ -19,5 +19,5 @@ repos:
       rev: 5.13.2
       hooks:
           - id: isort
-            stages: [push]
+            stages: [pre-push]
             args: ["--profile", "black", "."]

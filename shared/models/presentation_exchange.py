@@ -4,7 +4,6 @@ from aries_cloudcontroller import IndyProof, IndyProofRequest, V20PresExRecord
 from pydantic import BaseModel
 
 from shared.log_config import get_logger
-from shared.models.protocol import PresentProofProtocolVersion
 
 logger = get_logger(__name__)
 

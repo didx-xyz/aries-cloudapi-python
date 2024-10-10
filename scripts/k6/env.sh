@@ -1,7 +1,7 @@
 #!/bin/bash
 # Source secret if it exists
 if [ -f "./.env.local" ]; then
-    source ./.env.local
+  source ./.env.local
 fi
 
 export K6_STATSD_ENABLE_TAGS=true

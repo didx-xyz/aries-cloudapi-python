@@ -20,7 +20,7 @@ export NUM_ISSUERS=1
 ALL="$WEBS $AGENT $SERVICE $AUTH"
 # Remove INVALID deployments from ALL
 for invalid in $INVALID; do
-    ALL=${ALL//$invalid/}
+  ALL=${ALL//$invalid/}
 done
 # Remove any extra spaces
 ALL=$(echo "$ALL" | tr -s ' ')

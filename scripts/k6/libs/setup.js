@@ -2,22 +2,31 @@ import { check } from "k6";
 import { createIssuerIfNotExists } from "../libs/issuerUtils.js";
 import { createSchemaIfNotExists } from "../libs/schemaUtils.js";
 import { getBearerToken, getGovernanceBearerToken } from "./auth.js";
-import { createCredentialDefinition, getCredentialDefinitionId } from "./functions.js";
+import {
+  createCredentialDefinition,
+  getCredentialDefinitionId,
+} from "./functions.js";
 
-export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName, schemaVersion) {
+export function bootstrapIssuer(
+  numIssuers,
+  issuerPrefix,
+  credDefTag,
+  schemaName,
+  schemaVersion
+) {
   const bearerToken = getBearerToken();
   const governanceBearerToken = getGovernanceBearerToken();
   const issuers = [];
 
   for (let i = 0; i < numIssuers; i++) {
-
     console.log(`Creating issuer ${issuerPrefix}_${i}`);
     const walletName = `${issuerPrefix}_${i}`;
     // const hack = `${walletName}_0`;
 
     const issuerData = createIssuerIfNotExists(bearerToken, walletName);
     check(issuerData, {
-      "Issuer data retrieved successfully": (data) => data !== null && data !== undefined,
+      "Issuer data retrieved successfully": (data) =>
+        data !== null && data !== undefined,
     });
 
     if (!issuerData) {
@@ -26,10 +35,16 @@ export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName
     }
 
     const { issuerWalletId, issuerAccessToken } = issuerData;
-    const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
+    const credentialDefinitionId = getCredentialDefinitionId(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag
+    );
 
     if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName}_0 - Skipping creation`);
+      console.log(
+        `Credential definition already exists for issuer ${walletName}_0 - Skipping creation`
+      );
       issuers.push({
         walletName: walletName,
         walletId: issuerWalletId,
@@ -37,9 +52,15 @@ export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName
         credentialDefinitionId,
       });
     } else {
-      console.warn(`Failed to get credential definition ID for issuer ${walletName}_0`);
+      console.warn(
+        `Failed to get credential definition ID for issuer ${walletName}_0`
+      );
 
-      const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
+      const schemaId = createSchemaIfNotExists(
+        governanceBearerToken,
+        schemaName,
+        schemaVersion
+      );
       check(schemaId, {
         "Schema ID is not null": (id) => id !== null && id !== undefined,
       });
@@ -48,7 +69,7 @@ export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName
         bearerToken,
         issuerAccessToken,
         credDefTag,
-        schemaId,
+        schemaId
       );
 
       check(createCredentialDefinitionResponse, {
@@ -56,8 +77,12 @@ export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName
       });
 
       if (createCredentialDefinitionResponse.status === 200) {
-        const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
-        console.log(`Credential definition created successfully for issuer ${walletName}_0`);
+        const { id: credentialDefinitionId } = JSON.parse(
+          createCredentialDefinitionResponse.body
+        );
+        console.log(
+          `Credential definition created successfully for issuer ${walletName}_0`
+        );
         issuers.push({
           walletName: walletName,
           walletId: issuerWalletId,
@@ -65,7 +90,9 @@ export function bootstrapIssuer(numIssuers, issuerPrefix, credDefTag, schemaName
           credentialDefinitionId: credentialDefinitionId,
         });
       } else {
-        console.error(`Failed to create credential definition for issuer ${walletName}_0`);
+        console.error(
+          `Failed to create credential definition for issuer ${walletName}_0`
+        );
       }
     }
   }

@@ -5,9 +5,9 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=1
-    export ITERATIONS=1000
-    export HOLDER_PREFIX="k6_holder_holder"
+  export VUS=1
+  export ITERATIONS=1000
+  export HOLDER_PREFIX="k6_holder_holder"
 }
 
 init() {
@@ -15,7 +15,7 @@ init() {
 }
 
 scenario() {
-    run_test ./scenarios/create-holders.js
+  run_test ./scenarios/create-holders.js
 }
 
 cleanup() {

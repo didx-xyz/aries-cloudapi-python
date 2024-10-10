@@ -45,14 +45,14 @@ run_ha_iterations() {
   local deployments="$1"
   local scenario_func="$2"
 
-  for ((i=1; i<=HA_TEST_ITERATIONS; i++)); do
+  for ((i = 1; i <= HA_TEST_ITERATIONS; i++)); do
     log "Starting HA test iteration $i of ${HA_TEST_ITERATIONS}"
 
     ${scenario_func} &
     local scenario_pid=$!
 
     if [[ -n "${deployments}" ]]; then
-      for ((j=1; j<=RESTART_ITERATIONS; j++)); do
+      for ((j = 1; j <= RESTART_ITERATIONS; j++)); do
         local deployment_pids=()
         for deployment in ${deployments}; do
           restart_deployment "${deployment}" &
@@ -68,12 +68,12 @@ run_ha_iterations() {
         done
       done
 
-        # Check if scenario is still running after deployments restart
-        if kill -0 "${scenario_pid}" 2>/dev/null; then
-            log "Scenario is still running after all deployments were restarted"
-        else
-            wrn "WARNING: Scenario completed too quickly, before all deployments were restarted"
-        fi
+      # Check if scenario is still running after deployments restart
+      if kill -0 "${scenario_pid}" 2>/dev/null; then
+        log "Scenario is still running after all deployments were restarted"
+      else
+        wrn "WARNING: Scenario completed too quickly, before all deployments were restarted"
+      fi
     else
       log "No stack specified. Skipping restarts."
     fi

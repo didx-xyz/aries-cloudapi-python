@@ -21,7 +21,7 @@ init() {
 }
 
 scenario() {
-  local iterations=$((ITERATIONS * VUS))  # revoke sequentially
+  local iterations=$((ITERATIONS * VUS)) # revoke sequentially
   local vus=1
   run_test ./scenarios/revoke-credentials.js -e INTERATIONS="${iterations}" -e VUS="${vus}"
   export IS_REVOKED=true

@@ -5,11 +5,11 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=5
-    export ITERATIONS=50
-    export HOLDER_PREFIX="k6_holder_invitation"
-    export ISSUER_PREFIX="k6_issuer_invitation"
-    export NUM_ISSUERS=1
+  export VUS=5
+  export ITERATIONS=50
+  export HOLDER_PREFIX="k6_holder_invitation"
+  export ISSUER_PREFIX="k6_issuer_invitation"
+  export NUM_ISSUERS=1
 }
 
 init() {
@@ -19,8 +19,8 @@ init() {
 }
 
 scenario() {
-    log "Running scenario..."
-    run_test ./scenarios/create-invitations.js
+  log "Running scenario..."
+  run_test ./scenarios/create-invitations.js
 }
 
 cleanup() {

@@ -2,17 +2,14 @@
 // Solve Codacy '__ENV' is not defined. error
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
 import {
-  createCredentialDefinition,
   createIssuerTenant,
-  deleteTenant,
   getTrustRegistryActor,
-  getWalletIdByWalletName,
 } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
@@ -53,7 +50,11 @@ const mainIterationDuration = new Trend("main_iteration_duration");
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
+  for (
+    let i = 0;
+    i < options.scenarios.default.iterations * options.scenarios.default.vus;
+    i++
+  ) {
     walletsArray.push({
       walletLabel: `${issuerPrefix} ${i}`,
       walletName: `${issuerPrefix}_${i}`,
@@ -82,19 +83,26 @@ export default function (data) {
   const wallet = wallets[walletIndex];
   const credDefTag = wallet.walletName;
 
-  const createIssuerTenantResponse = createIssuerTenant(bearerToken, wallet.walletName);
+  const createIssuerTenantResponse = createIssuerTenant(
+    bearerToken,
+    wallet.walletName
+  );
   check(createIssuerTenantResponse, {
     "Issuer tenant created successfully": (r) => r.status === 200,
   });
   // const issuerAccessToken = createIssuerTenantResponse.json().access_token;
-  const { wallet_id: walletId, access_token: accessToken } = JSON.parse(createIssuerTenantResponse.body);
+  const { wallet_id: walletId, access_token: accessToken } = JSON.parse(
+    createIssuerTenantResponse.body
+  );
 
-  const getTrustRegistryActorResponse = getTrustRegistryActor(wallet.walletName);
+  const getTrustRegistryActorResponse = getTrustRegistryActor(
+    wallet.walletName
+  );
   check(getTrustRegistryActorResponse, {
     "Trust Registry Actor Response status code is 200": (r) => {
       if (r.status !== 200) {
         console.error(
-          `Unexpected response status while getting trust registry actor for issuer tenant ${wallet.walletName}: ${r.status}`,
+          `Unexpected response status while getting trust registry actor for issuer tenant ${wallet.walletName}: ${r.status}`
         );
         return false;
       }

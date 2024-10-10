@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 K6_DIR="$(dirname "${SCRIPT_DIR}")"
 
 # Source the env file for secrets and environment variables
@@ -33,10 +33,10 @@ main() {
 
   while getopts ":s:c:C" opt; do
     case ${opt} in
-      s) stack=$OPTARG ;;
-      c) collection=$OPTARG ;;
-      C) cleanup_only=true ;;
-      *) usage ;;
+    s) stack=$OPTARG ;;
+    c) collection=$OPTARG ;;
+    C) cleanup_only=true ;;
+    *) usage ;;
     esac
   done
 
@@ -49,8 +49,11 @@ main() {
   local deployments=""
   if [[ -n "${stack}" ]]; then
     case ${stack} in
-      WEBS|AGENT|SERVICE|AUTH|ALL) deployments="${!stack}" ;;
-      *) echo "Error: Invalid stack specified" >&2; usage ;;
+    WEBS | AGENT | SERVICE | AUTH | ALL) deployments="${!stack}" ;;
+    *)
+      echo "Error: Invalid stack specified" >&2
+      usage
+      ;;
     esac
   fi
 
@@ -63,7 +66,7 @@ main() {
   source "${collection_script}"
 
   # Check if the cleanup function exists
-  if ! declare -f cleanup > /dev/null; then
+  if ! declare -f cleanup >/dev/null; then
     echo "Error: No cleanup function found for collection '${collection}'" >&2
     exit 1
   fi

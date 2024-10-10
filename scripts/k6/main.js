@@ -74,15 +74,22 @@ export function setup() {
       issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
       if (typeof issuerAccessToken === "string") {
         // Access token retrieved successfully
-        console.log(`Access token retrieved via wallet ID for ${issuerWalletId}`);
+        console.log(
+          `Access token retrieved via wallet ID for ${issuerWalletId}`
+        );
       } else {
-        console.error(`Failed to retrieve access token for wallet ID ${issuerWalletId}`);
+        console.error(
+          `Failed to retrieve access token for wallet ID ${issuerWalletId}`
+        );
         console.error(`Response body: ${issuerAccessToken}`);
         continue;
       }
     } else {
       try {
-        const createIssuerTenantResponse = createIssuerTenant(bearerToken, walletName);
+        const createIssuerTenantResponse = createIssuerTenant(
+          bearerToken,
+          walletName
+        );
         check(createIssuerTenantResponse, {
           "Issuer tenant created successfully": (r) => r.status === 200,
         });
@@ -95,9 +102,15 @@ export function setup() {
       }
     }
 
-    const credentialDefinitionId = getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag);
+    const credentialDefinitionId = getCredentialDefinitionId(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag
+    );
     if (credentialDefinitionId) {
-      console.log(`Credential definition already exists for issuer ${walletName} - Skipping creation`);
+      console.log(
+        `Credential definition already exists for issuer ${walletName} - Skipping creation`
+      );
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
@@ -105,24 +118,36 @@ export function setup() {
       });
       continue;
     }
-    console.warn(`Failed to get credential definition ID for issuer ${walletName}`);
+    console.warn(
+      `Failed to get credential definition ID for issuer ${walletName}`
+    );
     // console.error(`Response body: ${credentialDefinitionId.body}`);
 
-    const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag);
+    const createCredentialDefinitionResponse = createCredentialDefinition(
+      bearerToken,
+      issuerAccessToken,
+      credDefTag
+    );
     check(createCredentialDefinitionResponse, {
       "Credential definition created successfully": (r) => r.status === 200,
     });
 
     if (createCredentialDefinitionResponse.status === 200) {
-      const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
-      console.log(`Credential definition created successfully for issuer ${walletName}`);
+      const { id: credentialDefinitionId } = JSON.parse(
+        createCredentialDefinitionResponse.body
+      );
+      console.log(
+        `Credential definition created successfully for issuer ${walletName}`
+      );
       issuers.push({
         walletId: issuerWalletId,
         accessToken: issuerAccessToken,
         credentialDefinitionId,
       });
     } else {
-      console.error(`Failed to create credential definition for issuer ${walletName}`);
+      console.error(
+        `Failed to create credential definition for issuer ${walletName}`
+      );
     }
   }
 
@@ -154,35 +179,50 @@ export default function (data) {
       return true;
     },
   });
-  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
+  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(
+    createTenantResponse.body
+  );
 
-  const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
+  const createInvitationResponse = createInvitation(
+    bearerToken,
+    issuer.accessToken
+  );
   check(createInvitationResponse, {
     "Invitation created successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response status while create invitation: ${r.status}`);
+        throw new Error(
+          `Unexpected response status while create invitation: ${r.status}`
+        );
       }
       return true;
     },
   });
-  const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
+  const { invitation: invitationObj, connection_id: issuerConnectionId } =
+    JSON.parse(createInvitationResponse.body);
 
-  const acceptInvitationResponse = acceptInvitation(holderAccessToken, invitationObj);
+  const acceptInvitationResponse = acceptInvitation(
+    holderAccessToken,
+    invitationObj
+  );
   check(acceptInvitationResponse, {
     "Invitation accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting invitation: ${r.response}`);
+        throw new Error(
+          `Unexpected response while accepting invitation: ${r.response}`
+        );
       }
       return true;
     },
   });
 
-  const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
+  const { connection_id: holderInvitationConnectionId } = JSON.parse(
+    acceptInvitationResponse.body
+  );
 
   const waitForSSEEventConnectionResponse = waitForSSEEventConnection(
     holderAccessToken,
     walletId,
-    holderInvitationConnectionId,
+    holderInvitationConnectionId
   );
   check(waitForSSEEventConnectionResponse, {
     "SSE Event received successfully: connection-ready": (r) => {
@@ -197,12 +237,14 @@ export default function (data) {
     bearerToken,
     issuer.accessToken,
     issuer.credentialDefinitionId,
-    issuerConnectionId,
+    issuerConnectionId
   );
   check(createCredentialResponse, {
     "Credential created successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while creating credential: ${r.response}`);
+        throw new Error(
+          `Unexpected response while creating credential: ${r.response}`
+        );
       }
       return true;
     },
@@ -210,7 +252,11 @@ export default function (data) {
 
   const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
 
-  const waitForSSEEventResponse = waitForSSEEvent(holderAccessToken, walletId, threadId);
+  const waitForSSEEventResponse = waitForSSEEvent(
+    holderAccessToken,
+    walletId,
+    threadId
+  );
   check(waitForSSEEventResponse, {
     "SSE Event received successfully: offer-received": (r) => {
       if (!r) {
@@ -222,11 +268,16 @@ export default function (data) {
 
   const credentialId = getCredentialIdByThreadId(holderAccessToken, threadId);
 
-  const acceptCredentialResponse = acceptCredential(holderAccessToken, credentialId);
+  const acceptCredentialResponse = acceptCredential(
+    holderAccessToken,
+    credentialId
+  );
   check(acceptCredentialResponse, {
     "Credential accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting credential: ${r.response}`);
+        throw new Error(
+          `Unexpected response while accepting credential: ${r.response}`
+        );
       }
       return true;
     },
@@ -250,7 +301,9 @@ export function teardown(data) {
       check(deleteIssuerResponse, {
         "Delete Issuer Tenant Response status code is 200": (r) => {
           if (r.status !== 200) {
-            console.error(`Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`);
+            console.error(
+              `Unexpected response status while deleting issuer tenant ${issuer.walletId}: ${r.status}`
+            );
             return false;
           }
           console.log(`Deleted issuer tenant ${issuer.walletId} successfully.`);
@@ -268,7 +321,9 @@ export function teardown(data) {
     check(deleteHolderResponse, {
       "Delete Holder Tenant Response status code is 200": (r) => {
         if (r.status !== 200) {
-          console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
+          console.error(
+            `Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`
+          );
           return false;
         }
         console.log(`Deleted holder tenant ${walletId} successfully.`);

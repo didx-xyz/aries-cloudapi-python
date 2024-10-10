@@ -2,10 +2,9 @@
 // Solve Codacy '__ENV' is not defined. error
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { SharedArray } from "k6/data";
 import { Counter, Trend } from "k6/metrics";
-import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
 import { getDocs } from "../libs/functions.js";
 
@@ -44,7 +43,11 @@ const mainIterationDuration = new Trend("main_iteration_duration");
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
+  for (
+    let i = 0;
+    i < options.scenarios.default.iterations * options.scenarios.default.vus;
+    i++
+  ) {
     walletsArray.push({
       walletLabel: `${issuerPrefix} ${i}`,
       walletName: `${issuerPrefix}_${i}`,

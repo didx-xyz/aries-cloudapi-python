@@ -1,9 +1,9 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { SharedArray } from "k6/data";
-import { Counter, Trend } from "k6/metrics";
+import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import { deleteTenant, getWalletIdByWalletName } from "../libs/functions.js";
 
@@ -41,7 +41,11 @@ const testFunctionReqs = new Counter("test_function_reqs");
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
+  for (
+    let i = 0;
+    i < options.scenarios.default.iterations * options.scenarios.default.vus;
+    i++
+  ) {
     walletsArray.push({
       wallet_label: `${issuerPrefix} ${i}`,
       wallet_name: `${issuerPrefix}_${i}`,
@@ -72,7 +76,9 @@ export default function (data) {
   check(deleteHolderResponse, {
     "Delete Issuer Tenant Response status code is 200": (r) => {
       if (r.status !== 200) {
-        console.error(`Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`);
+        console.error(
+          `Unexpected response status while deleting issuer tenant ${walletId}: ${r.status}`
+        );
         return false;
       }
       // console.log(`Deleted holder tenant ${walletId} successfully.`);

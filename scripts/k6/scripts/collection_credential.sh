@@ -5,11 +5,11 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=5
-    export ITERATIONS=10
-    export HOLDER_PREFIX="k6_holder_credential"
-    export ISSUER_PREFIX="k6_issuer_credential"
-    export NUM_ISSUERS=2
+  export VUS=5
+  export ITERATIONS=10
+  export HOLDER_PREFIX="k6_holder_credential"
+  export ISSUER_PREFIX="k6_issuer_credential"
+  export NUM_ISSUERS=2
 }
 
 init() {
@@ -20,8 +20,8 @@ init() {
 }
 
 scenario() {
-    log "Running scenario..."
-    run_test ./scenarios/create-credentials.js
+  log "Running scenario..."
+  run_test ./scenarios/create-credentials.js
 }
 
 cleanup() {

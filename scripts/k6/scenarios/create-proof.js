@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -11,7 +11,7 @@ import {
   getProofIdByThreadId,
   getProofIdCredentials,
   getWalletIndex,
-  sendProofRequest
+  sendProofRequest,
 } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
@@ -79,7 +79,10 @@ export default function (data) {
   // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
-    sendProofRequestResponse = sendProofRequest(wallet.issuer_access_token, wallet.issuer_connection_id);
+    sendProofRequestResponse = sendProofRequest(
+      wallet.issuer_access_token,
+      wallet.issuer_connection_id
+    );
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     sendProofRequestResponse = { status: 500, response: error.message };
@@ -87,7 +90,9 @@ export default function (data) {
   check(sendProofRequestResponse, {
     "Proof request sent successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while sending proof request: ${r.response}`);
+        throw new Error(
+          `Unexpected response while sending proof request: ${r.response}`
+        );
       }
       return true;
     },
@@ -99,12 +104,12 @@ export default function (data) {
     accessToken: wallet.access_token,
     walletId: wallet.wallet_id,
     threadId: threadId,
-    eventType: 'request-received',
-    sseUrlPath: 'proofs/thread_id',
-    topic: 'proofs',
-    expectedState: 'request-received',
+    eventType: "request-received",
+    sseUrlPath: "proofs/thread_id",
+    topic: "proofs",
+    expectedState: "request-received",
     maxDuration: 10,
-    sseTag: 'proof_request_received'
+    sseTag: "proof_request_received",
   });
   check(waitForSSEEventReceivedResponse, {
     "SSE Event received successfully: request-recevied": (r) => {
@@ -120,11 +125,17 @@ export default function (data) {
   // console.log(`Proof ID: ${proofId}`);
   const referent = getProofIdCredentials(wallet.access_token, proofId);
 
-  const acceptProofResponse = acceptProofRequest(wallet.access_token, proofId, referent);
+  const acceptProofResponse = acceptProofRequest(
+    wallet.access_token,
+    proofId,
+    referent
+  );
   check(acceptProofResponse, {
     "Proof accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting proof: ${r.response}`);
+        throw new Error(
+          `Unexpected response while accepting proof: ${r.response}`
+        );
       }
       return true;
     },
@@ -134,12 +145,12 @@ export default function (data) {
     accessToken: wallet.issuer_access_token,
     walletId: wallet.issuer_wallet_id,
     threadId: threadId,
-    eventType: 'done',
-    sseUrlPath: 'proofs/thread_id',
-    topic: 'proofs',
-    expectedState: 'done',
+    eventType: "done",
+    sseUrlPath: "proofs/thread_id",
+    topic: "proofs",
+    expectedState: "done",
     maxDuration: 10,
-    sseTag: 'proof_done'
+    sseTag: "proof_done",
   });
 
   check(waitForSSEProofDoneRequest, {
@@ -154,7 +165,11 @@ export default function (data) {
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;
   try {
-    getProofResponse = getProof(wallet.issuer_access_token, wallet.issuer_connection_id, threadId);
+    getProofResponse = getProof(
+      wallet.issuer_access_token,
+      wallet.issuer_connection_id,
+      threadId
+    );
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
     getProofResponse = { status: 500, response: error.message };
@@ -166,7 +181,9 @@ export default function (data) {
     }
     const responseBody = JSON.parse(r.body);
     if (responseBody[0].verified !== true) {
-      throw new Error(`Credential is not verified. Current verification status: ${responseBody[0].verified}`);
+      throw new Error(
+        `Credential is not verified. Current verification status: ${responseBody[0].verified}`
+      );
     }
     return true;
   };
@@ -177,13 +194,17 @@ export default function (data) {
     }
     const responseBody = JSON.parse(r.body);
     if (responseBody[0].verified !== false) {
-      throw new Error(`Credential is not unverified. Current verification status: ${responseBody[0].verified}`);
+      throw new Error(
+        `Credential is not unverified. Current verification status: ${responseBody[0].verified}`
+      );
     }
     return true;
   };
 
   check(getProofResponse, {
-    [__ENV.IS_REVOKED === "true" ? "Proof received and unverified" : "Proof received and verified"]:
+    [__ENV.IS_REVOKED === "true"
+      ? "Proof received and unverified"
+      : "Proof received and verified"]:
       __ENV.IS_REVOKED === "true" ? unverifiedCheck : verifiedCheck,
   });
 

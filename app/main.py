@@ -18,6 +18,7 @@ from app.routes import (
     jsonld,
     messaging,
     oob,
+    sse,
     trust_registry,
     verifier,
 )
@@ -52,7 +53,7 @@ debug = not prod
 
 
 trust_registry_routes = [trust_registry]
-tenant_admin_routes = [tenants]
+tenant_admin_routes = [tenants, sse]
 tenant_routes = [
     connections,
     definitions,
@@ -65,6 +66,7 @@ tenant_routes = [
     wallet_dids,
     wallet_jws,
     wallet_sd_jws,
+    sse,
 ]
 
 

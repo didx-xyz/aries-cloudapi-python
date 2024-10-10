@@ -56,7 +56,7 @@ const schemas = new SharedArray("schemas", () => {
 export function setup() {
   file.writeString(outputFilepath, "");
   const governanceBearerToken = getGovernanceBearerToken();
-  return { governanceBearerToken }; // eslint-disable-line no-eval
+  return governanceBearerToken; // eslint-disable-line no-eval
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;

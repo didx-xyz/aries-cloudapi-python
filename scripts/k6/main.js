@@ -151,7 +151,7 @@ export function setup() {
     }
   }
 
-  return { bearerToken, issuers };
+  return bearerToken, issuers;
 }
 
 // Helper function to calculate the wallet index based on VU and iteration

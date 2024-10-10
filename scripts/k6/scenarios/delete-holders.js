@@ -60,7 +60,7 @@ const filepath = "output/create-holders.json";
 
 export function setup() {
   const bearerToken = getBearerToken();
-  return bearerToken;
+  return { bearerToken };
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;

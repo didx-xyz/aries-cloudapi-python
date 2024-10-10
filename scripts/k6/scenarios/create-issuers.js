@@ -66,7 +66,7 @@ const wallets = new SharedArray("wallets", () => {
 export function setup() {
   const bearerToken = getBearerToken();
   file.writeString(outputFilepath, "");
-  return bearerToken;
+  return { bearerToken };
 }
 
 const iterationsPerVU = options.scenarios.default.iterations;

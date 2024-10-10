@@ -47,7 +47,11 @@ const mainIterationDuration = new Trend("main_iteration_duration");
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
   const walletsArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
+  for (
+    let i = 0;
+    i < options.scenarios.default.iterations * options.scenarios.default.vus;
+    i++
+  ) {
     walletsArray.push({
       wallet_label: `${holderPrefix} ${i}`,
       wallet_name: `${holderPrefix}_${i}`,
@@ -86,7 +90,9 @@ export default function (data) {
       return true;
     },
   });
-  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
+  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(
+    createTenantResponse.body
+  );
 
   // specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 

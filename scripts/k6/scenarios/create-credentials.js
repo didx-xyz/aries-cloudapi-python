@@ -1,11 +1,17 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
-import { Counter, Trend } from "k6/metrics";
+import { check } from "k6";
+import { Counter } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptCredential, createCredential, genericWaitForSSEEvent, getCredentialIdByThreadId, getWalletIndex } from "../libs/functions.js";
+import {
+  acceptCredential,
+  createCredential,
+  genericWaitForSSEEvent,
+  getCredentialIdByThreadId,
+  getWalletIndex,
+} from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
@@ -82,7 +88,7 @@ export default function (data) {
       bearerToken,
       wallet.issuer_access_token,
       wallet.issuer_credential_definition_id,
-      wallet.issuer_connection_id,
+      wallet.issuer_connection_id
     );
   } catch (error) {
     // console.error(`Error creating credential: ${error.message}`);
@@ -92,16 +98,17 @@ export default function (data) {
   check(createCredentialResponse, {
     "Credential created successfully": (r) => {
       if (r.status !== 200) {
-        console.error(`Unexpected response while creating credential: ${r.response}`);
+        console.error(
+          `Unexpected response while creating credential: ${r.response}`
+        );
         return false;
       }
       return true;
     },
   });
 
-  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } = JSON.parse(
-    createCredentialResponse.body,
-  );
+  const { thread_id: threadId, credential_exchange_id: credentialExchangeId } =
+    JSON.parse(createCredentialResponse.body);
 
   // console.log(`Thread ID: ${threadId}`);
   // console.log(`Holer access token: ${wallet.holder_access_token}`);
@@ -111,12 +118,12 @@ export default function (data) {
     accessToken: wallet.access_token,
     walletId: wallet.wallet_id,
     threadId: threadId,
-    eventType: 'offer-received',
-    sseUrlPath: 'credentials/thread_id',
-    topic: 'credentials',
-    expectedState: 'offer-received',
+    eventType: "offer-received",
+    sseUrlPath: "credentials/thread_id",
+    topic: "credentials",
+    expectedState: "offer-received",
     maxDuration: 10,
-    sseTag: 'credential_offer_received'
+    sseTag: "credential_offer_received",
   });
 
   check(waitForSSEEventResponse, {
@@ -132,11 +139,16 @@ export default function (data) {
 
   const credentialId = getCredentialIdByThreadId(wallet.access_token, threadId);
 
-  const acceptCredentialResponse = acceptCredential(wallet.access_token, credentialId);
+  const acceptCredentialResponse = acceptCredential(
+    wallet.access_token,
+    credentialId
+  );
   check(acceptCredentialResponse, {
     "Credential accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting credential: ${r.response}`);
+        throw new Error(
+          `Unexpected response while accepting credential: ${r.response}`
+        );
       }
       return true;
     },

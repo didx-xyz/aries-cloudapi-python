@@ -44,7 +44,11 @@ export function setup() {
   const bearerToken = getBearerToken();
   const governanceBearerToken = getGovernanceBearerToken();
   const issuers = data.trim().split("\n").map(JSON.parse);
-  const schemaId = createSchemaIfNotExists(governanceBearerToken, schemaName, schemaVersion);
+  const schemaId = createSchemaIfNotExists(
+    governanceBearerToken,
+    schemaName,
+    schemaVersion
+  );
   check(schemaId, {
     "Schema ID is not null": (id) => id !== null && id !== undefined,
   });
@@ -70,7 +74,7 @@ export default function (data) {
     bearerToken,
     wallet.access_token,
     credDefTag,
-    schemaId,
+    schemaId
   );
   check(createCredentialDefinitionResponse, {
     "Credential definition created successfully": (r) => r.status === 200,

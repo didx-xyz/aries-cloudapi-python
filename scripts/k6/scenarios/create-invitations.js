@@ -5,7 +5,12 @@ import { check } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import file from "k6/x/file";
 import { getBearerToken } from "../libs/auth.js";
-import { acceptInvitation, createInvitation, genericWaitForSSEEvent, getWalletIndex } from "../libs/functions.js";
+import {
+  acceptInvitation,
+  createInvitation,
+  genericWaitForSSEEvent,
+  getWalletIndex,
+} from "../libs/functions.js";
 import { bootstrapIssuer } from "../libs/setup.js";
 // import bootstrapIssuer from "./bootstrap-issuer.js";
 
@@ -59,7 +64,13 @@ export function setup() {
 
   const walletName = issuerPrefix;
   const credDefTag = walletName;
-  const issuers = bootstrapIssuer(numIssuers, walletName, credDefTag, schemaName, schemaVersion);
+  const issuers = bootstrapIssuer(
+    numIssuers,
+    walletName,
+    credDefTag,
+    schemaName,
+    schemaVersion
+  );
 
   if (!issuers || issuers.length === 0) {
     console.error("Failed to bootstrap issuers.");
@@ -96,39 +107,52 @@ export default function (data) {
 
   // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Wallet Index: ${walletIndex}, Issuer Index: ${issuerIndex}, Issuer Wallet ID: ${issuer.walletId}`);
 
-  const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
+  const createInvitationResponse = createInvitation(
+    bearerToken,
+    issuer.accessToken
+  );
   check(createInvitationResponse, {
     "Invitation created successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response status while create invitation: ${r.status}`);
+        throw new Error(
+          `Unexpected response status while create invitation: ${r.status}`
+        );
       }
       return true;
     },
   });
-  const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
+  const { invitation: invitationObj, connection_id: issuerConnectionId } =
+    JSON.parse(createInvitationResponse.body);
 
-  const acceptInvitationResponse = acceptInvitation(wallet.access_token, invitationObj);
+  const acceptInvitationResponse = acceptInvitation(
+    wallet.access_token,
+    invitationObj
+  );
   check(acceptInvitationResponse, {
     "Invitation accepted successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting invitation: ${r.response}`);
+        throw new Error(
+          `Unexpected response while accepting invitation: ${r.response}`
+        );
       }
       return true;
     },
   });
 
-  const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
+  const { connection_id: holderInvitationConnectionId } = JSON.parse(
+    acceptInvitationResponse.body
+  );
 
   const waitForSSEEventConnectionResponse = genericWaitForSSEEvent({
     accessToken: wallet.access_token,
     walletId: wallet.wallet_id,
     threadId: holderInvitationConnectionId,
-    eventType: 'completed',
-    sseUrlPath: 'connections/connection_id',
-    topic: 'connections',
-    expectedState: 'completed',
+    eventType: "completed",
+    sseUrlPath: "connections/connection_id",
+    topic: "connections",
+    expectedState: "completed",
     maxDuration: 10,
-    sseTag: 'connection_ready'
+    sseTag: "connection_ready",
   });
 
   check(waitForSSEEventConnectionResponse, {

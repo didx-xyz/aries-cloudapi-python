@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check, sleep } from "k6";
+import { check } from "k6";
 import { SharedArray } from "k6/data";
 import file from "k6/x/file";
 import { getGovernanceBearerToken } from "../libs/auth.js";
@@ -40,7 +40,11 @@ export const options = {
 // Seed data: Generating a list of options.iterations unique wallet names
 const schemas = new SharedArray("schemas", () => {
   const schemasArray = [];
-  for (let i = 0; i < options.scenarios.default.iterations * options.scenarios.default.vus; i++) {
+  for (
+    let i = 0;
+    i < options.scenarios.default.iterations * options.scenarios.default.vus;
+    i++
+  ) {
     schemasArray.push({
       schemaName: `${schemaPrefix}_${i}`,
       schemaVersion: `0.0.${i}`,
@@ -67,17 +71,30 @@ export default function (data) {
   const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
   const schema = schemas[walletIndex];
 
-  const checkSchemaResponse = getSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
+  const checkSchemaResponse = getSchema(
+    governanceBearerToken,
+    schema.schemaName,
+    schema.schemaVersion
+  );
   check(checkSchemaResponse, {
     "Schema doesn't exist yet": (r) => r.status === 200 && r.body === "[]",
   });
 
-  const createSchemaResponse = createSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
+  const createSchemaResponse = createSchema(
+    governanceBearerToken,
+    schema.schemaName,
+    schema.schemaVersion
+  );
   check(createSchemaResponse, {
-    "Schema created successfully": (r) => r.status === 200 && r.json("id") != null && r.json("id") !== "",
+    "Schema created successfully": (r) =>
+      r.status === 200 && r.json("id") != null && r.json("id") !== "",
   });
 
-  const getSchemaResponse = getSchema(governanceBearerToken, schema.schemaName, schema.schemaVersion);
+  const getSchemaResponse = getSchema(
+    governanceBearerToken,
+    schema.schemaName,
+    schema.schemaVersion
+  );
   check(getSchemaResponse, {
     "getSchema check passes": (r) => {
       if (r.status !== 200 || r.body === "[]") {

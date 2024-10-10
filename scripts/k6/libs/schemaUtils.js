@@ -2,14 +2,30 @@
 
 import { createSchema, getSchema } from "./functions.js";
 
-export function createSchemaIfNotExists(bearerToken, schemaName, schemaVersion) {
-  const schemaExists = checkSchemaExists(bearerToken, schemaName, schemaVersion);
+export function createSchemaIfNotExists(
+  bearerToken,
+  schemaName,
+  schemaVersion
+) {
+  const schemaExists = checkSchemaExists(
+    bearerToken,
+    schemaName,
+    schemaVersion
+  );
   if (schemaExists) {
-    console.log(`Schema: ${schemaName} version: ${schemaVersion} already exists`);
+    console.log(
+      `Schema: ${schemaName} version: ${schemaVersion} already exists`
+    );
     return getSchemaId(bearerToken, schemaName, schemaVersion);
   }
-  console.log(`Schema: ${schemaName} version: ${schemaVersion} does not exist - creating...`);
-  const createSchemaResponse = createSchema(bearerToken, schemaName, schemaVersion);
+  console.log(
+    `Schema: ${schemaName} version: ${schemaVersion} does not exist - creating...`
+  );
+  const createSchemaResponse = createSchema(
+    bearerToken,
+    schemaName,
+    schemaVersion
+  );
   if (createSchemaResponse.status === 200) {
     // Schema created successfully
     const schemaData = JSON.parse(createSchemaResponse.body);

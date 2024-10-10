@@ -3,7 +3,6 @@
 
 import { check, sleep } from "k6";
 import http from "k6/http";
-import { Counter, Trend } from "k6/metrics";
 import sse from "k6/x/sse";
 // let customDuration = new Trend('custom_duration', true);
 
@@ -26,7 +25,8 @@ export function createTenant(bearerToken, wallet) {
     wallet_label: wallet.wallet_label,
     wallet_name: wallet.wallet_name,
     group_id: "Some Group Id",
-    image_url: "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
   });
   const params = {
     headers: {
@@ -153,7 +153,9 @@ export function deleteTenant(bearerToken, walletId) {
       if (responseBody === "null") {
         // console.log(`Wallet ${walletId} deleted successfully.`);
       } else {
-        console.error(`Failed to delete wallet ${walletId}. Response body: ${responseBody}`);
+        console.error(
+          `Failed to delete wallet ${walletId}. Response body: ${responseBody}`
+        );
       }
     } else {
       // Request failed
@@ -176,7 +178,8 @@ export function createIssuerTenant(bearerToken, walletName) {
     wallet_name: walletName,
     roles: ["issuer", "verifier"],
     group_id: "Group A",
-    image_url: "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
   });
   const params = {
     headers: {
@@ -242,7 +245,12 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
   }
 }
 
-export function createCredential(bearerToken, issuerAccessToken, credentialDefinitionId, issuerConnectionId) {
+export function createCredential(
+  bearerToken,
+  issuerAccessToken,
+  credentialDefinitionId,
+  issuerConnectionId
+) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials`;
   const params = {
     headers: {
@@ -308,7 +316,12 @@ export function acceptCredential(holderAccessToken, credentialId) {
   }
 }
 
-export function createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag, schemaId) {
+export function createCredentialDefinition(
+  bearerToken,
+  issuerAccessToken,
+  credDefTag,
+  schemaId
+) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials`;
   const params = {
     headers: {
@@ -333,7 +346,9 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
       return response;
     }
     logError(response);
-    console.warn(`Failed creating credential definition. Request Body: ${requestBody}`);
+    console.warn(
+      `Failed creating credential definition. Request Body: ${requestBody}`
+    );
     return null;
   } catch (error) {
     console.error(`Error creating credential definition: ${error.message}`);
@@ -366,7 +381,11 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
     }
     // Throw an error if no match is found
     throw new Error(
-      `No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`,
+      `No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(
+        responseData,
+        null,
+        2
+      )}`
     );
   } catch (error) {
     console.error("Error in getCredentialIdByThreadId:", error);
@@ -374,7 +393,11 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
   }
 }
 
-export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag) {
+export function getCredentialDefinitionId(
+  bearerToken,
+  issuerAccessToken,
+  credDefTag
+) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
   const params = {
     headers: {
@@ -389,7 +412,9 @@ export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDe
     const matchingItem = responseData.find((item) => item.tag === credDefTag);
 
     if (matchingItem) {
-      console.log(`Credential definition found for tag ${credDefTag}: ${matchingItem.id}`);
+      console.log(
+        `Credential definition found for tag ${credDefTag}: ${matchingItem.id}`
+      );
       return matchingItem.id;
     }
     console.warn(`Credential definition not found for tag ${credDefTag}`);
@@ -462,7 +487,11 @@ export function getProofIdByThreadId(holderAccessToken, threadId) {
     }
     // Throw an error if no match is found
     throw new Error(
-      `No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`,
+      `No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(
+        responseData,
+        null,
+        2
+      )}`
     );
   } catch (error) {
     console.error("Error in getProofId:", error);
@@ -494,7 +523,13 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
     }
     // Throw an error if no match is found
     console.log(`Log of the request made: ${JSON.stringify(response.request)}`);
-    throw new Error(`No match found for proofId: ${proofId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`);
+    throw new Error(
+      `No match found for proofId: ${proofId}\nResponse body: ${JSON.stringify(
+        responseData,
+        null,
+        2
+      )}`
+    );
   } catch (error) {
     console.error("Error in getProofIdCredentials:", error);
     throw error; // Re-throw the error to propagate it to the caller
@@ -671,7 +706,10 @@ export function revokeCredential(issuerAccessToken, credentialExchangeId) {
   }
 }
 
-export function revokeCredentialAutoPublish(issuerAccessToken, credentialExchangeId) {
+export function revokeCredentialAutoPublish(
+  issuerAccessToken,
+  credentialExchangeId
+) {
   const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/revoke`;
   const params = {
     headers: {
@@ -752,7 +790,7 @@ export function genericWaitForSSEEvent(config) {
     expectedState,
     maxDuration = 60,
     checkInterval = 1,
-    sseTag
+    sseTag,
   } = config;
 
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}`;
@@ -773,8 +811,8 @@ export function genericWaitForSSEEvent(config) {
     },
     (client) => {
       client.on("event", (event) => {
-        if (!event.data || event.data.trim() === '') {
-          console.log('Received empty event data');
+        if (!event.data || event.data.trim() === "") {
+          console.log("Received empty event data");
           return;
         }
 
@@ -786,14 +824,21 @@ export function genericWaitForSSEEvent(config) {
           eventData = event.data;
         }
 
-        if (typeof eventData === 'object' && eventData.topic === topic && eventData.payload && eventData.payload.state === expectedState) {
+        if (
+          typeof eventData === "object" &&
+          eventData.topic === topic &&
+          eventData.payload &&
+          eventData.payload.state === expectedState
+        ) {
           check(eventData, {
             "Event received": (e) => e.payload.state === expectedState,
           });
           eventReceived = true;
           client.close();
         } else {
-          console.log(`Received unexpected event format: ${JSON.stringify(eventData)}`);
+          console.log(
+            `Received unexpected event format: ${JSON.stringify(eventData)}`
+          );
         }
       });
 
@@ -805,7 +850,7 @@ export function genericWaitForSSEEvent(config) {
       client.on("end", () => {
         console.log("SSE connection closed");
       });
-    },
+    }
   );
 
   check(response, {

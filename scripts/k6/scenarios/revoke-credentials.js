@@ -7,7 +7,7 @@ import { getBearerToken } from "../libs/auth.js";
 import {
   checkRevoked,
   getWalletIndex,
-  revokeCredentialAutoPublish
+  revokeCredentialAutoPublish,
 } from "../libs/functions.js";
 
 const inputFilepath = "../output/create-credentials.json";
@@ -53,24 +53,36 @@ export default function (data) {
   const walletIndex = getWalletIndex(__VU, __ITER, iterations);
   const wallet = tenants[walletIndex];
 
-  const revokeCredentialResponse = revokeCredentialAutoPublish(wallet.issuer_access_token, wallet.credential_exchange_id);
+  const revokeCredentialResponse = revokeCredentialAutoPublish(
+    wallet.issuer_access_token,
+    wallet.credential_exchange_id
+  );
   check(revokeCredentialResponse, {
     "Credential revoked successfully": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while revoking credential: ${r.response}`);
+        throw new Error(
+          `Unexpected response while revoking credential: ${r.response}`
+        );
       }
       return true;
     },
   });
-  const checkRevokedCredentialResponse = checkRevoked(wallet.issuer_access_token, wallet.credential_exchange_id);
+  const checkRevokedCredentialResponse = checkRevoked(
+    wallet.issuer_access_token,
+    wallet.credential_exchange_id
+  );
   check(checkRevokedCredentialResponse, {
     "Credential state is revoked": (r) => {
       if (r.status !== 200) {
-        throw new Error(`Unexpected response while checking if credential is revoked: ${r.status}`);
+        throw new Error(
+          `Unexpected response while checking if credential is revoked: ${r.status}`
+        );
       }
       const responseBody = JSON.parse(r.body);
       if (responseBody.state !== "revoked") {
-        throw new Error(`Credential state is not revoked. Current state: ${responseBody.state}`);
+        throw new Error(
+          `Credential state is not revoked. Current state: ${responseBody.state}`
+        );
       }
       return true;
     },

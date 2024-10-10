@@ -2461,6 +2461,62 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
       security:
         - APIKeyHeader: []
+  /v1/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}:
+    get:
+      tags:
+        - sse
+      summary: Subscribe To A Wallet Event By Topic, Field, And Desired State
+      description: "Wait for a desired state to be reached for some event for this\
+        \ wallet and topic,\nfiltering for payloads that contain `field:field_id`.\n\
+        \nParameters:\n-----------\n    wallet_id: The ID of the wallet subscribing\
+        \ to the events.\n    topic: The topic to which the wallet is subscribing.\n\
+        \    field: The field to which the wallet is subscribing.\n    field_id: The\
+        \ ID of the field subscribing to the events.\n    desired_state: The desired\
+        \ state to be reached.\n    look_back: Specifies the look back window in seconds,\
+        \ to include events before connection established."
+      operationId: Subscribe_to_a_Wallet_Event_by_Topic__Field__and_Desired_State_v1_sse__wallet_id___topic___field___field_id___desired_state__get
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: wallet_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Wallet Id
+        - name: topic
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Topic
+        - name: field
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Field
+        - name: field_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Field Id
+        - name: desired_state
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Desired State
+      responses:
+        "200":
+          description: Successful Response
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     AcceptInvitation:

@@ -1,9 +1,9 @@
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pydantic
 import pytest
 from aries_cloudcontroller import ApiException
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.exceptions.cloudapi_exception import CloudApiException
@@ -13,7 +13,6 @@ from app.main import (
     cloud_api_docs_description,
     create_app,
     default_docs_description,
-    lifespan,
     read_openapi_yaml,
     routes_for_role,
     tenant_admin_routes,
@@ -35,20 +34,6 @@ def test_create_app():
         expected_routes = ["/openapi.json", "/v1/tenants"]
         for route in expected_routes:
             assert route in routes
-
-
-@pytest.mark.anyio
-async def test_app_lifespan():
-    # Use AsyncMock to mock the disconnect_all class method
-    with patch(
-        "app.main.WebsocketManager.disconnect_all", new_callable=AsyncMock
-    ) as mock_disconnect:
-        # Run the app_lifespan context manager
-        async with lifespan(FastAPI()):
-            pass
-
-        # Assert that disconnect_all was awaited once
-        mock_disconnect.assert_awaited_once()
 
 
 @pytest.mark.parametrize(

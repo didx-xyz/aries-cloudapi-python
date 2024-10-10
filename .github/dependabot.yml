@@ -43,9 +43,9 @@ updates:
       day: saturday
       time: "07:00"
 
-  # Maintain dependencies for Webhooks Service submodule
+  # Maintain dependencies for the Waypoint submodule
   - package-ecosystem: pip
-    directory: /webhooks
+    directory: /waypoint
     schedule:
       interval: weekly
       day: saturday

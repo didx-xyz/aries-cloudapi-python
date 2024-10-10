@@ -20,7 +20,7 @@ color_map = {
     "app": "blue",
     "endorser": "yellow",
     "trustregistry": "magenta",
-    "webhooks": "green",
+    "waypoint": "green",
 }
 
 

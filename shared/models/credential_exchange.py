@@ -3,8 +3,6 @@ from typing import Dict, Literal, Optional, Tuple
 from aries_cloudcontroller import V20CredExRecord
 from pydantic import BaseModel, Field
 
-from shared.models.protocol import IssueCredentialProtocolVersion
-
 State = Literal[
     "proposal-sent",
     "proposal-received",

@@ -28,7 +28,7 @@ async def app_lifespan(_: FastAPI):
 
     logger.info("Shutting down Endorser services ...")
     await endorsement_processor.stop()
-    await container.shutdown_resources()  # shutdown redis instance
+    await container.shutdown_resources()
     logger.info("Shutdown Endorser services.")
 
 

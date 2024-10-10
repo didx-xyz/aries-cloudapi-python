@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# mise description="Poetry Install Webhooks dependencies"
-
-echo "Installing Webhook dependencies"
-
-cd ./webhooks
-poetry install

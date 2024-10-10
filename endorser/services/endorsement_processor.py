@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 class EndorsementProcessor:
     """
-    Class to process endorsement webhook events that the Webhooks service writes to `endorsement_redis_prefix`
+    Class to process endorsement webhook events that Benthos acapy-events-processor writes to `endorser_nats_subject`
     """
 
     def __init__(self, jetstream: JetStreamContext) -> None:
@@ -154,7 +154,7 @@ class EndorsementProcessor:
         to a separate key for further investigation.
 
         Args:
-            key: The Redis key where the problematic event was found.
+            key: The Nats subject key where the problematic event was found.
             error: The exception that occurred during event processing.
         """
         bound_logger = logger.bind(body={"key": key})

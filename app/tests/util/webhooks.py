@@ -6,7 +6,6 @@ from httpx import HTTPError
 from app.tests.util.sse_listener import SseListener, SseListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
-from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiTopics
 
@@ -30,7 +29,6 @@ async def check_webhook_state(
     state: str,
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 30,
-    look_back: float = 1,
     max_tries: int = 2,
     delay: float = 0.5,
 ) -> Dict[str, Any]:
@@ -46,10 +44,6 @@ async def check_webhook_state(
     attempt = 0
 
     while not event and attempt < max_tries:
-        look_back_duration = min(
-            MAX_EVENT_AGE_SECONDS,
-            look_back + attempt * max_duration,
-        )
         try:
             if filter_map:
                 # Assuming that filter_map contains 1 key-value pair
@@ -66,14 +60,10 @@ async def check_webhook_state(
                     field_id=field_id,
                     desired_state=state,
                     timeout=max_duration,
-                    look_back=look_back_duration,
                 )
             else:
-                bound_logger.info("Waiting for event with state {}", state)
-                event = await listener.wait_for_state(
-                    desired_state=state,
-                    timeout=max_duration,
-                    look_back=look_back_duration,
+                raise Exception(
+                    "No longer implemented: cannot wait for event without filter_map"
                 )
         except SseListenerTimeout:
             bound_logger.error(

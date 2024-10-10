@@ -8,11 +8,11 @@ export ITERATIONS=1
 
 WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"
 AGENT="governance-ga-agent governance-multitenant-agent"
-SERVICE="tails-server governance-trust-registry governance-endorser governance-webhooks-web"
+SERVICE="tails-server governance-trust-registry governance-endorser"
 AUTH="inquisitor"
 TESTS="create-issuers.js create-creddef.js"
 
-INVALID="governance-multitenant-web governance-multitenant-agent governance-webhooks-web governance-tenant-web"
+INVALID="governance-multitenant-web governance-multitenant-agent governance-tenant-web"
 
 # Combine all stacks into one variable
 ALL="$SERVICE $AGENT $WEBS $AUTH"

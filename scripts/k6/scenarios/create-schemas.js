@@ -95,20 +95,23 @@ export default function (data) {
     schema.schemaName,
     schema.schemaVersion
   );
-  check(getSchemaResponse, {
-    "getSchema check passes": (r) => {
-      if (r.status !== 200 || r.body === "[]") {
-        return false;
-      }
 
-      try {
-        const schemaData = JSON.parse(r.body);
-        return schemaData.length > 0 && schemaData[0].id != null;
-      } catch (e) {
-        console.error("Failed to parse schema data:", e);
-        return false;
-      }
-    },
+  function isSchemaValid(response) {
+    if (response.status !== 200 || response.body === "[]") {
+      return false;
+    }
+
+    try {
+      const schemaData = JSON.parse(response.body);
+      return schemaData.length > 0 && schemaData[0].id != null;
+    } catch (e) {
+      console.error("Failed to parse schema data:", e);
+      return false;
+    }
+  }
+
+  check(getSchemaResponse, {
+    "getSchema check passes": (r) => isSchemaValid(r),
   });
 
   const { id: schemaId } = JSON.parse(getSchemaResponse.body)[0];

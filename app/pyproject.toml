@@ -26,7 +26,7 @@ scalar-fastapi = "^1.0.3"
 [tool.poetry.dev-dependencies]
 anyio = "~4.6.0"
 assertpy = "==1.1"
-black = "~24.8.0"
+black = "~24.10.0"
 isort = "~5.13.2"
 mockito = "~1.5.0"
 pre-commit = "~3.8.0"

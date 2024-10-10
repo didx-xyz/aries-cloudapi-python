@@ -76,7 +76,7 @@ export function setup() {
     console.error("Failed to bootstrap issuers.");
   }
 
-  return { bearerToken, issuers, holders };
+  return bearerToken, issuers, holders;
 }
 
 function getIssuerIndex(vu, iter) {

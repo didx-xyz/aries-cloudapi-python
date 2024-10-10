@@ -21,7 +21,7 @@ scalar-fastapi = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.6.0"
-black = "~24.8.0"
+black = "~24.10.0"
 isort = "~5.13.2"
 pre-commit = "~4.0.1"
 pylint = "~3.3.0"

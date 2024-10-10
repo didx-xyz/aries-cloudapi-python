@@ -20,7 +20,7 @@ jobs:
           experimental: true
           mise_toml: |
             [tools]
-            "pipx:black" = "24.8"
+            "pipx:black" = "24.10"
             "pipx:isort" = "5.13"
             python = "3.12"
             uv = "0.4"

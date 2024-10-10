@@ -49,7 +49,6 @@ async def get_sse_subscribe_event_with_field_and_state(
         field: The field to which the wallet is subscribing.
         field_id: The ID of the field subscribing to the events.
         desired_state: The desired state to be reached.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={

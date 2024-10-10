@@ -2472,8 +2472,7 @@ paths:
         \ to the events.\n    topic: The topic to which the wallet is subscribing.\n\
         \    field: The field to which the wallet is subscribing.\n    field_id: The\
         \ ID of the field subscribing to the events.\n    desired_state: The desired\
-        \ state to be reached.\n    look_back: Specifies the look back window in seconds,\
-        \ to include events before connection established."
+        \ state to be reached."
       operationId: Subscribe_to_a_Wallet_Event_by_Topic__Field__and_Desired_State_v1_sse__wallet_id___topic___field___field_id___desired_state__get
       security:
         - APIKeyHeader: []

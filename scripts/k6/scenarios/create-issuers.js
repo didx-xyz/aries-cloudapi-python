@@ -23,8 +23,8 @@ export const options = {
   scenarios: {
     default: {
       executor: "per-vu-iterations",
-      vus: vus,
-      iterations: iterations,
+      vus,
+      iterations,
       maxDuration: "24h",
     },
   },

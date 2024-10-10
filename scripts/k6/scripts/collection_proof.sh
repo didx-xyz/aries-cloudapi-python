@@ -13,20 +13,20 @@ config() {
 }
 
 init() {
-    xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
-    run_test ./scenarios/create-holders.js
-    run_test ./scenarios/create-invitations.js
-    run_test ./scenarios/create-credentials.js
+  xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
+  run_test ./scenarios/create-holders.js
+  run_test ./scenarios/create-invitations.js
+  run_test ./scenarios/create-credentials.js
 }
 
 scenario() {
-    run_test ./scenarios/create-proof.js
+  run_test ./scenarios/create-proof.js
 }
 
 cleanup() {
-    log "Skipping clean up..."
-    xk6 run ./scenarios/delete-holders.js
-    xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
+  log "Skipping clean up..."
+  xk6 run ./scenarios/delete-holders.js
+  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {

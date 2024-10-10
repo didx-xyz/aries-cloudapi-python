@@ -22,7 +22,7 @@ scenario_create_issuers() {
 scenario_create_schemas() {
   export VUS=10
   export ITERATIONS=40
-    export SCHEMA_PREFIX="k6_issuer_ops2"
+  export SCHEMA_PREFIX="k6_issuer_ops2"
   run_test ./scenarios/create-schemas.js
 }
 

@@ -5,9 +5,9 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-    export VUS=15
-    export ITERATIONS=10
-    export ISSUER_PREFIX="k6_issuer_issuer"
+  export VUS=15
+  export ITERATIONS=10
+  export ISSUER_PREFIX="k6_issuer_issuer"
 }
 
 init() {
@@ -15,14 +15,14 @@ init() {
 }
 
 scenario() {
-    run_test ./scenarios/create-issuers.js
+  run_test ./scenarios/create-issuers.js
 }
 
 cleanup() {
-    echo "Cleaning up..."
-    export ITERATIONS=$((ITERATIONS * VUS))
-    export VUS=1
-    xk6 run ./scenarios/delete-issuers.js
+  echo "Cleaning up..."
+  export ITERATIONS=$((ITERATIONS * VUS))
+  export VUS=1
+  xk6 run ./scenarios/delete-issuers.js
 }
 
 run_collection() {

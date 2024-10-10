@@ -63,7 +63,7 @@ async def check_webhook_state(
                 )
             else:
                 raise Exception(
-                    "No longer implement: cannot wait for webhook without field:field_id"
+                    "No longer implemented: cannot wait for event without filter_map"
                 )
         except SseListenerTimeout:
             bound_logger.error(

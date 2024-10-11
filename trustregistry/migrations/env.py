@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 db_url = os.environ.get("POSTGRES_DATABASE_URL")
 
 if db_url:
-    logger.debug(f"Using database URL from environment")
+    logger.debug("Using database URL from environment")
     config.set_main_option("sqlalchemy.url", db_url)
 else:
     logger.warning(

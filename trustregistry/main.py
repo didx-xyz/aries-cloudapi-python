@@ -9,7 +9,6 @@ from fastapi import Depends, FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy import inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from shared.constants import PROJECT_VERSION
@@ -42,10 +41,10 @@ def check_migrations(
             initial_revision = script.get_base()
             command.stamp(alembic_cfg, initial_revision)
             logger.info(
-                f"Database stamped with initial migration version: {initial_revision}"
+                "Database stamped with initial migration version: {}", initial_revision
             )
-        except Exception as e:  # pylint: disable=W0718
-            logger.error(f"Error stamping database: {e}")
+        except Exception:  # pylint: disable=W0718
+            logger.exception("Error stamping database")
             raise
 
     # Get current revision
@@ -67,8 +66,8 @@ async def lifespan(_: FastAPI):
         try:
             command.upgrade(alembic_cfg, "head")
             logger.info("Database schema is up to date.")
-        except Exception as e:
-            logger.error(f"Error during migration: {e}")
+        except Exception:  # pylint: disable=broad-except
+            logger.exception("Error during migration")
             raise
     else:
         logger.info("Database is up to date. No migrations needed.")

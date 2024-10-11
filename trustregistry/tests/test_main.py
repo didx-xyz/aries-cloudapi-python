@@ -76,6 +76,7 @@ async def test_lifespan_migration_error(
     mock_check_migrations,
     mock_engine,
 ):
+    # Mock return values
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
     mock_command.upgrade.side_effect = Exception("Migration error")
@@ -83,14 +84,16 @@ async def test_lifespan_migration_error(
     mock_inspector.get_table_names.return_value = ["table1", "table2"]
     mock_inspect.return_value = mock_inspector
 
+    # Test the lifespan context, expecting an Exception
     with pytest.raises(Exception, match="Migration error"):
         async with lifespan(FastAPI()):
             pass
 
+    # Assertions
     mock_check_migrations.assert_called_once_with(mock_engine, mock_config.return_value)
     mock_command.upgrade.assert_called_once_with(mock_config.return_value, "head")
     mock_logger.info.assert_called_with("Applying database migrations...")
-    mock_logger.error.assert_called_once_with("Error during migration: Migration error")
+    mock_logger.exception.assert_called_once_with("Error during migration")
 
 
 @pytest.mark.anyio
@@ -130,11 +133,12 @@ async def test_lifespan_no_migrations_needed(
 
 
 @pytest.mark.parametrize(
-    "has_alembic_version,current_rev,head_rev,expected",
+    "has_alembic_version,has_actors_table,current_rev,head_rev,expected",
     [
-        (False, None, "head_rev", False),  # alembic_version table doesn't exist
-        (True, "current_rev", "head_rev", False),  # revisions don't match
-        (True, "same_rev", "same_rev", True),  # revisions match
+        (False, True, None, "head_rev", False),  # alembic_version missing, actors exists
+        (False, False, None, "head_rev", False),  # both alembic_version and actors missing
+        (True, True, "current_rev", "head_rev", False),  # alembic_version exists, revisions don't match
+        (True, True, "same_rev", "same_rev", True),  # alembic_version exists, revisions match
     ],
 )
 @patch("trustregistry.main.inspect")
@@ -149,6 +153,7 @@ def test_check_migrations(
     mock_migration_context,
     mock_inspect,
     has_alembic_version,
+    has_actors_table,
     current_rev,
     head_rev,
     expected,
@@ -158,14 +163,18 @@ def test_check_migrations(
     mock_alembic_cfg = MagicMock()
 
     mock_inspector = MagicMock()
-    mock_inspector.get_table_names.return_value = (
-        ["alembic_version"] if has_alembic_version else []
-    )
+    table_names = []
+    if has_alembic_version:
+        table_names.append("alembic_version")
+    if has_actors_table:
+        table_names.append("actors")
+
+    mock_inspector.get_table_names.return_value = table_names
     mock_inspect.return_value = mock_inspector
 
     mock_script = MagicMock()
     mock_script.get_current_head.return_value = head_rev
-    mock_script.get_base.return_value = "initial_revision"
+    mock_script.get_base.return_value = "initial_schema"
     mock_script_directory.from_config.return_value = mock_script
 
     mock_context = MagicMock()
@@ -184,14 +193,17 @@ def test_check_migrations(
     mock_script_directory.from_config.assert_called_once_with(mock_alembic_cfg)
 
     if not has_alembic_version:
-        mock_script.get_base.assert_called_once()
-        mock_command.stamp.assert_called_once_with(mock_alembic_cfg, "initial_revision")
-        mock_logger.info.assert_any_call(
-            "Alembic version table not found. Stamping with initial revision..."
-        )
-        mock_logger.info.assert_any_call(
-            "Database stamped with initial migration version: initial_revision"
-        )
+        if has_actors_table:
+            mock_script.get_base.assert_called_once()
+            mock_command.stamp.assert_called_once_with(mock_alembic_cfg, "initial_schema")
+            mock_logger.info.assert_any_call(
+                "Alembic version table not found. Stamping with initial revision..."
+            )
+            mock_logger.info.assert_any_call(
+                "Database stamped with initial migration version: {}", "initial_schema"
+            )
+        else:
+            mock_logger.info.assert_any_call("Alembic version table not found.")
     else:
         mock_migration_context.configure.assert_called()
         mock_context.get_current_revision.assert_called_once()

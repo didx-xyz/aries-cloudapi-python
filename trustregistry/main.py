@@ -25,7 +25,7 @@ ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
 def check_migrations(
-    engine: Engine, alembic_cfg: Config # pylint: disable=redefined-outer-name
+    engine: Engine, alembic_cfg: Config  # pylint: disable=redefined-outer-name
 ) -> bool:
     # Check if alembic_version table exists
     with engine.connect() as connection:

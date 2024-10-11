@@ -31,52 +31,34 @@ def test_create_app():
 @patch("trustregistry.main.Config")
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
+@patch("trustregistry.main.inspect")
 async def test_lifespan_migrations_needed(
+    mock_inspect,
     mock_logger,
     mock_command,
     mock_config,
     mock_check_migrations,
-    mock_engine,  # pylint: disable=unused-argument
+    mock_engine,
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
+    mock_inspector = MagicMock()
+    mock_inspector.get_table_names.return_value = ["table1", "table2"]
+    mock_inspect.return_value = mock_inspector
 
     async with lifespan(FastAPI()):
         pass
 
+    mock_check_migrations.assert_called_once_with(mock_engine, mock_config.return_value)
     mock_command.upgrade.assert_called_once_with(mock_config.return_value, "head")
     mock_logger.info.assert_any_call("Applying database migrations...")
     mock_logger.info.assert_any_call("Database schema is up to date.")
-
-
-@pytest.mark.anyio
-@patch("trustregistry.main.engine")
-@patch("trustregistry.main.check_migrations")
-@patch("trustregistry.main.Config")
-@patch("trustregistry.main.command")
-@patch("trustregistry.main.logger")
-async def test_lifespan_already_exists_error(
-    mock_logger,
-    mock_command,
-    mock_config,
-    mock_check_migrations,
-    mock_engine,  # pylint: disable=unused-argument
-):
-    mock_check_migrations.return_value = False
-    mock_config.return_value = MagicMock()
-    mock_command.upgrade.side_effect = ProgrammingError(
-        "Table already exists", None, None
+    mock_inspect.assert_called_once_with(
+        mock_engine.connect.return_value.__enter__.return_value
     )
-
-    async with lifespan(FastAPI()):
-        pass
-
-    mock_command.stamp.assert_called_once_with(mock_config.return_value, "head")
-    mock_logger.warning.assert_called_once_with(
-        "Database schema already exists. Stamping with current version."
-    )
-    mock_logger.info.assert_called_with(
-        "Database stamped with current migration version."
+    mock_inspector.get_table_names.assert_called_once()
+    mock_logger.debug.assert_called_with(
+        "TrustRegistry tables created: `{}`", ["table1", "table2"]
     )
 
 
@@ -86,99 +68,134 @@ async def test_lifespan_already_exists_error(
 @patch("trustregistry.main.Config")
 @patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
-async def test_lifespan_unexpected_error(
+@patch("trustregistry.main.inspect")
+async def test_lifespan_migration_error(
+    mock_inspect,
     mock_logger,
     mock_command,
     mock_config,
     mock_check_migrations,
-    mock_engine,  # pylint: disable=unused-argument
+    mock_engine,
 ):
     mock_check_migrations.return_value = False
     mock_config.return_value = MagicMock()
-    mock_command.upgrade.side_effect = ProgrammingError("Unexpected error", None, None)
+    mock_command.upgrade.side_effect = Exception("Migration error")
+    mock_inspector = MagicMock()
+    mock_inspector.get_table_names.return_value = ["table1", "table2"]
+    mock_inspect.return_value = mock_inspector
 
-    with pytest.raises(ProgrammingError):
+    with pytest.raises(Exception, match="Migration error"):
         async with lifespan(FastAPI()):
             pass
 
-    mock_logger.error.assert_called_once()
+    mock_check_migrations.assert_called_once_with(mock_engine, mock_config.return_value)
+    mock_command.upgrade.assert_called_once_with(mock_config.return_value, "head")
+    mock_logger.info.assert_called_with("Applying database migrations...")
+    mock_logger.error.assert_called_once_with("Error during migration: Migration error")
 
 
 @pytest.mark.anyio
 @patch("trustregistry.main.engine")
 @patch("trustregistry.main.check_migrations")
+@patch("trustregistry.main.Config")
+@patch("trustregistry.main.command")
 @patch("trustregistry.main.logger")
+@patch("trustregistry.main.inspect")
 async def test_lifespan_no_migrations_needed(
-    mock_logger, mock_check_migrations, mock_engine  # pylint: disable=unused-argument
+    mock_inspect,
+    mock_logger,
+    mock_command,
+    mock_config,
+    mock_check_migrations,
+    mock_engine,
 ):
     mock_check_migrations.return_value = True
+    mock_config.return_value = MagicMock()
+    mock_inspector = MagicMock()
+    mock_inspector.get_table_names.return_value = ["table1", "table2"]
+    mock_inspect.return_value = mock_inspector
 
     async with lifespan(FastAPI()):
         pass
 
-    mock_logger.info.assert_called_once_with(
-        "Database is up to date. No migrations needed."
+    mock_check_migrations.assert_called_once_with(mock_engine, mock_config.return_value)
+    mock_command.upgrade.assert_not_called()
+    mock_logger.info.assert_called_with("Database is up to date. No migrations needed.")
+    mock_inspect.assert_called_once_with(
+        mock_engine.connect.return_value.__enter__.return_value
+    )
+    mock_inspector.get_table_names.assert_called_once()
+    mock_logger.debug.assert_called_with(
+        "TrustRegistry tables created: `{}`", ["table1", "table2"]
     )
 
 
 @pytest.mark.parametrize(
-    "table_names,current_rev,head_rev,expected",
+    "has_alembic_version,current_rev,head_rev,expected",
     [
-        ([], None, None, False),  # alembic_version table doesn't exist
-        (
-            ["alembic_version"],
-            "current_rev",
-            "head_rev",
-            False,
-        ),  # revisions don't match
-        (["alembic_version"], "same_rev", "same_rev", True),  # revisions match
+        (False, None, "head_rev", False),  # alembic_version table doesn't exist
+        (True, "current_rev", "head_rev", False),  # revisions don't match
+        (True, "same_rev", "same_rev", True),  # revisions match
     ],
 )
 @patch("trustregistry.main.inspect")
 @patch("trustregistry.main.MigrationContext")
-@patch("trustregistry.main.Config")
 @patch("trustregistry.main.ScriptDirectory")
+@patch("trustregistry.main.command")
+@patch("trustregistry.main.logger")
 def test_check_migrations(
+    mock_logger,
+    mock_command,
     mock_script_directory,
-    mock_config,
     mock_migration_context,
     mock_inspect,
-    table_names,
+    has_alembic_version,
     current_rev,
     head_rev,
     expected,
 ):
     # Set up mocks
+    mock_engine = MagicMock()
+    mock_alembic_cfg = MagicMock()
+
     mock_inspector = MagicMock()
-    mock_inspector.get_table_names.return_value = table_names
+    mock_inspector.get_table_names.return_value = (
+        ["alembic_version"] if has_alembic_version else []
+    )
     mock_inspect.return_value = mock_inspector
+
+    mock_script = MagicMock()
+    mock_script.get_current_head.return_value = head_rev
+    mock_script.get_base.return_value = "initial_revision"
+    mock_script_directory.from_config.return_value = mock_script
 
     mock_context = MagicMock()
     mock_context.get_current_revision.return_value = current_rev
     mock_migration_context.configure.return_value = mock_context
 
-    mock_script = MagicMock()
-    mock_script.get_current_head.return_value = head_rev
-    mock_script_directory.from_config.return_value = mock_script
-
-    mock_engine = MagicMock()
-    mock_connection = MagicMock()
-    mock_engine.connect.return_value.__enter__.return_value = mock_connection
-
     # Run the function
-    result = check_migrations(mock_engine)
+    result = check_migrations(mock_engine, mock_alembic_cfg)
 
     # Assert the result
     assert result == expected
 
     # Verify mock calls
-    mock_inspect.assert_called_with(mock_connection)
+    mock_inspect.assert_called()
     mock_inspector.get_table_names.assert_called_once()
-    if table_names:  # Only check these if alembic_version table exists
-        mock_migration_context.configure.assert_called_with(mock_connection)
+    mock_script_directory.from_config.assert_called_once_with(mock_alembic_cfg)
+
+    if not has_alembic_version:
+        mock_script.get_base.assert_called_once()
+        mock_command.stamp.assert_called_once_with(mock_alembic_cfg, "initial_revision")
+        mock_logger.info.assert_any_call(
+            "Alembic version table not found. Stamping with initial revision..."
+        )
+        mock_logger.info.assert_any_call(
+            "Database stamped with initial migration version: initial_revision"
+        )
+    else:
+        mock_migration_context.configure.assert_called()
         mock_context.get_current_revision.assert_called_once()
-        mock_config.assert_called_with("alembic.ini")
-        mock_script_directory.from_config.assert_called_once()
         mock_script.get_current_head.assert_called_once()
 
 

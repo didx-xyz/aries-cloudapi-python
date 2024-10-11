@@ -25,23 +25,28 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
-def check_migrations(engine: Engine) -> bool:  # pylint: disable=redefined-outer-name
+def check_migrations(engine: Engine, alembic_cfg: Config) -> bool:  # pylint: disable=redefined-outer-name
     # Check if alembic_version table exists
     with engine.connect() as connection:
         inspector = inspect(connection)
         has_alembic_version = "alembic_version" in inspector.get_table_names()
 
+    script = ScriptDirectory.from_config(alembic_cfg)
     if not has_alembic_version:
-        return False
+        logger.info("Alembic version table not found. Stamping with initial revision...")
+        try:
+            initial_revision = script.get_base()
+            command.stamp(alembic_cfg, initial_revision)
+            logger.info(f"Database stamped with initial migration version: {initial_revision}")
+        except Exception as e:
+            logger.error(f"Error stamping database: {e}")
+            raise
 
     # Get current revision
     with engine.connect() as connection:
         context = MigrationContext.configure(connection)
         current_rev = context.get_current_revision()
 
-    # Get head revision
-    alembic_cfg = Config("alembic.ini")
-    script = ScriptDirectory.from_config(alembic_cfg)
     head_rev = script.get_current_head()
 
     return current_rev == head_rev
@@ -51,22 +56,14 @@ def check_migrations(engine: Engine) -> bool:  # pylint: disable=redefined-outer
 async def lifespan(_: FastAPI):
     alembic_cfg = Config("alembic.ini")
 
-    if not check_migrations(engine):
+    if not check_migrations(engine, alembic_cfg):
         logger.info("Applying database migrations...")
         try:
-            logger.info("Checking and applying database migrations...")
             command.upgrade(alembic_cfg, "head")
             logger.info("Database schema is up to date.")
-        except ProgrammingError as e:
-            if "already exists" in str(e):
-                logger.warning(
-                    "Database schema already exists. Stamping with current version."
-                )
-                command.stamp(alembic_cfg, "head")
-                logger.info("Database stamped with current migration version.")
-            else:
-                logger.error(f"Unexpected error during migration: {e}")
-                raise
+        except Exception as e:
+            logger.error(f"Error during migration: {e}")
+            raise
     else:
         logger.info("Database is up to date. No migrations needed.")
 

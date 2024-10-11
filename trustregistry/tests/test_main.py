@@ -135,10 +135,34 @@ async def test_lifespan_no_migrations_needed(
 @pytest.mark.parametrize(
     "has_alembic_version,has_actors_table,current_rev,head_rev,expected",
     [
-        (False, True, None, "head_rev", False),  # alembic_version missing, actors exists
-        (False, False, None, "head_rev", False),  # both alembic_version and actors missing
-        (True, True, "current_rev", "head_rev", False),  # alembic_version exists, revisions don't match
-        (True, True, "same_rev", "same_rev", True),  # alembic_version exists, revisions match
+        (
+            False,
+            True,
+            None,
+            "head_rev",
+            False,
+        ),  # alembic_version missing, actors exists
+        (
+            False,
+            False,
+            None,
+            "head_rev",
+            False,
+        ),  # both alembic_version and actors missing
+        (
+            True,
+            True,
+            "current_rev",
+            "head_rev",
+            False,
+        ),  # alembic_version exists, revisions don't match
+        (
+            True,
+            True,
+            "same_rev",
+            "same_rev",
+            True,
+        ),  # alembic_version exists, revisions match
     ],
 )
 @patch("trustregistry.main.inspect")
@@ -195,7 +219,9 @@ def test_check_migrations(
     if not has_alembic_version:
         if has_actors_table:
             mock_script.get_base.assert_called_once()
-            mock_command.stamp.assert_called_once_with(mock_alembic_cfg, "initial_schema")
+            mock_command.stamp.assert_called_once_with(
+                mock_alembic_cfg, "initial_schema"
+            )
             mock_logger.info.assert_any_call(
                 "Alembic version table not found. Stamping with initial revision..."
             )

@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI
-from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from trustregistry import db

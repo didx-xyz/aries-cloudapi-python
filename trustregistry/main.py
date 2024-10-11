@@ -25,7 +25,9 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
-def check_migrations(engine: Engine, alembic_cfg: Config) -> bool:  # pylint: disable=redefined-outer-name
+def check_migrations(
+    engine: Engine, alembic_cfg: Config
+) -> bool:  # pylint: disable=redefined-outer-name
     # Check if alembic_version table exists
     with engine.connect() as connection:
         inspector = inspect(connection)
@@ -33,11 +35,15 @@ def check_migrations(engine: Engine, alembic_cfg: Config) -> bool:  # pylint: di
 
     script = ScriptDirectory.from_config(alembic_cfg)
     if not has_alembic_version:
-        logger.info("Alembic version table not found. Stamping with initial revision...")
+        logger.info(
+            "Alembic version table not found. Stamping with initial revision..."
+        )
         try:
             initial_revision = script.get_base()
             command.stamp(alembic_cfg, initial_revision)
-            logger.info(f"Database stamped with initial migration version: {initial_revision}")
+            logger.info(
+                f"Database stamped with initial migration version: {initial_revision}"
+            )
         except Exception as e:
             logger.error(f"Error stamping database: {e}")
             raise

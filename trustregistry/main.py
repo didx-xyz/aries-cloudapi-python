@@ -30,10 +30,12 @@ def check_migrations(
     # Check if alembic_version table exists
     with engine.connect() as connection:
         inspector = inspect(connection)
-        has_alembic_version = "alembic_version" in inspector.get_table_names()
+        table_names = inspector.get_table_names()
+        has_alembic_version = "alembic_version" in table_names
+        has_actors_table = "actors" in table_names
 
     script = ScriptDirectory.from_config(alembic_cfg)
-    if not has_alembic_version:
+    if not has_alembic_version and has_actors_table:
         logger.info(
             "Alembic version table not found. Stamping with initial revision..."
         )
@@ -46,6 +48,10 @@ def check_migrations(
         except Exception:  # pylint: disable=W0718
             logger.exception("Error stamping database")
             raise
+
+    elif not has_alembic_version:
+        logger.info("Alembic version table not found.")
+        return False
 
     # Get current revision
     with engine.connect() as connection:

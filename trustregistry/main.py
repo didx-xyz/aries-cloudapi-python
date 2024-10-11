@@ -44,7 +44,7 @@ def check_migrations(
             logger.info(
                 f"Database stamped with initial migration version: {initial_revision}"
             )
-        except Exception as e:
+        except Exception as e: # pylint: disable=W0718
             logger.error(f"Error stamping database: {e}")
             raise
 

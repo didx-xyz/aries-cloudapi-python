@@ -181,6 +181,7 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
             roles=actor.roles,
             didcomm_invitation=actor.didcomm_invitation,
             did=actor.did,
+            image_url=actor.image_url if actor.image_url else db_actor.image_url,
         )
         .returning(db.Actor)
     )

@@ -143,6 +143,7 @@ async def create_tenant(
                         roles=roles,
                         did=onboard_result.did,
                         didcomm_invitation=onboard_result.didcomm_invitation,
+                        image_url=body.image_url,
                     )
                 )
         except HTTPException as http_error:

@@ -12,6 +12,7 @@ new_actor = {
     "roles": ["issuer", "verifier"],
     "didcomm_invitation": "string",
     "did": "did:key:string",
+    "image_url": "https://example.com/image",
 }
 actor_id = new_actor["id"]
 actor_did = new_actor["did"]
@@ -25,6 +26,7 @@ def generate_actor():
         "roles": ["issuer", "verifier"],
         "didcomm_invitation": random_string(8),
         "did": f"did:key:{random_string(5)}",
+        "image_url": f"https://example.com/{random_string(8)}",
     }
 
 

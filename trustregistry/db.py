@@ -33,6 +33,7 @@ class Actor(Base):
         String, unique=True, index=True
     )
     did: Mapped[str] = mapped_column(String, unique=True, index=True)
+    image_url: Mapped[Optional[str]] = mapped_column(String, index=True)
 
 
 class Schema(Base):

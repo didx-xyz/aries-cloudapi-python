@@ -18,6 +18,7 @@ sqlalchemy = "~=2.0.19"
 uvicorn = { version = "~0.31.0" }
 ddtrace = "^2.14.0"
 scalar-fastapi = "^1.0.3"
+alembic = "~1.13.2"
 
 [tool.poetry.dev-dependencies]
 anyio = "~4.6.0"

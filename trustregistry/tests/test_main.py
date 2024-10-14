@@ -132,37 +132,17 @@ async def test_lifespan_no_migrations_needed(
     )
 
 
+# Test 1: alembic_version missing, actors exists
+# Test 2: both alembic_version and actors missing
+# Test 3: alembic_version exists, revisions don't match
+# Test 4: alembic_version exists, revisions match
 @pytest.mark.parametrize(
     "has_alembic_version,has_actors_table,current_rev,head_rev,expected",
     [
-        (
-            False,
-            True,
-            None,
-            "head_rev",
-            False,
-        ),  # alembic_version missing, actors exists
-        (
-            False,
-            False,
-            None,
-            "head_rev",
-            False,
-        ),  # both alembic_version and actors missing
-        (
-            True,
-            True,
-            "current_rev",
-            "head_rev",
-            False,
-        ),  # alembic_version exists, revisions don't match
-        (
-            True,
-            True,
-            "same_rev",
-            "same_rev",
-            True,
-        ),  # alembic_version exists, revisions match
+        (False, True, None, "head_rev", False),
+        (False, False, None, "head_rev", False),
+        (True, True, "current_rev", "head_rev", False),
+        (True, True, "same_rev", "same_rev", True),
     ],
 )
 @patch("trustregistry.main.inspect")

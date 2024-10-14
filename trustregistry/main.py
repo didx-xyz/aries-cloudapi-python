@@ -24,9 +24,7 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
-def check_migrations(
-    db_engine: Engine, alembic_cfg: Config
-) -> bool:
+def check_migrations(db_engine: Engine, alembic_cfg: Config) -> bool:
     # Check if alembic_version table exists
     with db_engine.connect() as connection:
         inspector = inspect(connection)

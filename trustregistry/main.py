@@ -25,10 +25,10 @@ ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
 def check_migrations(
-    engine: Engine, alembic_cfg: Config  # pylint: disable=redefined-outer-name
+    db_engine: Engine, alembic_cfg: Config
 ) -> bool:
     # Check if alembic_version table exists
-    with engine.connect() as connection:
+    with db_engine.connect() as connection:
         inspector = inspect(connection)
         table_names = inspector.get_table_names()
         has_alembic_version = "alembic_version" in table_names
@@ -54,7 +54,7 @@ def check_migrations(
         return False
 
     # Get current revision
-    with engine.connect() as connection:
+    with db_engine.connect() as connection:
         context = MigrationContext.configure(connection)
         current_rev = context.get_current_revision()
 

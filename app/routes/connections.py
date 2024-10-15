@@ -1,6 +1,10 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
+from aries_cloudcontroller import (
+    CreateInvitationRequest,
+    DIDXRejectRequest,
+    InvitationResult,
+)
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -286,3 +290,165 @@ async def delete_connection_by_id(
         )
 
     bound_logger.debug("Successfully deleted connection by ID.")
+
+
+@router.post(
+    "/create-did-request",
+    summary="Create a DID Exchange Request",
+    response_model=Connection,
+)
+async def create_did_exchange_request(
+    their_public_did: str,
+    alias: Optional[str] = None,
+    auto_accept: Optional[bool] = True,
+    goal: Optional[str] = None,
+    goal_code: Optional[str] = None,
+    mediation_id: Optional[str] = None,
+    my_endpoint: Optional[str] = None,
+    my_label: Optional[str] = None,
+    protocol: Optional[str] = None,
+    use_did: Optional[str] = None,
+    use_did_method: Optional[str] = None,
+    use_public_did: Optional[bool] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Create a DID Exchange request
+    ---
+    This endpoint allows you to initiate a DID Exchange request with another party using their public DID.
+
+    The goal and goal_code parameters provide additional context for the request, while auto_accept will
+    determine if the connection is automatically accepted on the other end.
+    """
+    bound_logger = logger.bind(body={"their_public_did": their_public_did})
+    bound_logger.debug("POST request received: Create DID exchange request")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.create_request,
+            their_public_did=their_public_did,
+            alias=alias,
+            auto_accept=auto_accept,
+            goal=goal,
+            goal_code=goal_code,
+            mediation_id=mediation_id,
+            my_endpoint=my_endpoint,
+            my_label=my_label,
+            protocol=protocol,
+            use_did=use_did,
+            use_did_method=use_did_method,
+            use_public_did=use_public_did,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully created DID exchange request.")
+    return result
+
+
+@router.post(
+    "/accept-invitation",
+    summary="Accept a DID Exchange Invitation",
+    response_model=Connection,
+)
+async def accept_did_exchange_invitation(
+    connection_id: str,
+    my_endpoint: Optional[str] = None,
+    my_label: Optional[str] = None,
+    use_did: Optional[str] = None,
+    use_did_method: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Accept a stored DID Exchange invitation
+    ---
+    This endpoint allows you to accept an invitation by providing the connection id. You can optionally specify your
+    endpoint, label, and the DID to use for the connection.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Accept DID exchange invitation")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.accept_invitation,
+            conn_id=connection_id,
+            my_endpoint=my_endpoint,
+            my_label=my_label,
+            use_did=use_did,
+            use_did_method=use_did_method,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully accepted DID exchange invitation.")
+    return result
+
+
+@router.post(
+    "/accept-request",
+    summary="Accept a DID Exchange Request",
+    response_model=Connection,
+)
+async def accept_did_exchange_request(
+    connection_id: str,
+    mediation_id: Optional[str] = None,
+    my_endpoint: Optional[str] = None,
+    use_public_did: Optional[bool] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Accept a stored DID Exchange request
+    ---
+    This endpoint allows you to accept a request by providing the connection id. You can optionally specify
+    a mediation ID, your endpoint, and whether to use a public DID for the connection.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Accept DID exchange request")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.accept_request,
+            conn_id=connection_id,
+            mediation_id=mediation_id,
+            my_endpoint=my_endpoint,
+            use_public_did=use_public_did,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully accepted DID exchange request.")
+    return result
+
+
+@router.post(
+    "/{connection_id}/reject",
+    summary="Reject or Abandon a DID Exchange",
+    response_model=Connection,
+)
+async def reject_did_exchange(
+    connection_id: str,
+    reason: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Reject or abandon a DID Exchange
+    ---
+    This endpoint allows you to reject or abandon a DID Exchange request. You can optionally provide a reason
+    for the rejection.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Reject DID exchange")
+
+    reject_request_body = DIDXRejectRequest(reason=reason) if reason else None
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.reject,
+            conn_id=connection_id,
+            body=reject_request_body,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully rejected DID exchange.")
+    return result

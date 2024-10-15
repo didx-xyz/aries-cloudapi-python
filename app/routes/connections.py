@@ -30,6 +30,7 @@ router = APIRouter(prefix="/v1/connections", tags=["connections"])
 @router.post(
     "/create-invitation",
     summary="Create a Connection Invitation",
+    deprecated=True,
     response_model=InvitationResult,
 )
 async def create_invitation(
@@ -91,6 +92,7 @@ async def create_invitation(
 @router.post(
     "/accept-invitation",
     summary="Accept a Connection Invitation",
+    deprecated=True,
     response_model=Connection,
 )
 async def accept_invitation(

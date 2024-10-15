@@ -1,11 +1,11 @@
 # Waypoint Service
 
 The Waypoint service, backed by NATS, has replaced the previous webhooks container. This service focuses on providing a
-streamlined approach to event handling and retrieval.
+streamlined approach to event retrieval.
 
 ## Server Sent Events (SSE)
 
-The Waypoint service exposes a single SSE endpoint for event streaming:
+The Waypoint service exposes a single SSE endpoint, via the main app, for event streaming:
 
 - `GET` `/v1/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
 

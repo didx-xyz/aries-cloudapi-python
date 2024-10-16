@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 from logging import Logger
 
 from aries_cloudcontroller import (
@@ -20,6 +20,7 @@ from app.services.onboarding.util.set_endorser_metadata import (
 from shared import ACAPY_ENDORSER_ALIAS
 
 MAX_ATTEMPTS = os.getenv("WAIT_ISSUER_DID_MAX_ATTEMPTS", 60)
+
 
 async def create_connection_with_endorser(
     *,

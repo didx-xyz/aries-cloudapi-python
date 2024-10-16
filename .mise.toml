@@ -3,7 +3,7 @@
 "go:github.com/nats-io/natscli/nats" = "0.1"
 go = "1.23"
 helm = "3"
-helmfile = "0.168"
+helmfile = "0.169"
 istioctl = "1.23"
 kind = "0.24"
 kubectl = "1.31"

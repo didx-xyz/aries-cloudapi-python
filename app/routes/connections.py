@@ -293,7 +293,7 @@ async def delete_connection_by_id(
 
 
 @router.post(
-    "/create-did-request",
+    "/did-exchange/create-request",
     summary="Create a DID Exchange Request",
     response_model=Connection,
 )
@@ -378,65 +378,7 @@ async def create_did_exchange_request(
 
 
 @router.post(
-    "/accept-invitation",
-    summary="Accept a DID Exchange Invitation",
-    response_model=Connection,
-)
-async def accept_did_exchange_invitation(
-    connection_id: str,
-    my_label: Optional[str] = None,
-    use_did: Optional[str] = None,
-    use_did_method: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> Connection:
-    """
-    Accept a stored DID Exchange invitation
-    ---
-    This endpoint allows you to accept an invitation by providing the connection ID.
-
-    Parameters:
-    ---
-        connection_id: str
-            The ID of the connection invitation you want to accept.
-        my_label: str, optional
-            Your label for the connection. Defaults to None.
-        use_did: str, optional
-            Local DID to use for the connection. Defaults to None.
-        use_did_method: str, optional
-            The method to use for the connection: "did:peer:2" or "did:peer:4".
-
-    Returns:
-    ---
-        Connection
-            The connection record created by accepting the DID exchange invitation.
-    """
-    bound_logger = logger.bind(
-        body={
-            "connection_id": connection_id,
-            "my_label": my_label,
-            "use_did": use_did,
-            "use_did_method": use_did_method,
-        }
-    )
-    bound_logger.debug("POST request received: Accept DID exchange invitation")
-
-    async with client_from_auth(auth) as aries_controller:
-        connection_record = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=aries_controller.did_exchange.accept_invitation,
-            conn_id=connection_id,
-            my_label=my_label,
-            use_did=use_did,
-            use_did_method=use_did_method,
-        )
-
-    result = conn_record_to_connection(connection_record)
-    bound_logger.debug("Successfully accepted DID exchange invitation.")
-    return result
-
-
-@router.post(
-    "/accept-request",
+    "/did-exchange/accept-request",
     summary="Accept a DID Exchange Request",
     response_model=Connection,
 )
@@ -478,7 +420,7 @@ async def accept_did_exchange_request(
 
 
 @router.post(
-    "/{connection_id}/reject",
+    "/did-exchange/reject",
     summary="Reject or Abandon a DID Exchange",
     response_model=Connection,
 )

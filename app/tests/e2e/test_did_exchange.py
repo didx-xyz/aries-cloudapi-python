@@ -1,13 +1,14 @@
 from typing import Optional
 
 import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from fastapi import HTTPException
-from aries_cloudcontroller import AcaPyClient
 
 from app.routes.connections import router
 from app.services import acapy_wallet
 from app.tests.util.webhooks import get_wallet_id_from_async_client
+from app.util.did import qualified_did_sov
 from shared import RichAsyncClient
 
 BASE_PATH = router.prefix
@@ -18,13 +19,16 @@ BASE_PATH = router.prefix
     "use_did,use_did_method,use_public_did",
     [
         (None, None, False),
-        ("did:example:123", None, False),
+        (True, None, False),
+        (None, "did:peer:2", False),
         (None, "did:peer:4", False),
+        (True, "did:peer:4", False),
         (None, None, True),
     ],
 )
 async def test_create_did_exchange_request(
     alice_member_client: RichAsyncClient,
+    alice_acapy_client: AcaPyClient,
     faber_acapy_client: AcaPyClient,
     use_did: Optional[str],
     use_did_method: Optional[str],
@@ -32,23 +36,39 @@ async def test_create_did_exchange_request(
 ):
     faber_public_did = await acapy_wallet.get_public_did(controller=faber_acapy_client)
 
-    request_data = {
-        "their_public_did": faber_public_did.did,
-        "use_did": use_did,
-        "use_did_method": use_did_method,
-        "use_public_did": use_public_did,
-    }
+    request_data = {"their_public_did": qualified_did_sov(faber_public_did.did)}
+
+    if use_did:
+        new_did = await acapy_wallet.create_did(controller=alice_acapy_client)
+        request_data["use_did"] = new_did.did
+
+    if use_did_method:
+        request_data["use_did_method"] = use_did_method
+
+    if use_public_did:
+        request_data["use_public_did"] = use_public_did
 
     if use_public_did:  # Alice doesn't have a public DID
         with pytest.raises(HTTPException) as exc_info:
             response = await alice_member_client.post(
-                f"{BASE_PATH}/create-did-request", json=request_data
+                f"{BASE_PATH}/create-did-request", params=request_data
             )
         assert exc_info.value.status_code == 400
         assert exc_info.value.detail == """{"detail":"No public DID configured."}"""
+
+    elif use_did and use_did_method:
+        with pytest.raises(HTTPException) as exc_info:
+            response = await alice_member_client.post(
+                f"{BASE_PATH}/create-did-request", params=request_data
+            )
+        assert exc_info.value.status_code == 400
+        assert (
+            exc_info.value.detail
+            == """{"detail":"Cannot specify both use_did and use_did_method."}"""
+        )
     else:
         response = await alice_member_client.post(
-            f"{BASE_PATH}/create-did-request", json=request_data
+            f"{BASE_PATH}/create-did-request", params=request_data
         )
         assert response.status_code == 200
         connection_record = response.json()

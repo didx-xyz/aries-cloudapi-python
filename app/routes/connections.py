@@ -442,7 +442,6 @@ async def accept_did_exchange_invitation(
 )
 async def accept_did_exchange_request(
     connection_id: str,
-    use_public_did: bool = False,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
@@ -454,17 +453,13 @@ async def accept_did_exchange_request(
     ---
         connection_id: str
             The ID of the connection request you want to accept.
-        use_public_did: bool
-            Specify whether to use a public DID for the connection. Defaults to False.
 
     Returns:
     ---
         Connection
             The connection record created by accepting the DID exchange request.
     """
-    bound_logger = logger.bind(
-        body={"connection_id": connection_id, "use_public_did": use_public_did}
-    )
+    bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.debug("POST request received: Accept DID exchange request")
 
     async with client_from_auth(auth) as aries_controller:
@@ -472,7 +467,9 @@ async def accept_did_exchange_request(
             logger=bound_logger,
             acapy_call=aries_controller.did_exchange.accept_request,
             conn_id=connection_id,
-            use_public_did=use_public_did,
+            use_public_did=False,
+            # todo: if use_public_did=True, then agent raises:
+            # DIDXManagerError: did_rotate~attach required if no signed doc attachment
         )
 
     result = conn_record_to_connection(connection_record)

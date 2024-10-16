@@ -40,8 +40,8 @@ and `topic`).
 For example, you can use `connection_id` as the `field` and pass the specific connection ID as the `field_id` to receive
 events only for that connection.
 
-When a `desired_state` is specified, the stream will remain open until a single event matching the specified filters
-occurs, then return that event and close.
+The stream will remain open until the desired event (matching the filters) is found and returned, at which point the stream
+will be closed.
 
 ## Implementing Your Event Listener
 

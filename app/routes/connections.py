@@ -300,16 +300,12 @@ async def delete_connection_by_id(
 async def create_did_exchange_request(
     their_public_did: str,
     alias: Optional[str] = None,
-    auto_accept: Optional[bool] = True,
     goal: Optional[str] = None,
     goal_code: Optional[str] = None,
-    mediation_id: Optional[str] = None,
-    my_endpoint: Optional[str] = None,
     my_label: Optional[str] = None,
-    protocol: Optional[str] = None,
     use_did: Optional[str] = None,
     use_did_method: Optional[str] = None,
-    use_public_did: Optional[bool] = None,
+    use_public_did: bool = False,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
@@ -317,10 +313,47 @@ async def create_did_exchange_request(
     ---
     This endpoint allows you to initiate a DID Exchange request with another party using their public DID.
 
-    The goal and goal_code parameters provide additional context for the request, while auto_accept will
-    determine if the connection is automatically accepted on the other end.
+    The goal and goal_code parameters provide additional context for the request.
+
+    Only one of `use_did`, `use_did_method` or `use_public_did` should be specified. If none of these are specified,
+    a new local DID will be created for this connection.
+
+    Parameters:
+    ---
+        their_public_did: str
+            The DID of the party you want to connect to.
+        alias: str, optional
+            An alias for the connection. Defaults to None.
+        goal: str, optional
+            Optional self-attested string for sharing the intent of the connection.
+        goal_code: str, optional
+            Optional self-attested code for sharing the intent of the connection.
+        my_label: str, optional
+            Your label for the request.
+        use_did: str, optional
+            Your local DID to use for the connection.
+        use_did_method: str, optional
+            The method to use for the connection: "did:peer:2" or "did:peer:4".
+        use_public_did: bool
+            Use your public DID for this connection. Defaults to False.
+
+    Returns:
+    ---
+        Connection
+            The connection record created by the DID exchange request.
     """
-    bound_logger = logger.bind(body={"their_public_did": their_public_did})
+    bound_logger = logger.bind(
+        body={
+            "their_public_did": their_public_did,
+            "alias": alias,
+            "goal": goal,
+            "goal_code": goal_code,
+            "my_label": my_label,
+            "use_did": use_did,
+            "use_did_method": use_did_method,
+            "use_public_did": use_public_did,
+        }
+    )
     bound_logger.debug("POST request received: Create DID exchange request")
 
     async with client_from_auth(auth) as aries_controller:
@@ -329,13 +362,11 @@ async def create_did_exchange_request(
             acapy_call=aries_controller.did_exchange.create_request,
             their_public_did=their_public_did,
             alias=alias,
-            auto_accept=auto_accept,
+            auto_accept=True,
             goal=goal,
             goal_code=goal_code,
-            mediation_id=mediation_id,
-            my_endpoint=my_endpoint,
             my_label=my_label,
-            protocol=protocol,
+            protocol="didexchange/1.1",
             use_did=use_did,
             use_did_method=use_did_method,
             use_public_did=use_public_did,
@@ -353,7 +384,6 @@ async def create_did_exchange_request(
 )
 async def accept_did_exchange_invitation(
     connection_id: str,
-    my_endpoint: Optional[str] = None,
     my_label: Optional[str] = None,
     use_did: Optional[str] = None,
     use_did_method: Optional[str] = None,
@@ -362,10 +392,32 @@ async def accept_did_exchange_invitation(
     """
     Accept a stored DID Exchange invitation
     ---
-    This endpoint allows you to accept an invitation by providing the connection id. You can optionally specify your
-    endpoint, label, and the DID to use for the connection.
+    This endpoint allows you to accept an invitation by providing the connection ID.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection invitation you want to accept.
+        my_label: str, optional
+            Your label for the connection. Defaults to None.
+        use_did: str, optional
+            Local DID to use for the connection. Defaults to None.
+        use_did_method: str, optional
+            The method to use for the connection: "did:peer:2" or "did:peer:4".
+
+    Returns:
+    ---
+        Connection
+            The connection record created by accepting the DID exchange invitation.
     """
-    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger = logger.bind(
+        body={
+            "connection_id": connection_id,
+            "my_label": my_label,
+            "use_did": use_did,
+            "use_did_method": use_did_method,
+        }
+    )
     bound_logger.debug("POST request received: Accept DID exchange invitation")
 
     async with client_from_auth(auth) as aries_controller:
@@ -373,7 +425,6 @@ async def accept_did_exchange_invitation(
             logger=bound_logger,
             acapy_call=aries_controller.did_exchange.accept_invitation,
             conn_id=connection_id,
-            my_endpoint=my_endpoint,
             my_label=my_label,
             use_did=use_did,
             use_did_method=use_did_method,
@@ -391,18 +442,29 @@ async def accept_did_exchange_invitation(
 )
 async def accept_did_exchange_request(
     connection_id: str,
-    mediation_id: Optional[str] = None,
-    my_endpoint: Optional[str] = None,
-    use_public_did: Optional[bool] = None,
+    use_public_did: bool = False,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
     Accept a stored DID Exchange request
     ---
-    This endpoint allows you to accept a request by providing the connection id. You can optionally specify
-    a mediation ID, your endpoint, and whether to use a public DID for the connection.
+    This endpoint allows you to accept a request by providing the connection ID.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection request you want to accept.
+        use_public_did: bool
+            Specify whether to use a public DID for the connection. Defaults to False.
+
+    Returns:
+    ---
+        Connection
+            The connection record created by accepting the DID exchange request.
     """
-    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger = logger.bind(
+        body={"connection_id": connection_id, "use_public_did": use_public_did}
+    )
     bound_logger.debug("POST request received: Accept DID exchange request")
 
     async with client_from_auth(auth) as aries_controller:
@@ -410,8 +472,6 @@ async def accept_did_exchange_request(
             logger=bound_logger,
             acapy_call=aries_controller.did_exchange.accept_request,
             conn_id=connection_id,
-            mediation_id=mediation_id,
-            my_endpoint=my_endpoint,
             use_public_did=use_public_did,
         )
 
@@ -435,6 +495,11 @@ async def reject_did_exchange(
     ---
     This endpoint allows you to reject or abandon a DID Exchange request. You can optionally provide a reason
     for the rejection.
+
+    Returns:
+    ---
+        Connection
+            The connection record after rejecting the DID exchange request.
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.debug("POST request received: Reject DID exchange")

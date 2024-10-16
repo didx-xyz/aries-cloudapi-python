@@ -53,7 +53,8 @@ async def test_create_did_exchange_request(
     if use_public_did:  # Alice doesn't have a public DID
         with pytest.raises(HTTPException) as exc_info:
             response = await alice_member_client.post(
-                f"{CONNECTIONS_BASE_PATH}/create-did-request", params=request_data
+                f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request",
+                params=request_data,
             )
         assert exc_info.value.status_code == 400
         assert exc_info.value.detail == """{"detail":"No public DID configured."}"""
@@ -61,7 +62,8 @@ async def test_create_did_exchange_request(
     elif use_did and use_did_method:
         with pytest.raises(HTTPException) as exc_info:
             await alice_member_client.post(
-                f"{CONNECTIONS_BASE_PATH}/create-did-request", params=request_data
+                f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request",
+                params=request_data,
             )
         assert exc_info.value.status_code == 400
         assert (
@@ -70,7 +72,7 @@ async def test_create_did_exchange_request(
         )
     else:
         response = await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/create-did-request", params=request_data
+            f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request", params=request_data
         )
         assert response.status_code == 200
         connection_record = response.json()
@@ -99,7 +101,7 @@ async def test_accept_did_exchange_invitation(
     request_data = {"their_public_did": qualified_did_sov(faber_public_did.did)}
 
     alice_create_request_response = await alice_member_client.post(
-        f"{CONNECTIONS_BASE_PATH}/create-did-request", params=request_data
+        f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request", params=request_data
     )
     alice_create_request_response = alice_create_request_response.json()
 
@@ -121,7 +123,7 @@ async def test_accept_did_exchange_invitation(
     }
 
     faber_accept_request_response = await faber_client.post(
-        f"{CONNECTIONS_BASE_PATH}/accept-request", params=accept_params
+        f"{CONNECTIONS_BASE_PATH}/did-exchange/accept-request", params=accept_params
     )
     assert faber_accept_request_response.status_code == 200
     accept_response = faber_accept_request_response.json()

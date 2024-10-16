@@ -256,6 +256,8 @@ async def wait_issuer_did_transaction_endorsed(
             )
 
             for transaction in transactions_response.results:
+                if transaction.connection_id == issuer_connection_id:
+                    logger.info("STATE:  {}", transaction.state)
                 if (
                     transaction.connection_id == issuer_connection_id
                     and transaction.state == "transaction_acked"

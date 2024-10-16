@@ -426,7 +426,7 @@ async def accept_did_exchange_request(
 )
 async def reject_did_exchange(
     connection_id: str,
-    reason: Optional[str] = None,
+    body: Optional[DIDXRejectRequest] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
@@ -443,14 +443,12 @@ async def reject_did_exchange(
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.debug("POST request received: Reject DID exchange")
 
-    reject_request_body = DIDXRejectRequest(reason=reason) if reason else None
-
     async with client_from_auth(auth) as aries_controller:
         connection_record = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.did_exchange.reject,
             conn_id=connection_id,
-            body=reject_request_body,
+            body=body,
         )
 
     result = conn_record_to_connection(connection_record)

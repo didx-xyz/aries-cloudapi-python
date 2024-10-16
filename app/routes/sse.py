@@ -49,7 +49,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     example: `/{wallet_id}/credentials/connection_id/some-uuid/done` will stream a credential exchange event on a
     specific connection with state done.
     The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
-    The stream will be closed after the first event is streamed.
+    The stream will be closed after the event is returned.
 
     Parameters:
     -----------

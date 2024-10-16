@@ -38,7 +38,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TAILSCALE_VERSION: 1.74.0
+  TAILSCALE_VERSION: 1.76.0
   HELMFILE_VERSION: v0.169.0
   HELM_VERSION: v3.16.2
 

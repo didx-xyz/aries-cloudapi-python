@@ -2,8 +2,11 @@ from typing import List, Optional
 
 from aries_cloudcontroller import (
     CreateInvitationRequest,
+    DIDRotateRequestJSON,
     DIDXRejectRequest,
+    Hangup,
     InvitationResult,
+    Rotate,
 )
 from fastapi import APIRouter, Depends
 
@@ -454,3 +457,84 @@ async def reject_did_exchange(
     result = conn_record_to_connection(connection_record)
     bound_logger.debug("Successfully rejected DID exchange.")
     return result
+
+
+@router.post(
+    "/did-rotate",
+    summary="Begin DID Rotation",
+    response_model=Rotate,
+)
+async def rotate_did(
+    connection_id: str,
+    to_did: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Rotate:
+    """
+    Begin the rotation of a DID as a rotator.
+    ---
+    This endpoint allows you to begin the DID rotation for an existing connection. The `to_did` parameter specifies
+    the new DID that the rotating party is rotating to.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection for which the DID is to be rotated.
+        to_did: str
+            The new DID that the rotating party is rotating to.
+
+    Returns:
+    ---
+        Rotate
+            The record after the DID rotation is initiated.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id, "to_did": to_did})
+    bound_logger.debug("POST request received: Rotate DID")
+
+    async with client_from_auth(auth) as aries_controller:
+        rotate = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_rotate.rotate,
+            conn_id=connection_id,
+            body=DIDRotateRequestJSON(to_did=to_did),
+        )
+
+    bound_logger.debug("Successfully initiated DID rotation.")
+    return rotate
+
+
+@router.post(
+    "/did-rotate/hangup",
+    summary="Hangup DID Rotation",
+    response_model=Hangup,
+)
+async def hangup_did_rotation(
+    connection_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Hangup:
+    """
+    Send a hangup for a DID rotation as the rotator.
+    ---
+    This endpoint allows you to hangup a DID rotation process for an existing connection.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection for which the DID rotation is being hung up.
+
+    Returns:
+    ---
+        Hangup
+            The record after the DID rotation is hung up.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Hangup DID rotation")
+
+    async with client_from_auth(auth) as aries_controller:
+        hangup = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_rotate.hangup,
+            conn_id=connection_id,
+        )
+
+    bound_logger.debug("Successfully hung up DID rotation.")
+    return hangup

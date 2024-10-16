@@ -39,8 +39,8 @@ concurrency:
 
 env:
   TAILSCALE_VERSION: 1.74.0
-  HELMFILE_VERSION: v0.168.0
-  HELM_VERSION: v3.16.1
+  HELMFILE_VERSION: v0.169.0
+  HELM_VERSION: v3.16.2
 
 jobs:
   build:

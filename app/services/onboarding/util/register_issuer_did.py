@@ -250,6 +250,7 @@ async def wait_issuer_did_transaction_endorsed(
     attempt = 0
 
     while attempt < max_attempts:
+        logger.info("ATTEMPT: {}", attempt)
         try:
             transactions_response = (
                 await issuer_controller.endorse_transaction.get_records()

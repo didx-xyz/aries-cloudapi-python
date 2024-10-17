@@ -4,6 +4,7 @@ from typing import List, NoReturn
 from aries_cloudcontroller import AcaPyClient
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import (

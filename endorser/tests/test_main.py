@@ -1,9 +1,11 @@
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI, HTTPException
 
-from endorser.main import app, app_lifespan, health_check
+from endorser.main import app, app_lifespan, health_check, health_ready
+from endorser.services.endorsement_processor import EndorsementProcessor
 
 
 def test_create_app():
@@ -14,8 +16,9 @@ def test_create_app():
     # Get all routes in app
     routes = [route.path for route in app.routes]
 
-    expected_routes = "/health"
-    assert expected_routes in routes
+    expected_routes = ["/health/live", "/health/ready", "/docs"]
+    for route in expected_routes:
+        assert route in routes
 
 
 @pytest.mark.anyio
@@ -63,3 +66,89 @@ async def test_health_check_unhealthy():
         await health_check(endorsement_processor=endorsement_processor_mock)
     assert exc_info.value.status_code == 503
     assert exc_info.value.detail == "One or more background tasks are not running."
+
+
+@pytest.mark.anyio
+async def test_health_ready_success():
+    endorsement_processor_mock = AsyncMock(spec=EndorsementProcessor)
+
+    endorsement_processor_mock.check_jetstream.return_value = {
+        "is_working": True,
+        "streams_count": 1,
+        "consumers_count": 1,
+    }
+
+    response = await health_ready(endorsement_processor=endorsement_processor_mock)
+
+    assert response == {
+        "status": "ready",
+        "jetstream": {"is_working": True, "streams_count": 1, "consumers_count": 1},
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_jetstream_not_working():
+    endorsement_processor_mock = AsyncMock(spec=EndorsementProcessor)
+
+    endorsement_processor_mock.check_jetstream.return_value = {
+        "is_working": False,
+        "error": "No streams available",
+    }
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(endorsement_processor=endorsement_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "jetstream": "JetStream not ready",
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_timeout():
+    endorsement_processor_mock = AsyncMock(spec=EndorsementProcessor)
+
+    endorsement_processor_mock.check_jetstream.side_effect = asyncio.TimeoutError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(endorsement_processor=endorsement_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "error": "JetStream health check timed out",
+    }
+
+
+@pytest.mark.anyio
+async def test_health_ready_unexpected_error():
+    endorsement_processor_mock = AsyncMock(spec=EndorsementProcessor)
+
+    endorsement_processor_mock.check_jetstream.side_effect = Exception(
+        "Unexpected error"
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(endorsement_processor=endorsement_processor_mock)
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == {"status": "error", "error": "Unexpected error"}
+
+
+@pytest.mark.anyio
+async def test_health_ready_with_timeout():
+    endorsement_processor_mock = AsyncMock(spec=EndorsementProcessor)
+
+    endorsement_processor_mock.check_jetstream.side_effect = (
+        asyncio.TimeoutError
+    )  # Simulate a slow response
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_ready(endorsement_processor=endorsement_processor_mock)
+
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == {
+        "status": "not ready",
+        "error": "JetStream health check timed out",
+    }

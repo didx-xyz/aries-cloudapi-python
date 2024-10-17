@@ -4,6 +4,7 @@ from typing import List, NoReturn
 from aries_cloudcontroller import AcaPyClient
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import (
@@ -85,7 +86,7 @@ class EndorsementProcessor:
         subscription = await self._subscribe()
         while True:
             try:
-                messages = await subscription.fetch(batch=1, timeout=60)
+                messages = await subscription.fetch(batch=1, timeout=60, heartbeat=1)
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()
@@ -103,9 +104,13 @@ class EndorsementProcessor:
                         )
                     finally:
                         await message.ack()
-            except TimeoutError:
-                logger.trace("Timeout fetching messages continuing...")
+            except FetchTimeoutError:
+                logger.trace("FetchTimeoutError continuing...")
                 await asyncio.sleep(0.1)
+            except TimeoutError as e:
+                logger.warning("Timeout error fetching messages re-subscribing: {}", e)
+                await subscription.unsubscribe()
+                subscription = await self._subscribe()
             except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error in endorsement processing loop")
                 await asyncio.sleep(2)
@@ -192,3 +197,17 @@ class EndorsementProcessor:
         logger.debug("Subscribed to NATS subject")
 
         return subscription
+
+    async def check_jetstream(self):
+        try:
+            account_info = await self.jetstream.account_info()
+            is_working = account_info.streams > 0
+            logger.trace("JetStream check completed. Is working: {}", is_working)
+            return {
+                "is_working": is_working,
+                "streams_count": account_info.streams,
+                "consumers_count": account_info.consumers,
+            }
+        except Exception:  # pylint: disable=W0718
+            logger.exception("Caught exception while checking jetstream status")
+            return {"is_working": False}

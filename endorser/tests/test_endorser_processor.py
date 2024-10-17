@@ -6,6 +6,7 @@ import pytest
 from nats.aio.client import Client as NATS
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import (
@@ -128,7 +129,7 @@ async def test_process_endorsement_requests_timeout(
     mock_nats_client.pull_subscribe.return_value = mock_subscription
 
     # Simulate a timeout, then a CancelledError to stop the loop
-    mock_subscription.fetch.side_effect = [TimeoutError, asyncio.CancelledError]
+    mock_subscription.fetch.side_effect = [FetchTimeoutError, asyncio.CancelledError]
 
     # Test
     with patch("asyncio.sleep") as mock_sleep:

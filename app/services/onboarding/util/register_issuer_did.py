@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging import Logger
 
 from aries_cloudcontroller import (
@@ -17,6 +18,8 @@ from app.services.onboarding.util.set_endorser_metadata import (
     set_endorser_role,
 )
 from shared import ACAPY_ENDORSER_ALIAS
+
+MAX_ATTEMPTS = int(os.getenv("WAIT_ISSUER_DID_MAX_ATTEMPTS", "15"))
 
 
 async def create_connection_with_endorser(
@@ -241,7 +244,7 @@ async def wait_issuer_did_transaction_endorsed(
     issuer_controller: AcaPyClient,
     issuer_connection_id: str,
     logger: Logger,
-    max_attempts: int = 15,
+    max_attempts: int = MAX_ATTEMPTS,
     retry_delay: float = 1.0,
 ) -> None:
     attempt = 0

@@ -237,6 +237,4 @@ async def test_accept_proof_request_verifier_oob_connection(
         await alice_member_client.delete(
             f"{CONNECTIONS_BASE_PATH}/{holder_verifier_connection_id}"
         )
-        await acme_client.delete(
-            f"{CONNECTIONS_BASE_PATH}/{verifier_holder_connection_id}"
-        )
+        # Alice deleting record also hands up for verifier, since it uses didexchange protocol

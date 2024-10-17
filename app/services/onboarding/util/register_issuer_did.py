@@ -250,15 +250,12 @@ async def wait_issuer_did_transaction_endorsed(
     attempt = 0
 
     while attempt < max_attempts:
-        logger.info("ATTEMPT: {}", attempt)
         try:
             transactions_response = (
                 await issuer_controller.endorse_transaction.get_records()
             )
 
             for transaction in transactions_response.results:
-                if transaction.connection_id == issuer_connection_id:
-                    logger.info("STATE:  {}", transaction.state)
                 if (
                     transaction.connection_id == issuer_connection_id
                     and transaction.state == "transaction_acked"

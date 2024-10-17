@@ -1,10 +1,11 @@
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI, HTTPException
 
-from endorser.main import app, app_lifespan, health_check
-
+from endorser.main import app, app_lifespan, health_check, health_ready
+from endorser.services.endorsement_processor import EndorsementProcessor
 
 def test_create_app():
     assert app.title == "Aries Cloud API: Endorser Service"

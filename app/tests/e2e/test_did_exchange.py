@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 import pytest
@@ -99,6 +100,7 @@ async def test_create_did_exchange_request(
                 filter_map={"their_did": alice_did},
             )
         finally:
+            await asyncio.sleep(1)  # Short sleep assists in avoiding 500 error
             # Delete connection records:
             await alice_member_client.delete(
                 f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
@@ -171,6 +173,7 @@ async def test_accept_did_exchange_invitation(
             filter_map={"connection_id": faber_connection_id},
         )
     finally:
+        await asyncio.sleep(1)  # Short sleep assists in avoiding 500 error
         # Delete connection records:
         await alice_member_client.delete(
             f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"

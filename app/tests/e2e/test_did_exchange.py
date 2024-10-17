@@ -30,6 +30,7 @@ TENANTS_BASE_PATH = tenants_router.prefix
 )
 async def test_create_did_exchange_request(
     alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     faber_acapy_client: AcaPyClient,
     use_did: Optional[str],
@@ -78,6 +79,24 @@ async def test_create_did_exchange_request(
         connection_record = response.json()
         assert_that(connection_record).contains("connection_id", "state")
         assert_that(connection_record["state"]).is_equal_to("request-sent")
+
+        alice_connection_id = connection_record["connection_id"]
+        alice_did = connection_record["my_did"]
+
+        # Due to auto-accepts, Alice's connection is complete
+        assert await check_webhook_state(
+            alice_member_client,
+            topic="connections",
+            state="completed",
+            filter_map={"connection_id": alice_connection_id},
+        )
+        # Faber now has a complete connection too
+        assert await check_webhook_state(
+            faber_client,
+            topic="connections",
+            state="completed",
+            filter_map={"their_did": alice_did},
+        )
 
 
 @pytest.mark.anyio

@@ -1,4 +1,5 @@
 import os
+import asyncio
 from contextlib import asynccontextmanager
 
 from dependency_injector.wiring import Provide, inject
@@ -58,7 +59,7 @@ async def scalar_html():
     )
 
 
-@app.get("/health")
+@app.get("/health/live")
 @inject
 async def health_check(
     endorsement_processor: EndorsementProcessor = Depends(
@@ -70,4 +71,34 @@ async def health_check(
     else:
         raise HTTPException(
             status_code=503, detail="One or more background tasks are not running."
+        )
+
+
+@app.get("/health/ready")
+@inject
+async def health_ready(
+    endorsement_processor: EndorsementProcessor = Depends(
+        Provide[Container.endorsement_processor]
+    ),
+):
+    try:
+        jetstream_status = await asyncio.wait_for(
+            endorsement_processor.check_jetstream(), timeout=5.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "not ready", "error": "JetStream health check timed out"},
+        )
+    except Exception as e:  # pylint: disable=W0718
+        raise HTTPException(
+            status_code=500, detail={"status": "error", "error": str(e)}
+        )
+
+    if jetstream_status["is_working"]:
+        return {"status": "ready", "jetstream": jetstream_status}
+    else:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "not ready", "jetstream": "JetStream not ready"},
         )

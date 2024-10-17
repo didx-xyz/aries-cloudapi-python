@@ -15,8 +15,9 @@ def test_create_app():
     # Get all routes in app
     routes = [route.path for route in app.routes]
 
-    expected_routes = "/health"
-    assert expected_routes in routes
+    expected_routes = ["/health/live", "/health/ready", "/docs"]
+    for route in expected_routes:
+        assert route in routes
 
 
 @pytest.mark.anyio

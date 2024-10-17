@@ -107,6 +107,10 @@ class EndorsementProcessor:
             except FetchTimeoutError:
                 logger.trace("FetchTimeoutError continuing...")
                 await asyncio.sleep(0.1)
+            except TimeoutError as e:
+                logger.warning("Timeout error fetching messages re-subscribing: {}", e)
+                await subscription.unsubscribe()
+                subscription = await self._subscribe()
             except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error in endorsement processing loop")
                 await asyncio.sleep(2)

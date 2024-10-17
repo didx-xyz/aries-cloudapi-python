@@ -1,23 +1,41 @@
-# Waypoint Service
+# Webhooks/Event Consumption
 
-The Waypoint service, backed by NATS, has replaced the previous webhooks container. This service focuses on providing a
-streamlined approach to event retrieval.
+## Primary Method: NATS
 
-## Server Sent Events (SSE)
+The recommended and most efficient way to consume events is through our NATS implementation. NATS provides a robust,
+scalable solution for event streaming and processing. For detailed information about consuming events from our NATS implementation,
+please refer to this document: [NATS](NATS.md).
+
+## Alternative: Waypoint Service
+
+The Waypoint service provides a specialized Server-Sent Events (SSE) endpoint for cases where you need to wait for a specific
+event that you know is coming. This is particularly useful when you need to track the state change of a specific entity
+and have all the necessary filter information.
 
 The Waypoint service exposes a single SSE endpoint, via the main app, for event streaming:
 
 - `GET` `/v1/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
 
-This endpoint allows clients to subscribe to and receive real-time updates for specific events.
+This endpoint is designed for targeted event retrieval where you can specify exact filters to wait for a particular event.
 
-### Endpoint Parameters
+### How to use
+
+The endpoint requires specific filter parameters:
 
 - `wallet_id`: Identifier for the specific wallet
 - `topic`: The event topic to subscribe to
 - `field`: Filter field from the event payload
 - `field_id`: Specific value for the filter field
-- `desired_state`: Optional parameter to specify a desired state
+- `desired_state`: The desired state of the event
+
+For example, if you're waiting for a specific connection to reach the 'completed' state, you would use:
+
+- `field`: "connection_id"
+- `field_id`: "<your_connection_id>"
+- `desired_state`: "completed"
+
+The stream will remain open until the desired event (matching the filters) is found and returned, at which point the stream
+will be closed.
 
 Valid topics include:
 
@@ -34,14 +52,6 @@ topics = Literal[
     "problem_report",
 ]
 ```
-
-The `field` and `field_id` parameters act as filters, referring to any field in the event payload(excluding `wallet_id`
-and `topic`).
-For example, you can use `connection_id` as the `field` and pass the specific connection ID as the `field_id` to receive
-events only for that connection.
-
-The stream will remain open until the desired event (matching the filters) is found and returned, at which point the stream
-will be closed.
 
 ## Implementing Your Event Listener
 

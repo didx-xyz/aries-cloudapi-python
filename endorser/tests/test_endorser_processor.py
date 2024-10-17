@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from nats.aio.client import Client as NATS
 from nats.errors import BadSubscriptionError, Error, TimeoutError
-from nats.js.errors import FetchTimeoutError
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import (

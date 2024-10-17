@@ -108,6 +108,10 @@ async def test_create_did_exchange_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.skip(
+    "Changing Faber wallet settings during xdist run can break other tests. "
+    "This test works in isolation. Should be refactored to run in parallel."
+)
 @pytest.mark.parametrize("use_public_did", [False])
 async def test_accept_did_exchange_invitation(
     alice_member_client: RichAsyncClient,

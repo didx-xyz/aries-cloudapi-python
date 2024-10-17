@@ -230,7 +230,7 @@ services:
     env_file:
       - environments/endorser/endorser.env
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3009/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3009/health/ready || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

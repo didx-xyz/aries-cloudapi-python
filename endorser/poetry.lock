@@ -182,7 +182,7 @@ test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypo
 trio = ["trio (>=0.26.1)"]
 
 [[package]]
-name = "aries_cloudcontroller"
+name = "aries-cloudcontroller"
 version = "1.0.1b0"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false

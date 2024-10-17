@@ -85,7 +85,7 @@ class EndorsementProcessor:
         subscription = await self._subscribe()
         while True:
             try:
-                messages = await subscription.fetch(batch=1, timeout=60)
+                messages = await subscription.fetch(batch=1, timeout=60, heartbeat=1)
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()

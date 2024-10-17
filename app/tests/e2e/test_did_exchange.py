@@ -83,20 +83,26 @@ async def test_create_did_exchange_request(
         alice_connection_id = connection_record["connection_id"]
         alice_did = connection_record["my_did"]
 
-        # Due to auto-accepts, Alice's connection is complete
-        assert await check_webhook_state(
-            alice_member_client,
-            topic="connections",
-            state="completed",
-            filter_map={"connection_id": alice_connection_id},
-        )
-        # Faber now has a complete connection too
-        assert await check_webhook_state(
-            faber_client,
-            topic="connections",
-            state="completed",
-            filter_map={"their_did": alice_did},
-        )
+        try:
+            # Due to auto-accepts, Alice's connection is complete
+            assert await check_webhook_state(
+                alice_member_client,
+                topic="connections",
+                state="completed",
+                filter_map={"connection_id": alice_connection_id},
+            )
+            # Faber now has a complete connection too
+            assert await check_webhook_state(
+                faber_client,
+                topic="connections",
+                state="completed",
+                filter_map={"their_did": alice_did},
+            )
+        finally:
+            # Delete connection records:
+            await alice_member_client.delete(
+                f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
+            )
 
 
 @pytest.mark.anyio
@@ -115,21 +121,19 @@ async def test_accept_did_exchange_invitation(
         json={"extra_settings": {"ACAPY_AUTO_ACCEPT_REQUESTS": False}},
     )
 
+    faber_public_did = await acapy_wallet.get_public_did(controller=faber_acapy_client)
+
+    request_data = {"their_public_did": qualified_did_sov(faber_public_did.did)}
+
+    alice_create_request_response = await alice_member_client.post(
+        f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request", params=request_data
+    )
+    alice_create_request_response = alice_create_request_response.json()
+
+    alice_connection_id = alice_create_request_response["connection_id"]
+    alice_did = alice_create_request_response["my_did"]
+
     try:
-        faber_public_did = await acapy_wallet.get_public_did(
-            controller=faber_acapy_client
-        )
-
-        request_data = {"their_public_did": qualified_did_sov(faber_public_did.did)}
-
-        alice_create_request_response = await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request", params=request_data
-        )
-        alice_create_request_response = alice_create_request_response.json()
-
-        alice_connection_id = alice_create_request_response["connection_id"]
-        alice_did = alice_create_request_response["my_did"]
-
         faber_connection_request_received_event = await check_webhook_state(
             faber_client,
             topic="connections",
@@ -167,6 +171,11 @@ async def test_accept_did_exchange_invitation(
             filter_map={"connection_id": faber_connection_id},
         )
     finally:
+        # Delete connection records:
+        await alice_member_client.delete(
+            f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
+        )
+
         # Reconfigure ACAPY_AUTO_ACCEPT_REQUESTS for Faber
         await tenant_admin_client.put(
             f"{TENANTS_BASE_PATH}/{faber_wallet_id}",

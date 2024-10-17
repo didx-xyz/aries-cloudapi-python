@@ -271,7 +271,11 @@ async def delete_connection_by_id(
     ---
     This endpoint deletes a connection record by id.
 
-    The other party will still have their record of the connection, but it will become unusable.
+    If the connection uses the didexchange protocol, then we hangup the connection, such that the other party also has
+    their record deleted.
+
+    If the connection uses the deprecated connections protocol, then we just delete the record. The other party will
+    still have their record of the connection, but it will become unusable.
 
     Parameters:
     ---
@@ -286,13 +290,31 @@ async def delete_connection_by_id(
     bound_logger.debug("DELETE request received: Delete connection by ID")
 
     async with client_from_auth(auth) as aries_controller:
-        await handle_acapy_call(
+        # Fetch connection record, and check if it uses didexchange protocol
+        conn_record = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.connection.delete_connection,
+            acapy_call=aries_controller.connection.get_connection,
             conn_id=connection_id,
         )
+        connection_protocol = conn_record.connection_protocol or ""
+        is_did_exchange_protocol = "didexchange" in connection_protocol
 
-    bound_logger.debug("Successfully deleted connection by ID.")
+        if is_did_exchange_protocol:
+            # If it uses didexchange protocol, then we hangup the connection
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.did_rotate.hangup,
+                conn_id=connection_id,
+            )
+            bound_logger.debug("Successfully hung up connection.")
+        else:
+            # If it uses connections protocol, then we just delete the record
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.connection.delete_connection,
+                conn_id=connection_id,
+            )
+            bound_logger.debug("Successfully deleted connection by ID.")
 
 
 @router.post(

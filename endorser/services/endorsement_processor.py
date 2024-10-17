@@ -104,8 +104,8 @@ class EndorsementProcessor:
                         )
                     finally:
                         await message.ack()
-            except TimeoutError:
-                logger.trace("Timeout fetching messages continuing...")
+            except FetchTimeoutError:
+                logger.trace("FetchTimeoutError continuing...")
                 await asyncio.sleep(0.1)
             except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error in endorsement processing loop")

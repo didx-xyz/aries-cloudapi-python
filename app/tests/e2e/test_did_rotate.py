@@ -15,7 +15,6 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 @pytest.mark.anyio
 async def test_rotate_did(
     alice_member_client: RichAsyncClient,
-    faber_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     faber_acapy_client: AcaPyClient,
 ):

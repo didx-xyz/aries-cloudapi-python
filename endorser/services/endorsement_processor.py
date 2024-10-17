@@ -197,3 +197,17 @@ class EndorsementProcessor:
         logger.debug("Subscribed to NATS subject")
 
         return subscription
+
+    async def check_jetstream(self):
+        try:
+            account_info = await self.jetstream.account_info()
+            is_working = account_info.streams > 0
+            logger.trace("JetStream check completed. Is working: {}", is_working)
+            return {
+                "is_working": is_working,
+                "streams_count": account_info.streams,
+                "consumers_count": account_info.consumers,
+            }
+        except Exception:  # pylint: disable=W0718
+            logger.exception("Caught exception while checking jetstream status")
+            return {"is_working": False}

@@ -1,6 +1,13 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
+from aries_cloudcontroller import (
+    CreateInvitationRequest,
+    DIDRotateRequestJSON,
+    DIDXRejectRequest,
+    Hangup,
+    InvitationResult,
+    Rotate,
+)
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -30,6 +37,7 @@ router = APIRouter(prefix="/v1/connections", tags=["connections"])
 @router.post(
     "/create-invitation",
     summary="Create a Connection Invitation",
+    deprecated=True,
     response_model=InvitationResult,
 )
 async def create_invitation(
@@ -91,6 +99,7 @@ async def create_invitation(
 @router.post(
     "/accept-invitation",
     summary="Accept a Connection Invitation",
+    deprecated=True,
     response_model=Connection,
 )
 async def accept_invitation(
@@ -262,7 +271,11 @@ async def delete_connection_by_id(
     ---
     This endpoint deletes a connection record by id.
 
-    The other party will still have their record of the connection, but it will become unusable.
+    If the connection uses the didexchange protocol, then we hangup the connection, such that the other party also has
+    their record deleted.
+
+    If the connection uses the deprecated connections protocol, then we just delete the record. The other party will
+    still have their record of the connection, but it will become unusable.
 
     Parameters:
     ---
@@ -277,10 +290,273 @@ async def delete_connection_by_id(
     bound_logger.debug("DELETE request received: Delete connection by ID")
 
     async with client_from_auth(auth) as aries_controller:
-        await handle_acapy_call(
+        # Fetch connection record, and check if it uses didexchange protocol
+        conn_record = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.connection.delete_connection,
+            acapy_call=aries_controller.connection.get_connection,
+            conn_id=connection_id,
+        )
+        connection_protocol = conn_record.connection_protocol or ""
+        is_did_exchange_protocol = "didexchange" in connection_protocol
+
+        if is_did_exchange_protocol:
+            # If it uses didexchange protocol, then we hangup the connection
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.did_rotate.hangup,
+                conn_id=connection_id,
+            )
+            bound_logger.debug("Successfully hung up connection.")
+        else:
+            # If it uses connections protocol, then we just delete the record
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.connection.delete_connection,
+                conn_id=connection_id,
+            )
+            bound_logger.debug("Successfully deleted connection by ID.")
+
+
+@router.post(
+    "/did-exchange/create-request",
+    summary="Create a DID Exchange Request",
+    response_model=Connection,
+)
+async def create_did_exchange_request(
+    their_public_did: str,
+    alias: Optional[str] = None,
+    goal: Optional[str] = None,
+    goal_code: Optional[str] = None,
+    my_label: Optional[str] = None,
+    use_did: Optional[str] = None,
+    use_did_method: Optional[str] = None,
+    use_public_did: bool = False,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Create a DID Exchange request
+    ---
+    This endpoint allows you to initiate a DID Exchange request with another party using their public DID.
+
+    The goal and goal_code parameters provide additional context for the request.
+
+    Only one of `use_did`, `use_did_method` or `use_public_did` should be specified. If none of these are specified,
+    a new local DID will be created for this connection.
+
+    Parameters:
+    ---
+        their_public_did: str
+            The DID of the party you want to connect to.
+        alias: str, optional
+            An alias for the connection. Defaults to None.
+        goal: str, optional
+            Optional self-attested string for sharing the intent of the connection.
+        goal_code: str, optional
+            Optional self-attested code for sharing the intent of the connection.
+        my_label: str, optional
+            Your label for the request.
+        use_did: str, optional
+            Your local DID to use for the connection.
+        use_did_method: str, optional
+            The method to use for the connection: "did:peer:2" or "did:peer:4".
+        use_public_did: bool
+            Use your public DID for this connection. Defaults to False.
+
+    Returns:
+    ---
+        Connection
+            The connection record created by the DID exchange request.
+    """
+    bound_logger = logger.bind(
+        body={
+            "their_public_did": their_public_did,
+            "alias": alias,
+            "goal": goal,
+            "goal_code": goal_code,
+            "my_label": my_label,
+            "use_did": use_did,
+            "use_did_method": use_did_method,
+            "use_public_did": use_public_did,
+        }
+    )
+    bound_logger.debug("POST request received: Create DID exchange request")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.create_request,
+            their_public_did=their_public_did,
+            alias=alias,
+            auto_accept=True,
+            goal=goal,
+            goal_code=goal_code,
+            my_label=my_label,
+            protocol="didexchange/1.0",
+            use_did=use_did,
+            use_did_method=use_did_method,
+            use_public_did=use_public_did,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully created DID exchange request.")
+    return result
+
+
+@router.post(
+    "/did-exchange/accept-request",
+    summary="Accept a DID Exchange Request",
+    response_model=Connection,
+)
+async def accept_did_exchange_request(
+    connection_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Accept a stored DID Exchange request
+    ---
+    This endpoint allows you to accept a request by providing the connection ID.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection request you want to accept.
+
+    Returns:
+    ---
+        Connection
+            The connection record created by accepting the DID exchange request.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Accept DID exchange request")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.accept_request,
+            conn_id=connection_id,
+            use_public_did=False,
+            # todo: if use_public_did=True, then agent raises:
+            # DIDXManagerError: did_rotate~attach required if no signed doc attachment
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully accepted DID exchange request.")
+    return result
+
+
+@router.post(
+    "/did-exchange/reject",
+    summary="Reject or Abandon a DID Exchange",
+    response_model=Connection,
+)
+async def reject_did_exchange(
+    connection_id: str,
+    body: Optional[DIDXRejectRequest] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Connection:
+    """
+    Reject or abandon a DID Exchange
+    ---
+    This endpoint allows you to reject or abandon a DID Exchange request. You can optionally provide a reason
+    for the rejection.
+
+    Returns:
+    ---
+        Connection
+            The connection record after rejecting the DID exchange request.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Reject DID exchange")
+
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_exchange.reject,
+            conn_id=connection_id,
+            body=body,
+        )
+
+    result = conn_record_to_connection(connection_record)
+    bound_logger.debug("Successfully rejected DID exchange.")
+    return result
+
+
+@router.post(
+    "/did-rotate",
+    summary="Begin DID Rotation",
+    response_model=Rotate,
+)
+async def rotate_did(
+    connection_id: str,
+    to_did: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Rotate:
+    """
+    Begin the rotation of a DID as a rotator.
+    ---
+    This endpoint allows you to begin the DID rotation for an existing connection. The `to_did` parameter specifies
+    the new DID that the rotating party is rotating to.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection for which the DID is to be rotated.
+        to_did: str
+            The new DID that the rotating party is rotating to.
+
+    Returns:
+    ---
+        Rotate
+            The record after the DID rotation is initiated.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id, "to_did": to_did})
+    bound_logger.debug("POST request received: Rotate DID")
+
+    async with client_from_auth(auth) as aries_controller:
+        rotate = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_rotate.rotate,
+            conn_id=connection_id,
+            body=DIDRotateRequestJSON(to_did=to_did),
+        )
+
+    bound_logger.debug("Successfully initiated DID rotation.")
+    return rotate
+
+
+@router.post(
+    "/did-rotate/hangup",
+    summary="Hangup DID Rotation",
+    response_model=Hangup,
+)
+async def hangup_did_rotation(
+    connection_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> Hangup:
+    """
+    Send a hangup for a DID rotation as the rotator.
+    ---
+    This endpoint allows you to hangup a DID rotation process for an existing connection.
+
+    Parameters:
+    ---
+        connection_id: str
+            The ID of the connection for which the DID rotation is being hung up.
+
+    Returns:
+    ---
+        Hangup
+            The record after the DID rotation is hung up.
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.debug("POST request received: Hangup DID rotation")
+
+    async with client_from_auth(auth) as aries_controller:
+        hangup = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.did_rotate.hangup,
             conn_id=connection_id,
         )
 
-    bound_logger.debug("Successfully deleted connection by ID.")
+    bound_logger.debug("Successfully hung up DID rotation.")
+    return hangup

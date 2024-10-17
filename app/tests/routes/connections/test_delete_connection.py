@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from aries_cloudcontroller import ConnRecord, Hangup
 from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
@@ -16,6 +17,13 @@ connection_id = "test_connection_id"
 @pytest.mark.anyio
 async def test_delete_connection_by_id_success():
     mock_aries_controller = AsyncMock()
+
+    # Mock to return a connection that uses the deprecated connections protocol
+    mock_aries_controller.connection.get_connection = AsyncMock(
+        return_value=ConnRecord(
+            connection_id=connection_id, connection_protocol="connections/1.0"
+        )
+    )
     mock_aries_controller.connection.delete_connection = AsyncMock()
 
     with patch("app.routes.connections.client_from_auth") as mock_client_from_auth:
@@ -30,9 +38,47 @@ async def test_delete_connection_by_id_success():
 
         assert response is None
 
+        mock_aries_controller.connection.get_connection.assert_awaited_once_with(
+            conn_id=connection_id,
+        )
         mock_aries_controller.connection.delete_connection.assert_awaited_once_with(
             conn_id=connection_id,
         )
+        mock_aries_controller.did_rotate.hangup.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_delete_connection_by_id_success_did_exchange():
+    mock_aries_controller = AsyncMock()
+
+    # Mock to return a connection that uses the didexchange protocol
+    mock_aries_controller.connection.get_connection = AsyncMock(
+        return_value=ConnRecord(
+            connection_id=connection_id, connection_protocol="didexchange/1.0"
+        )
+    )
+    mock_aries_controller.did_rotate.hangup = AsyncMock(return_value=Hangup())
+
+    with patch(
+        "app.routes.connections.client_from_auth"
+    ) as mock_client_from_auth, patch("app.routes.connections.logger"):
+        mock_client_from_auth.return_value.__aenter__.return_value = (
+            mock_aries_controller
+        )
+
+        response = await delete_connection_by_id(
+            connection_id=connection_id, auth="mocked_auth"
+        )
+
+        assert response is None
+
+        mock_aries_controller.connection.get_connection.assert_awaited_once_with(
+            conn_id=connection_id
+        )
+        mock_aries_controller.did_rotate.hangup.assert_awaited_once_with(
+            conn_id=connection_id
+        )
+        mock_aries_controller.connection.delete_connection.assert_not_called()
 
 
 @pytest.mark.anyio

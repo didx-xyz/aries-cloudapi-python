@@ -46,12 +46,12 @@ topics = Literal[
     "credentials",
     "credentials_indy",
     "credentials_ld",
-    "proofs",
     "endorsements",
-    "oob",
-    "revocation",
     "issuer_cred_rev",
+    "oob",
     "problem_report",
+    "proofs",
+    "revocation",
 ]
 ```
 

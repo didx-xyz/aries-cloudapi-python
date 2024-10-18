@@ -35,7 +35,7 @@ For example, if you're waiting for a specific connection to reach the 'completed
 - `desired_state`: "completed"
 
 The stream will remain open until the desired event (matching the filters) is found and returned, at which point the stream
-will be closed.
+will be closed or timeout after 60 seconds.
 
 Valid topics include:
 
@@ -43,8 +43,10 @@ Valid topics include:
 topics = Literal[
     "basic-messages",
     "connections",
-    "proofs",
     "credentials",
+    "credentials_indy",
+    "credentials_ld",
+    "proofs",
     "endorsements",
     "oob",
     "revocation",
@@ -55,7 +57,7 @@ topics = Literal[
 
 ## Implementing Your Event Listener
 
-Here's an example of how to implement an event listener using JavaScript:
+Here's an example of how to implement a SSE event listener using JavaScript:
 
 ```javascript
 const EventSource = require('eventsource');
@@ -95,3 +97,6 @@ for authentication.
 The Waypoint service requires authentication to access the SSE endpoint. This is managed through the `x-api-key` header
 in the request. The key should be in the format `tenant.<tenant/wallet_token>`. Failing to provide valid authentication
 will result in a 403 HTTP Error.
+
+A tenant will only be abel to listen to events that belong to their wallet, however tenant-admin can listen to all events
+belonging to wallets in its group

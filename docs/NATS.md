@@ -27,4 +27,4 @@ allowing for flexible communication between microservices, IoT devices, and clou
 
 ## Consuming our NATS
 
-Please contact us for help with connecting/authenticating to our nats service
+Please contact us for help with connecting/authenticating to our NATS service

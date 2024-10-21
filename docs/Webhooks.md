@@ -98,5 +98,5 @@ The Waypoint service requires authentication to access the SSE endpoint. This is
 in the request. The key should be in the format `tenant.<tenant/wallet_token>`. Failing to provide valid authentication
 will result in a 403 HTTP Error.
 
-A tenant will only be abel to listen to events that belong to their wallet, however tenant-admin can listen to all events
-belonging to wallets in its group
+A tenant will only be able to listen to events that belong to their wallet and a tenant-admin is able to listen to all events
+belonging to their group.

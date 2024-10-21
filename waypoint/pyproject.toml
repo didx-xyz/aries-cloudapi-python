@@ -6,7 +6,7 @@ authors = ["cl0ete <cloete.dupreez@gmail.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 
 aiohttp = "~3.11.7"
 dependency-injector-fork = "~=4.42.1"

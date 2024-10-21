@@ -6,7 +6,7 @@ authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 
 aries-cloudcontroller = "==1.2.0.post20241205"
 dependency-injector-fork = "~=4.42.1"                    # https://github.com/ets-labs/python-dependency-injector/pull/765#issuecomment-1915100744

@@ -54,7 +54,7 @@ jobs:
         run: |
           cat <<EOF > .mise.toml
           [tools]
-          python = "3.12"
+          python = "3.13"
           "pipx:poetry" = "2.0"
           uv = "0.4"
 

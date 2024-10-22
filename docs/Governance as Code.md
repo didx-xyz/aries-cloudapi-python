@@ -137,7 +137,7 @@ credentials to holders. The Trust Authority, which administers the trust ecosyst
 the Indy Ledger, acts as the `Transaction Endorser` of the Trust Ecosystem. Meanwhile, Issuers serve as
 `Transaction Authors` within the Trust Ecosystem. For additional information on `Transaction Endorsers` and
 `Transaction Authors`, please refer to
-[Aries Transaction Endorser Support](https://github.com/hyperledger/aries-cloudagent-python/blob/main/Endorser.md).
+[Aries Transaction Endorser Support](https://github.com/openwallet-foundation/acapy/blob/main/docs/features/Endorser.md).
 
 To create credential definitions through the `Transaction Endorser Protocol` for trust ecosystem _issuers_,
 follow the steps below:

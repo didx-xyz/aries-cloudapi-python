@@ -30,7 +30,8 @@ retrieved from requesting the endpoint. Their structures are as follows:
       ],
       "did": "did:sov:XfbLjZFxgoznN24LUVxaQH",
       "id": "test-actor-0.26703024264670694",
-      "didcomm_invitation": null
+      "didcomm_invitation": null,
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
     },
     ...
 }

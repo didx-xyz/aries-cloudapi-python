@@ -57,3 +57,31 @@ where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name
 > **_NOTE_**: In a production environment, this should not be exposed to the internet or interacted with directly.
 > It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
 > registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.
+
+## Trust-registry Role in the application flows
+
+Below we indicate where and how the Trust-registry is consulted to verify that Issuers/Verifiers and schemas are on the
+Trust-registry.
+
+### Create Credential Definition
+
+```mermaid
+---
+title: Trust-registry called during credential definition creation
+---
+flowchart LR
+    App(Create Credential Definition Request) -->|Consults| TR[Trust Registry]
+    subgraph Trust Registry Checks
+      TR -->|Validates| Check1{Issuer Authorization}
+      Check1 -->|If Unauthorized| Block[⨯ Block Operation]
+      Check1 -->|If Authorized| Check2{Schema exists on TR}
+      Check2 -->|Not on TR| Block
+    end
+    Check2 -->|If Registered| Continue[✓ Proceed with Creation]
+    
+    style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+    style Block fill:#ffcdd2,stroke:#e53935,color:black
+    style Continue fill:#c8e6c9,stroke:#43a047,color:black
+```
+
+---

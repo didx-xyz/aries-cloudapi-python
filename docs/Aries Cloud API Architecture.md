@@ -14,4 +14,4 @@ Like the Admin Agent, the Multi-tenant Agent is also exposed via the same Swagge
 
 The Multi-tenant Agent is designed for sub-wallet and tenant management from the tenant's perspective.
 
-For a more comprehensive understanding of multi-tenancy, please refer to the [ACA-Py docs](https://github.com/hyperledger/aries-cloudagent-python/blob/main/Multitenancy.md).
+For a more comprehensive understanding of multi-tenancy, please refer to the [ACA-Py docs](https://github.com/openwallet-foundation/acapy/blob/main/docs/features/Multitenancy.md).

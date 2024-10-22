@@ -17,7 +17,7 @@ The FastAPI app serves as a wrapper around common workflows, facilitating
 real-life applications of the stack. It acts as a form of middleware or interface
 for client applications (e.g., a mobile app) and the backend stack, using
 [Aries CloudController](https://github.com/didx-xyz/aries-cloudcontroller-python)
-and [ACA-Py](https://github.com/hyperledger/aries-cloudagent-python). The aim is
+and [ACA-Py](https://github.com/openwallet-foundation/acapy). The aim is
 to streamline a client's workflow by providing convenient API endpoints for
 common workflows, such as creating wallets, managing connections, credentials,
 proofs, and workflows.

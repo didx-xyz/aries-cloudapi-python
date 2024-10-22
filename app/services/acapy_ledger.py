@@ -160,7 +160,7 @@ async def schema_id_from_credential_definition_id(
     From a credential definition, get the identifier for its schema.
 
     Taken from ACA-Py implementation:
-    https://github.com/hyperledger/aries-cloudagent-python/blob/f9506df755e46c5be93b228c8811276b743a1adc/aries_cloudagent/ledger/indy.py#L790
+    https://github.com/openwallet-foundation/acapy/blob/f9506df755e46c5be93b228c8811276b743a1adc/aries_cloudagent/ledger/indy.py#L790
 
     Parameters:
     ----------

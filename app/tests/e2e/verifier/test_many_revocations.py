@@ -29,7 +29,7 @@ async def test_revoke_many_credentials(
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     time.sleep(10)  # moment for revocation registry to update
-    # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
+    # todo: remove sleep when issue resolved: https://github.com/openwallet-foundation/acapy/issues/3018
 
     # Do proof request
     request_body = {

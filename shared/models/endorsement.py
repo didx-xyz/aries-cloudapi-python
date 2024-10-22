@@ -71,7 +71,7 @@ def extract_operation_type_from_endorsement_payload(
 
 
 class TransactionTypes:
-    # See aries-cloudagent-python/aries_cloudagent/ledger/merkel_validation/constants.py
+    # See acapy-agent-python/aries_cloudagent/ledger/merkel_validation/constants.py
     ATTRIB = "100"
     CLAIM_DEF = "102"
     REVOC_REG_DEF = "113"

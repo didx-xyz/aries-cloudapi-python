@@ -1,4 +1,4 @@
-FROM ghcr.io/didx-xyz/aries-cloudagent-bbs:py3.12-1.0.0b1
+FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.1.1b0
 
 USER root
 
@@ -7,8 +7,7 @@ ARG PROTOBUF_VERSION=5.28.1
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # install nats-events plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-10-09#subdirectory=nats_events
-
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-10-22#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

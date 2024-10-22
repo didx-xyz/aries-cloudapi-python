@@ -85,3 +85,66 @@ flowchart LR
 ```
 
 ---
+
+### Credential issuance
+
+```mermaid
+---
+title: Create Credential-Offer/Sending Credential
+---
+flowchart LR
+    subgraph Request Types
+        App1(Create Offer Request <br> Connectionless) --> Consults[Consults]
+        App2(Send Credential Request<br>with Connection ID) --> Consults[Consults]
+    end
+    subgraph Trust Registry Checks
+      Consults --> TR
+      TR[Trust Registry] -- Validates --> Check1{Issuer<br>Authorization}
+      Check1 -->|If Unauthorized| Block[⨯ Block Operation]
+      Check1 -->|If Authorized| Check2{Schema<br>Registration}
+      Check2 -->|Not on TR| Block
+    end
+    Check2 -->|If Registered| Proceed[Continue]
+    
+
+    subgraph Request Continue
+      Proceed -->|Connectionless| Continue1[✓ Create Offer]
+      Proceed -->|With Connection ID| Continue2[✓ Send Credential]
+    end
+
+    linkStyle 0,8 stroke:#ff7043,color:#ff7043, stroke-width:2
+    linkStyle 1,9 stroke:#7cb342,color:#7cb342,stroke-width:2
+    
+    style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+    style Block fill:#ffcdd2,stroke:#e53935,color:black
+    style Continue1 fill:#c8e6c9,stroke:#43a047,color:black
+    style Continue2 fill:#c8e6c9,stroke:#43a047,color:black
+    style Proceed fill:#c8e6c9,stroke:#43a047,color:black
+
+```
+
+---
+
+```mermaid
+---
+title: Holder Request Credential
+---
+flowchart LR
+  Start(Holder receives <br> Credential-Offer) --> Request[Request Credential]
+  Request -->|Consults| TR[Trust Registry]
+  subgraph Trust Registry Checks
+    TR -->|Validates| Check1{Issuer Authorization}
+    Check1 -->|If Unauthorized| Block[⨯ Block Operation]
+    Check1 -->|If Authorized| Check2{Schema exists on TR}
+    Check2 -->|Not on TR| Block
+  end
+  Check2 -->|If Registered| Continue[✓ Proceed with Credential Exchange]
+
+  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+  style Block fill:#ffcdd2,stroke:#e53935,color:black
+  style Continue fill:#c8e6c9,stroke:#43a047,color:black
+```
+
+---
+
+---

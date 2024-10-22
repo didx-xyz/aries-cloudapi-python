@@ -147,4 +147,46 @@ flowchart LR
 
 ---
 
+### Proof Requests
+
+```mermaid
+---
+title: Verifier sends Proof Request
+---
+flowchart LR
+  Start(Send Proof request) -->|Consult| TR[Trust-Registry]
+  subgraph Trust Registry Checks
+    TR -->|Validates| Check1{Verifier Authorization}
+    Check1 -->|If Unauthorized| Block[⨯ Block Operation]
+    Check1 -->|If Authorized| Check2{Schema exists on TR}
+    Check2 -->|Not on TR| Block
+  end
+  Check2 -->|If Registered| Continue[✓ Proceed with <br> Sending Proof]
+   
+  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+  style Block fill:#ffcdd2,stroke:#e53935,color:black
+  style Continue fill:#c8e6c9,stroke:#43a047,color:black
+```
+
+---
+
+```mermaid
+---
+title: Holder Receives Proof Request
+---
+flowchart LR
+  Start(Accept Proof Request) -->|Consult| TR[Trust-Registry]
+  subgraph Trust Registry Checks
+    TR -->|Validates| Check1{Verifier Authorization}
+    Check1 -->|If Unauthorized| Block[⨯ Block Operation]
+    Check1 -->|If Authorized| Check2{Schema exists on TR}
+    Check2 -->|Not on TR| Block
+  end
+  Check2 -->|If Registered| Continue[✓ Proceed with <br> Accepting Proof]
+   
+  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+  style Block fill:#ffcdd2,stroke:#e53935,color:black
+  style Continue fill:#c8e6c9,stroke:#43a047,color:black
+```
+
 ---

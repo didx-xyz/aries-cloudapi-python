@@ -58,9 +58,9 @@ where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name
 > It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
 > registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.
 
-## Trust-registry Role in the application flows
+## Trust-registry Role in application flows
 
-Below we indicate where and how the Trust-registry is consulted to verify that Issuers/Verifiers and schemas are on the
+Below we indicate where and how the Trust-registry is consulted to verify that Issuers/Verifiers and Schemas are on the
 Trust-registry.
 
 ### Create Credential Definition
@@ -94,8 +94,8 @@ title: Create Credential-Offer/Sending Credential
 ---
 flowchart LR
     subgraph Request Types
-        App1(Create Offer Request <br> Connectionless) --> Consults[Consults]
-        App2(Send Credential Request<br>with Connection ID) --> Consults[Consults]
+        App1(Create Offer <br> Connectionless) --> Consults[Consults]
+        App2(Send Credential <br> with Connection ID) --> Consults[Consults]
     end
     subgraph Trust Registry Checks
       Consults --> TR

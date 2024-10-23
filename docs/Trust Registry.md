@@ -151,7 +151,7 @@ flowchart LR
 
 ```mermaid
 ---
-title: Verifier sends Proof Request
+title: Verifier Sends Proof Request
 ---
 flowchart LR
   Start(Send Proof request) -->|Consult| TR[Trust-Registry]

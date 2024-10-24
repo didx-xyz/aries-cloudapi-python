@@ -1,9 +1,12 @@
 import asyncio
+import os
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
 
 import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
 from shared.constants import NATS_STREAM, NATS_SUBJECT
@@ -11,6 +14,8 @@ from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 logger = get_logger(__name__)
+
+look_back = int(os.getenv("LOOK_BACK", "30"))
 
 
 class NatsEventsProcessor:
@@ -40,7 +45,22 @@ class NatsEventsProcessor:
                     "subject": f"{NATS_SUBJECT}.*.{wallet_id}",
                     "stream": NATS_STREAM,
                 }
-            subscription = await self.js_context.pull_subscribe(**subscribe_kwargs)
+
+            # Get the current time in UTC
+            current_time = datetime.now(timezone.utc)
+
+            # Subtract 30 seconds
+            time_30_secs_ago = current_time - timedelta(seconds=look_back)
+
+            # Format the time in the required format
+            start_time = time_30_secs_ago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            config = ConsumerConfig(
+                deliver_policy=DeliverPolicy.BY_START_TIME,
+                opt_start_time=start_time,
+            )
+            subscription = await self.js_context.pull_subscribe(
+                config=config, **subscribe_kwargs
+            )
 
             return subscription
 

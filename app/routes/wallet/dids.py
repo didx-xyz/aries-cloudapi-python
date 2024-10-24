@@ -23,13 +23,14 @@ router = APIRouter(prefix="/v1/wallet/dids", tags=["wallet"])
 async def create_did(
     did_create: Optional[DIDCreate] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-):
+) -> DID:
     """
     Create Local DID
     ---
 
     This endpoint allows you to create a new DID in the wallet.
-    The `method` parameter is optional and can be set to 'key' or 'sov'.
+    The `method` parameter is optional and can be set to 'key',
+    'sov', `web`, `did:peer:2` or `did:peer:4`.
 
     Request body:
     ---
@@ -40,7 +41,7 @@ async def create_did(
 
     Response:
     ---
-        Returns the created DID.
+        Returns the created DID object.
 
     """
     logger.debug("POST request received: Create DID")
@@ -67,7 +68,7 @@ async def list_dids(
 
     Response:
     ---
-        Returns a list of DIDs.
+        Returns a list of DID objects.
     """
     logger.debug("GET request received: Retrieve list of DIDs")
 
@@ -94,6 +95,7 @@ async def get_public_did(
     ---
 
     This endpoint allows you to fetch the current public DID.
+    By default, only issuers will have public DIDs.
 
     Response:
     ---
@@ -125,7 +127,8 @@ async def set_public_did(
     ---
 
     This endpoint allows you to set the current public DID.
-    The tenant needs a connection with the endorser to make a did public.
+    The tenant needs a connection with an endorser to make a did public and by default
+    only issuers will have public DIDs and so only issuers can update their public did.
 
     Request body:
     ---
@@ -216,7 +219,7 @@ async def set_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Update Endpoint in wallet and on ledger if posted to it
+    Update endpoint of DID in wallet (and on ledger, if it is a public DID)
     ---
 
     This endpoint allows you to update the endpoint for a DID.

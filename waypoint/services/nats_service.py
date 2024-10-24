@@ -54,6 +54,10 @@ class NatsEventsProcessor:
 
             # Format the time in the required format
             start_time = time_30_secs_ago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            config = ConsumerConfig(
+                deliver_policy=DeliverPolicy.BY_START_TIME,
+                opt_start_time=start_time,
+            )
 
             return subscription
 

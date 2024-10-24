@@ -58,6 +58,9 @@ class NatsEventsProcessor:
                 deliver_policy=DeliverPolicy.BY_START_TIME,
                 opt_start_time=start_time,
             )
+            subscription = await self.js_context.pull_subscribe(
+                config=config, **subscribe_kwargs
+            )
 
             return subscription
 

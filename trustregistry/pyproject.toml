@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudapi-trust-registry"
-version = "3.4.0"
+version = "4.0.0"
 description = "Trust Registry submodule for cloudapi"
 authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false

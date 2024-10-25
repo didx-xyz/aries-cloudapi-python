@@ -100,6 +100,7 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
         desired_state=desired_state,
         group_id=group_id,
         nats_processor=nats_processor_mock,
+        look_back=300,
     ):
         events.append(event)
 
@@ -131,6 +132,7 @@ async def test_sse_event_stream_generator_disconnects(
         field_id=field_id,
         desired_state=desired_state,
         group_id=group_id,
+        look_back=300,
         nats_processor=nats_processor_mock,
     ):
         pass
@@ -163,6 +165,7 @@ async def test_nats_event_stream_generator_cancelled_error_handling(
         field_id="some_field_id",
         desired_state="some_state",
         group_id="some_group",
+        look_back=300,
         nats_processor=nats_processor_mock,
     )
 
@@ -196,6 +199,7 @@ async def test_sse_event_stream(
             field_id=field_id,
             desired_state=desired_state,
             group_id=group_id,
+            look_back=300,
             nats_processor=nats_processor_mock,
         )
 
@@ -211,5 +215,6 @@ async def test_sse_event_stream(
             field_id=field_id,
             desired_state=desired_state,
             group_id=group_id,
+            look_back=300,
             nats_processor=nats_processor_mock,
         )

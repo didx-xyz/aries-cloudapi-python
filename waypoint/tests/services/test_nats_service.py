@@ -6,6 +6,7 @@ import pytest
 from nats.aio.client import Client as NATS
 from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
+from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
 from shared.constants import NATS_STREAM, NATS_SUBJECT
@@ -53,14 +54,20 @@ async def test_nats_events_processor_subscribe(
     mock_nats_client.pull_subscribe.return_value = AsyncMock(
         spec=JetStreamContext.PullSubscription
     )
-
-    subscription = await processor._subscribe(  # pylint: disable=protected-access
-        "group_id", "wallet_id"
-    )
-    mock_nats_client.pull_subscribe.assert_called_once_with(
-        subject=f"{NATS_SUBJECT}.group_id.wallet_id", stream=NATS_STREAM
-    )
-    assert isinstance(subscription, JetStreamContext.PullSubscription)
+    with patch("waypoint.services.nats_service.ConsumerConfig") as mock_config:
+        mock_config.return_value = ConsumerConfig(
+            deliver_policy=DeliverPolicy.BY_START_TIME,
+            opt_start_time="2024-10-24T09:17:17.998149541Z",
+        )
+        subscription = await processor._subscribe(  # pylint: disable=protected-access
+            "group_id", "wallet_id", 300
+        )
+        mock_nats_client.pull_subscribe.assert_called_once_with(
+            subject=f"{NATS_SUBJECT}.group_id.wallet_id",
+            stream=NATS_STREAM,
+            config=mock_config.return_value,
+        )
+        assert isinstance(subscription, JetStreamContext.PullSubscription)
 
 
 @pytest.mark.anyio
@@ -72,7 +79,7 @@ async def test_nats_events_processor_subscribe_error(
     mock_nats_client.pull_subscribe.side_effect = exception
 
     with pytest.raises(exception):
-        await processor._subscribe("group_id", "wallet_id")
+        await processor._subscribe("group_id", "wallet_id", 300)
 
 
 @pytest.mark.anyio

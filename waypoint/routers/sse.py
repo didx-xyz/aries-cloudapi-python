@@ -38,6 +38,7 @@ async def nats_event_stream_generator(
     field_id: str,
     desired_state: str,
     group_id: Optional[str],
+    look_back: Optional[int],
     nats_processor: NatsEventsProcessor,
 ) -> AsyncGenerator[str, None]:
     """
@@ -53,6 +54,7 @@ async def nats_event_stream_generator(
         topic=topic,
         stop_event=stop_event,
         duration=SSE_TIMEOUT,
+        look_back=look_back,
     ) as event_generator:
         background_tasks.add_task(check_disconnect, request, stop_event)
 
@@ -94,6 +96,10 @@ async def sse_wait_for_event_with_field_and_state(
     group_id: Optional[str] = Query(
         default=None, description="Group ID to which the wallet belongs"
     ),
+    look_back: Optional[int] = Query(
+        default=300,
+        description="Number of seconds to look back for events before subscribing",
+    ),
     nats_processor: NatsEventsProcessor = Depends(
         Provide[Container.nats_events_processor]
     ),
@@ -121,6 +127,7 @@ async def sse_wait_for_event_with_field_and_state(
         field_id=field_id,
         desired_state=desired_state,
         group_id=group_id,
+        look_back=look_back,
         nats_processor=nats_processor,
     )
 

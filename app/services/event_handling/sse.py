@@ -33,6 +33,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
+    look_back: int = 300,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -56,8 +57,10 @@ async def sse_subscribe_event_with_field_and_state(
     )
 
     params = {}
-    if group_id:  # Optional param
+    if group_id:  # Optional params
         params["group_id"] = group_id
+    if look_back:
+        params["look_back"] = look_back
 
     try:
         async with RichAsyncClient(timeout=event_timeout) as client:

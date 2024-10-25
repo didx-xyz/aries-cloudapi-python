@@ -53,6 +53,7 @@ async def test_get_sse_subscribe_event_with_field_and_state(
             desired_state=state,
             group_id=group_id,
             auth=mock_auth,
+            look_back=300,
         )
 
     assert response.media_type == "text/event-stream"
@@ -67,4 +68,5 @@ async def test_get_sse_subscribe_event_with_field_and_state(
         field=field,
         field_id=field_id,
         desired_state=state,
+        look_back=300,
     )

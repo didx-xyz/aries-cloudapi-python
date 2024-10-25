@@ -60,7 +60,7 @@ async def test_nats_events_processor_subscribe(
             opt_start_time="2024-10-24T09:17:17.998149541Z",
         )
         subscription = await processor._subscribe(  # pylint: disable=protected-access
-            "group_id", "wallet_id"
+            "group_id", "wallet_id", 300
         )
         mock_nats_client.pull_subscribe.assert_called_once_with(
             subject=f"{NATS_SUBJECT}.group_id.wallet_id",
@@ -79,7 +79,7 @@ async def test_nats_events_processor_subscribe_error(
     mock_nats_client.pull_subscribe.side_effect = exception
 
     with pytest.raises(exception):
-        await processor._subscribe("group_id", "wallet_id")
+        await processor._subscribe("group_id", "wallet_id", 300)
 
 
 @pytest.mark.anyio

@@ -15,8 +15,6 @@ from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 logger = get_logger(__name__)
 
-look_back = int(os.getenv("LOOK_BACK", "30"))
-
 
 class NatsEventsProcessor:
     """

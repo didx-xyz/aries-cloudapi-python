@@ -26,32 +26,28 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
 
     async def _subscribe(
-        self, group_id: str, wallet_id: str
+        self, group_id: str, wallet_id: str, look_back: int
     ) -> JetStreamContext.PullSubscription:
         try:
-            logger.debug("Subscribing to JetStream...")
-            if group_id:
-
-                logger.trace("Tenant-admin call got group_id: {}", group_id)
-                subscribe_kwargs = {
-                    "subject": f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
-                    "stream": NATS_STREAM,
-                }
-            else:
-                logger.trace("Tenant call got no group_id")
-                subscribe_kwargs = {
-                    "subject": f"{NATS_SUBJECT}.*.{wallet_id}",
-                    "stream": NATS_STREAM,
-                }
+            logger.trace(
+                "Subscribing to JetStream for wallet_id: {}, group_id: {}",
+                wallet_id,
+                group_id,
+            )
+            group_id = group_id or "*"
+            subscribe_kwargs = {
+                "subject": f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
+                "stream": NATS_STREAM,
+            }
 
             # Get the current time in UTC
             current_time = datetime.now(timezone.utc)
 
             # Subtract 30 seconds
-            time_30_secs_ago = current_time - timedelta(seconds=look_back)
+            look_back_time = current_time - timedelta(seconds=look_back)
 
             # Format the time in the required format
-            start_time = time_30_secs_ago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
             config = ConsumerConfig(
                 deliver_policy=DeliverPolicy.BY_START_TIME,
                 opt_start_time=start_time,

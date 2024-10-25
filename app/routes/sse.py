@@ -36,6 +36,9 @@ async def get_sse_subscribe_event_with_field_and_state(
     field_id: str,
     desired_state: str,
     group_id: Optional[str] = group_id_query,
+    look_back: Optional[int] = Query(
+        default=None, description="Number of seconds to look back for events"
+    ),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
@@ -63,6 +66,8 @@ async def get_sse_subscribe_event_with_field_and_state(
             The ID of the field subscribing to the events.
         desired_state:
             The desired state to be reached.
+        look_back:
+            Number of seconds to look back for events before subscribing.
     """
     logger.bind(
         body={
@@ -87,6 +92,7 @@ async def get_sse_subscribe_event_with_field_and_state(
             field=field,
             field_id=field_id,
             desired_state=desired_state,
+            look_back=look_back,
         ),
         media_type="text/event-stream",
     )

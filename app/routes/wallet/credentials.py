@@ -24,8 +24,8 @@ router = APIRouter(prefix="/v1/wallet/credentials", tags=["wallet"])
     summary="Fetch a list of credentials from the wallet",
 )
 async def list_credentials(
-    count: Optional[str] = None,
-    start: Optional[str] = None,
+    limit: Optional[str] = None,
+    offset: Optional[str] = None,
     wql: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredInfoList:
@@ -61,8 +61,8 @@ async def list_credentials(
         results = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.credentials.get_records,
-            count=count,
-            start=start,
+            count=limit,
+            start=offset,
             wql=wql,
         )
 
@@ -241,14 +241,8 @@ async def get_credential_revocation_status(
     summary="Fetch a list of W3C credentials from the wallet",
 )
 async def list_w3c_credentials(
-    contexts: Optional[List[str]] = Query(None),
-    types: Optional[List[str]] = Query(None),
     schema_ids: Optional[List[str]] = Query(None),
-    subject_ids: Optional[List[str]] = Query(None),
-    proof_types: Optional[List[str]] = Query(None),
     issuer_id: Optional[str] = Query(None),
-    given_id: Optional[str] = Query(None),
-    tag_query: Optional[str] = Query(None),
     max_results: Optional[int] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
@@ -260,14 +254,8 @@ async def list_w3c_credentials(
 
     Optional Parameters:
     ---
-        contexts: List[str]
-        types: List[str]
         schema_ids: List[str]
         issuer_id: str
-        subject_ids: List[str]
-        given_id: str
-        proof_types: List[str]
-        tag_query: str
         max_results: int
 
     Returns:
@@ -278,14 +266,8 @@ async def list_w3c_credentials(
     logger.debug("GET request received: List W3C credentials")
 
     body = W3CCredentialsListRequest(
-        contexts=contexts,
-        types=types,
         schema_ids=schema_ids,
         issuer_id=issuer_id,
-        subject_ids=subject_ids,
-        given_id=given_id,
-        proof_types=proof_types,
-        tag_query=tag_query,
         max_results=max_results,
     )
 

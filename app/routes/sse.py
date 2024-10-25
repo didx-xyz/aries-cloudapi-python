@@ -37,7 +37,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     desired_state: str,
     group_id: Optional[str] = group_id_query,
     look_back: Optional[int] = Query(
-        default=None, description="Number of seconds to look back for events"
+        default=300, description="Number of seconds to look back for events"
     ),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:

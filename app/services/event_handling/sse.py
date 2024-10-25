@@ -33,7 +33,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
-    look_back: Optional[int],
+    look_back: int = 300,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.

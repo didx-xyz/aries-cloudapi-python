@@ -97,7 +97,7 @@ async def sse_wait_for_event_with_field_and_state(
         default=None, description="Group ID to which the wallet belongs"
     ),
     look_back: Optional[int] = Query(
-        default=None,
+        default=300,
         description="Number of seconds to look back for events before subscribing",
     ),
     nats_processor: NatsEventsProcessor = Depends(

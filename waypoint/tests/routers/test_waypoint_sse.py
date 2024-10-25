@@ -100,7 +100,7 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
         desired_state=desired_state,
         group_id=group_id,
         nats_processor=nats_processor_mock,
-        look_back=300
+        look_back=300,
     ):
         events.append(event)
 

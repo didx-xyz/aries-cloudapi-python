@@ -82,6 +82,7 @@ class NatsEventsProcessor:
         topic: str,
         stop_event: asyncio.Event,
         duration: int = 10,
+        look_back: int = 0,
     ):
         logger.debug(
             "Processing events for group {} and wallet {} on topic {}",
@@ -90,7 +91,9 @@ class NatsEventsProcessor:
             topic,
         )
 
-        subscription = await self._subscribe(group_id=group_id, wallet_id=wallet_id)
+        subscription = await self._subscribe(
+            group_id=group_id, wallet_id=wallet_id, look_back=look_back
+        )
 
         async def event_generator():
             end_time = time.time() + duration

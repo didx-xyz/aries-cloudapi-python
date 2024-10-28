@@ -124,13 +124,13 @@ speedups = ["Brotli", "aiodns (>=3.2.0)", "brotlicffi"]
 
 [[package]]
 name = "aiohttp-retry"
-version = "2.8.3"
+version = "2.9.0"
 description = "Simple retry client for aiohttp"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "aiohttp_retry-2.8.3-py3-none-any.whl", hash = "sha256:3aeeead8f6afe48272db93ced9440cf4eda8b6fd7ee2abb25357b7eb28525b45"},
-    {file = "aiohttp_retry-2.8.3.tar.gz", hash = "sha256:9a8e637e31682ad36e1ff9f8bcba912fcfc7d7041722bc901a4b948da4d71ea9"},
+    {file = "aiohttp_retry-2.9.0-py3-none-any.whl", hash = "sha256:7661af92471e9a96c69d9b8f32021360272073397e6a15bc44c1726b12f46056"},
+    {file = "aiohttp_retry-2.9.0.tar.gz", hash = "sha256:92c47f1580040208bac95d9a8389a87227ef22758530f2e3f4683395e42c41b5"},
 ]
 
 [package.dependencies]
@@ -183,18 +183,19 @@ trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "aries-cloudcontroller"
-version = "1.0.1b0"
+version = "1.1.1b1"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "aries_cloudcontroller-1.0.1b0-py3-none-any.whl", hash = "sha256:78cf36914ccab2fa8b02125d2a55265c874ab1f6535355cc82a10bf5460f3262"},
-    {file = "aries_cloudcontroller-1.0.1b0.tar.gz", hash = "sha256:94f93cc7a2fd047a2015022728f0dc13d3711e347cc37f13ac140d34b3b2e112"},
+    {file = "aries_cloudcontroller-1.1.1b1-py3-none-any.whl", hash = "sha256:06a0b4bff43fbdaa820329eeef53fee91f8d30d9c39c8f89ffc1f32c59f0cbe7"},
+    {file = "aries_cloudcontroller-1.1.1b1.tar.gz", hash = "sha256:0a249ffe9ce78566546a404dd288e975afcd19604d671e466afe78248c299c40"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.4,<4.0"
-aiohttp-retry = ">=2.8.3,<2.9.0"
+aiohttp-retry = ">=2.9.0,<2.10.0"
+orjson = ">=3.10.10"
 pydantic = ">=2.6,<3.0"
 python-dateutil = ">=2"
 typing-extensions = ">=4,<5.0"
@@ -276,13 +277,13 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "bytecode"
-version = "0.15.1"
+version = "0.16.0"
 description = "Python module to generate and modify bytecode"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bytecode-0.15.1-py3-none-any.whl", hash = "sha256:0a1dc340cac823cff605609b8b214f7f9bf80418c6b9e0fc8c6db1793c27137d"},
-    {file = "bytecode-0.15.1.tar.gz", hash = "sha256:7263239a8d3f70fc7c303862b20cd2c6788052e37ce0a26e67309d280e985984"},
+    {file = "bytecode-0.16.0-py3-none-any.whl", hash = "sha256:76080b7c0eb9e7e17f961d61fd06e933aa47f3b753770a3249537439d8203a25"},
+    {file = "bytecode-0.16.0.tar.gz", hash = "sha256:06676a3c3bccc9d3dc73ee625650ea57df2bc117358826f4f290f0e1faa42292"},
 ]
 
 [[package]]
@@ -728,13 +729,13 @@ mypy = ["mypy"]
 
 [[package]]
 name = "fastapi"
-version = "0.115.3"
+version = "0.115.4"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fastapi-0.115.3-py3-none-any.whl", hash = "sha256:8035e8f9a2b0aa89cea03b6c77721178ed5358e1aea4cd8570d9466895c0638c"},
-    {file = "fastapi-0.115.3.tar.gz", hash = "sha256:c091c6a35599c036d676fa24bd4a6e19fa30058d93d950216cdc672881f6f7db"},
+    {file = "fastapi-0.115.4-py3-none-any.whl", hash = "sha256:0b504a063ffb3cf96a5e27dc1bc32c80ca743a2528574f9cdc77daa2d31b4742"},
+    {file = "fastapi-0.115.4.tar.gz", hash = "sha256:db653475586b091cb8b2fec2ac54a680ac6a158e07406e1abae31679e8826349"},
 ]
 
 [package.dependencies]
@@ -1806,13 +1807,13 @@ files = [
 
 [[package]]
 name = "starlette"
-version = "0.41.0"
+version = "0.41.2"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "starlette-0.41.0-py3-none-any.whl", hash = "sha256:a0193a3c413ebc9c78bff1c3546a45bb8c8bcb4a84cae8747d650a65bd37210a"},
-    {file = "starlette-0.41.0.tar.gz", hash = "sha256:39cbd8768b107d68bfe1ff1672b38a2c38b49777de46d2a592841d58e3bf7c2a"},
+    {file = "starlette-0.41.2-py3-none-any.whl", hash = "sha256:fbc189474b4731cf30fcef52f18a8d070e3f3b46c6a04c97579e85e6ffca942d"},
+    {file = "starlette-0.41.2.tar.gz", hash = "sha256:9834fd799d1a87fd346deb76158668cfa0b0d56f85caefe8268e2d97c3468b62"},
 ]
 
 [package.dependencies]
@@ -1880,13 +1881,13 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 
 [[package]]
 name = "virtualenv"
-version = "20.27.0"
+version = "20.27.1"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "virtualenv-20.27.0-py3-none-any.whl", hash = "sha256:44a72c29cceb0ee08f300b314848c86e57bf8d1f13107a5e671fb9274138d655"},
-    {file = "virtualenv-20.27.0.tar.gz", hash = "sha256:2ca56a68ed615b8fe4326d11a0dca5dfbe8fd68510fb6c6349163bed3c15f2b2"},
+    {file = "virtualenv-20.27.1-py3-none-any.whl", hash = "sha256:f11f1b8a29525562925f745563bfd48b189450f61fb34c4f9cc79dd5aa32a1f4"},
+    {file = "virtualenv-20.27.1.tar.gz", hash = "sha256:142c6be10212543b32c6c45d3d3893dff89112cc588b7d0879ae5a1ec03a47ba"},
 ]
 
 [package.dependencies]
@@ -2120,4 +2121,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5e5d65c5d34de009962758a9858bcbdadc47cc9de2f823efeb97733bd511da81"
+content-hash = "5c81060ac43979791a7c5e33d1dc10c9a1f71f729a164c56fbc4e64ec8d59bbc"

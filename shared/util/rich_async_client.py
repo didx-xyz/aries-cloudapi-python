@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import ssl
 from typing import Optional
@@ -38,30 +39,27 @@ class RichAsyncClient(AsyncClient):
         logger.error(log_message)
         raise HTTPException(status_code=code, detail=message) from e
 
+    async def _request_with_retries(self, method: str, url: str, **kwargs) -> Response:
+        retries = 3  # Number of retries
+        for attempt in range(retries):
+            try:
+                response = await getattr(super(), method)(url, **kwargs)
+                return await self._handle_response(response)
+            except HTTPStatusError as e:
+                code = e.response.status_code
+                if code == 503 and attempt < retries - 1:  # Check for 503 and retry
+                    await asyncio.sleep(0.5)  # Wait before retrying
+                    continue  # Retry the request
+                await self._handle_error(e, url, method)
+
     async def post(self, url: str, **kwargs) -> Response:
-        try:
-            response = await super().post(url, **kwargs)
-            return await self._handle_response(response)
-        except HTTPStatusError as e:
-            await self._handle_error(e, url, "POST")
+        return await self._request_with_retries("post", url, **kwargs)
 
     async def get(self, url: str, **kwargs) -> Response:
-        try:
-            response = await super().get(url, **kwargs)
-            return await self._handle_response(response)
-        except HTTPStatusError as e:
-            await self._handle_error(e, url, "GET")
+        return await self._request_with_retries("get", url, **kwargs)
 
     async def delete(self, url: str, **kwargs) -> Response:
-        try:
-            response = await super().delete(url, **kwargs)
-            return await self._handle_response(response)
-        except HTTPStatusError as e:
-            await self._handle_error(e, url, "DELETE")
+        return await self._request_with_retries("delete", url, **kwargs)
 
     async def put(self, url: str, **kwargs) -> Response:
-        try:
-            response = await super().put(url, **kwargs)
-            return await self._handle_response(response)
-        except HTTPStatusError as e:
-            await self._handle_error(e, url, "PUT")
+        return await self._request_with_retries("put", url, **kwargs)

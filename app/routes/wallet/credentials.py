@@ -24,8 +24,8 @@ router = APIRouter(prefix="/v1/wallet/credentials", tags=["wallet"])
     summary="Fetch a list of credentials from the wallet",
 )
 async def list_credentials(
-    limit: Optional[str] = None,
-    offset: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
     wql: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredInfoList:
@@ -242,8 +242,8 @@ async def get_credential_revocation_status(
 )
 async def list_w3c_credentials(
     schema_ids: Optional[List[str]] = Query(None),
-    issuer_id: Optional[str] = Query(None),
-    max_results: Optional[int] = Query(None),
+    issuer_did: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """
@@ -255,8 +255,11 @@ async def list_w3c_credentials(
     Optional Parameters:
     ---
         schema_ids: List[str]
-        issuer_id: str
-        max_results: int
+            Schema identifiers, all of which to match
+        issuer_did: str
+            Credential issuer identifier to match
+        Limit: int
+            Maximum number of results to return
 
     Returns:
     ---
@@ -267,8 +270,8 @@ async def list_w3c_credentials(
 
     body = W3CCredentialsListRequest(
         schema_ids=schema_ids,
-        issuer_id=issuer_id,
-        max_results=max_results,
+        issuer_id=issuer_did,
+        max_results=limit,
     )
 
     async with client_from_auth(auth) as aries_controller:

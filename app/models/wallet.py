@@ -13,10 +13,13 @@ class SetDidEndpointRequest(BaseModel):
 
 class VCRecord(VCRecordAcaPy):
     credential_id: str = Field(
-        ..., alias="record_id", description="Rename record_id to credential_id"
+        ..., alias="record_id", description="Credential/Record identifier"
     )
     record_id: str = Field(
-        ..., alias="credential_id", description="For backwards compatibility"
+        ...,
+        alias="credential_id",
+        description="(deprecated - renamed to credential_id) Credential/record identifier",
+        deprecated=True,
     )
 
 
@@ -26,10 +29,13 @@ class VCRecordList(BaseModel):
 
 class IndyCredInfo(IndyCredInfoAcaPy):
     credential_id: str = Field(
-        ..., alias="referent", description="Rename referent to credential_id"
+        ..., alias="referent", description="Credential identifier"
     )
     referent: str = Field(
-        ..., alias="credential_id", description="For backwards compatibility"
+        ...,
+        alias="credential_id",
+        description="(deprecated - renamed to credential_id) Credential identifier",
+        deprecated=True,
     )
 
 

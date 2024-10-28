@@ -50,7 +50,10 @@ class RichAsyncClient(AsyncClient):
     async def _handle_error(self, e: HTTPStatusError, url: str, method: str) -> None:
         code = e.response.status_code
         message = e.response.text
-        log_message = f"{self.name} {method} `{url}` failed. Status code: {code}. Response: `{message}`."
+        log_message = (
+            f"{self.name} {method} `{url}` failed. "
+            f"Status code: {code}. Response: `{message}`."
+        )
         logger.error(log_message)
         raise HTTPException(status_code=code, detail=message) from e
 

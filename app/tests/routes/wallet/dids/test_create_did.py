@@ -1,7 +1,8 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from aries_cloudcontroller import DIDCreate
+from app.models.wallet import DIDCreate
+from aries_cloudcontroller import DIDCreate as AcapyDIDCreate
 from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
@@ -13,9 +14,20 @@ from app.routes.wallet.dids import create_did
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "request_body", [None, DIDCreate(method="key"), DIDCreate(method="sov")]
+    "request_body, create_body",
+    [
+        (None, None),
+        (
+            DIDCreate(method="key"),
+            AcapyDIDCreate(method="key", options={"key_type": "ed25519"}),
+        ),
+        (
+            DIDCreate(method="sov"),
+            AcapyDIDCreate(method="sov", options={"key_type": "ed25519"}),
+        ),
+    ],
 )
-async def test_create_did_success(request_body):
+async def test_create_did_success(request_body, create_body):
     mock_aries_controller = AsyncMock()
     mock_create_did = AsyncMock()
 
@@ -32,7 +44,7 @@ async def test_create_did_success(request_body):
         await create_did(did_create=request_body, auth="mocked_auth")
 
         mock_create_did.assert_awaited_once_with(
-            did_create=request_body, controller=mock_aries_controller
+            did_create=create_body, controller=mock_aries_controller
         )
 
 

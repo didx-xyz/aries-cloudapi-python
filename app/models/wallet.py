@@ -52,7 +52,7 @@ class CredInfoList(BaseModel):
 class DIDCreate(BaseModel):
     method: Optional[StrictStr] = Field(
         default="sov",
-        description="Method for the requested DID. Supported methods are 'key', 'sov', and any other registered method.",
+        description="Method for the requested DID. Supported methods are 'sov', `web`, `did:peer:2` or `did:peer:4`.",
         examples=["sov", "key", "did:peer:2", "did:peer:4"],
     )
     options: Optional[DIDCreateOptions] = Field(
@@ -72,11 +72,12 @@ class DIDCreate(BaseModel):
     )
     did: Optional[str] = Field(
         default=None,
-        description="Specify final value of the did (including did:<method>: prefix) if the method supports or requires so.",
+        description="Specify final value of did (including did:<method>: prefix) if the method supports/requires it.",
         strict=True,
     )
 
     @model_validator(mode="before")
+    @classmethod
     def handle_deprecated_options(cls, values: dict) -> dict:
         """
         Handle both deprecated options field and new flattened fields.

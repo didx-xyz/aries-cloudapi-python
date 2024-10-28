@@ -11,8 +11,21 @@ logger = logging.getLogger(__name__)
 ssl_context = ssl.create_default_context()
 
 
-# Async Client with built in error handling and re-using SSL certs
 class RichAsyncClient(AsyncClient):
+    """Async Client that extends httpx.AsyncClient with built-in error handling and SSL cert reuse.
+
+    - Reuses SSL context for better performance
+    - Retries requests on 503 Service Unavailable errors
+    - Raises HTTPException with detailed error messages
+
+    Args:
+        name (Optional[str]): Optional name for the client, prepended to exceptions.
+        verify: SSL certificate verification context.
+        raise_status_error (bool): Whether to raise an error for 4xx and 5xx status codes.
+        retries (int): Number of retry attempts for failed requests.
+        retry_on (List[int]): List of HTTP status codes that should trigger a retry.
+    """
+
     def __init__(
         self,
         *args,

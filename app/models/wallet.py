@@ -51,7 +51,7 @@ class CredInfoList(BaseModel):
 
 class DIDCreate(BaseModel):
     method: Optional[StrictStr] = Field(
-        default=None,
+        default="sov",
         description="Method for the requested DID. Supported methods are 'key', 'sov', and any other registered method.",
         examples=["sov", "key", "did:peer:2", "did:peer:4"],
     )

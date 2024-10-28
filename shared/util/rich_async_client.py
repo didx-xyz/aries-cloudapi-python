@@ -65,6 +65,11 @@ class RichAsyncClient(AsyncClient):
             except HTTPStatusError as e:
                 code = e.response.status_code
                 if code in self.retry_on and attempt < self.retries - 1:
+                    log_message = (
+                        f"{self.name} {method} `{url}` failed with status code {code}. "
+                        f"Retrying attempt {attempt + 1}/{self.retries}."
+                    )
+                    logger.warning(log_message)
                     await asyncio.sleep(0.5)  # Wait before retrying
                     continue  # Retry the request
                 await self._handle_error(e, url, method)

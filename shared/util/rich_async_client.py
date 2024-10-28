@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import ssl
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import HTTPException
 from httpx import AsyncClient, HTTPStatusError, Response
@@ -19,13 +19,15 @@ class RichAsyncClient(AsyncClient):
         name: Optional[str] = None,
         verify=ssl_context,
         raise_status_error=True,
+        retries: int = 3,
+        retry_on: List[int] = [503],
         **kwargs,
     ) -> None:
         super().__init__(verify=verify, *args, **kwargs)
-        self.name = (
-            name + " - HTTP" if name else "HTTP"
-        )  # prepend to exception messages to add context
+        self.name = name + " - HTTP" if name else "HTTP"  # prepended to exceptions
         self.raise_status_error = raise_status_error
+        self.retries = retries
+        self.retry_on = retry_on
 
     async def _handle_response(self, response: Response) -> Response:
         if self.raise_status_error:
@@ -40,14 +42,13 @@ class RichAsyncClient(AsyncClient):
         raise HTTPException(status_code=code, detail=message) from e
 
     async def _request_with_retries(self, method: str, url: str, **kwargs) -> Response:
-        retries = 3  # Number of retries
-        for attempt in range(retries):
+        for attempt in range(self.retries):
             try:
                 response = await getattr(super(), method)(url, **kwargs)
                 return await self._handle_response(response)
             except HTTPStatusError as e:
                 code = e.response.status_code
-                if code == 503 and attempt < retries - 1:  # Check for 503 and retry
+                if code in self.retry_on and attempt < self.retries - 1:
                     await asyncio.sleep(0.5)  # Wait before retrying
                     continue  # Retry the request
                 await self._handle_error(e, url, method)

@@ -45,11 +45,18 @@ async def create_did(
 
     """
     logger.debug("POST request received: Create DID")
-
+    payload = {
+        "method": did_create.method,
+        "options": {
+            "key_type": did_create.key_type,
+            "did": did_create.did,
+        },
+        "seed": did_create.seed,
+    }
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
         result = await acapy_wallet.create_did(
-            did_create=did_create, controller=aries_controller
+            did_create=payload, controller=aries_controller
         )
 
     logger.debug("Successfully created DID.")

@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app.models.wallet import DIDCreate
 from aries_cloudcontroller import DIDCreate as AcapyDIDCreate
 from aries_cloudcontroller.exceptions import (
     ApiException,
@@ -9,6 +8,7 @@ from aries_cloudcontroller.exceptions import (
     NotFoundException,
 )
 
+from app.models.wallet import DIDCreate
 from app.routes.wallet.dids import create_did
 
 

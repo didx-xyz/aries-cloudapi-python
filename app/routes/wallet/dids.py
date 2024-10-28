@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller import DID
+from aries_cloudcontroller import DIDCreate as AcapyDIDCreate
+from aries_cloudcontroller import DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -45,14 +47,17 @@ async def create_did(
 
     """
     logger.debug("POST request received: Create DID")
-    payload = {
-        "method": did_create.method,
-        "options": {
-            "key_type": did_create.key_type,
-            "did": did_create.did,
-        },
-        "seed": did_create.seed,
-    }
+    payload = None
+    if did_create:
+        payload = AcapyDIDCreate(
+            method=did_create.method,
+            options={
+                "key_type": did_create.key_type,
+                "did": did_create.did,
+            },
+            seed=did_create.seed,
+        )
+
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
         result = await acapy_wallet.create_did(

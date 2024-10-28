@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import DID, DIDCreate, DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -10,7 +10,7 @@ from app.exceptions import (
     handle_acapy_call,
     handle_model_with_validation,
 )
-from app.models.wallet import SetDidEndpointRequest
+from app.models.wallet import DIDCreate, SetDidEndpointRequest
 from app.services import acapy_wallet
 from shared.log_config import get_logger
 

@@ -53,7 +53,7 @@ class DIDCreate(BaseModel):
     method: Optional[StrictStr] = Field(
         default=None,
         description="Method for the requested DID. Supported methods are 'key', 'sov', and any other registered method.",
-        examples=["sov", "key", "did:peer:2","did:peer:4"],
+        examples=["sov", "key", "did:peer:2", "did:peer:4"],
     )
     options: Optional[DIDCreateOptions] = Field(
         default=None,

@@ -42,13 +42,13 @@ async def sign_jws(
 
     The difference between the did and verification_method fields is
     that if the `did` field is used, the Aries agent will make an educated guess
-    about which key associated with the did to use to sign the jwt, i.e. the did with the key to use.
+    about which key associated with the did to use to sign the jwt, i.e. the did with the verkey to use.
 
     While with the `verification_method` field, the user is explicitly
-    specifying which key to use to sign the jwt.
+    specifying which verkey to use to sign the jwt.
 
     The `header` field is optional and can be used to specify the header of the JWS.
-    The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
+    The `typ`, `alg`, and `kid` fields, in the header, are automatically populated by the Aries agent.
 
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
 
@@ -87,7 +87,7 @@ async def sign_jws(
             payload: dict:
               The payload of the JWS.
             verification_method: str:
-              The verification (did with key) method to use.
+              The verification (did with verkey) method to use.
 
     Returns:
     ---
@@ -135,10 +135,10 @@ async def verify_jws(
     Verify JSON Web Signature (JWS)
     ---
 
-    This endpoint allows the user to verify and decode the JWS string gotten from the sign endpoint.
+    This endpoint allows the user to verify and decode the JWS string produced by the sign endpoint.
     Passing the JWS string to this endpoint will return the payload and headers of the JWS.
 
-    It will also return the validity of the JWS.
+    It will also return the validity of the JWS (verify the JWS).
 
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
 

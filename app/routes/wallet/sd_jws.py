@@ -39,17 +39,17 @@ async def sign_sd_jws(
     When populating the the body of the request, the user must populate either the `did`
     or the `verification_method` field.
 
-    If an issuer sings a JWS with a `did:sov` DID, the did should be public.
+    If an issuer sings a JWS with a `did:sov` DID, the DID should be public.
 
-    The difference between the did and verification_method fields is
+    The difference between the `did` and `verification_method` fields is
     that if the `did` field is used, the Aries agent will make an educated guess
-    about which key associated with the did to use to sign the jwt.
+    about which verkey associated with the DID to use to sign the jwt.
 
     While with the `verification_method` field, the user is explicitly
-    specifying which key to use to sign the jwt, i.e. the did with the key to use.
+    specifying which verkey to use to sign the jwt, i.e. the DID with the key to use.
 
     The `header` field is optional and can be used to specify the header of the JWS.
-    The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
+    The `typ`, `alg`, and `kid` fields, in the header, are automatically populated by the Aries agent.
 
     The `non_sd_list` field is a list of non-selective disclosure attributes.
     These are attributes that are not included in the selective disclosure i.e.
@@ -122,7 +122,7 @@ async def sign_sd_jws(
             payload: dict:
               The payload of the SD-JWS.
             verification_method:
-              str: The verification method (did with key to use) to use.
+              str: The verification method (did with verkey) to use.
             non_sd_list: Optional(list):
               List of non-selective disclosure attributes.
 

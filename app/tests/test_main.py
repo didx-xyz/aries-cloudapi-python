@@ -4,7 +4,7 @@ import pydantic
 import pytest
 from aries_cloudcontroller import ApiException
 from fastapi import HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import (
@@ -109,6 +109,6 @@ async def test_universal_exception_handler():
     for exception, expected_status, expected_detail in test_cases:
         request = Mock(spec=Request)
         response = await universal_exception_handler(request, exception)
-        assert isinstance(response, JSONResponse)
+        assert isinstance(response, ORJSONResponse)
         assert response.status_code == expected_status
         assert expected_detail in response.body.decode()

@@ -609,6 +609,9 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
               stream rm acapy_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm cloudapi_aries_state_monitoring -f
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
@@ -637,6 +640,19 @@ jobs:
             --storage file \
             --replicas 3 \
             --compression s2
+
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add cloudapi_aries_state_monitoring --subjects "cloudapi.aries.state_monitoring.*.*.>" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2 \
+            --retention limits \
+            --discard old \
+            --max-age 1m \
+            --dupe-window 1m \
+            --max-msgs-per-subject 1000
 
           rm -f ./nats.creds
 

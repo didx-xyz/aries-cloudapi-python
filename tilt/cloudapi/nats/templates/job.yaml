@@ -40,31 +40,34 @@ spec:
 
               {{- range $stream, $config := .Values.postInstall.streams }}
               nats --server nats://{{ template "common.names.fullname" $ }}:{{ default 4222 $.Values.nats.service.ports.client }} stream add {{ $stream }} \
-                  --subjects {{ join "," $config.subjects | quote }} \
-                  --storage {{ $config.storage }} \
-                  --replicas={{ $.Values.nats.replicaCount }} \
-                  {{- if $config.compression }}
-                  --compression {{ $config.compression }} \
-                  {{- end }}
-                  {{- if $config.maxAge }}
-                  --max-age {{ $config.maxAge }} \
-                  {{- end }}
-                  {{- if $config.maxBytes }}
-                  --max-bytes {{ $config.maxBytes }} \
-                  {{- end }}
-                  {{- if $config.maxMsgs }}
-                  --max-msgs {{ $config.maxMsgs }} \
-                  {{- end }}
-                  {{- if $config.maxMsgsPerSubject }}
-                  --max-msgs-per-subject {{ $config.maxMsgsPerSubject }} \
-                  {{- end }}
-                  {{- if $config.retention }}
-                  --retention {{ $config.retention }} \
-                  {{- end }}
-                  {{- if $config.discard }}
-                  --discard {{ $config.discard }} \
-                  {{- end }}
-                  {{- if $config.duplicateWindow }}
-                  --dupe-window {{ $config.duplicateWindow }} \
-                  {{- end }}
+                 --subjects {{ join "," $config.subjects | quote }} \
+                 {{- if $config.defaults }}
+                 --defaults \
+                 {{- end }}
+                 --storage {{ $config.storage }} \
+                 {{- if $config.compression }}
+                 --compression {{ $config.compression }} \
+                 {{- end }}
+                 {{- if $config.maxAge }}
+                 --max-age {{ $config.maxAge }} \
+                 {{- end }}
+                 {{- if $config.maxBytes }}
+                 --max-bytes {{ $config.maxBytes }} \
+                 {{- end }}
+                 {{- if $config.maxMsgs }}
+                 --max-msgs {{ $config.maxMsgs }} \
+                 {{- end }}
+                 {{- if $config.maxMsgsPerSubject }}
+                 --max-msgs-per-subject {{ $config.maxMsgsPerSubject }} \
+                 {{- end }}
+                 {{- if $config.retention }}
+                 --retention {{ $config.retention }} \
+                 {{- end }}
+                 {{- if $config.discard }}
+                 --discard {{ $config.discard }} \
+                 {{- end }}
+                 {{- if $config.duplicateWindow }}
+                 --dupe-window {{ $config.duplicateWindow }} \
+                 {{- end }}
+                 --replicas={{ $.Values.nats.replicaCount }}
               {{- end }}

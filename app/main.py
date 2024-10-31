@@ -7,7 +7,7 @@ import yaml
 from aries_cloudcontroller import ApiException
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from scalar_fastapi import get_scalar_api_reference
 
 from app.exceptions import CloudApiException
@@ -134,41 +134,43 @@ def read_openapi_yaml() -> Response:
 
 
 @app.exception_handler(Exception)
-async def universal_exception_handler(_: Request, exception: Exception) -> JSONResponse:
+async def universal_exception_handler(
+    _: Request, exception: Exception
+) -> ORJSONResponse:
     stacktrace = {"traceback": traceback.format_exc()} if debug else {}
 
     if isinstance(exception, CloudApiException):
-        return JSONResponse(
+        return ORJSONResponse(
             content={"detail": exception.detail, **stacktrace},
             status_code=exception.status_code,
         )
 
     if isinstance(exception, CloudApiValueError):
-        return JSONResponse(
+        return ORJSONResponse(
             {"detail": exception.detail, **stacktrace},
             status_code=422,
         )
 
     if isinstance(exception, pydantic.ValidationError):
-        return JSONResponse(
+        return ORJSONResponse(
             {"detail": extract_validation_error_msg(exception), **stacktrace},
             status_code=422,
         )
 
     if isinstance(exception, ApiException):
-        return JSONResponse(
+        return ORJSONResponse(
             {"detail": exception.reason, **stacktrace},
             status_code=exception.status,
         )
 
     if isinstance(exception, HTTPException):
-        return JSONResponse(
+        return ORJSONResponse(
             {"detail": exception.detail, **stacktrace},
             status_code=exception.status_code,
             headers=exception.headers,
         )
 
-    return JSONResponse(
+    return ORJSONResponse(
         {"detail": "Internal server error", "exception": str(exception), **stacktrace},
         status_code=500,
     )

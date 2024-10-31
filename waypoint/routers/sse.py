@@ -52,6 +52,7 @@ async def nats_event_stream_generator(
         group_id=group_id,
         wallet_id=wallet_id,
         topic=topic,
+        state=desired_state,
         stop_event=stop_event,
         duration=SSE_TIMEOUT,
         look_back=look_back,
@@ -65,7 +66,7 @@ async def nats_event_stream_generator(
                 break
 
             payload = event.payload
-            if payload.get(field) == field_id and payload.get("state") == desired_state:
+            if payload.get(field) == field_id:
                 logger.trace("Event found yielding event {}", event)
                 yield event.model_dump_json()
                 stop_event.set()

@@ -73,6 +73,7 @@ class NatsEventsProcessor:
         group_id: str,
         wallet_id: str,
         topic: str,
+        state: str,
         stop_event: asyncio.Event,
         duration: int = 10,
         look_back: int = 300,

@@ -25,7 +25,7 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
 
     async def _subscribe(
-        self, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
+        self, *, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.trace(
@@ -70,6 +70,7 @@ class NatsEventsProcessor:
     @asynccontextmanager
     async def process_events(
         self,
+        *,
         group_id: str,
         wallet_id: str,
         topic: str,

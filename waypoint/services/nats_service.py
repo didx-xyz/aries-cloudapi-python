@@ -8,7 +8,7 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
-from shared.constants import NATS_STREAM, NATS_SUBJECT
+from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 

@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 
 import pytest
@@ -26,9 +27,10 @@ async def test_invalid_acapy_auth_header(alice_acapy_client: AcaPyClient):
         f"Barer {existing_token}"
     )
 
-    with pytest.raises(UnauthorizedException) as e:
+    with pytest.raises(UnauthorizedException) as exc_info:
         await alice_acapy_client.connection.get_connections()
-    assert "Invalid Authorization header structure" in str(e)
+    assert exc_info.value.status == 401
+    assert "Invalid Authorization header structure" == str(exc_info.value.reason)
 
 
 @pytest.mark.anyio
@@ -70,7 +72,7 @@ async def test_jwt_invalid_token_error(tenant_admin_client: RichAsyncClient):
 
         # Step 4: Assert that the response is 401 Unauthorized
         assert response.status_code == 401
-        assert response.json()["detail"] == "Invalid token"
+        assert response.json()["detail"] == "Unauthorized"
 
     finally:
         # Cleanup: Delete the created tenant
@@ -94,28 +96,40 @@ async def test_invalid_token_error_after_rotation(tenant_admin_client: RichAsync
     assert response.status_code == 200
     tenant = response.json()
     wallet_id = tenant["wallet_id"]
-    original_token = tenant["access_token"]
 
-    # Prepare the tenant client with the valid token
+    # Prepare the tenant client
     tenant_client = RichAsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT, raise_status_error=False
     )
-    tenant_client.headers["x-api-key"] = original_token
 
     try:
         # Step 2: Rotate the token (invalidate the old token)
         # Assuming there's an endpoint to rotate the token
-        rotate_response = await tenant_admin_client.post(
-            f"{TENANTS_BASE_PATH}/{wallet_id}/rotate-token?group_id={group_id}"
+        rotate_response = await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}/{wallet_id}/access-token?group_id={group_id}"
+        )
+        assert rotate_response.status_code == 200
+        old_token = rotate_response.json()["access_token"]
+
+        # Set header to original token
+        tenant_client.headers["x-api-key"] = old_token
+
+        await asyncio.sleep(0.5)  # short sleep
+
+        # rotate again
+        rotate_response = await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}/{wallet_id}/access-token?group_id={group_id}"
         )
         assert rotate_response.status_code == 200
 
-        # Step 3: Attempt to use the old token
+        await asyncio.sleep(0.5)  # short sleep
+
+        # Step 3: Attempt to use the old token after token rotated
         response = await tenant_client.get(CONNECTIONS_BASE_PATH)
 
         # Step 4: Assert that the response is 401 Unauthorized
         assert response.status_code == 401
-        assert response.json()["detail"] == "Invalid token"
+        assert response.json()["detail"] == "Token not valid."
 
     finally:
         # Cleanup: Delete the created tenant

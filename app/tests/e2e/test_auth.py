@@ -7,6 +7,7 @@ from aries_cloudcontroller.exceptions import UnauthorizedException
 
 from app.routes.admin.tenants import router as tenants_router
 from app.routes.connections import router as connections_router
+from app.tests.util.regression_testing import TestMode
 from shared.constants import TENANT_FASTAPI_ENDPOINT
 from shared.util.rich_async_client import RichAsyncClient
 
@@ -15,7 +16,14 @@ TENANTS_BASE_PATH = tenants_router.prefix
 
 group_id = "TestGroup"
 
+skip_regression_test_reason = "Don't need to cover auth tests in regression mode"
 
+
+@pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 @pytest.mark.anyio
 async def test_invalid_acapy_auth_header(alice_acapy_client: AcaPyClient):
     # Modify the AcaPyClient to use the wrong header -- assert ACA-Py auth error
@@ -34,6 +42,10 @@ async def test_invalid_acapy_auth_header(alice_acapy_client: AcaPyClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_jwt_invalid_token_error(tenant_admin_client: RichAsyncClient):
     # Step 1: Create a tenant and get a valid access token
     response = await tenant_admin_client.post(
@@ -83,6 +95,10 @@ async def test_jwt_invalid_token_error(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_invalid_token_error_after_rotation(tenant_admin_client: RichAsyncClient):
     # Step 1: Create a tenant and get a valid access token
     response = await tenant_admin_client.post(

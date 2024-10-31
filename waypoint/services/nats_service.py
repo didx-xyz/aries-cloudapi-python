@@ -106,9 +106,8 @@ class NatsEventsProcessor:
                 try:
                     messages = await subscription.fetch(batch=5, timeout=0.2)
                     for message in messages:
-                        if message.headers.get("event_topic") == topic:
-                            event = orjson.loads(message.data)
-                            yield CloudApiWebhookEventGeneric(**event)
+                        event = orjson.loads(message.data)
+                        yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
                 except TimeoutError:
                     logger.trace("Timeout fetching messages continuing...")

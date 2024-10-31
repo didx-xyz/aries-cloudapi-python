@@ -86,7 +86,11 @@ class NatsEventsProcessor:
         )
 
         subscription = await self._subscribe(
-            group_id=group_id, wallet_id=wallet_id, look_back=look_back
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            state=state,
+            look_back=look_back,
         )
 
         async def event_generator():

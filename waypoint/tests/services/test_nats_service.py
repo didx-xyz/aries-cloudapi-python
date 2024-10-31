@@ -60,7 +60,11 @@ async def test_nats_events_processor_subscribe(
             opt_start_time="2024-10-24T09:17:17.998149541Z",
         )
         subscription = await processor._subscribe(  # pylint: disable=protected-access
-            "group_id", "wallet_id", "proofs", "done", 300
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="proofs",
+            state="done",
+            look_back=300,
         )
         mock_nats_client.pull_subscribe.assert_called_once_with(
             subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
@@ -80,7 +84,11 @@ async def test_nats_events_processor_subscribe_error(
 
     with pytest.raises(exception):
         await processor._subscribe(  # pylint: disable=protected-access
-            "group_id", "wallet_id", "proofs", "done", 300
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="proofs",
+            state="done",
+            look_back=300,
         )
 
 
@@ -108,7 +116,12 @@ async def test_process_events(
 
     stop_event = asyncio.Event()
     async with processor.process_events(
-        group_id, "wallet_id", "test_topic", "state", stop_event, duration=1
+        group_id=group_id,
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=1,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -135,7 +148,12 @@ async def test_process_events_cancelled_error(
 
     with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
         async with processor.process_events(
-            "group_id", "wallet_id", "test_topic", "state", stop_event, duration=1
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="test_topic",
+            state="state",
+            stop_event=stop_event,
+            duration=1,
         ) as event_generator:
             events = []
             async for event in event_generator:
@@ -157,7 +175,12 @@ async def test_process_events_timeout_error(
 
     stop_event = asyncio.Event()
     async with processor.process_events(
-        "group_id", "wallet_id", "test_topic", "state", stop_event, duration=1
+        group_id="group_id",
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=1,
     ) as event_generator:
         events = []
         async for event in event_generator:

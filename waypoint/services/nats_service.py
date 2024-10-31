@@ -79,10 +79,11 @@ class NatsEventsProcessor:
         look_back: int = 300,
     ):
         logger.debug(
-            "Processing events for group {} and wallet {} on topic {}",
+            "Processing events for group {} and wallet {} on topic {} with state {}",
             group_id,
             wallet_id,
             topic,
+            state,
         )
 
         subscription = await self._subscribe(

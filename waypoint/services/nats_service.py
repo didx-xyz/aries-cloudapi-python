@@ -25,7 +25,7 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
 
     async def _subscribe(
-        self, group_id: str, wallet_id: str, look_back: int
+        self, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.trace(
@@ -35,8 +35,8 @@ class NatsEventsProcessor:
             )
             group_id = group_id or "*"
             subscribe_kwargs = {
-                "subject": f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
-                "stream": NATS_STREAM,
+                "subject": f"{NATS_STATE_SUBJECT}.{group_id}.{wallet_id}.{topic}.{state}",
+                "stream": NATS_STATE_STREAM,
             }
 
             # Get the current time in UTC

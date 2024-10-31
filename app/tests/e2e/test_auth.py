@@ -122,7 +122,7 @@ async def test_invalid_token_error_after_rotation(tenant_admin_client: RichAsync
         )
         assert rotate_response.status_code == 200
 
-        await asyncio.sleep(0.5)  # short sleep
+        await asyncio.sleep(3)  # sleep, wait for storage record to update
 
         # Step 3: Attempt to use the old token after token rotated
         response = await tenant_client.get(CONNECTIONS_BASE_PATH)

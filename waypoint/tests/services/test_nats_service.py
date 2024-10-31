@@ -9,7 +9,7 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
-from shared.constants import NATS_STREAM, NATS_SUBJECT, NATS_STATE_STREAM, NATS_STATE_SUBJECT
+from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from shared.services.nats_jetstream import init_nats_client
 from waypoint.services.nats_service import NatsEventsProcessor
@@ -106,7 +106,7 @@ async def test_process_events(
 
     stop_event = asyncio.Event()
     async with processor.process_events(
-        group_id, "wallet_id", "test_topic","state", stop_event, duration=1
+        group_id, "wallet_id", "test_topic", "state", stop_event, duration=1
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -133,7 +133,7 @@ async def test_process_events_cancelled_error(
 
     with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
         async with processor.process_events(
-            "group_id", "wallet_id", "test_topic","state", stop_event, duration=1
+            "group_id", "wallet_id", "test_topic", "state", stop_event, duration=1
         ) as event_generator:
             events = []
             async for event in event_generator:

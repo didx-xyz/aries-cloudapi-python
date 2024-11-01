@@ -42,7 +42,7 @@ class NatsEventsProcessor:
             # Get the current time in UTC
             current_time = datetime.now(timezone.utc)
 
-            # Subtract 30 seconds
+            # Subtract look_back time from the current time
             look_back_time = current_time - timedelta(seconds=look_back)
 
             # Format the time in the required format

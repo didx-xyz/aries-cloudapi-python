@@ -8,7 +8,7 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
-from shared.constants import NATS_STREAM, NATS_SUBJECT
+from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
@@ -25,7 +25,7 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
 
     async def _subscribe(
-        self, group_id: str, wallet_id: str, look_back: int
+        self, *, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
     ) -> JetStreamContext.PullSubscription:
         try:
             logger.trace(
@@ -35,14 +35,14 @@ class NatsEventsProcessor:
             )
             group_id = group_id or "*"
             subscribe_kwargs = {
-                "subject": f"{NATS_SUBJECT}.{group_id}.{wallet_id}",
-                "stream": NATS_STREAM,
+                "subject": f"{NATS_STATE_SUBJECT}.{group_id}.{wallet_id}.{topic}.{state}",
+                "stream": NATS_STATE_STREAM,
             }
 
             # Get the current time in UTC
             current_time = datetime.now(timezone.utc)
 
-            # Subtract 30 seconds
+            # Subtract look_back time from the current time
             look_back_time = current_time - timedelta(seconds=look_back)
 
             # Format the time in the required format
@@ -70,22 +70,29 @@ class NatsEventsProcessor:
     @asynccontextmanager
     async def process_events(
         self,
+        *,
         group_id: str,
         wallet_id: str,
         topic: str,
+        state: str,
         stop_event: asyncio.Event,
         duration: int = 10,
         look_back: int = 300,
     ):
         logger.debug(
-            "Processing events for group {} and wallet {} on topic {}",
+            "Processing events for group {} and wallet {} on topic {} with state {}",
             group_id,
             wallet_id,
             topic,
+            state,
         )
 
         subscription = await self._subscribe(
-            group_id=group_id, wallet_id=wallet_id, look_back=look_back
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            state=state,
+            look_back=look_back,
         )
 
         async def event_generator():
@@ -101,9 +108,8 @@ class NatsEventsProcessor:
                 try:
                     messages = await subscription.fetch(batch=5, timeout=0.2)
                     for message in messages:
-                        if message.headers.get("event_topic") == topic:
-                            event = orjson.loads(message.data)
-                            yield CloudApiWebhookEventGeneric(**event)
+                        event = orjson.loads(message.data)
+                        yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
                 except TimeoutError:
                     logger.trace("Timeout fetching messages continuing...")

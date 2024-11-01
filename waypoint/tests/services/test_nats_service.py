@@ -9,7 +9,7 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 
-from shared.constants import NATS_STREAM, NATS_SUBJECT
+from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from shared.services.nats_jetstream import init_nats_client
 from waypoint.services.nats_service import NatsEventsProcessor
@@ -60,11 +60,15 @@ async def test_nats_events_processor_subscribe(
             opt_start_time="2024-10-24T09:17:17.998149541Z",
         )
         subscription = await processor._subscribe(  # pylint: disable=protected-access
-            "group_id", "wallet_id", 300
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="proofs",
+            state="done",
+            look_back=300,
         )
         mock_nats_client.pull_subscribe.assert_called_once_with(
-            subject=f"{NATS_SUBJECT}.group_id.wallet_id",
-            stream=NATS_STREAM,
+            subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
+            stream=NATS_STATE_STREAM,
             config=mock_config.return_value,
         )
         assert isinstance(subscription, JetStreamContext.PullSubscription)
@@ -79,7 +83,13 @@ async def test_nats_events_processor_subscribe_error(
     mock_nats_client.pull_subscribe.side_effect = exception
 
     with pytest.raises(exception):
-        await processor._subscribe("group_id", "wallet_id", 300)
+        await processor._subscribe(  # pylint: disable=protected-access
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="proofs",
+            state="done",
+            look_back=300,
+        )
 
 
 @pytest.mark.anyio
@@ -106,7 +116,12 @@ async def test_process_events(
 
     stop_event = asyncio.Event()
     async with processor.process_events(
-        group_id, "wallet_id", "test_topic", stop_event, duration=1
+        group_id=group_id,
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=1,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -133,7 +148,12 @@ async def test_process_events_cancelled_error(
 
     with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
         async with processor.process_events(
-            "group_id", "wallet_id", "test_topic", stop_event, duration=1
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="test_topic",
+            state="state",
+            stop_event=stop_event,
+            duration=1,
         ) as event_generator:
             events = []
             async for event in event_generator:
@@ -155,7 +175,12 @@ async def test_process_events_timeout_error(
 
     stop_event = asyncio.Event()
     async with processor.process_events(
-        "group_id", "wallet_id", "test_topic", stop_event, duration=1
+        group_id="group_id",
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=1,
     ) as event_generator:
         events = []
         async for event in event_generator:

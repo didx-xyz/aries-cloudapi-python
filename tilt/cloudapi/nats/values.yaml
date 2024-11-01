@@ -15,6 +15,16 @@ postInstall:
         - cloudapi.aries.events.*.*
       defaults: true
       storage: file
+    cloudapi_aries_state_monitoring:
+      subjects:
+        - cloudapi.aries.state_monitoring.*.*.>
+      defaults: true
+      storage: file
+      retention: limits
+      discard: old
+      maxAge: 1m
+      duplicateWindow: 1m
+      maxMsgsPerSubject: 1000
     acapy_events:
       subjects:
         - acapy.>

@@ -16,7 +16,7 @@ psycopg2-binary = "~=2.9.6"
 pydantic = "~2.9.0"
 sqlalchemy = "~=2.0.19"
 uvicorn = "~0.32.0"
-ddtrace = "^2.14.0"
+ddtrace = "^2.15.1"
 scalar-fastapi = "^1.0.3"
 alembic = "~1.13.2"
 

@@ -552,7 +552,7 @@ jobs:
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             destroy \
@@ -609,6 +609,9 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
               stream rm acapy_events -f
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+              stream rm cloudapi_aries_state_monitoring -f
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
@@ -638,11 +641,24 @@ jobs:
             --replicas 3 \
             --compression s2
 
+          nats --creds ./nats.creds \
+            --server ${{ secrets.NATS_URL }} \
+            stream add cloudapi_aries_state_monitoring --subjects "cloudapi.aries.state_monitoring.*.*.>" \
+            --defaults \
+            --storage file \
+            --replicas 3 \
+            --compression s2 \
+            --retention limits \
+            --discard old \
+            --max-age 1m \
+            --dupe-window 1m \
+            --max-msgs-per-subject 1000
+
           rm -f ./nats.creds
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             apply \
@@ -659,7 +675,7 @@ jobs:
 
       - name: Helmfile Apply (RDS Proxy)
         if: github.event.inputs.run-reset-deployments != 'true'
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             apply \
@@ -761,7 +777,7 @@ jobs:
       - name: Helmfile init regression pytest
         if: github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-regression-tests == 'true'
         id: pytest-init-regression
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             apply \
@@ -784,7 +800,7 @@ jobs:
       - name: Helmfile run regression pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-reset-deployments == 'false' && github.event.inputs.run-regression-tests == 'true') }}
         id: pytest-run-regression
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             apply \
@@ -808,7 +824,7 @@ jobs:
       - name: Helmfile run pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
         id: pytest
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         with:
           helmfile-args: |
             apply \
@@ -949,7 +965,7 @@ jobs:
           COVERAGE_FILE: test_coverage.txt
 
       - name: Publish Pytest Report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: steps.pytest.outcome == 'success'
         with:
           check_name: JUnit Test Report
@@ -959,7 +975,7 @@ jobs:
           require_passed_tests: true
 
       - name: Publish Pytest Regression Report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         with:
           check_name: JUnit Test Report Regression
@@ -993,7 +1009,7 @@ jobs:
           hide-comment: ${{ github.event_name != 'pull_request' }}
 
       - name: Helmfile destroy pytest
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         if: always()
         with:
           helmfile-args: |
@@ -1009,7 +1025,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile destroy pytest regression
-        uses: helmfile/helmfile-action@v1.9.3
+        uses: helmfile/helmfile-action@v1.9.4
         if: always()
         with:
           helmfile-args: |

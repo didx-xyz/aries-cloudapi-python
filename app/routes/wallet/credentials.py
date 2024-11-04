@@ -11,6 +11,7 @@ from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
 from app.models.wallet import CredInfoList, IndyCredInfo, VCRecord, VCRecordList
+from app.util.pagination import limit_query_parameter, offset_query_parameter
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -24,8 +25,8 @@ router = APIRouter(prefix="/v1/wallet/credentials", tags=["wallet"])
     summary="Fetch a list of credentials from the wallet",
 )
 async def list_credentials(
-    limit: Optional[int] = None,
-    offset: Optional[int] = None,
+    limit: Optional[int] = limit_query_parameter,
+    offset: Optional[int] = offset_query_parameter,
     wql: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredInfoList:

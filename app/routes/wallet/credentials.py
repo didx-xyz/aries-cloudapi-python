@@ -5,7 +5,7 @@ from aries_cloudcontroller import (
     CredRevokedResult,
     W3CCredentialsListRequest,
 )
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
@@ -41,9 +41,9 @@ async def list_credentials(
 
     Optional Parameters:
     ---
-        count: str
+        limit: int
             The number of records to return.
-        start: str
+        offset: int
             The number of records to skip before starting to return records.
         wql: str
             A WQL query to filter records.
@@ -52,7 +52,6 @@ async def list_credentials(
     ---
         CredInfoList
             A list of credential records.
-
     """
     logger.debug("GET request received: List credentials")
 
@@ -61,8 +60,8 @@ async def list_credentials(
         results = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.credentials.get_records,
-            count=limit,
-            start=offset,
+            count=str(limit),
+            start=str(offset),
             wql=wql,
         )
 
@@ -80,7 +79,7 @@ async def get_credential_record(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> IndyCredInfo:
     """
-    Fetch a specific credential by credential ID
+    Fetch a specific credential by ID
     ---
 
     Parameters:
@@ -114,7 +113,7 @@ async def delete_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Remove a specific indy credential from the wallet by ID
+    Remove a specific credential from the wallet by ID
     ---
 
     Parameters:
@@ -125,7 +124,6 @@ async def delete_credential(
     Returns:
     ---
         status_code: 204
-
     """
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug("DELETE request received: Remove specific credential by ID")
@@ -163,7 +161,6 @@ async def get_credential_mime_types(
     ---
         AttributeMimeTypesResult
             The attribute MIME types of the credential.
-
     """
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug(
@@ -214,7 +211,6 @@ async def get_credential_revocation_status(
     ---
         CredRevokedResult
             The revocation status of the credential.
-
     """
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug(
@@ -241,9 +237,9 @@ async def get_credential_revocation_status(
     summary="Fetch a list of W3C credentials from the wallet",
 )
 async def list_w3c_credentials(
-    schema_ids: Optional[List[str]] = Query(None),
-    issuer_did: Optional[str] = Query(None),
-    limit: Optional[int] = Query(None),
+    schema_ids: Optional[List[str]] = None,
+    issuer_did: Optional[str] = None,
+    limit: Optional[int] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """
@@ -255,10 +251,10 @@ async def list_w3c_credentials(
     Optional Parameters:
     ---
         schema_ids: List[str]
-            Schema identifiers, all of which to match
+            Schema identifiers to match
         issuer_did: str
-            Credential issuer identifier to match
-        Limit: int
+            Credential issuer did to match
+        limit: int
             Maximum number of results to return
 
     Returns:
@@ -308,7 +304,6 @@ async def get_w3c_credential(
     ---
         VCRecord
             The W3C credential.
-
     """
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug("GET request received: Fetch specific W3C credential by ID")

@@ -13,12 +13,12 @@ class SetDidEndpointRequest(BaseModel):
 
 class VCRecord(VCRecordAcaPy):
     credential_id: str = Field(
-        ..., alias="record_id", description="Credential/Record identifier"
+        ..., alias="record_id", description="Credential identifier"
     )
     record_id: str = Field(
         ...,
         alias="credential_id",
-        description="(deprecated - renamed to credential_id) Credential/record identifier",
+        description="(deprecated - renamed to credential_id) Credential identifier",
         deprecated=True,
     )
 

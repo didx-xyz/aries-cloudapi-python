@@ -965,7 +965,7 @@ jobs:
           COVERAGE_FILE: test_coverage.txt
 
       - name: Publish Pytest Report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: steps.pytest.outcome == 'success'
         with:
           check_name: JUnit Test Report
@@ -975,7 +975,7 @@ jobs:
           require_passed_tests: true
 
       - name: Publish Pytest Regression Report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         with:
           check_name: JUnit Test Report Regression

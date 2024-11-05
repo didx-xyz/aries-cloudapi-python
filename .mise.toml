@@ -1,17 +1,18 @@
 # https://mise.jdx.dev
 [tools]
 "go:github.com/nats-io/natscli/nats" = "0.1"
+"pipx:poetry" = "1.8"
 go = "1.23"
 helm = "3"
 helmfile = "0.169"
 istioctl = "1.23"
 kind = "0.24"
 kubectl = "1.31"
-poetry = { version = "1.8", pyproject = "pyproject.toml" }
 pre-commit = "4.0"
 python = "3.12"
 tilt = "0.33"
 usage = "latest"
+uv = "0.4"
 
 [settings]
 experimental = true
@@ -19,6 +20,8 @@ experimental = true
 # Prevents `poetry install` from running in parallel which
 #   results in multiple threads trying to write to the same file.
 jobs = 1
+# Use UV instead of pipx for installing Python binaries
+pipx_uvx = true
 # Install precompiled python binary
 python_compile = false
 

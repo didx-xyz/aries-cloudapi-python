@@ -58,16 +58,20 @@ where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name
 > It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
 > registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.
 
-## Trust-registry Role in application flows
+## Trust Registry Interactions During Application Flows
 
-Below we indicate where and how the Trust-registry is consulted to verify that Issuers/Verifiers and Schemas are on the
-Trust-registry.
+Below, we outline where and how the Trust Registry is consulted to verify that Issuers, Verifiers, and Schemas are
+compliant.
 
 ### Create Credential Definition
 
+When an issuer calls the create credential definition endpoint, the Trust Registry is consulted to confirm that the
+tenant making the request is registered as an issuer and that the schema linked to the credential definition is also
+listed on the Trust Registry.
+
 ```mermaid
 ---
-title: Trust-registry called during credential definition creation
+title: Trust Registry called during credential definition creation
 ---
 flowchart LR
     App(Create Credential Definition Request) -->|Consults| TR[Trust Registry]
@@ -86,7 +90,11 @@ flowchart LR
 
 ---
 
-### Credential issuance
+### Credential Issuance
+
+When an issuer sends a credential or attempts to create a credential offer, the Trust Registry is consulted to verify
+that the requesting tenant is registered as an issuer and that the schema associated with the credential definition
+(credential issued against `cred_def`) is also listed on the Trust Registry.
 
 ```mermaid
 ---
@@ -125,6 +133,10 @@ flowchart LR
 
 ---
 
+When a holder responds to a credential offer by requesting the credential offers to him. The Trust Registry is consulted
+to verify that the issuer offering him the credential is registered as an issuer and that the schema associated with the
+credential is also listed on the Trust Registry.
+
 ```mermaid
 ---
 title: Holder Request Credential
@@ -149,6 +161,9 @@ flowchart LR
 
 ### Proof Requests
 
+When a verifier sends a proof request, the Trust Registry is consulted to confirm that the requesting tenant is registered
+as a verifier and that the attributes requested in the proof are linked to a schema listed in the Trust Registry.
+
 ```mermaid
 ---
 title: Verifier Sends Proof Request
@@ -169,6 +184,10 @@ flowchart LR
 ```
 
 ---
+
+When a prover (holder) responds to a proof request, the Trust Registry is consulted to confirm that the verifier sending
+the request is registered and that the schema associated with the requested attributes is also listed in the
+Trust Registry.
 
 ```mermaid
 ---

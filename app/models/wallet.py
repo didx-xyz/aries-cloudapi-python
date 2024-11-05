@@ -1,14 +1,11 @@
+import warnings
 from typing import List, Optional
 
+from aries_cloudcontroller import DIDCreateOptions
 from aries_cloudcontroller.models.indy_cred_info import (
     IndyCredInfo as IndyCredInfoAcaPy,
 )
 from aries_cloudcontroller.models.vc_record import VCRecord as VCRecordAcaPy
-from pydantic import BaseModel, Field
-import warnings
-from typing import Optional
-
-from aries_cloudcontroller import DIDCreateOptions
 from pydantic import BaseModel, Field, StrictStr, model_validator
 from typing_extensions import deprecated
 

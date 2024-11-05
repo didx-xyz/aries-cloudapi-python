@@ -20,8 +20,8 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
 
     connect_kwargs = {
         "servers": [NATS_SERVER],
-        "reconnect_time_wait": 0.5,        # Shorter wait time for faster reconnection
-        "max_reconnect_attempts": -1,       # Infinite reconnection attempts
+        "reconnect_time_wait": 0.5,  # Shorter wait time for faster reconnection
+        "max_reconnect_attempts": -1,  # Infinite reconnection attempts
         "error_cb": error_callback,
         "disconnected_cb": disconnected_callback,
         "reconnected_cb": reconnected_callback,
@@ -58,14 +58,18 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
         await nats_client.close()
         logger.debug("NATS connection closed")
 
+
 async def error_callback(e):
     logger.error("NATS error: {}", str(e))
+
 
 async def disconnected_callback():
     logger.warning("Disconnected from NATS server")
 
+
 async def reconnected_callback():
     logger.info("Reconnected to NATS server")
+
 
 async def closed_callback():
     logger.warning("NATS connection closed")

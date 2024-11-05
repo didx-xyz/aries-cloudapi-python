@@ -55,7 +55,9 @@ jobs:
                 });
               }
 
-              core.setFailed(`PR title must start with an emoji! Current title: "${prTitle}". Use either Unicode emoji (🔥) or GitHub shortcode format (:fire:)`);
+              // Create warning annotation instead of failing
+              // Change to `core.setFailed()` to fail the check
+              core.warning(`PR title must start with an emoji! Current title: "${prTitle}". Use either Unicode emoji (🔥) or GitHub shortcode format (:fire:)`);
             } else if (botComment) {
               // If title is now valid and we have a comment, delete it
               await github.rest.issues.deleteComment({

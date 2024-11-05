@@ -108,13 +108,24 @@ jobs:
               comment.body.includes('Your PR title is too long!')
             );
 
+            const commentBody = `⚠️ Your PR title is too long!\n\nPR titles should be no longer than ${MAX_LENGTH} characters (excluding emoji). Your title is ${titleWithoutEmoji.length} characters long.\n\nPlease update your PR title to be more concise.`;
+
             if (titleWithoutEmoji.length > MAX_LENGTH) {
               if (!botComment) {
+                // Create new comment if none exists
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
-                  body: `⚠️ Your PR title is too long!\n\nPR titles should be no longer than ${MAX_LENGTH} characters (excluding emoji). Your title is ${titleWithoutEmoji.length} characters long.\n\nPlease update your PR title to be more concise.`
+                  body: commentBody
+                });
+              } else {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: commentBody
                 });
               }
 

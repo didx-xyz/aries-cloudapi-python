@@ -1,4 +1,4 @@
-name: Validate PR Titles
+name: Validate PRs
 
 on:
   pull_request:
@@ -8,50 +8,68 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  # https://cbea.ms/git-commit/#limit-50
+  MAX_PR_TITLE_LENGTH: 50
+
 jobs:
-  validate-pr-title:
+  check-title:
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR Title
+      - name: Get PR info
         id: pr
         uses: actions/github-script@v7
         with:
           script: |
+            // Get PR Title
             const title = context.payload.pull_request.title;
             core.setOutput('title', title);
 
-      - name: PR title should start with emoji
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prTitle = '${{ steps.pr.outputs.title }}';
-
-            // Match either:
-            // 1. Unicode emoji at start (using Unicode properties)
-            // 2. GitHub emoji shortcode format (e.g. :fire:)
-            const emojiRegex = /^(?:[\p{Emoji_Presentation}\p{Extended_Pictographic}]|:[a-z0-9_+-]+:)/u;
-
-            // Get all comments
+            // Get PR Comments
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
+            core.setOutput('comments', comments.data);
+
+            // Get JSON of valid Gitmojis
+            const gitmojiResponse = await github.request('GET /repos/{owner}/{repo}/contents/{path}', {
+              owner: 'carloscuesta',
+              repo: 'gitmoji',
+              path: 'packages/gitmojis/src/gitmojis.json'
+            });
+            const gitmojis = JSON.parse(Buffer.from(gitmojiResponse.data.content, 'base64').toString()).gitmojis;
+            core.setOutput('gitmojis', gitmojis);
+
+      - name: PR title should start with emoji
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const prTitle = "${{ steps.pr.outputs.title }}";
+            const comments = ${{ steps.pr.outputs.comments }};
+            const gitmojis = ${{ steps.pr.outputs.gitmojis }};
+            const validEmojis = gitmojis.map(g => [g.emoji, g.code]);
+
+            const titleStartsWithValidEmoji = validEmojis.some(([emoji, code]) =>
+              prTitle.startsWith(emoji) || prTitle.startsWith(code)
+            );
 
             // Find our bot's validation comment if it exists
-            const botComment = comments.data.find(comment =>
+            const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
               comment.body.includes('Your PR title should start with an emoji!')
             );
 
-            if (!emojiRegex.test(prTitle)) {
+            if (!titleStartsWithValidEmoji) {
               // Only add a comment if we haven't already
               if (!botComment) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
-                  body: `⚠️ Your PR title should start with an emoji!\n\nExample valid titles:\n- ✨ Add new feature (or :sparkles: Add new feature)\n- 🐛 Fix login bug (or :bug: Fix login bug)\n- 📝 Update documentation (or :memo: Update documentation)\n\nNeed emoji suggestions? Check out [gitmoji.dev](https://gitmoji.dev) for a comprehensive list of Git-friendly emojis!\n\nPlease update your PR title and try again.`
+                  body: `⚠️ Your PR title should start with an emoji!\n\nExample valid titles:\n- ✨ Add new feature (or :sparkles: Add new feature)\n- 🐛 Fix login bug (or :bug: Fix login bug)\n- 📝 Update documentation (or :memo: Update documentation)\n\nTo view all valid emojis, check out [gitmoji.dev](https://gitmoji.dev) for a comprehensive list of Git-friendly emojis!\n\nPlease update your PR title and try again.`
                 });
               }
 
@@ -60,6 +78,61 @@ jobs:
               core.warning(`PR title should start with an emoji! Current title: "${prTitle}". Use either Unicode emoji (🔥) or GitHub shortcode format (:fire:)`);
             } else if (botComment) {
               // If title is now valid and we have a comment, delete it
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+            }
+
+      - name: PR title should not exceed ${{ env.MAX_PR_TITLE_LENGTH }} characters
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const prTitle = "${{ steps.pr.outputs.title }}";
+            const comments = ${{ steps.pr.outputs.comments }};
+            const MAX_LENGTH = ${{ env.MAX_PR_TITLE_LENGTH }};
+
+            // Match either:
+            // 1. Unicode emoji at start (using Unicode properties)
+            // 2. GitHub emoji shortcode format (e.g. :fire:)
+            const emojiRegex = /^(?:[\p{Emoji_Presentation}\p{Extended_Pictographic}]|:[a-z0-9_+-]+:)/u;
+
+            // Remove emoji prefix and its trailing space for length check
+            const titleWithoutEmoji = prTitle.replace(emojiRegex, '');
+
+            // Find our bot's validation comment if it exists
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Your PR title is too long!')
+            );
+
+            const commentBody = `⚠️ Your PR title is too long!\n\nPR titles should be no longer than ${MAX_LENGTH} characters (excluding emoji). Your title is ${titleWithoutEmoji.length} characters long.\n\nPlease update your PR title to be more concise.`;
+
+            if (titleWithoutEmoji.length > MAX_LENGTH) {
+              if (!botComment) {
+                // Create new comment if none exists
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody
+                });
+              } else {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: commentBody
+                });
+              }
+
+              // Create warning annotation instead of failing
+              // Change to `core.setFailed()` to fail the check
+              core.warning(`PR title is too long (${titleWithoutEmoji.length}/${MAX_LENGTH} characters, excluding emoji)`);
+            } else if (botComment) {
               await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

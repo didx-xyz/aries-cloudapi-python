@@ -7,10 +7,10 @@ ARG PROTOBUF_VERSION=5.28.1
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # Install wallet group id plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@f57268df
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@1b09e384
 
 # install nats-events plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@404f8e78#subdirectory=nats_events
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@4fb75ee1#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

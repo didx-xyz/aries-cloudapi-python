@@ -35,7 +35,6 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
 
     logger.info("Connecting to NATS server with kwargs {} ...", connect_kwargs)
 
-
     try:
         nats_client: NATS = await nats.connect(**connect_kwargs)
     except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:

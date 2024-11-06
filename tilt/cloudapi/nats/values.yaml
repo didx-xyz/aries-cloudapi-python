@@ -50,6 +50,9 @@ nats:
   ## @param replicaCount Number of NATS nodes
   ##
   replicaCount: 1
+  ## @param podManagementPolicy StatefulSet pod management policy
+  ##
+  podManagementPolicy: Parallel
 
   ## Client Authentication
   ## ref: https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro

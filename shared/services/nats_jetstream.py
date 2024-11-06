@@ -35,17 +35,12 @@ async def init_nats_client() -> AsyncGenerator[JetStreamContext, Any]:
 
     logger.info("Connecting to NATS server with kwargs {} ...", connect_kwargs)
 
-    while True:
-        try:
-            nats_client: NATS = await nats.connect(**connect_kwargs)
-            break
-        except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
-            logger.error("Error connecting to NATS server: {}", e)
-            await asyncio.sleep(1.0)  # Wait before retrying
-            continue
-        except Exception as e:
-            logger.error("Unexpected error connecting to NATS server: {}", e)
-            raise e
+
+    try:
+        nats_client: NATS = await nats.connect(**connect_kwargs)
+    except (ErrConnectionClosed, ErrTimeout, ErrNoServers) as e:
+        logger.error("Error connecting to NATS server: {}", e)
+        raise e
 
     logger.debug("Connected to NATS server")
     jetstream: JetStreamContext = nats_client.jetstream()

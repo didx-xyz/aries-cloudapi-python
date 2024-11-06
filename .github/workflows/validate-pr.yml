@@ -11,6 +11,8 @@ permissions:
 env:
   # https://cbea.ms/git-commit/#limit-50
   MAX_PR_TITLE_LENGTH: 50
+  # Unique identifier for our bot's comments
+  BOT_COMMENT_IDENTIFIER: "<!-- pr-validator -->"
 
 jobs:
   check-title:
@@ -25,13 +27,22 @@ jobs:
             const title = context.payload.pull_request.title;
             core.setOutput('title', title);
 
-            // Get PR Comments
-            const comments = await github.rest.issues.listComments({
+            // Get PR Comments, filtering for only this bot's comments
+            const allComments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            core.setOutput('comments', comments.data);
+
+            // Filter for comments that:
+            // 1. Are from a Bot
+            // 2. Contain our unique identifier
+            const botComments = allComments.data.filter(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes(process.env.BOT_COMMENT_IDENTIFIER)
+            );
+
+            core.setOutput('comments', botComments);
 
             // Get JSON of valid Gitmojis
             const gitmojiResponse = await github.request('GET /repos/{owner}/{repo}/contents/{path}', {
@@ -69,7 +80,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
-                  body: `⚠️ Your PR title should start with an emoji!\n\nExample valid titles:\n- ✨ Add new feature (or :sparkles: Add new feature)\n- 🐛 Fix login bug (or :bug: Fix login bug)\n- 📝 Update documentation (or :memo: Update documentation)\n\nTo view all valid emojis, check out [gitmoji.dev](https://gitmoji.dev) for a comprehensive list of Git-friendly emojis!\n\nPlease update your PR title and try again.`
+                  body: `${process.env.BOT_COMMENT_IDENTIFIER}\n⚠️ Your PR title should start with an emoji!\n\nExample valid titles:\n- ✨ Add new feature (or :sparkles: Add new feature)\n- 🐛 Fix login bug (or :bug: Fix login bug)\n- 📝 Update documentation (or :memo: Update documentation)\n\nTo view all valid emojis, check out [gitmoji.dev](https://gitmoji.dev) for a comprehensive list of Git-friendly emojis!\n\nPlease update your PR title and try again.`
                 });
               }
 
@@ -108,7 +119,7 @@ jobs:
               comment.body.includes('Your PR title is too long!')
             );
 
-            const commentBody = `⚠️ Your PR title is too long!\n\nPR titles should be no longer than ${MAX_LENGTH} characters (excluding emoji). Your title is ${titleWithoutEmoji.length} characters long.\n\nPlease update your PR title to be more concise.`;
+            const commentBody = `${process.env.BOT_COMMENT_IDENTIFIER}\n⚠️ Your PR title is too long!\n\nPR titles should be no longer than ${MAX_LENGTH} characters (excluding emoji). Your title is ${titleWithoutEmoji.length} characters long.\n\nPlease update your PR title to be more concise.`;
 
             if (titleWithoutEmoji.length > MAX_LENGTH) {
               if (!botComment) {

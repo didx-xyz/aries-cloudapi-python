@@ -37,13 +37,13 @@ async def test_init_nats_client(nats_creds_file):
             assert jetstream == mock_nats_client.jetstream.return_value
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize("exception", [ErrConnectionClosed, ErrTimeout, ErrNoServers])
-# async def test_init_nats_client_error(exception):
-#     with patch("nats.connect", side_effect=exception):
-#         with pytest.raises(exception):
-#             async for jetstream in init_nats_client():
-#                 pass
+@pytest.mark.anyio
+@pytest.mark.parametrize("exception", [ErrConnectionClosed, ErrTimeout, ErrNoServers])
+async def test_init_nats_client_error(exception):
+    with patch("nats.connect", side_effect=exception):
+        with pytest.raises(exception):
+            async for jetstream in init_nats_client():
+                pass
 
 
 @pytest.mark.anyio

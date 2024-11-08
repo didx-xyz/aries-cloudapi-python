@@ -442,7 +442,7 @@ async def issue_alice_creds_non_revoke(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> List[CredentialExchange]:
-    
+
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
     faber_cred_ex_ids = []

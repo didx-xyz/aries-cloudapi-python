@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 import pytest
 from fastapi import HTTPException
@@ -60,3 +61,33 @@ async def test_get_and_delete_credential_record(
             f"{WALLET_CREDENTIALS_PATH}/{credential_id}"
         )
     assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_get_credential_record_with_limit(
+    alice_member_client: RichAsyncClient,
+    issue_alice_creds_non_revoke: List[
+        CredentialExchange
+    ],  # pylint: disable=unused-argument
+):
+    credentials = (await alice_member_client.get(WALLET_CREDENTIALS_PATH)).json()
+
+    assert len(credentials["results"]) == 10
+
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5")
+    ).json()
+
+    assert len(credentials["results"]) == 5
+
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=8")
+    ).json()
+
+    assert len(credentials["results"]) == 2
+
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=9")
+    ).json()
+
+    assert len(credentials["results"]) == 1

@@ -442,11 +442,7 @@ async def issue_alice_creds_non_revoke(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> List[CredentialExchange]:
-    # Fetch existing records so we can filter to exclude them. Necessary to cater for long running / regression tests
-    existing_records = (
-        await alice_member_client.get(CREDENTIALS_BASE_PATH + "?state=offer-received")
-    ).json()
-
+    
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
     faber_cred_ex_ids = []

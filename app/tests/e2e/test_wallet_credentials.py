@@ -66,9 +66,9 @@ async def test_get_and_delete_credential_record(
 @pytest.mark.anyio
 async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
-    issue_alice_creds_non_revoke: List[
+    issue_alice_creds_non_revoke: List[ # pylint: disable=unused-argument
         CredentialExchange
-    ],  # pylint: disable=unused-argument
+    ],
 ):
     credentials = (await alice_member_client.get(WALLET_CREDENTIALS_PATH)).json()
 

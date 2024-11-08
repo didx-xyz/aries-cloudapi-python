@@ -459,10 +459,12 @@ async def issue_alice_creds_non_revoke(
                 "attributes": {"speed": str(i), "name": "Alice", "age": "44"},
             },
         }
-        response = (await faber_client.post(
-            CREDENTIALS_BASE_PATH,
-            json=credential,
-        )).json()
+        response = (
+            await faber_client.post(
+                CREDENTIALS_BASE_PATH,
+                json=credential,
+            )
+        ).json()
 
         faber_cred_ex_id = response["credential_exchange_id"]
         faber_cred_ex_ids += [faber_cred_ex_id]
@@ -478,9 +480,11 @@ async def issue_alice_creds_non_revoke(
             },
         )
 
-        cred_exchange = (await alice_member_client.get(
-            f"{CREDENTIALS_BASE_PATH}?thread_id={thread_id}"
-        )).json()[0]
+        cred_exchange = (
+            await alice_member_client.get(
+                f"{CREDENTIALS_BASE_PATH}?thread_id={thread_id}"
+            )
+        ).json()[0]
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{cred_exchange['credential_exchange_id']}/request",
             json={},

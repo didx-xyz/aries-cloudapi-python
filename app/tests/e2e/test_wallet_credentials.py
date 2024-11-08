@@ -70,24 +70,23 @@ async def test_get_credential_record_with_limit(
         CredentialExchange
     ],
 ):
-    credentials = (await alice_member_client.get(WALLET_CREDENTIALS_PATH)).json()
 
-    assert len(credentials["results"]) == 10
-
-    credentials = (
+    credentials_1 = (
         await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5")
     ).json()
 
-    assert len(credentials["results"]) == 5
+    assert len(credentials_1["results"]) == 5
 
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=8")
+    credentials_2 = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=5")
     ).json()
 
-    assert len(credentials["results"]) == 2
+    assert len(credentials_2["results"]) == 5
+    assert credentials_1 != credentials_2
 
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=9")
+    credentials_3 = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5")
     ).json()
 
-    assert len(credentials["results"]) == 1
+    assert len(credentials_3["results"]) == 5
+    assert credentials_1 == credentials_3

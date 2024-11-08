@@ -20,6 +20,7 @@ from app.tests.fixtures.credentials import (
     meld_co_issue_credential_to_alice,
     revoke_alice_creds,
     revoke_alice_creds_and_publish,
+    issue_alice_creds_non_revoke
 )
 from app.tests.fixtures.definitions import (
     credential_definition_id,

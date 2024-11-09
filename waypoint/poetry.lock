@@ -1018,13 +1018,13 @@ files = [
 
 [[package]]
 name = "mockito"
-version = "1.5.2"
+version = "1.5.3"
 description = "Spying framework"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mockito-1.5.2-py3-none-any.whl", hash = "sha256:ba2aa2411ac873e5490bf3a7a689d7da2baf7c6cb547dda8ecf589e2d42206e3"},
-    {file = "mockito-1.5.2.tar.gz", hash = "sha256:ed0541d293e9fa2a22162492e3d52224ffca0f363fcfa32a03edd0b6097c6308"},
+    {file = "mockito-1.5.3-py3-none-any.whl", hash = "sha256:094a5e7ebd140e6b5dcb0fc581f83616000f2b1311facc3b5e6167b906b52955"},
+    {file = "mockito-1.5.3.tar.gz", hash = "sha256:b7192840e7d70ec24639cc5e18efee5d418c83ad86c0fd2bf7e71c3e42ae0aa7"},
 ]
 
 [[package]]

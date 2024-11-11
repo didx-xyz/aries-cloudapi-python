@@ -3,8 +3,7 @@ name: Python code style check
 on:
   pull_request:
     branches:
-      - main
-      - development
+      - master
 
 jobs:
   style:

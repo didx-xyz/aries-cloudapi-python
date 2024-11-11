@@ -21,12 +21,12 @@ on:
 
   push:
     branches:
-      - "development"
+      - "master"
     tags:
       - "v*"
   pull_request:
     branches:
-      - "development"
+      - "master"
     types:
       - opened
       - reopened
@@ -59,70 +59,70 @@ jobs:
       matrix:
         image:
           [
-            ledger-nodes,
-            ledger-browser,
-            tails-server,
-            governance-ga-agent,
-            governance-trust-registry,
-            governance-multitenant-web,
-            governance-ga-web,
-            governance-tenant-web,
-            governance-public-web,
-            governance-multitenant-agent,
-            governance-endorser,
-            pytest,
-            waypoint
+            d-cloud/ledger-nodes,
+            d-cloud/ledger-browser,
+            d-cloud/tails-server,
+            d-cloud/governance-agent,
+            d-cloud/trust-registry,
+            d-cloud/multitenant-web,
+            d-cloud/governance-web,
+            d-cloud/tenant-web,
+            d-cloud/public-web,
+            d-cloud/multitenant-agent,
+            d-cloud/endorser,
+            d-cloud/pytest,
+            d-cloud/waypoint
           ]
         include:
-          - image: governance-ga-agent
+          - image: d-cloud/governance-agent
             context: .
             file: dockerfiles/agents/Dockerfile.agent
             platforms: linux/amd64 # Pending BBS linux/arm64
-          - image: governance-trust-registry
+          - image: d-cloud/trust-registry
             context: .
             file: dockerfiles/trustregistry/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: governance-multitenant-web
+          - image: d-cloud/multitenant-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: governance-ga-web
+          - image: d-cloud/governance-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: governance-tenant-web
+          - image: d-cloud/tenant-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: governance-public-web
+          - image: d-cloud/public-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: governance-multitenant-agent
+          - image: d-cloud/multitenant-agent
             context: .
             file: dockerfiles/agents/Dockerfile.author.agent
             platforms: linux/amd64 # Pending BBS linux/arm64
-          - image: ledger-browser
+          - image: d-cloud/ledger-browser
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
             platforms: linux/amd64
-          - image: ledger-nodes
+          - image: d-cloud/ledger-nodes
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
             platforms: linux/amd64
-          - image: governance-endorser
+          - image: d-cloud/endorser
             context: .
             file: dockerfiles/endorser/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: tails-server
+          - image: d-cloud/tails-server
             context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
             file: docker/Dockerfile.tails-server
             platforms: linux/amd64,linux/arm64
-          - image: pytest
+          - image: d-cloud/pytest
             context: .
             file: dockerfiles/tests/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: waypoint
+          - image: d-cloud/waypoint
             context: .
             file: dockerfiles/waypoint/Dockerfile
             platforms: linux/amd64,linux/arm64

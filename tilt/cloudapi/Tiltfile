@@ -212,7 +212,7 @@ def setup_cloudapi_service(
             # Use pre-existing image
             flags += [
                 "--set",
-                "image.registry=" + os.environ.get("REGISTRY", "ghcr.io/didx-xyz"),
+                "image.registry=" + os.environ.get("REGISTRY", "ghcr.io/d-cloud/didx-xyz"),
                 "--set",
                 "image.tag=" + os.environ.get("IMAGE_TAG", "latest"),
             ]
@@ -298,7 +298,7 @@ def setup_ledger(namespace, ingress_domain, build_enabled=True):
 
         if build_enabled:
             docker_build(
-                "ghcr.io/didx-xyz/ledger-nodes",
+                "ghcr.io/didx-xyz/d-cloud/ledger-nodes",
                 von_dir,
                 dockerfile=von_dir + "/Dockerfile",
                 platform="linux/amd64",

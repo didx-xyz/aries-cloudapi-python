@@ -9,8 +9,8 @@ from app.dependencies.auth import (
     verify_wallet_access,
 )
 from app.services.event_handling.sse import sse_subscribe_event_with_field_and_state
-from shared.log_config import get_logger
 from shared.constants import SSE_LOOK_BACK
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

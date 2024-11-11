@@ -270,7 +270,7 @@ jobs:
         run: mise run tilt:ci
         shell: bash
         env:
-          REGISTRY: ghcr.io/${{ github.repository_owner }}/d-cloud
+          REGISTRY: ghcr.io/${{ github.repository_owner }}
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
       - name: Test with pytest
         id: test

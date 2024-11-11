@@ -21,12 +21,12 @@ on:
 
   push:
     branches:
-      - "development"
+      - "master"
     tags:
       - "v*"
   pull_request:
     branches:
-      - "development"
+      - "master"
     types:
       - opened
       - reopened

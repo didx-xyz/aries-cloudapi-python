@@ -194,7 +194,7 @@ def build_cloudapi_service(service, image={}):
 
 
 def setup_cloudapi_service(
-    release, chart, namespace, ingress_domain, release_config={}, build_enabled=True
+    release, chart, namespace, ingress_domain, build_enabled, release_config={}
 ):
     print(color.green("Installing " + release + "..."))
 
@@ -252,7 +252,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, ingress_domain, build_enabled=True):
+def setup_ledger(namespace, ingress_domain, build_enabled):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -346,7 +346,7 @@ def setup_cloudapi(build_enabled, expose):
     setup_nats(namespace)
     setup_benthos(namespace)
 
-    ledger_enabled = setup_ledger(namespace, build_enabled)
+    ledger_enabled = setup_ledger(namespace, build_enabled, ingress_domain)
 
     releases = {
         "endorser": {
@@ -540,8 +540,8 @@ def setup_cloudapi(build_enabled, expose):
             "./tilt/.charts/charts/aries-cloudapi-python",
             namespace,
             ingress_domain,
-            releases[release],
             build_enabled,
+            releases[release],
         )
 
     print(color.green("CloudAPI Installed"))

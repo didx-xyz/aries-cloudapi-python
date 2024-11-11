@@ -157,7 +157,7 @@ async def test_sse_subscribe_event_with_field_and_state_success(
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
 ):
-    expected_params = {"look_back": 300}
+    expected_params = {"look_back": 60}
     if group_id:  # Optional param
         expected_params["group_id"] = group_id
 

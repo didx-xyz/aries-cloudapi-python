@@ -45,7 +45,7 @@ env:
 jobs:
   build:
     if: github.event.pull_request.draft == false
-    name: Build GHCR
+    name: Build
     permissions:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
@@ -640,7 +640,7 @@ jobs:
 
           rm -f ./nats.creds
 
-      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
+      - name: Helmfile Apply # Apply default Helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.9.4
         with:

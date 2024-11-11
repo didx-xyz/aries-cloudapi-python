@@ -212,8 +212,7 @@ def setup_cloudapi_service(
             # Use pre-existing image
             flags += [
                 "--set",
-                "image.registry="
-                + os.environ.get("REGISTRY", "ghcr.io/didx-xyz"),
+                "image.registry=" + os.environ.get("REGISTRY", "ghcr.io/didx-xyz"),
                 "--set",
                 "image.tag=" + os.environ.get("IMAGE_TAG", "latest"),
             ]

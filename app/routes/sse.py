@@ -10,6 +10,7 @@ from app.dependencies.auth import (
 )
 from app.services.event_handling.sse import sse_subscribe_event_with_field_and_state
 from shared.log_config import get_logger
+from shared.constants import SSE_LOOK_BACK
 
 logger = get_logger(__name__)
 
@@ -37,7 +38,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     desired_state: str,
     group_id: Optional[str] = group_id_query,
     look_back: Optional[int] = Query(
-        default=60, description="Number of seconds to look back for events"
+        default=SSE_LOOK_BACK, description="Number of seconds to look back for events"
     ),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:

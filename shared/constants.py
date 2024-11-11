@@ -53,6 +53,9 @@ SSE_TIMEOUT = int(
 DISCONNECT_CHECK_PERIOD = float(
     os.getenv("DISCONNECT_CHECK_PERIOD", "0.2")
 )  # period in seconds to check for disconnection
+SSE_LOOK_BACK = int(
+    os.getenv("SSE_LOOK_BACK", "60")
+)  # number of seconds to look back for events
 
 # client.py
 TEST_CLIENT_TIMEOUT = int(os.getenv("TEST_CLIENT_TIMEOUT", "300"))

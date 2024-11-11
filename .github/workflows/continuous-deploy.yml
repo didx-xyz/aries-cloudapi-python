@@ -45,7 +45,7 @@ env:
 jobs:
   build:
     if: github.event.pull_request.draft == false
-    name: Build GHCR
+    name: Build
     permissions:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io

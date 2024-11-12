@@ -580,15 +580,6 @@ jobs:
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_sync_locks -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_sync_tracking -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              kv rm cloudapi_aries_unique_events -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
               stream rm cloudapi_aries_events -f
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
@@ -596,18 +587,6 @@ jobs:
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \
               stream rm cloudapi_aries_state_monitoring -f
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_sync_locks --ttl 10s --replicas 3 --storage memory
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_sync_tracking --replicas 3
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            kv add cloudapi_aries_unique_events --replicas 3
 
           nats --creds ./nats.creds \
             --server ${{ secrets.NATS_URL }} \

@@ -5,6 +5,9 @@ fullnameOverride: nats
 postInstall:
   enabled: true
 
+  kvs:
+    []
+
   streams:
     cloudapi_aries_events:
       subjects:

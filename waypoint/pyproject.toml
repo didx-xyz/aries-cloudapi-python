@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudapi-waypoint"
-version = "4.0.0"
+version = "4.1.0"
 description = "End state service for cloudapi"
 authors = ["cl0ete <cloete.dupreez@gmail.com>"]
 package-mode = false

@@ -309,8 +309,8 @@ async def test_get_credentials_by_proof_id(
         controller=mock_agent_controller,
         proof_id="v2-abcd",
         referent=None,
-        count="100",
-        start="0",
+        limit=100,
+        offset=0,
     ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_by_proof_id(
@@ -326,8 +326,8 @@ async def test_get_credentials_by_proof_id(
         controller=mock_agent_controller,
         proof_id="v2-abcd",
         referent=None,
-        count="100",
-        start="0",
+        limit=100,
+        offset=0,
     )
 
 
@@ -381,6 +381,6 @@ async def test_get_credentials_by_proof_id_with_limit_offset():
         mock_aries_controller.present_proof_v2_0.get_matching_credentials.assert_called_once_with(
             pres_ex_id="abcd",
             referent=None,
-            count="2",
-            start="1",
+            limit=2,
+            offset=1,
         )

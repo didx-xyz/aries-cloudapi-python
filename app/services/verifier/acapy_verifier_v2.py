@@ -283,8 +283,8 @@ class VerifierV2(Verifier):
         controller: AcaPyClient,
         proof_id: str,
         referent: Optional[str] = None,
-        count: Optional[str] = None,
-        start: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[IndyCredPrecis]:
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
@@ -296,8 +296,8 @@ class VerifierV2(Verifier):
                 acapy_call=controller.present_proof_v2_0.get_matching_credentials,
                 pres_ex_id=pres_ex_id,
                 referent=referent,
-                count=count,
-                start=start,
+                limit=limit,
+                offset=offset,
             )
         except CloudApiException as e:
             raise CloudApiException(

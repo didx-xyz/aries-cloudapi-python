@@ -61,8 +61,8 @@ async def list_credentials(
         results = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.credentials.get_records,
-            count=str(limit),
-            start=str(offset),
+            limit=limit,
+            offset=offset,
             wql=wql,
         )
 

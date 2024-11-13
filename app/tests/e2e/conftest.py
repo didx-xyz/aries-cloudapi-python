@@ -16,6 +16,7 @@ from app.tests.fixtures.credentials import (
     get_or_issue_regression_cred_revoked,
     get_or_issue_regression_cred_valid,
     issue_alice_creds,
+    issue_alice_many_creds,
     issue_credential_to_alice,
     meld_co_issue_credential_to_alice,
     revoke_alice_creds,

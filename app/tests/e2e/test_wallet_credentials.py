@@ -74,33 +74,30 @@ async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
     issue_alice_many_creds: List[CredentialExchange],  # pylint: disable=unused-argument
 ):
+    valid_params = [
+        {"limit": 1},
+        {"limit": 2},
+        {"limit": 3},
+        {"limit": 4},
+        {"limit": 1, "offset": 4},
+    ]
 
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=1")
-    ).json()
+    expected_length = [1,2,3,3,0]
 
-    assert len(credentials["results"]) == 1
+    for params, length in zip(valid_params, expected_length):
+        response = (await alice_member_client.get(
+            WALLET_CREDENTIALS_PATH, params=params
+        )).json()
+        assert len(response["results"]) == length
 
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=2")
-    ).json()
+    invalid_params = [
+            {"limit": -1},  # must be positive
+            {"offset": -1},  # must be positive
+            {"limit": 0},  # must be greater than 0
+            {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
+        ]
 
-    assert len(credentials["results"]) == 2
-
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=3")
-    ).json()
-
-    assert len(credentials["results"]) == 3
-
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=4")
-    ).json()
-
-    assert len(credentials["results"]) == 3
-
-    credentials = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=1&offset=4")
-    ).json()
-
-    assert len(credentials["results"]) == 0
+    for params in invalid_params:
+        with pytest.raises(HTTPException) as exc:
+            await alice_member_client.get(WALLET_CREDENTIALS_PATH, params=params)
+        assert exc.value.status_code == 422

@@ -63,26 +63,33 @@ where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name
 Below, we outline where and how the Trust Registry is consulted to verify that Issuers, Verifiers, and Schemas are
 compliant.
 
-### Create Credential Definition
+### Issuer Actions
 
-When an issuer calls the create credential definition endpoint, the Trust Registry is consulted to confirm that the
-tenant making the request is registered as an issuer and that the schema linked to the credential definition is also
-listed on the Trust Registry.
+When a user/tenant initiates any issuer-related action, the Trust Registry is used to verify the following:
+
+1. Issuer Verification:
+   - For **creating credential definitions**, **creating credential offers**, and **issuing credentials**:
+     Confirms that the tenant is registered with the role of an issuer.
+   - For **accepting credentials**: Confirms that the tenant is receiving a credential from a registered issuer.
+2. Schema Validation: Ensures that the referenced schema is valid and registered within the Trust Registry.
+
+If either step fails, the operation is blocked, and an appropriate error message is returned to the user.
+The operation is logged and able to be reviewed by an administrator.
 
 ```mermaid
 ---
-title: Trust Registry called during credential definition creation
+title: Trust Registry called during issuer operations
 ---
 flowchart LR
-    App(Create Credential Definition Request) -->|Consults| TR[Trust Registry]
+    App(Issuer Action:<br>Credential Operations) -->|Consults| TR[Trust Registry]
     subgraph Trust Registry Checks
-      TR -->|Validates| Check1{Issuer Authorization}
+      TR -->|Validates| Check1{Issuer Verification}
       Check1 -->|If Unauthorized| Block[⨯ Block Operation]
-      Check1 -->|If Authorized| Check2{Schema exists on TR}
+      Check1 -->|If Authorized| Check2{Schema Validation}
       Check2 -->|Not on TR| Block
     end
-    Check2 -->|If Registered| Continue[✓ Proceed with Creation]
-    
+    Check2 -->|If Registered| Continue[✓ Proceed with Operation]
+
     style TR fill:#a8d1ff,stroke:#1e88e5,color:black
     style Block fill:#ffcdd2,stroke:#e53935,color:black
     style Continue fill:#c8e6c9,stroke:#43a047,color:black
@@ -90,122 +97,34 @@ flowchart LR
 
 ---
 
-### Credential Issuance
+### Verifier Actions
 
-When an issuer sends a credential or attempts to create a credential offer, the Trust Registry is consulted to verify
-that the requesting tenant is registered as an issuer and that the schema associated with the credential definition
-(credential issued against `cred_def`) is also listed on the Trust Registry.
+When a tenant initiates any verifier-related action (sending proof requests or receiving proof presentations),
+the Trust Registry is used to verify the following:
 
-```mermaid
----
-title: Create Credential-Offer/Sending Credential
----
-flowchart LR
-    subgraph Request Types
-        App1(Create Offer <br> Connectionless) --> Consults[Consults]
-        App2(Send Credential <br> with Connection ID) --> Consults[Consults]
-    end
-    subgraph Trust Registry Checks
-      Consults --> TR
-      TR[Trust Registry] -- Validates --> Check1{Issuer<br>Authorization}
-      Check1 -->|If Unauthorized| Block[⨯ Block Operation]
-      Check1 -->|If Authorized| Check2{Schema<br>Registration}
-      Check2 -->|Not on TR| Block
-    end
-    Check2 -->|If Registered| Proceed[Continue]
-    
+1. Verifier Verification:
+   - For **sending proof requests**: Confirms that the tenant sending the request is registered as a verifier.
+   - For **receiving proof presentations**: Validates that the proof is being presented to a registered verifier.
+2. Schema Validation: Ensures that the attributes being requested are associated with schemas registered
+   within the Trust Registry.
 
-    subgraph Request Continue
-      Proceed -->|Connectionless| Continue1[✓ Create Offer]
-      Proceed -->|With Connection ID| Continue2[✓ Send Credential]
-    end
-
-    linkStyle 0,8 stroke:#ff7043,color:#ff7043, stroke-width:2
-    linkStyle 1,9 stroke:#7cb342,color:#7cb342,stroke-width:2
-    
-    style TR fill:#a8d1ff,stroke:#1e88e5,color:black
-    style Block fill:#ffcdd2,stroke:#e53935,color:black
-    style Continue1 fill:#c8e6c9,stroke:#43a047,color:black
-    style Continue2 fill:#c8e6c9,stroke:#43a047,color:black
-    style Proceed fill:#c8e6c9,stroke:#43a047,color:black
-
-```
-
----
-
-When a holder responds to a credential offer by requesting the credential offers to him. The Trust Registry is consulted
-to verify that the issuer offering him the credential is registered as an issuer and that the schema associated with the
-credential is also listed on the Trust Registry.
+If either step fails, the operation is blocked as a bad request, with an appropriate error message returned to the user.
 
 ```mermaid
 ---
-title: Holder Request Credential
+title: Trust Registry called during proof requests
 ---
 flowchart LR
-  Start(Holder receives <br> Credential-Offer) --> Request[Request Credential]
-  Request -->|Consults| TR[Trust Registry]
+  Start(Verifier Action:<br>Proof Request Operations) -->|Consult| TR[Trust Registry]
   subgraph Trust Registry Checks
-    TR -->|Validates| Check1{Issuer Authorization}
+    TR -->|Validates| Check1{Verifier Verification}
     Check1 -->|If Unauthorized| Block[⨯ Block Operation]
     Check1 -->|If Authorized| Check2{Schema exists on TR}
     Check2 -->|Not on TR| Block
   end
-  Check2 -->|If Registered| Continue[✓ Proceed with Credential Exchange]
+  Check2 -->|If Registered| Continue[✓ Proceed with Operation]
 
   style TR fill:#a8d1ff,stroke:#1e88e5,color:black
   style Block fill:#ffcdd2,stroke:#e53935,color:black
   style Continue fill:#c8e6c9,stroke:#43a047,color:black
 ```
-
----
-
-### Proof Requests
-
-When a verifier sends a proof request, the Trust Registry is consulted to confirm that the requesting tenant is registered
-as a verifier and that the attributes requested in the proof are linked to a schema listed in the Trust Registry.
-
-```mermaid
----
-title: Verifier Sends Proof Request
----
-flowchart LR
-  Start(Send Proof request) -->|Consult| TR[Trust-Registry]
-  subgraph Trust Registry Checks
-    TR -->|Validates| Check1{Verifier Authorization}
-    Check1 -->|If Unauthorized| Block[⨯ Block Operation]
-    Check1 -->|If Authorized| Check2{Schema exists on TR}
-    Check2 -->|Not on TR| Block
-  end
-  Check2 -->|If Registered| Continue[✓ Proceed with <br> Sending Proof]
-   
-  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
-  style Block fill:#ffcdd2,stroke:#e53935,color:black
-  style Continue fill:#c8e6c9,stroke:#43a047,color:black
-```
-
----
-
-When a prover (holder) responds to a proof request, the Trust Registry is consulted to confirm that the verifier sending
-the request is registered and that the schema associated with the requested attributes is also listed in the
-Trust Registry.
-
-```mermaid
----
-title: Holder Receives Proof Request
----
-flowchart LR
-  Start(Accept Proof Request) -->|Consult| TR[Trust-Registry]
-  subgraph Trust Registry Checks
-    TR -->|Validates| Check1{Verifier Authorization}
-    Check1 -->|If Unauthorized| Block[⨯ Block Operation]
-    Check1 -->|If Authorized| Check2{Schema exists on TR}
-    Check2 -->|Not on TR| Block
-  end
-  Check2 -->|If Registered| Continue[✓ Proceed with <br> Accepting Proof]
-   
-  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
-  style Block fill:#ffcdd2,stroke:#e53935,color:black
-  style Continue fill:#c8e6c9,stroke:#43a047,color:black
-```
-
----

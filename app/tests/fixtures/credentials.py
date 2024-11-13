@@ -507,6 +507,6 @@ async def issue_alice_many_creds(
         if record["credential_exchange_id"] in faber_cred_ex_ids
     ]
 
-    assert len(cred_ex_response) == 10
+    assert len(cred_ex_response) == request.param
 
     return [CredentialExchange(**cred) for cred in cred_ex_response]

@@ -58,7 +58,7 @@ where `"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"` represents the schema ID, name
 > It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
 > registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.
 
-## Trust Registry Interactions During Application Flows
+## Trust Registry Interactions
 
 Below, we outline where and how the Trust Registry is consulted to verify that Issuers, Verifiers, and Schemas are
 compliant.
@@ -104,7 +104,7 @@ the Trust Registry is used to verify the following:
 
 1. Verifier Verification:
    - For **sending proof requests**: Confirms that the tenant sending the request is registered as a verifier.
-   - For **receiving proof presentations**: Validates that the proof is being presented to a registered verifier.
+   - For **accepting proof requests**: Validates that the proof is being presented to a registered verifier.
 2. Schema Validation: Ensures that the attributes being requested are associated with schemas registered
    within the Trust Registry.
 

@@ -436,7 +436,8 @@ async def get_or_issue_regression_cred_valid(
 
 
 @pytest.fixture(scope="function")
-async def issue_alice_creds_non_revoke(
+async def issue_alice_many_creds(
+    request,
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     credential_definition_id: str,
@@ -446,7 +447,7 @@ async def issue_alice_creds_non_revoke(
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
     faber_cred_ex_ids = []
-    for i in range(10):
+    for i in range(request.param):
         credential = {
             "connection_id": faber_conn_id,
             "save_exchange_record": True,

@@ -6,9 +6,8 @@ postInstall:
   enabled: true
 
   kvs:
-    - cloudapi_aries_sync_tracking
-    - cloudapi_aries_sync_locks
-    - cloudapi_aries_unique_events
+    []
+
   streams:
     cloudapi_aries_events:
       subjects:

@@ -5,9 +5,8 @@ import pytest
 from fastapi import HTTPException
 
 from app.routes.wallet.credentials import router
-from shared import RichAsyncClient
 from app.tests.util.regression_testing import TestMode
-
+from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
 WALLET_CREDENTIALS_PATH = router.prefix
@@ -70,12 +69,10 @@ async def test_get_and_delete_credential_record(
     TestMode.regression_run in TestMode.fixture_params,
     reason="Skipping due to regression run",
 )
-@pytest.mark.parametrize("issue_alice_many_creds",[3],indirect=True)
+@pytest.mark.parametrize("issue_alice_many_creds", [3], indirect=True)
 async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
-    issue_alice_many_creds: List[  # pylint: disable=unused-argument
-        CredentialExchange
-    ],
+    issue_alice_many_creds: List[CredentialExchange],  # pylint: disable=unused-argument
 ):
 
     credentials = (

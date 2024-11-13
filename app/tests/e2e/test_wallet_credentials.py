@@ -6,6 +6,8 @@ from fastapi import HTTPException
 
 from app.routes.wallet.credentials import router
 from shared import RichAsyncClient
+from app.tests.util.regression_testing import TestMode
+
 from shared.models.credential_exchange import CredentialExchange
 
 WALLET_CREDENTIALS_PATH = router.prefix

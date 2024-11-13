@@ -1,9 +1,11 @@
 import logging
+from typing import List
 
 import pytest
 from fastapi import HTTPException
 
 from app.routes.wallet.credentials import router
+from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -60,3 +62,45 @@ async def test_get_and_delete_credential_record(
             f"{WALLET_CREDENTIALS_PATH}/{credential_id}"
         )
     assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Skipping due to regression run",
+)
+@pytest.mark.parametrize(
+    "issue_alice_many_creds", [3], indirect=True
+)  # issue alice 3 creds
+async def test_get_credential_record_with_limit(
+    alice_member_client: RichAsyncClient,
+    issue_alice_many_creds: List[CredentialExchange],  # pylint: disable=unused-argument
+):
+    valid_params = [
+        {"limit": 1},
+        {"limit": 2},
+        {"limit": 3},
+        {"limit": 4},
+        {"limit": 1, "offset": 4},
+        {"limit": 2, "offset": 2},
+    ]
+
+    expected_length = [1, 2, 3, 3, 0, 1]
+
+    for params, length in zip(valid_params, expected_length):
+        response = (
+            await alice_member_client.get(WALLET_CREDENTIALS_PATH, params=params)
+        ).json()
+        assert len(response["results"]) == length
+
+    invalid_params = [
+        {"limit": -1},  # must be positive
+        {"offset": -1},  # must be positive
+        {"limit": 0},  # must be greater than 0
+        {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
+    ]
+
+    for params in invalid_params:
+        with pytest.raises(HTTPException) as exc:
+            await alice_member_client.get(WALLET_CREDENTIALS_PATH, params=params)
+        assert exc.value.status_code == 422

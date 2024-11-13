@@ -447,7 +447,8 @@ async def issue_alice_many_creds(
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
     faber_cred_ex_ids = []
-    for i in range(request.param):
+    num_creds = request.param if hasattr(request, "param") else 3
+    for i in range(num_creds):
         credential = {
             "connection_id": faber_conn_id,
             "save_exchange_record": True,
@@ -468,7 +469,7 @@ async def issue_alice_many_creds(
 
         thread_id = response["thread_id"]
 
-        await check_webhook_state(
+        alice_event = await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",
@@ -476,14 +477,10 @@ async def issue_alice_many_creds(
                 "thread_id": thread_id,
             },
         )
+        alice_cred_ex_id = alice_event["credential_exchange_id"]
 
-        cred_exchange = (
-            await alice_member_client.get(
-                f"{CREDENTIALS_BASE_PATH}?thread_id={thread_id}"
-            )
-        ).json()[0]
         await alice_member_client.post(
-            f"{CREDENTIALS_BASE_PATH}/{cred_exchange['credential_exchange_id']}/request",
+            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request",
             json={},
         )
 
@@ -507,6 +504,6 @@ async def issue_alice_many_creds(
         if record["credential_exchange_id"] in faber_cred_ex_ids
     ]
 
-    assert len(cred_ex_response) == request.param
+    assert len(cred_ex_response) == num_creds
 
     return [CredentialExchange(**cred) for cred in cred_ex_response]

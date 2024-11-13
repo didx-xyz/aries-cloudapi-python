@@ -77,7 +77,7 @@ class NatsEventsProcessor:
         state: str,
         stop_event: asyncio.Event,
         duration: int = 10,
-        look_back: int = 300,
+        look_back: int = 60,
     ):
         logger.debug(
             "Processing events for group {} and wallet {} on topic {} with state {}",

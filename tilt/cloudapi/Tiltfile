@@ -194,7 +194,7 @@ def build_cloudapi_service(service, image={}):
 
 
 def setup_cloudapi_service(
-    release, chart, namespace, ingress_domain, release_config={}, build_enabled=True
+    release, chart, namespace, ingress_domain, build_enabled, release_config={}
 ):
     print(color.green("Installing " + release + "..."))
 
@@ -251,7 +251,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, ingress_domain, build_enabled=True):
+def setup_ledger(namespace, ingress_domain, build_enabled):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -298,7 +298,7 @@ def setup_ledger(namespace, ingress_domain, build_enabled=True):
 
         if build_enabled:
             docker_build(
-                "ghcr.io/didx-xyz/ledger-nodes",
+                "ghcr.io/didx-xyz/d-cloud/ledger-nodes",
                 von_dir,
                 dockerfile=von_dir + "/Dockerfile",
                 platform="linux/amd64",
@@ -345,10 +345,10 @@ def setup_cloudapi(build_enabled, expose):
     setup_nats(namespace)
     setup_benthos(namespace)
 
-    ledger_enabled = setup_ledger(namespace, build_enabled)
+    ledger_enabled = setup_ledger(namespace, build_enabled, ingress_domain)
 
     releases = {
-        "governance-endorser": {
+        "endorser": {
             "depends": ["nats"],
             "image": {
                 "dockerfile": "./dockerfiles/endorser/Dockerfile",
@@ -361,7 +361,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             },
         },
-        "governance-ga-agent": {
+        "governance-agent": {
             "depends": ["nats", "postgres", "ledger-browser"],
             "links": [
                 link(
@@ -373,8 +373,8 @@ def setup_cloudapi(build_enabled, expose):
                 "dockerfile": "./dockerfiles/agents/Dockerfile.agent",
             },
         },
-        "governance-ga-web": {
-            "depends": ["governance-ga-agent", "governance-multitenant-agent"],
+        "governance-web": {
+            "depends": ["governance-agent", "multitenant-agent"],
             "links": [
                 link(
                     "http://cloudapi." + ingress_domain + "/governance",
@@ -396,7 +396,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             },
         },
-        "governance-multitenant-agent": {
+        "multitenant-agent": {
             "depends": ["nats", "postgres", "ledger-browser"],
             "links": [
                 link(
@@ -408,8 +408,8 @@ def setup_cloudapi(build_enabled, expose):
                 "dockerfile": "./dockerfiles/agents/Dockerfile.author.agent",
             },
         },
-        "governance-multitenant-web": {
-            "depends": ["governance-ga-agent", "governance-multitenant-agent"],
+        "multitenant-web": {
+            "depends": ["governance-agent", "multitenant-agent"],
             "links": [
                 link(
                     "http://cloudapi." + ingress_domain + "/tenant-admin",
@@ -431,8 +431,8 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             },
         },
-        "governance-tenant-web": {
-            "depends": ["governance-ga-agent", "governance-multitenant-agent"],
+        "tenant-web": {
+            "depends": ["governance-agent", "multitenant-agent"],
             "links": [
                 link("http://cloudapi." + ingress_domain + "/tenant", "Tenant"),
                 link(
@@ -450,8 +450,8 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             },
         },
-        "governance-trust-registry-web": {
-            "depends": ["governance-trust-registry"],
+        "public-web": {
+            "depends": ["trust-registry"],
             "links": [
                 link("http://cloudapi." + ingress_domain + "/public", "Public"),
                 link(
@@ -469,7 +469,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             },
         },
-        "governance-trust-registry": {
+        "trust-registry": {
             "depends": ["postgres"],
             "links": [
                 link(
@@ -519,8 +519,8 @@ def setup_cloudapi(build_enabled, expose):
         "mediator": {
             "depends": [
                 "postgres",
-                "governance-ga-agent",
-                "governance-multitenant-agent",
+                "governance-agent",
+                "multitenant-agent",
             ],
             "links": [
                 link("http://mediator.cloudapi." + ingress_domain, "Mediator"),
@@ -539,8 +539,8 @@ def setup_cloudapi(build_enabled, expose):
             "./tilt/.charts/charts/aries-cloudapi-python",
             namespace,
             ingress_domain,
-            releases[release],
             build_enabled,
+            releases[release],
         )
 
     print(color.green("CloudAPI Installed"))

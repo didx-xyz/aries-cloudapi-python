@@ -69,7 +69,7 @@ async def test_get_and_delete_credential_record(
     TestMode.regression_run in TestMode.fixture_params,
     reason="Skipping due to regression run",
 )
-@pytest.mark.parametrize("issue_alice_many_creds", [3], indirect=True)
+@pytest.mark.parametrize("issue_alice_many_creds", [3], indirect=True) # issue alice 3 creds
 async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
     issue_alice_many_creds: List[CredentialExchange],  # pylint: disable=unused-argument
@@ -80,9 +80,10 @@ async def test_get_credential_record_with_limit(
         {"limit": 3},
         {"limit": 4},
         {"limit": 1, "offset": 4},
+        {"limit": 2, "offset": 2}
     ]
 
-    expected_length = [1, 2, 3, 3, 0]
+    expected_length = [1, 2, 3, 3, 0, 1]
 
     for params, length in zip(valid_params, expected_length):
         response = (

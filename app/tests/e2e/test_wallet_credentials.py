@@ -73,27 +73,37 @@ async def test_get_and_delete_credential_record(
 @pytest.mark.parametrize("issue_alice_many_creds",[3],indirect=True)
 async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
-    issue_alice_creds_non_revoke: List[  # pylint: disable=unused-argument
+    issue_alice_many_creds: List[  # pylint: disable=unused-argument
         CredentialExchange
     ],
 ):
 
-    credentials_1 = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5")
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=1")
     ).json()
 
-    assert len(credentials_1["results"]) == 5
+    assert len(credentials["results"]) == 1
 
-    credentials_2 = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5&offset=5")
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=2")
     ).json()
 
-    assert len(credentials_2["results"]) == 5
-    assert credentials_1 != credentials_2
+    assert len(credentials["results"]) == 2
 
-    credentials_3 = (
-        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=5")
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=3")
     ).json()
 
-    assert len(credentials_3["results"]) == 5
-    assert credentials_1 == credentials_3
+    assert len(credentials["results"]) == 3
+
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=4")
+    ).json()
+
+    assert len(credentials["results"]) == 3
+
+    credentials = (
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}?limit=1&offset=4")
+    ).json()
+
+    assert len(credentials["results"]) == 0

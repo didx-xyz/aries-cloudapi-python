@@ -66,6 +66,11 @@ async def test_get_and_delete_credential_record(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Skipping due to regression run",
+)
+@pytest.mark.parametrize("issue_alice_many_creds",[3],indirect=True)
 async def test_get_credential_record_with_limit(
     alice_member_client: RichAsyncClient,
     issue_alice_creds_non_revoke: List[  # pylint: disable=unused-argument

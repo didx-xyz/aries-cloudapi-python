@@ -82,20 +82,20 @@ async def test_get_credential_record_with_limit(
         {"limit": 1, "offset": 4},
     ]
 
-    expected_length = [1,2,3,3,0]
+    expected_length = [1, 2, 3, 3, 0]
 
     for params, length in zip(valid_params, expected_length):
-        response = (await alice_member_client.get(
-            WALLET_CREDENTIALS_PATH, params=params
-        )).json()
+        response = (
+            await alice_member_client.get(WALLET_CREDENTIALS_PATH, params=params)
+        ).json()
         assert len(response["results"]) == length
 
     invalid_params = [
-            {"limit": -1},  # must be positive
-            {"offset": -1},  # must be positive
-            {"limit": 0},  # must be greater than 0
-            {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
-        ]
+        {"limit": -1},  # must be positive
+        {"offset": -1},  # must be positive
+        {"limit": 0},  # must be greater than 0
+        {"limit": 10001},  # must be less than or equal to max in ACA-Py: 10'000
+    ]
 
     for params in invalid_params:
         with pytest.raises(HTTPException) as exc:

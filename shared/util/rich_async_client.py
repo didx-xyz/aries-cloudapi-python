@@ -24,6 +24,7 @@ class RichAsyncClient(AsyncClient):
         raise_status_error (bool): Whether to raise an error for 4xx and 5xx status codes.
         retries (int): Number of retry attempts for failed requests.
         retry_on (List[int]): List of HTTP status codes that should trigger a retry.
+        retry_wait_seconds (float): Number of seconds to wait before retrying.
     """
 
     def __init__(
@@ -34,6 +35,7 @@ class RichAsyncClient(AsyncClient):
         raise_status_error=True,
         retries: int = 3,
         retry_on: List[int] = [502, 503],
+        retry_wait_seconds: float = 0.5,
         **kwargs,
     ) -> None:
         super().__init__(verify=verify, *args, **kwargs)
@@ -41,6 +43,7 @@ class RichAsyncClient(AsyncClient):
         self.raise_status_error = raise_status_error
         self.retries = retries
         self.retry_on = retry_on
+        self.retry_wait_seconds = retry_wait_seconds
 
     async def _handle_response(self, response: Response) -> Response:
         if self.raise_status_error:
@@ -70,7 +73,7 @@ class RichAsyncClient(AsyncClient):
                         f"Retrying attempt {attempt + 1}/{self.retries}."
                     )
                     logger.warning(log_message)
-                    await asyncio.sleep(0.5)  # Wait before retrying
+                    await asyncio.sleep(self.retry_wait_seconds)  # Wait before retrying
                     continue  # Retry the request
                 await self._handle_error(e, url, method)
 

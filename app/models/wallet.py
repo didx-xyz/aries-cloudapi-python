@@ -1,13 +1,12 @@
-import warnings
 from typing import List, Optional
 
-from aries_cloudcontroller import DIDCreateOptions
+from aries_cloudcontroller import DIDCreate as DIDCreateAcaPy
+from aries_cloudcontroller.models.did_create_options import DIDCreateOptions
 from aries_cloudcontroller.models.indy_cred_info import (
     IndyCredInfo as IndyCredInfoAcaPy,
 )
 from aries_cloudcontroller.models.vc_record import VCRecord as VCRecordAcaPy
 from pydantic import BaseModel, Field, StrictStr, model_validator
-from typing_extensions import deprecated
 
 
 class SetDidEndpointRequest(BaseModel):
@@ -46,7 +45,12 @@ class CredInfoList(BaseModel):
     results: Optional[List[IndyCredInfo]] = None
 
 
-class DIDCreate(BaseModel):
+class DIDCreate(DIDCreateAcaPy):
+    """
+    Extends the AcapyDIDCreate model with smart defaults and simplified interface.
+    Automatically handles the options field structure while maintaining compatibility.
+    """
+
     method: Optional[StrictStr] = Field(
         default="sov",
         description="Method for the requested DID. Supported methods are 'sov', `web`, `did:peer:2` or `did:peer:4`.",
@@ -54,7 +58,7 @@ class DIDCreate(BaseModel):
     )
     options: Optional[DIDCreateOptions] = Field(
         default=None,
-        deprecated=deprecated("Please use key_type and did fields directly instead."),
+        deprecated=True,
         description="To define a key type and/or a did depending on chosen DID method.",
         examples=[{"key_type": "ed25519", "did": "did:peer:2"}],
     )
@@ -65,7 +69,7 @@ class DIDCreate(BaseModel):
     key_type: Optional[StrictStr] = Field(
         default="ed25519",
         description="Key type to use for the DID key_pair. Validated with the chosen DID method's supported key types.",
-        examples=["ed25519", "x25519", "bls12381g1", "bls12381g2", "bls12381g1g2"],
+        examples=["ed25519", "bls12381g2"],
     )
     did: Optional[str] = Field(
         default=None,
@@ -80,23 +84,10 @@ class DIDCreate(BaseModel):
         Handle both deprecated options field and new flattened fields.
         Priority: If both are provided, new fields take precedence.
         """
-        options = values.get("options")
 
-        if options:
-            warnings.warn(
-                "The 'options' field is deprecated. Please use 'key_type' and 'did' fields directly.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-            # Only use options values if new fields are not set
-            if not values.get("key_type") and options.get("key_type"):
-                values["key_type"] = options["key_type"]
-            if not values.get("did") and options.get("did"):
-                values["did"] = options["did"]
-
-        # Default key_type to ed25519 if not provided
-        if not values.get("key_type"):
-            values["key_type"] = "ed25519"
+        if values.get("options") is None:
+            values["options"] = {}
+        values["options"]["key_type"] = values.get("key_type") or "ed25519"
+        values["options"]["did"] = values.get("did")
 
         return values

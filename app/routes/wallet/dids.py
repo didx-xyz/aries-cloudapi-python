@@ -1,8 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import DID
-from aries_cloudcontroller import DIDCreate as AcapyDIDCreate
-from aries_cloudcontroller import DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -40,28 +38,20 @@ async def create_did(
             method: Optional[str]
             options: Optional[DIDCreateOptions]
             seed: Optional[str]
+            key_type: Optional[str]
+            did: Optional[str]
 
     Response:
     ---
         Returns the created DID object.
 
     """
-    logger.debug("POST request received: Create DID")
-    payload = None
-    if did_create:
-        payload = AcapyDIDCreate(
-            method=did_create.method,
-            options={
-                "key_type": did_create.key_type,
-                "did": did_create.did,
-            },
-            seed=did_create.seed,
-        )
+    logger.debug("POST request received: Create DID {}", did_create)
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
         result = await acapy_wallet.create_did(
-            did_create=payload, controller=aries_controller
+            did_create=did_create, controller=aries_controller
         )
 
     logger.debug("Successfully created DID.")
@@ -139,8 +129,8 @@ async def set_public_did(
     ---
 
     This endpoint allows you to set the current public DID.
-    The tenant needs a connection with an endorser to make a did public and by default
-    only issuers will have public DIDs and so only issuers can update their public did.
+    The tenant needs an endorser connection to make a DID public.
+    By default, only issuers have public DIDs and can update them.
 
     Request body:
     ---

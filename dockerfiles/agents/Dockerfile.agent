@@ -3,7 +3,7 @@ FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.1.1b4
 USER root
 
 # Install Google Protobuf
-ARG PROTOBUF_VERSION=5.28.1
+ARG PROTOBUF_VERSION=5.28.3
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # install nats-events plugin

@@ -15,7 +15,7 @@ class RichAsyncClient(AsyncClient):
     """Async Client that extends httpx.AsyncClient with built-in error handling and SSL cert reuse.
 
     - Reuses SSL context for better performance
-    - Retries requests on 503 Service Unavailable errors
+    - Retries requests on 502 Bad Gateway and 503 Service Unavailable errors
     - Raises HTTPException with detailed error messages
 
     Args:
@@ -33,7 +33,7 @@ class RichAsyncClient(AsyncClient):
         verify=ssl_context,
         raise_status_error=True,
         retries: int = 3,
-        retry_on: List[int] = [503],
+        retry_on: List[int] = [502, 503],
         **kwargs,
     ) -> None:
         super().__init__(verify=verify, *args, **kwargs)

@@ -1,4 +1,4 @@
-FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.1.1b4
+FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.1.1-20241114
 
 USER root
 
@@ -7,10 +7,10 @@ ARG PROTOBUF_VERSION=5.28.3
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # Install wallet group id plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@f9477e12
+RUN pip install --no-cache-dir acapy-wallet-groups-plugin==1.1.1-20241114
 
 # install nats-events plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@93870388#subdirectory=nats_events
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@1.1.1-20241114#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

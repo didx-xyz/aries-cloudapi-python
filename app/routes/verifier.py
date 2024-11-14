@@ -499,8 +499,8 @@ async def get_credentials_by_proof_id(
                 controller=aries_controller,
                 proof_id=proof_id,
                 referent=referent,
-                count=str(limit),
-                start=str(offset),
+                limit=limit,
+                offset=offset,
             )
     except CloudApiException as e:
         bound_logger.info("Could not get matching credentials: {}.", e)

@@ -36,7 +36,7 @@ async def sign_sd_jws(
     The endpoint returns the SD-JWS that can be used to selectively disclose
     attributes to a verifier.
 
-    When populating the the body of the request, the user must populate either the `did`
+    When populating the body of the request, the user must populate either the `did`
     or the `verification_method` field.
 
     If an issuer sings a JWS with a `did:sov` DID, the DID should be public.

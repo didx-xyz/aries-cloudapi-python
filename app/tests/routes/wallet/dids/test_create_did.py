@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from aries_cloudcontroller import DIDCreate as DIDCreateAcaPy
 from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
@@ -18,72 +19,72 @@ from app.routes.wallet.dids import create_did
         (None, None),
         (
             DIDCreate(method="key"),
-            DIDCreate(
-                method="key", options={"key_type": "ed25519"}, key_type="ed25519"
+            DIDCreateAcaPy(
+                method="key",
+                options={"key_type": "ed25519"},
             ),
         ),
         (
             DIDCreate(method="sov"),
-            DIDCreate(
-                method="sov", options={"key_type": "ed25519"}, key_type="ed25519"
+            DIDCreateAcaPy(
+                method="sov",
+                options={"key_type": "ed25519"},
             ),
         ),
         (
             DIDCreate(method="did:peer:2"),
-            DIDCreate(
-                method="did:peer:2", options={"key_type": "ed25519"}, key_type="ed25519"
+            DIDCreateAcaPy(
+                method="did:peer:2",
+                options={"key_type": "ed25519"},
             ),
         ),
         (
             DIDCreate(method="did:peer:4"),
-            DIDCreate(
-                method="did:peer:4", options={"key_type": "ed25519"}, key_type="ed25519"
+            DIDCreateAcaPy(
+                method="did:peer:4",
+                options={"key_type": "ed25519"},
             ),
         ),
         (
             DIDCreate(method="key", key_type="bls12381g2"),
-            DIDCreate(
-                method="key", options={"key_type": "bls12381g2"}, key_type="bls12381g2"
+            DIDCreateAcaPy(
+                method="key",
+                options={"key_type": "bls12381g2"},
             ),
         ),
         (
             DIDCreate(method="sov", key_type="bls12381g2"),
-            DIDCreate(
-                method="sov", options={"key_type": "bls12381g2"}, key_type="bls12381g2"
+            DIDCreateAcaPy(
+                method="sov",
+                options={"key_type": "bls12381g2"},
             ),
         ),
         (
             DIDCreate(method="did:peer:2", key_type="bls12381g2"),
-            DIDCreate(
+            DIDCreateAcaPy(
                 method="did:peer:2",
                 options={"key_type": "bls12381g2"},
-                key_type="bls12381g2",
             ),
         ),
         (
             DIDCreate(method="did:peer:4", key_type="bls12381g2"),
-            DIDCreate(
+            DIDCreateAcaPy(
                 method="did:peer:4",
                 options={"key_type": "bls12381g2"},
-                key_type="bls12381g2",
             ),
         ),
         (
             DIDCreate(method="web", did="did:web:1234"),
-            DIDCreate(
+            DIDCreateAcaPy(
                 method="web",
                 options={"key_type": "ed25519", "did": "did:web:1234"},
-                key_type="ed25519",
-                did="did:web:1234",
             ),
         ),
         (
             DIDCreate(method="web", key_type="bls12381g2", did="did:web:1234"),
-            DIDCreate(
+            DIDCreateAcaPy(
                 method="web",
                 options={"key_type": "bls12381g2", "did": "did:web:1234"},
-                key_type="bls12381g2",
-                did="did:web:1234",
             ),
         ),
     ],

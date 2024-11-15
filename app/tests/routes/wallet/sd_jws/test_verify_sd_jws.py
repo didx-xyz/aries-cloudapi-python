@@ -103,9 +103,7 @@ async def test_verify_jws_success():
 async def test_verify_jws_validation_error():
     mock_logger = MagicMock()
     error_msg = "field required"
-    modified_error_msg = error_msg.replace(
-        "jwt", "jws"
-    )
+    modified_error_msg = error_msg.replace("jwt", "jws")
     request_body = SDJWSVerifyRequest(sd_jws="invalid_sd_jws")
 
     mock_validation_error = ValidationError.from_exception_data(

@@ -11,10 +11,8 @@ from app.routes.wallet.sd_jws import verify_sd_jws
 
 @pytest.mark.anyio
 async def test_verify_jws_success():
-    # Sample JWS string
     sd_jws = "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0AR5_M4StTauO3_t063Mjno32O0wqcbDg"
 
-    # Mock response data
     verify_result_data = {
         "error": None,
         "headers": {
@@ -107,12 +105,9 @@ async def test_verify_jws_validation_error():
     error_msg = "field required"
     modified_error_msg = error_msg.replace(
         "jwt", "jws"
-    )  # Match the error message modification in the code
-
-    # Create a request that will trigger a ValidationError
+    )
     request_body = SDJWSVerifyRequest(sd_jws="invalid_sd_jws")
 
-    # Create a ValidationError with proper error data structure
     mock_validation_error = ValidationError.from_exception_data(
         title="ValidationError",
         line_errors=[
@@ -133,14 +128,12 @@ async def test_verify_jws_validation_error():
     ):
         mock_jws_verify.side_effect = mock_validation_error
 
-        # Assert that the function raises CloudApiException with correct status code
         with pytest.raises(CloudApiException) as exc_info:
             await verify_sd_jws(body=request_body, auth="mocked_auth")
 
         assert exc_info.value.status_code == 422
         assert exc_info.value.detail == modified_error_msg
 
-        # Verify logging calls
         mock_logger.bind.assert_called_once()
         mock_logger.bind().info.assert_called_once_with(
             "Bad request: Validation error from SDJWSVerifyRequest body: {}",

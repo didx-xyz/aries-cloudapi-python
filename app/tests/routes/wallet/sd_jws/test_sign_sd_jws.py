@@ -65,7 +65,6 @@ async def test_sign_jws_validation_error():
     mock_logger = MagicMock()
     error_msg = "Validation error message"
 
-    # Create a request that will trigger a ValidationError
     request_body = SDJWSCreateRequest(
         did="did:sov:ULAXi4asp1MCvFg3QAFpxt",
         payload={
@@ -84,7 +83,6 @@ async def test_sign_jws_validation_error():
         },
     )
 
-    # Mock the JWSCreate to raise ValidationError
     mock_validation_error = ValidationError.from_exception_data(
         title="ValidationError",
         line_errors=[
@@ -105,14 +103,12 @@ async def test_sign_jws_validation_error():
     ):
         mock_jws_create.side_effect = mock_validation_error
 
-        # Assert that the function raises CloudApiException with correct status code
         with pytest.raises(CloudApiException) as exc_info:
             await sign_sd_jws(body=request_body, auth="mocked_auth")
 
         assert exc_info.value.status_code == 422
         assert exc_info.value.detail == error_msg
 
-        # Verify logging calls
         mock_logger.bind.assert_called_once()
         mock_logger.bind().info.assert_called_once_with(
             "Bad request: Validation error from SDJWSCreateRequest body: {}", error_msg

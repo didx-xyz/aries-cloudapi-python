@@ -33,51 +33,56 @@ async def sign_sd_jws(
     ---
 
     This endpoint allows the user to sign a Selective Disclosure for JWS (SD-JWS).
-    The endpoint returns the SD-JWS that can be used to selectively disclose
-    attributes to a verifier.
+    The endpoint returns an SD-JWS that can be used to selectively disclose attributes
+    to a verifier.
 
-    When populating the body of the request, the user must populate either the `did`
-    or the `verification_method` field.
+    When populating the body of the request, the user must provide either the
+    did or the verification_method field.
 
-    If an issuer sings a JWS with a `did:sov` DID, the DID should be public.
+    If an issuer signs a JWS with a did:sov DID, the DID must be public.
 
-    The difference between the `did` and `verification_method` fields is
-    that if the `did` field is used, the Aries agent will make an educated guess
-    about which verkey associated with the DID to use to sign the jwt.
+    The difference between the did and verification_method fields is:
 
-    While with the `verification_method` field, the user is explicitly
-    specifying which verkey to use to sign the jwt, i.e. the DID with the key to use.
+     - If the did field is used, the Aries agent will make an educated guess about
+       which verkey associated with the DID to use for signing the JWT.
+     - If the verification_method field is used, the user explicitly specifies which
+       verkey to use for signing the JWT, i.e., the DID with the associated key.
 
-    The `header` field is optional and can be used to specify the header of the JWS.
-    The `typ`, `alg`, and `kid` fields, in the header, are automatically populated by the Aries agent.
+    The header field is optional and can be used to specify the header of the JWS.
+    The typ, alg, and kid fields in the header are automatically populated by the Aries agent.
 
-    The `non_sd_list` field is a list of non-selective disclosure attributes.
-    These are attributes that are not included in the selective disclosure i.e.
-    they are always disclosed.
-    If an attribute is either a list or a dictionary, the attribute name should be
-    in the `non_sd_list`.
-    Then the attribute will be disclosed in the SD-JWS but not the values in the list or
-    attributes value pairs in the dictionary.
+    The non_sd_list field is a list of non-selective disclosure attributes.
+    These attributes are not included in the selective disclosure; i.e., they are always disclosed.
+    If an attribute is a list or a dictionary, the attribute name should be included
+    in the non_sd_list.
+    In such cases, the attribute itself will be disclosed in the SD-JWS, but not
+    the values in the list or the key-value pairs in the dictionary.
 
-    The values in a list can be added to the `non_sd_list` by adding the attribute name and
-    the range of the list to the `non_sd_list` in the format:
-        `"<attribute_name>[<start>:<end>]"`
-    where `<start>` is the start of the range and `<end>` is the end of the range
-    (where <end> is exclusive).
+    Values in a list can be added to the non_sd_list by including the attribute
+    name and the range of the list in the following format:
 
-    The values in a dictionary can be added to the `non_sd_list` by adding the dictionary name
-    dot the attribute name to the `non_sd_list` in the format:
-        `"<dictionary_name>.<attribute_name>"`
-    where `<dictionary_name>` is the name of the dictionary and `<attribute_name>` is the
-    attribute name in the dictionary.
+    "<attribute_name>[start:end]"
 
-    The endpoint will return the signed SD-JWS with disclosures needed to reveal the
-    attributes in the SD-JWS.
-        `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>~`
+     - start is the start of the range as a int.
+     - end is the end of the range (exclusive).
 
-    Its up to the holder to identify which disclosure matches with which attributes in the SD-JWS.
-    As the holder will need to pass on the SD-JWS with the correct disclosures to the verifier when
-    requested.
+    Values in a dictionary can be added to the non_sd_list by specifying the
+    dictionary name followed by the attribute name in the following format:
+
+    "<dictionary_name>.<attribute_name>"
+
+     - <dictionary_name> is the name of the dictionary.
+     - <attribute_name> is the attribute name within the dictionary.
+
+    The endpoint will return the signed SD-JWS along with the disclosures needed
+    to reveal the attributes in the SD-JWS:
+
+    <Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>
+
+    It is the holder’s responsibility to identify which disclosure corresponds to
+    which attributes in the SD-JWS.
+    The holder must provide the SD-JWS with the appropriate disclosures to the
+    verifier upon request.
 
     See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
     for the SD-JWT / SD-JWS spec.

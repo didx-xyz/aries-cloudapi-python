@@ -1,10 +1,12 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from app.routes.wallet.jws import sign_jws
 from aries_cloudcontroller import JWSCreate
-from app.models.jws import JWSCreateRequest
-from app.exceptions import CloudApiException
 from pydantic import ValidationError
+
+from app.exceptions import CloudApiException
+from app.models.jws import JWSCreateRequest
+from app.routes.wallet.jws import sign_jws
 
 
 @pytest.mark.anyio
@@ -51,29 +53,27 @@ async def test_sign_jws_validation_error():
 
     # Create a request that will trigger a ValidationError
     request_body = JWSCreateRequest(
-        did="did:sov:AGguR4mc186Tw11KeWd4qq",
-        payload={"test": "test_value"}
+        did="did:sov:AGguR4mc186Tw11KeWd4qq", payload={"test": "test_value"}
     )
 
     # Mock the JWSCreate to raise ValidationError
     mock_validation_error = ValidationError.from_exception_data(
         title="ValidationError",
-        line_errors=[{
-            "loc": ("field",),
-            "msg": "error message",
-            "type": "value_error",
-            "input": "invalid_input",
-            "ctx": {"error": "some context"},
-        }]
+        line_errors=[
+            {
+                "loc": ("field",),
+                "msg": "error message",
+                "type": "value_error",
+                "input": "invalid_input",
+                "ctx": {"error": "some context"},
+            }
+        ],
     )
 
-    with patch(
-        "app.routes.wallet.jws.JWSCreate"
-    ) as mock_jws_create, patch(
+    with patch("app.routes.wallet.jws.JWSCreate") as mock_jws_create, patch(
         "app.routes.wallet.jws.logger"
     ) as mock_logger, patch(
-        "app.routes.wallet.jws.extract_validation_error_msg",
-        return_value=error_msg
+        "app.routes.wallet.jws.extract_validation_error_msg", return_value=error_msg
     ):
         mock_jws_create.side_effect = mock_validation_error
 
@@ -87,6 +87,5 @@ async def test_sign_jws_validation_error():
         # Verify logging calls
         mock_logger.bind.assert_called_once()
         mock_logger.bind().info.assert_called_once_with(
-            "Bad request: Validation error from JWSCreateRequest body: {}",
-            error_msg
+            "Bad request: Validation error from JWSCreateRequest body: {}", error_msg
         )

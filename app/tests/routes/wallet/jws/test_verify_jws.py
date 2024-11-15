@@ -1,10 +1,13 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from app.routes.wallet.jws import verify_jws
 from aries_cloudcontroller import JWSVerify
-from app.models.jws import JWSVerifyRequest, JWSVerifyResponse
-from app.exceptions import CloudApiException
 from pydantic import ValidationError
+
+from app.exceptions import CloudApiException
+from app.models.jws import JWSVerifyRequest, JWSVerifyResponse
+from app.routes.wallet.jws import verify_jws
+
 
 @pytest.mark.anyio
 async def test_verify_jws_success():
@@ -17,11 +20,11 @@ async def test_verify_jws_success():
         "headers": {
             "typ": "JWT",
             "alg": "EdDSA",
-            "kid": "did:sov:AGguR4mc186Tw11KeWd4qq#key-1"
+            "kid": "did:sov:AGguR4mc186Tw11KeWd4qq#key-1",
         },
         "kid": "did:sov:AGguR4mc186Tw11KeWd4qq#key-1",
         "valid": True,
-        "error": None
+        "error": None,
     }
 
     mock_aries_controller = AsyncMock()
@@ -41,7 +44,9 @@ async def test_verify_jws_success():
     ), patch(
         "app.routes.wallet.jws.logger"
     ) as mock_logger:
-        mock_client_from_auth.return_value.__aenter__.return_value = mock_aries_controller
+        mock_client_from_auth.return_value.__aenter__.return_value = (
+            mock_aries_controller
+        )
         result = await verify_jws(body=request_body, auth="mocked_auth")
 
         # Assert the acapy call was made correctly
@@ -59,11 +64,14 @@ async def test_verify_jws_success():
         assert result.valid == verify_result_data["valid"]
         assert result.error == verify_result_data["error"]
 
+
 @pytest.mark.anyio
 async def test_verify_jws_validation_error():
     mock_logger = MagicMock()
     error_msg = "field required"
-    modified_error_msg = error_msg.replace("jwt", "jws")  # Match the error message modification in the code
+    modified_error_msg = error_msg.replace(
+        "jwt", "jws"
+    )  # Match the error message modification in the code
 
     # Create a request that will trigger a ValidationError
     request_body = JWSVerifyRequest(jws="invalid_jws")
@@ -71,22 +79,21 @@ async def test_verify_jws_validation_error():
     # Create a ValidationError with proper error data structure
     mock_validation_error = ValidationError.from_exception_data(
         title="ValidationError",
-        line_errors=[{
-            "loc": ("jwt",),
-            "msg": error_msg,
-            "type": "value_error",
-            "input": "invalid_input",
-            "ctx": {"error": "some context"},
-        }]
+        line_errors=[
+            {
+                "loc": ("jwt",),
+                "msg": error_msg,
+                "type": "value_error",
+                "input": "invalid_input",
+                "ctx": {"error": "some context"},
+            }
+        ],
     )
 
-    with patch(
-        "app.routes.wallet.jws.JWSVerify"
-    ) as mock_jws_verify, patch(
+    with patch("app.routes.wallet.jws.JWSVerify") as mock_jws_verify, patch(
         "app.routes.wallet.jws.logger"
     ) as mock_logger, patch(
-        "app.routes.wallet.jws.extract_validation_error_msg",
-        return_value=error_msg
+        "app.routes.wallet.jws.extract_validation_error_msg", return_value=error_msg
     ):
         mock_jws_verify.side_effect = mock_validation_error
 
@@ -101,5 +108,5 @@ async def test_verify_jws_validation_error():
         mock_logger.bind.assert_called_once()
         mock_logger.bind().info.assert_called_once_with(
             "Bad request: Validation error from JWSVerifyRequest body: {}",
-            modified_error_msg
+            modified_error_msg,
         )

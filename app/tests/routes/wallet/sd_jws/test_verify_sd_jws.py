@@ -1,10 +1,12 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from app.routes.wallet.sd_jws import verify_sd_jws
 from aries_cloudcontroller import SDJWSVerify
-from app.models.sd_jws import SDJWSVerifyRequest, SDJWSVerifyResponse
-from app.exceptions import CloudApiException
 from pydantic import ValidationError
+
+from app.exceptions import CloudApiException
+from app.models.sd_jws import SDJWSVerifyRequest, SDJWSVerifyResponse
+from app.routes.wallet.sd_jws import verify_sd_jws
 
 
 @pytest.mark.anyio

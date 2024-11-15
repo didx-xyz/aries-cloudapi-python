@@ -57,7 +57,7 @@ async def create_did(
     acapy_did_create = None
     if did_create:
         acapy_did_create = DIDCreateAcaPy(**did_create.model_dump())
-        
+
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
         result = await acapy_wallet.create_did(

@@ -387,7 +387,7 @@ async def get_wallet_auth_token(
     return response
 
 
-@router.put("/{wallet_id}", response_model=Tenant, summary="Update Tenant by wallet ID")
+@router.put("/{wallet_id}", response_model=Tenant, summary="Update Tenant by Wallet ID")
 async def update_tenant(
     wallet_id: str,
     body: UpdateTenantRequest,
@@ -395,23 +395,30 @@ async def update_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """
-    Update tenant by id
+    Update Tenant by Wallet ID
     ---
 
-    Use this endpoint to update a tenant by its wallet ID.
+    Use this endpoint to update a Tenant's details based on their Wallet ID.
 
-    A Holder can't have their roles updated. Only Issuers and Verifiers can have their roles updated.
+    Holders cannot have their roles updated. Attempting to assign issuer or
+    verifier roles to a holder will result in a 409 conflict error.
+
+    Only issuers or verifiers can be updated to hold both roles.
+
+    This endpoint does not support revoking roles from issuers or verifiers.
+
+    For issuers and verifiers, updates to `image_url` will be reflected on the trust registry.
 
 
     Request body:
     ---
         body: UpdateTenantRequest
             wallet_label: Optional[str]
-                An optional alias for the tenant, publicized to other tenants when forming a connection.
+                An optional alias for the Tenant.
             roles: Optional[List[str]]
-                A list of roles to assign to the tenant.
+                A list of roles to assign to the Tenant.
             image_url: Optional[str]
-                An optional image URL for the tenant.
+                An optional image URL for the Tenant.
             extra_settings: Optional[Dict[str, Union[bool, str]]]
                 Optional per-tenant settings to configure wallet behaviour for advanced users.
 

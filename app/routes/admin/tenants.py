@@ -461,15 +461,15 @@ async def get_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """
-    Get tenant by id
+    Fetch Tenant info by ID
     ---
 
-    Use this endpoint to fetch a tenant by its wallet ID.
+    Use this endpoint to fetch Tenant info by its Wallet ID.
 
     Request parameters:
     ---
         wallet_id: str
-            The wallet ID of the tenant to fetch.
+            The Wallet ID of the Tenant to fetch.
 
     Response body:
     ---

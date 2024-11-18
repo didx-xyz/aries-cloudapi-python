@@ -64,21 +64,20 @@ async def create_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> CreateTenantResponse:
     """
-    Create a new tenant
+    Create a new Tenant
     ---
 
-    Use this endpoint to create a new tenant.
-    This will create a new wallet (the tenant) and onboard it with the requested roles.
+    Use this endpoint to create a Tenant, which generates a Wallet and onboards it with the specified roles.
 
     The `wallet_name` is an optional field that allows you to assign a name to the wallet,
-    useful with `get_tenants` to fetch wallets by wallet name.
+    useful with `get_tenants` to fetch Wallets by Wallet name.
 
-    `image_url` is an optional field that allows tenant-admin to assign an image to the wallet.
-
-    `group_id` is an optional field that allows the tenant-admin to assign the wallet to a group.
-
-    The roles can be `issuer` or `verifier`. If no roles are provided, the tenant will be created
+    The roles can be `issuer` or `verifier`. If no roles are provided, the Tenant will be created
     without any roles and be considered a `holder`.
+
+    The `image_url` is an optional field that allows you to assign an image to the Wallet.
+
+    Tenants onboarded with roles will be added to the trust registry.
 
     `extra_settings` is an optional field that allows you to configure the wallet behaviour for advanced users.
 
@@ -86,19 +85,17 @@ async def create_tenant(
     ---
         body: CreateTenantRequest
             wallet_label: str
-                A required alias for the tenant, publicized to other tenants when forming a connection.
+                A required alias for the Tenant.
             wallet_name: Optional[str]
-                An optional wallet name. Useful with `get_tenants` to fetch wallets by wallet name.
+                An optional wallet name.
             roles: Optional[List[str]]
-                A list of roles to assign to the tenant.
+                A list of roles to assign to the Tenant.
             image_url: Optional[str]
-                An optional image URL for the tenant.
-            group_id: Optional[str]
-                An optional group identifier.
+                An optional image URL for the Tenant.
             extra_settings: Optional[Dict[str, Union[bool, str]]]
                 Optional per-tenant settings to configure wallet behaviour for advanced users.
 
-    Response body:
+    Response body:(Paginated)
     ---
         CreateTenantResponse
             wallet_id: str

@@ -230,23 +230,23 @@ async def create_tenant(
     return response
 
 
-@router.delete("/{wallet_id}", summary="Delete a Tenant by wallet ID", status_code=204)
+@router.delete("/{wallet_id}", summary="Delete a Tenant by Wallet ID", status_code=204)
 async def delete_tenant_by_id(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> None:
     """
-    Delete tenant by ID
+    Delete Tenant by ID
     ---
 
-    Use this endpoint to delete a tenant by its wallet ID. This will remove the tenant's wallet and any associated
-    credentials, connections, etc.
+    Use this endpoint to delete a Tenant by its Wallet ID. This will remove the Tenant's Wallet and any associated
+    credentials, connections, etc. And delete them from the trust registry if they are an issuer or verifier.
 
     Request parameters:
     ---
         wallet_id: str
-            The wallet ID of the tenant to delete.
+            The Wallet ID of the Tenant to delete.
 
     Response body:
     ---

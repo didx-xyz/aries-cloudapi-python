@@ -293,7 +293,7 @@ async def delete_tenant_by_id(
 async def get_wallet_auth_token(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin)
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     """
     Rotate Wallet access token by ID

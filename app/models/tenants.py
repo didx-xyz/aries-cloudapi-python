@@ -19,7 +19,6 @@ group_id_field = Field(
     None,
     description="An optional group identifier. Useful with `get_tenants` to fetch wallets by group id.",
     examples=["Some Group Id"],
-    exclude=True,
 )
 image_url_field = Field(
     None,

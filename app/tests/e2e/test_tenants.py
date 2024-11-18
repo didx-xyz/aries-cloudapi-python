@@ -70,7 +70,7 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -114,7 +114,7 @@ async def test_create_tenant_member_wo_wallet_name(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -169,7 +169,7 @@ async def test_create_tenant_member_w_wallet_name(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -251,7 +251,7 @@ async def test_create_tenant_issuer(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -313,7 +313,7 @@ async def test_create_tenant_verifier(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -456,7 +456,7 @@ async def test_update_tenant_verifier_to_issuer(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{verifier_wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -517,7 +517,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
             delete_response = await tenant_admin_client.delete(
                 f"{TENANTS_BASE_PATH}/{wallet_id}"
             )
-            assert delete_response.status_code == 200
+            assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -562,7 +562,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -620,7 +620,7 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -678,7 +678,7 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -724,7 +724,7 @@ async def test_delete_tenant(
     response = await tenant_admin_client.delete(
         f"{TENANTS_BASE_PATH}/{wallet_id}?group_id={group_id}"
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     # Actor doesn't exist any more
     actor = await trust_registry.fetch_actor_by_id(wallet_id)
@@ -792,7 +792,7 @@ async def test_extra_settings(
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{created_wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio

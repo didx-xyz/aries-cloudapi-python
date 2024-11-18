@@ -498,7 +498,7 @@ async def get_tenant(
     return response
 
 
-@router.get("", response_model=List[Tenant], summary="Get all Tenants")
+@router.get("", response_model=List[Tenant], summary="Fetch All Tenants (Paginated)")
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = group_id_query,
@@ -509,17 +509,26 @@ async def get_tenants(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """
-    Get all tenants, or fetch by wallet name
+    Fetch all Tenants, or Fetch by Wallet Name
     ---
 
     Use this endpoint to fetch all tenants, or filter by wallet name and/or group ID.
 
-    Request parameters:
+    The default for `limit` is 1000.
+
+    Results are ordered by record created time.
+
+    Optional Request parameters:
     ---
-        wallet_name: Optional[str]
+        wallet_name: [str]
             Filter by wallet name.
-        group_id: Optional[str]
-            Filter by group ID.
+        limit: [int]
+            Number of results to return.
+        offset: [int]
+            Number of results to skip.
+        descending: [bool]
+            Whether to return results in descending order.
+
 
     Response body:
     ---

@@ -347,20 +347,21 @@ async def get_wallet_auth_token(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     """
-    Get wallet access token by id
+    Rotate Wallet access token by ID
     ---
-    Calling this endpoint will invalidate the previous access token for the wallet.
+
+    Calling this endpoint will invalidate the previous access token for the Wallet.
 
     Request parameters:
     ---
         wallet_id: str
-            The wallet ID of the tenant to get the access token for.
+            The Wallet ID of the Tenant for which to rotate the access token..
 
     Response body:
     ---
         TenantAuth
             access_token: str
-                The new access token for the wallet.
+                The new access token for the Wallet.
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("GET request received: Access token for tenant")

@@ -41,11 +41,11 @@ async def create_did(
     Request body:
     ---
         DIDCreate Optional:
-            method: [str]
-            options: [DIDCreateOptions]
-            seed: [str]
-            key_type: [str]
-            did: [str]
+            method: str
+            options: DIDCreateOptions
+            seed: str
+            key_type: str
+            did: str
 
     Response:
     ---
@@ -142,7 +142,7 @@ async def set_public_did(
     The tenant needs an endorser connection to make a DID public.
     By default, only issuers have public DIDs and can update them.
 
-    Request body:
+    Parameters:
     ---
         did: str
 

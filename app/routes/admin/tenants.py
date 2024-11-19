@@ -518,13 +518,13 @@ async def get_tenants(
 
     Optional Request parameters:
     ---
-        wallet_name: [str]
+        wallet_name: str
             Filter by wallet name.
-        limit: [int]
+        limit: int
             Number of results to return.
-        offset: [int]
+        offset: int
             Number of results to skip.
-        descending: [bool]
+        descending: bool
             Whether to return results in descending order.
 
 

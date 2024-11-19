@@ -19,6 +19,7 @@ group_id_field = Field(
     None,
     description="An optional group identifier. Useful with `get_tenants` to fetch wallets by group id.",
     examples=["Some Group Id"],
+    exclude=True,
 )
 image_url_field = Field(
     None,
@@ -50,7 +51,7 @@ ExtraSettings_field = Field(
 
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):
-    group_id: Optional[str] = group_id_field
+    group_id: Optional[str] = Field(default=None, examples=["some_group_id"])
 
 
 class CreateTenantRequest(BaseModel):

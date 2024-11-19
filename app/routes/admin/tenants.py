@@ -403,7 +403,7 @@ async def update_tenant(
 
     Holders cannot have their roles updated. Attempting to assign issuer or verifier
     roles to a holder will result in a 409 conflict error.
-    
+
     Only issuers or verifiers can be updated to hold both roles.
 
     This endpoint does not support revoking roles from issuers or verifiers.

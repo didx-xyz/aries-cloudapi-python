@@ -85,15 +85,15 @@ class DIDCreate(DIDCreateAcaPy):
         Priority: If both are provided, new fields take precedence.
         """
 
-        if not values.get("options"):
+        options: dict = values.get("options")
+        if not options:
             values["options"] = {}
             values["options"]["key_type"] = values.get("key_type") or "ed25519"
             values["options"]["did"] = values.get("did")
         else:
-            options: dict = values.get("options")
             if not options.get("key_type"):
                 values["options"]["key_type"] = values.get("key_type") or "ed25519"
             if not options.get("did") and values.get("did"):
-                values["options"]["did"] = values.get("did")
+                values["options"]["did"] = values["did"]
 
         return values

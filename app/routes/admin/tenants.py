@@ -95,7 +95,7 @@ async def create_tenant(
             extra_settings: Optional[Dict[str, Union[bool, str]]]
                 Optional per-tenant settings to configure wallet behaviour for advanced users.
 
-    Response body:(Paginated)
+    Response body:
     ---
         CreateTenantResponse
             wallet_id: str
@@ -105,7 +105,6 @@ async def create_tenant(
             image_url: Optional[str]
             updated_at: str
             access_token: str
-            group_id: Optional[str]
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Starting tenant creation")

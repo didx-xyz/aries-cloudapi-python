@@ -240,8 +240,9 @@ async def delete_tenant_by_id(
     Delete Tenant by ID
     ---
 
-    Use this endpoint to delete a Tenant by its Wallet ID. This will remove the Tenant's Wallet and any associated
-    credentials, connections, etc. And delete them from the trust registry if they are an issuer or verifier.
+    Use this endpoint to delete a Tenant by its Wallet ID. This action will remove the Tenant's Wallet,
+    along with any associated credentials, connections, and other data. If the tenant is an issuer or verifier,
+    they will also be removed from the trust registry.
 
     Request parameters:
     ---
@@ -304,7 +305,7 @@ async def get_wallet_auth_token(
     Request parameters:
     ---
         wallet_id: str
-            The Wallet ID of the Tenant for which to rotate the access token.
+            The Wallet ID of the tenant for which the access token will be rotated.
 
     Response body:
     ---
@@ -355,7 +356,7 @@ async def get_wallet_auth_token(
     Request parameters:
     ---
         wallet_id: str
-            The Wallet ID of the Tenant for which to rotate the access token..
+            The Wallet ID of the tenant for which the access token will be rotated.
 
     Response body:
     ---
@@ -398,16 +399,16 @@ async def update_tenant(
     Update Tenant by Wallet ID
     ---
 
-    Use this endpoint to update a Tenant's details based on their Wallet ID.
+    Update a Tenant's details based on their Wallet ID.
 
-    Holders cannot have their roles updated. Attempting to assign issuer or
-    verifier roles to a holder will result in a 409 conflict error.
-
+    Holders cannot have their roles updated. Attempting to assign issuer or verifier
+    roles to a holder will result in a 409 conflict error.
+    
     Only issuers or verifiers can be updated to hold both roles.
 
     This endpoint does not support revoking roles from issuers or verifiers.
 
-    For issuers and verifiers, updates to `image_url` will be reflected on the trust registry.
+    Updates to `image_url` for issuers and verifiers will be reflected on the trust registry.
 
 
     Request body:

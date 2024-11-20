@@ -115,6 +115,8 @@ async def revoke_many(
 ) -> List[CredentialExchange]:
 
     auto_publish = True
+    if hasattr(request, "param") and request.param == "auto_publish_false":
+        auto_publish = False
 
     for cred in issue_many_creds:
         await faber_client.post(

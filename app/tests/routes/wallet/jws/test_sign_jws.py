@@ -11,12 +11,16 @@ from app.routes.wallet.jws import sign_jws
 
 @pytest.mark.anyio
 async def test_sign_jws_success():
-    jws = "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0AR5_M4StTauO3_t063Mjno32O0wqcbDg"
+
+    jws = (
+        "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2"
+        "tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0"
+        "AR5_M4StTauO3_t063Mjno32O0wqcbDg"
+    )
 
     mock_aries_controller = AsyncMock()
     mock_handle_acapy_call = AsyncMock()
     mock_handle_acapy_call.return_value = jws
-    mock_logger = MagicMock()
     request_body = JWSCreateRequest(
         did="did:sov:AGguR4mc186Tw11KeWd4qq", payload={"test": "test_value"}
     )
@@ -48,7 +52,6 @@ async def test_sign_jws_success():
 
 @pytest.mark.anyio
 async def test_sign_jws_validation_error():
-    mock_logger = MagicMock()
     error_msg = "Validation error message"
 
     # Create a request that will trigger a ValidationError

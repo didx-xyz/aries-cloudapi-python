@@ -11,12 +11,15 @@ from app.routes.wallet.sd_jws import sign_sd_jws
 
 @pytest.mark.anyio
 async def test_sign_jws_success():
-    sd_jws = "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0AR5_M4StTauO3_t063Mjno32O0wqcbDg"
 
+    sd_jws = (
+        "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2"
+        "tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0"
+        "AR5_M4StTauO3_t063Mjno32O0wqcbDg"
+    )
     mock_aries_controller = AsyncMock()
     mock_handle_acapy_call = AsyncMock()
     mock_handle_acapy_call.return_value = sd_jws
-    mock_logger = MagicMock()
     request_body = SDJWSCreateRequest(
         did="did:sov:ULAXi4asp1MCvFg3QAFpxt",
         payload={
@@ -62,7 +65,6 @@ async def test_sign_jws_success():
 
 @pytest.mark.anyio
 async def test_sign_jws_validation_error():
-    mock_logger = MagicMock()
     error_msg = "Validation error message"
 
     request_body = SDJWSCreateRequest(

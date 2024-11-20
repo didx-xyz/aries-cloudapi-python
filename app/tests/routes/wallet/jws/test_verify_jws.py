@@ -12,7 +12,11 @@ from app.routes.wallet.jws import verify_jws
 @pytest.mark.anyio
 async def test_verify_jws_success():
     # Sample JWS string
-    jws = "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0AR5_M4StTauO3_t063Mjno32O0wqcbDg"
+    jws = (
+        "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJFZERTQSIsICJraWQiOiAiZGlkOnNvdjpBR2d1UjRtYzE4NlR3MTFLZVdkNHFxI2"
+        "tleS0xIn0.eyJ0ZXN0IjogInRlc3RfdmFsdWUifQ.3IxwPkA2niDxCsd12kDRVveR-aPBJx7YibWy9fbrFTSWbITQ16CqA0"
+        "AR5_M4StTauO3_t063Mjno32O0wqcbDg"
+    )
 
     # Mock response data
     verify_result_data = {
@@ -32,7 +36,6 @@ async def test_verify_jws_success():
     mock_verify_result = MagicMock()
     mock_verify_result.model_dump.return_value = verify_result_data
     mock_handle_acapy_call.return_value = mock_verify_result
-    mock_logger = MagicMock()
 
     request_body = JWSVerifyRequest(jws=jws)
     verify_request = JWSVerify(jwt=request_body.jws)
@@ -67,7 +70,6 @@ async def test_verify_jws_success():
 
 @pytest.mark.anyio
 async def test_verify_jws_validation_error():
-    mock_logger = MagicMock()
     error_msg = "field required"
     modified_error_msg = error_msg.replace(
         "jwt", "jws"

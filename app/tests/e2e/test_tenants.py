@@ -510,6 +510,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
         # Make sure created tenant is returned
         assert_that(tenants).extracting("wallet_id").contains(last_wallet_id)
+        assert_that(tenants).extracting("group_id").contains(group_id)
     finally:
         # Cleanup: Delete the created tenant even if test fails
         for wallet_id in wallet_ids:
@@ -549,6 +550,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 
         # Make sure created tenant is returned
         assert_that(tenants).extracting("wallet_id").contains(wallet_id)
+        assert_that(tenants).extracting("group_id").contains(group_id)
 
         response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id=other")
         assert response.status_code == 200
@@ -594,6 +596,7 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
 
         # Make sure created tenant is returned
         assert_that(tenants).extracting("wallet_id").contains(wallet_id)
+        assert_that(tenants).extracting("group_id").contains(group_id)
 
         # Does not return when wallet_name = other
         response = await tenant_admin_client.get(
@@ -667,6 +670,7 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
         assert tenant["wallet_label"] == wallet_label
         assert tenant["wallet_name"] == wallet_name
         assert tenant["image_url"] == image_url
+        assert tenant["group_id"] == group_id
         assert tenant["created_at"] == created_tenant["created_at"]
         assert tenant["updated_at"] == created_tenant["updated_at"]
     finally:

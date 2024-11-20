@@ -336,7 +336,7 @@ async def get_wallet_auth_token(
     return response
 
 
-@router.patch(
+@router.post(
     "/{wallet_id}/access-token",
     response_model=TenantAuth,
     summary="Update auth token by Wallet ID",

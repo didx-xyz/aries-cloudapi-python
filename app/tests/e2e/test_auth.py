@@ -91,7 +91,7 @@ async def test_jwt_invalid_token_error(tenant_admin_client: RichAsyncClient):
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -149,4 +149,4 @@ async def test_invalid_token_error_after_rotation(tenant_admin_client: RichAsync
         delete_response = await tenant_admin_client.delete(
             f"{TENANTS_BASE_PATH}/{wallet_id}"
         )
-        assert delete_response.status_code == 200
+        assert delete_response.status_code == 204

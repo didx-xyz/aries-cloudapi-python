@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import DID, DIDCreate, DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller import DID
+from aries_cloudcontroller import DIDCreate as DIDCreateAcaPy
+from aries_cloudcontroller import DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -10,7 +12,7 @@ from app.exceptions import (
     handle_acapy_call,
     handle_model_with_validation,
 )
-from app.models.wallet import SetDidEndpointRequest
+from app.models.wallet import DIDCreate, SetDidEndpointRequest
 from app.services import acapy_wallet
 from shared.log_config import get_logger
 
@@ -19,30 +21,72 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/wallet/dids", tags=["wallet"])
 
 
-@router.post("", response_model=DID)
+@router.post("", response_model=DID, summary="Create Local DID")
 async def create_did(
     did_create: Optional[DIDCreate] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-):
-    """Create Local DID."""
-    logger.debug("POST request received: Create DID")
+) -> DID:
+    """
+    Create Local DID
+    ---
+
+    This endpoint allows you to create a new DID in the wallet.
+    The `method` parameter is optional and can be set to
+    'sov', 'key', 'web', 'did:peer:2', or 'did:peer:4'.
+
+    The `options` field is deprecated and has been flattened, such that `did` and
+    `key_type` are now top-level fields. The `options` field will still
+    take precedence over the top-level fields if it is present.
+
+    Request Body:
+    ---
+        DIDCreate (Optional):
+            method (str, optional): Method for the requested DID.
+            options (DIDCreateOptions, optional): Deprecated.
+            seed (str, optional): Optional seed for DID.
+            key_type (str, optional): Key type for the DID.
+            did (str, optional): Specific DID value.
+
+    Response:
+    ---
+        Returns the created DID object.
+    """
+    logger.debug("POST request received: Create DID with data: %s", did_create)
+
+    if not did_create:
+        did_create = DIDCreate()
+
+    # Convert the custom DIDCreate model to Acapy's DIDCreateOptions
+    did_create_options = did_create.to_acapy_options()
+
+    # Initialize the Acapy DIDCreate model with necessary fields
+    acapy_did_create = DIDCreateAcaPy(
+        method=did_create.method, options=did_create_options, seed=did_create.seed
+    )
 
     async with client_from_auth(auth) as aries_controller:
-        logger.debug("Creating DID")
+        logger.debug("Creating DID with request: %s", acapy_did_create)
         result = await acapy_wallet.create_did(
-            did_create=did_create, controller=aries_controller
+            did_create=acapy_did_create, controller=aries_controller
         )
 
     logger.debug("Successfully created DID.")
     return result
 
 
-@router.get("", response_model=List[DID])
+@router.get("", response_model=List[DID], summary="List DIDs")
 async def list_dids(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[DID]:
     """
-    Retrieve list of DIDs.
+    Retrieve List of DIDs
+    ---
+
+    This endpoint allows you to retrieve a list of DIDs in the wallet.
+
+    Response:
+    ---
+        Returns a list of DID objects.
     """
     logger.debug("GET request received: Retrieve list of DIDs")
 
@@ -60,12 +104,20 @@ async def list_dids(
     return did_result.results
 
 
-@router.get("/public", response_model=DID)
+@router.get("/public", response_model=DID, summary="Fetch Public DID")
 async def get_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
-    Fetch the current public DID.
+    Fetch the Current Public DID
+    ---
+
+    This endpoint allows you to fetch the current public DID.
+    By default, only issuers will have public DIDs.
+
+    Response:
+    ---
+        Returns the public DID.
     """
     logger.debug("GET request received: Fetch public DID")
 
@@ -82,12 +134,29 @@ async def get_public_did(
     return result.result
 
 
-@router.put("/public", response_model=DID)
+@router.put("/public", response_model=DID, summary="Set Public DID")
 async def set_public_did(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
-    """Set the current public DID."""
+    """
+    Set the Current Public DID
+    ---
+
+    This endpoint allows you to set the current public DID.
+
+    **Notes:**
+        - Requires an active endorser connection to make a DID public.
+        - By default, only issuers can have and update public DIDs.
+
+    Parameters:
+    ---
+        did: str
+
+    Response:
+    ---
+        Returns the public DID.
+    """
     logger.debug("PUT request received: Set public DID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -98,15 +167,29 @@ async def set_public_did(
     return result
 
 
-@router.patch("/{did}/rotate-keypair", status_code=204)
+@router.patch("/{did}/rotate-keypair", status_code=204, summary="Rotate Key Pair")
 async def rotate_keypair(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
+    """
+    Rotate Key Pair for DID
+    ---
+
+    This endpoint allows you to rotate the key pair for a DID.
+
+    Parameters:
+    ---
+        did: str
+
+    Response:
+    ---
+        204 No Content
+    """
     bound_logger = logger.bind(body={"did": did})
     bound_logger.debug("PATCH request received: Rotate keypair for DID")
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Rotating keypair")
+        bound_logger.debug("Rotating key pair")
         await handle_acapy_call(
             logger=logger, acapy_call=aries_controller.wallet.rotate_keypair, did=did
         )
@@ -114,12 +197,25 @@ async def rotate_keypair(
     bound_logger.debug("Successfully rotated keypair.")
 
 
-@router.get("/{did}/endpoint", response_model=DIDEndpoint)
+@router.get("/{did}/endpoint", response_model=DIDEndpoint, summary="Get DID Endpoint")
 async def get_did_endpoint(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DIDEndpoint:
-    """Get DID endpoint."""
+    """
+    Get DID Endpoint
+    ---
+
+    This endpoint allows you to fetch the endpoint for a DID.
+
+    Parameters:
+    ---
+        did: str
+
+    Response:
+    ---
+        Returns the endpoint for the DID.
+    """
     bound_logger = logger.bind(body={"did": did})
     bound_logger.debug("GET request received: Get endpoint for DID")
     async with client_from_auth(auth) as aries_controller:
@@ -132,14 +228,27 @@ async def get_did_endpoint(
     return result
 
 
-@router.post("/{did}/endpoint", status_code=204)
+@router.post("/{did}/endpoint", status_code=204, summary="Set DID Endpoint")
 async def set_did_endpoint(
     did: str,
     body: SetDidEndpointRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
-    """Update Endpoint in wallet and on ledger if posted to it."""
+    """
+    Update Endpoint of DID in Wallet (and on Ledger, if it is a Public DID)
+    ---
 
+    This endpoint allows you to update the endpoint for a DID.
+
+    Parameters:
+    ---
+        did: str
+
+    Request Body:
+    ---
+        SetDidEndpointRequest:
+            endpoint: str
+    """
     # "Endpoint" type is for making connections using public indy DIDs
     bound_logger = logger.bind(body={"did": did, "body": body})
     bound_logger.debug("POST request received: Get endpoint for DID")

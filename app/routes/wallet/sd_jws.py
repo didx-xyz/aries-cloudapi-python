@@ -29,112 +29,83 @@ async def sign_sd_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSCreateResponse:
     """
-    Sign Selective Disclosure for JWS (SD-JWS)
+    Sign a Selective Disclosure JSON Web Signature (SD-JWS).
     ---
 
-    This endpoint allows the user to sign a Selective Disclosure for JWS (SD-JWS).
-    The endpoint returns an SD-JWS that can be used to selectively disclose attributes
-    to a verifier.
+    This endpoint allows users to create a Selective Disclosure JSON Web Signature (SD-JWS).
+    The SD-JWS enables the selective disclosure of specific attributes to a verifier while keeping others confidential.
 
-    When populating the body of the request, the user must provide either the
-    did or the verification_method field.
+    **Usage:**
 
-    If an issuer signs a JWS with a did:sov DID, the DID must be public.
+    - **DID-Based Signing:** Provide the `did` field with a valid DID.
+    The Aries agent will automatically select the appropriate verification key associated with the DID.
 
-    The difference between the did and verification_method fields is:
+    - **Verification Method-Based Signing:** Provide the `verification_method` field with a specific verification method
+    (DID with verkey) to explicitly specify which key to use for signing.
 
-     - If the did field is used, the Aries agent will make an educated guess about
-       which verkey associated with the DID to use for signing the JWT.
-     - If the verification_method field is used, the user explicitly specifies which
-       verkey to use for signing the JWT, i.e., the DID with the associated key.
+    **Notes:**
 
-    The header field is optional and can be used to specify the header of the JWS.
-    The typ, alg, and kid fields in the header are automatically populated by the Aries agent.
+    - If the issuer uses a `did:sov` DID, ensure that the DID is public.
+    - The `headers` field is optional. Custom headers can be specified, but the `typ`, `alg`,
+      and `kid` fields are automatically populated by the Aries agent based on the signing method.
+    - The `non_sd_list` field specifies attributes that are **not** selectively disclosed.
+      Attributes listed here will always be included in the SD-JWS.
 
-    The non_sd_list field is a list of non-selective disclosure attributes.
-    These attributes are not included in the selective disclosure; i.e., they are always disclosed.
-    If an attribute is a list or a dictionary, the attribute name should be included
-    in the non_sd_list.
-    In such cases, the attribute itself will be disclosed in the SD-JWS, but not
-    the values in the list or the key-value pairs in the dictionary.
+    **Non-Selective Disclosure (`non_sd_list`):**
 
-    Values in a list can be added to the non_sd_list by including the attribute
-    name and the range of the list in the following format:
+    - To exclude list elements:
+        - Use the format `"<attribute_name>[start:end]"` where `start` and `end` define the range
+          (e.g., `"nationalities[1:3]"`).
+    - To exclude specific dictionary attributes:
+        - Use the format `"<dictionary_name>.<attribute_name>"` (e.g., `"address.street_address"`).
 
-    "<attribute_name>[start:end]"
-
-     - start is the start of the range as a int.
-     - end is the end of the range (exclusive).
-
-    Values in a dictionary can be added to the non_sd_list by specifying the
-    dictionary name followed by the attribute name in the following format:
-
-    "<dictionary_name>.<attribute_name>"
-
-     - <dictionary_name> is the name of the dictionary.
-     - <attribute_name> is the attribute name within the dictionary.
-
-    The endpoint will return the signed SD-JWS along with the disclosures needed
-    to reveal the attributes in the SD-JWS:
-
-    <Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>
-
-    It is the holder’s responsibility to identify which disclosure corresponds to
-    which attributes in the SD-JWS.
-    The holder must provide the SD-JWS with the appropriate disclosures to the
-    verifier upon request.
-
-    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
-    for the SD-JWT / SD-JWS spec.
-
-    Example request body:
-    ---
-    ```
-        {
-          "did": "did:sov:39TXHazGAYif5FUFCjQhYX",  < --- Public did of issuer
-          "payload": {
-           ""credential_subject": "reference_to_holder",
-           "given_name": "John",
-           "family_name": "Doe",
-           "email": "johndoe@example.com",
-           "phone_number": "+1-202-555-0101",
-           "nationalities": ["a","b","c","d"],
-           "address": {
-             "street_address": "123 Main St",
-             "locality": "Anytown",
-             "region": "Anystate",
-             "country": "US"
-           },
-           "birthdate": "1940-01-01"
-          },
-          "non_sd_list": [
+    **Example Request Body:**
+    ```json
+    {
+        "did": "did:sov:39TXHazGAYif5FUFCjQhYX",
+        "payload": {
+            "credential_subject": "reference_to_holder",
+            "given_name": "John",
+            "family_name": "Doe",
+            "email": "johndoe@example.com",
+            "phone_number": "+27-123-4567",
+            "nationalities": ["a","b","c","d"],
+            "address": {
+                "street_address": "123 Main St",
+                "locality": "Anytown",
+                "region": "Anywhere",
+                "country": "ZA"
+            },
+            "birthdate": "1940-01-01"
+        },
+        "non_sd_list": [
             "given_name",
             "address",
             "address.street_address",
             "nationalities",
             "nationalities[1:3]"
-          ]
-        }
+        ]
+    }
     ```
 
-    Request body:
+    Request Body:
     ---
-        SDJWSCreateRequest: The SD-JWS to sign.
-            did: str:
-              The DID to sign the SD-JWS with.
-            headers: dict:
-              The header of the SD-JWS.
-            payload: dict:
-              The payload of the SD-JWS.
-            verification_method:
-              str: The verification method (did with verkey) to use.
-            non_sd_list: Optional(list):
-              List of non-selective disclosure attributes.
+        SDJWSCreateRequest:
+            `did` (str, optional): The DID to sign the SD-JWS with.
+            `verification_method` (str, optional): The verification method (DID with verkey) to use for signing.
+            `payload` (dict): The JSON payload to be signed.
+            `headers` (dict, optional): Custom headers for the SD-JWS. The `typ`, `alg`, and `kid` fields are auto-populated.
+            `non_sd_list` (List[str], optional): List of attributes excluded from selective disclosure.
 
-    Returns:
+    Response:
     ---
         SDJWSCreateResponse:
-          The signed SD-JWS followed by the disclosures.
+            `sd_jws` (str): The resulting SD-JWS string concatenated with the necessary disclosures in the format
+            `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`.
+
+    References:
+
+    - [Selective Disclosure JSON Web Token (SD-JWT) Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
     """
     bound_logger = logger.bind(
         # Do not log payload:
@@ -174,31 +145,49 @@ async def verify_sd_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSVerifyResponse:
     """
-    Verify Selective Disclosure JWS (SD-JWS)
+    Verify a Selective Disclosure JSON Web Signature (SD-JWS).
     ---
 
-    This endpoint allows the user to verify a Selective Disclosure JWS (SD-JWS).
-    The validity of the SD-JWS is checked and the disclosures are returned.
+    This endpoint allows users to verify the authenticity and integrity of a Selective Disclosure
+    JSON Web Signature (SD-JWS). It decodes the SD-JWS to retrieve the payload and headers,
+    assesses its validity, and processes the disclosures.
 
-    The SD-JWS followed by the disclosures are passed to this endpoint and should be in the format:
-        `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>~`
-    Where each disclosure will reveal its associated attribute.
-    The holder only needs to reveal the disclosures that the verifier requests,
-    and can keep the rest of the disclosures secret.
+    **Usage:**
 
-    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
-    for the SD-JWT / SD-JWS spec.
+    - Submit the SD-JWS string concatenated with the necessary disclosures to this endpoint.
+    - The format should be: `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`.
+    - The holder provides the SD-JWS along with the required disclosures based on the verifier's request.
 
-    Request body:
+    **Notes:**
+
+    - Only the disclosures relevant to the verifier's request needs to be provided.
+      Other disclosures can remain confidential.
+
+    **Example Request Body:**
+    ```json
+    {
+        "sd_jws": "<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>"
+    }
+    ```
+
+    Request Body:
     ---
         SDJWSVerifyRequest:
-            sd_jws: str:
-              The SD-JWS and disclosures to verify and reveal.
+            `sd_jws` (str): The concatenated SD-JWS and disclosures to verify and reveal.
 
-    Returns:
+    Response:
     ---
         SDJWSVerifyResponse:
-          The validity of the SD-JWS and the selectively disclosed attributes.
+            `valid` (bool): Indicates whether the SD-JWS is valid.
+            `payload` (dict): The decoded payload of the SD-JWS.
+            `headers` (dict): The headers extracted from the SD-JWS.
+            `kid` (str): The Key ID of the signer.
+            `disclosed_attributes` (dict): The selectively disclosed attributes based on the provided disclosures.
+            `error` (str, optional): Error message if the SD-JWS verification fails.
+
+    **References:**
+
+    - [Selective Disclosure JSON Web Token (SD-JWT) Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify SD-JWS")

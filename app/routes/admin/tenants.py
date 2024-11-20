@@ -58,7 +58,7 @@ group_id_query: Optional[str] = Query(
 )
 
 
-@router.post("", response_model=CreateTenantResponse, summary="Create a new Tenant")
+@router.post("", response_model=CreateTenantResponse, summary="Create New Tenant")
 async def create_tenant(
     body: CreateTenantRequest,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
@@ -92,7 +92,7 @@ async def create_tenant(
                 A list of roles to assign to the Tenant.
             image_url: Optional[str]
                 An optional image URL for the Tenant.
-            extra_settings: Optional[Dict[str, Union[bool, str]]]
+            extra_settings: Optional[dict]]
                 Optional per-tenant settings to configure wallet behaviour for advanced users.
 
     Response body:
@@ -244,7 +244,7 @@ async def delete_tenant_by_id(
     along with any associated credentials, connections, and other data. If the tenant is an issuer or verifier,
     they will also be removed from the trust registry.
 
-    Request parameters:
+    Request Parameters:
     ---
         wallet_id: str
             The Wallet ID of the Tenant to delete.
@@ -288,7 +288,7 @@ async def delete_tenant_by_id(
 @router.get(
     "/{wallet_id}/access-token",
     response_model=TenantAuth,
-    summary="Update auth token by Wallet ID",
+    summary="(Deprecated) Rotate and Get New Access Token for Wallet",
     deprecated=True,
 )
 async def get_wallet_auth_token(
@@ -297,17 +297,17 @@ async def get_wallet_auth_token(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     """
-    Rotate Wallet access token by ID
+    (Deprecated) Rotate and get access token for Wallet
     ---
 
-    Calling this endpoint will invalidate the previous access token for the Wallet.
+    Calling this endpoint will invalidate the previous access token for the Wallet, and return a new one.
 
-    Request parameters:
+    Request Parameters:
     ---
         wallet_id: str
             The Wallet ID of the tenant for which the access token will be rotated.
 
-    Response body:
+    Response Body:
     ---
         TenantAuth
             access_token: str
@@ -340,25 +340,25 @@ async def get_wallet_auth_token(
 @router.post(
     "/{wallet_id}/access-token",
     response_model=TenantAuth,
-    summary="Update auth token by Wallet ID",
+    summary="Rotate and Get New Access Token for Wallet",
 )
-async def get_wallet_auth_token(
+async def post_wallet_auth_token(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     """
-    Rotate Wallet access token by ID
+    Rotate and get new access token for Wallet
     ---
 
-    Calling this endpoint will invalidate the previous access token for the Wallet.
+    Calling this endpoint will invalidate the previous access token for the Wallet, and return a new one.
 
-    Request parameters:
+    Request Parameters:
     ---
         wallet_id: str
             The Wallet ID of the tenant for which the access token will be rotated.
 
-    Response body:
+    Response Body:
     ---
         TenantAuth
             access_token: str
@@ -454,7 +454,7 @@ async def update_tenant(
     return response
 
 
-@router.get("/{wallet_id}", response_model=Tenant, summary="Get Tenant by wallet ID")
+@router.get("/{wallet_id}", response_model=Tenant, summary="Get Tenant by Wallet ID")
 async def get_tenant(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
@@ -464,7 +464,7 @@ async def get_tenant(
     Fetch Tenant info by ID
     ---
 
-    Use this endpoint to fetch Tenant info by its Wallet ID.
+    Use this endpoint to fetch Tenant info by Wallet ID.
 
     Request parameters:
     ---
@@ -498,7 +498,7 @@ async def get_tenant(
     return response
 
 
-@router.get("", response_model=List[Tenant], summary="Fetch All Tenants (Paginated)")
+@router.get("", response_model=List[Tenant], summary="Fetch Tenants")
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = group_id_query,

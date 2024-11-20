@@ -55,7 +55,7 @@ class DIDCreate(DIDCreateAcaPy):
     method: Optional[StrictStr] = Field(
         default="sov",
         description="Method for the requested DID. Supported methods are 'sov', `web`, `did:peer:2` or `did:peer:4`.",
-        examples=["sov", "key", "did:peer:2", "did:peer:4"],
+        examples=["sov", "key", "web", "did:peer:2", "did:peer:4"],
     )
     options: Optional[DIDCreateOptions] = Field(
         default=None,

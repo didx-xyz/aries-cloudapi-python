@@ -47,8 +47,9 @@ class CredInfoList(BaseModel):
 
 class DIDCreate(DIDCreateAcaPy):
     """
-    Extends the AcapyDIDCreate model with smart defaults and simplified interface.
-    Automatically handles the options field structure while maintaining compatibility.
+    Extends the AcapyDIDCreate model with smart defaults and a simplified interface.
+    Handles deprecated `options` field from client requests by populating `key_type` and `did`.
+    Downstream processes should use the appropriate `options` structure based on the model's fields.
     """
 
     method: Optional[StrictStr] = Field(
@@ -59,7 +60,7 @@ class DIDCreate(DIDCreateAcaPy):
     options: Optional[DIDCreateOptions] = Field(
         default=None,
         deprecated=True,
-        description="To define a key type and/or a did depending on chosen DID method.",
+        description="(Deprecated) Define a key type and/or a DID depending on the chosen DID method.",
         examples=[{"key_type": "ed25519", "did": "did:peer:2"}],
     )
     seed: Optional[StrictStr] = Field(
@@ -73,7 +74,7 @@ class DIDCreate(DIDCreateAcaPy):
     )
     did: Optional[str] = Field(
         default=None,
-        description="Specify final value of did (including did:<method>: prefix) if the method supports/requires it.",
+        description="Specify the final value of DID (including `did:<method>:` prefix) if the method supports it.",
         strict=True,
     )
 
@@ -81,19 +82,34 @@ class DIDCreate(DIDCreateAcaPy):
     @classmethod
     def handle_deprecated_options(cls, values: dict) -> dict:
         """
-        Handle both deprecated options field and new flattened fields.
-        Priority: If both are provided, new fields take precedence.
-        """
+        Handle deprecated `options` field from client requests.
+        Populate `key_type` and `did` fields based on `options` if they aren't explicitly provided.
+        Do not duplicate data by setting `options` based on `key_type` and `did`.
 
-        options: dict = values.get("options")
-        if not options:
-            values["options"] = {}
-            values["options"]["key_type"] = values.get("key_type") or "ed25519"
-            values["options"]["did"] = values.get("did")
-        else:
-            if not options.get("key_type"):
-                values["options"]["key_type"] = values.get("key_type") or "ed25519"
-            if not options.get("did") and values.get("did"):
-                values["options"]["did"] = values["did"]
+        Args:
+            values: Dictionary containing the model fields
+
+        Returns:
+            Updated values dict with `key_type` and `did` populated from `options` if necessary
+        """
+        options = values.get("options")
+
+        if options:
+            # Populate `key_type` from `options` if not explicitly provided
+            if not values.get("key_type"):
+                values["key_type"] = options.get("key_type", "ed25519")
+
+            # Populate `did` from `options` if not explicitly provided
+            if not values.get("did"):
+                values["did"] = options.get("did")
 
         return values
+
+    def to_acapy_options(self) -> DIDCreateOptions:
+        """
+        Convert the model's fields into the `DIDCreateOptions` structure expected by ACA-Py.
+
+        Returns:
+            An instance of `DIDCreateOptions` populated with `key_type` and `did`.
+        """
+        return DIDCreateOptions(key_type=self.key_type, did=self.did)

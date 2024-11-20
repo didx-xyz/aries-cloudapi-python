@@ -34,32 +34,38 @@ async def create_did(
     The `method` parameter is optional and can be set to 'key',
     'sov', `web`, `did:peer:2` or `did:peer:4`.
 
-    The options field is deprecated it has been flattened and the `did` and
-    `key_type` fields are now top level fields. The `options` field will still
-    take precedence over the top level fields if it is present.
+    The `options` field is deprecated and has been flattened,
+    such that `did` and `key_type` are now top-level fields.
+    The `options` field will still take precedence over the top-level fields if it is present.
 
-    Request body:
+    Request Body:
     ---
-        DIDCreate Optional:
-            method: str
-            options: DIDCreateOptions
-            seed: str
-            key_type: str
-            did: str
+        DIDCreate (Optional):
+            method (str, optional): Method for the requested DID.
+            options (DIDCreateOptions, optional): Deprecated.
+            seed (str, optional): Optional seed for DID.
+            key_type (str, optional): Key type for the DID.
+            did (str, optional): Specific DID value.
 
     Response:
     ---
         Returns the created DID object.
-
     """
-    logger.debug("POST request received: Create DID")
+    logger.debug("POST request received: Create DID with data: %s", did_create)
 
-    acapy_did_create = None
-    if did_create:
-        acapy_did_create = DIDCreateAcaPy(**did_create.model_dump())
+    if not did_create:
+        did_create = DIDCreate()
+
+    # Convert the custom DIDCreate model to Acapy's DIDCreateOptions
+    did_create_options = did_create.to_acapy_options()
+
+    # Initialize the Acapy DIDCreate model with necessary fields
+    acapy_did_create = DIDCreateAcaPy(
+        method=did_create.method, options=did_create_options, seed=did_create.seed
+    )
 
     async with client_from_auth(auth) as aries_controller:
-        logger.debug("Creating DID")
+        logger.debug("Creating DID with request: %s", acapy_did_create)
         result = await acapy_wallet.create_did(
             did_create=acapy_did_create, controller=aries_controller
         )
@@ -112,7 +118,6 @@ async def get_public_did(
     Response:
     ---
         Returns the public DID.
-
     """
     logger.debug("GET request received: Fetch public DID")
 
@@ -149,7 +154,6 @@ async def set_public_did(
     Response:
     ---
         Returns the public DID.
-
     """
     logger.debug("PUT request received: Set public DID")
 
@@ -179,7 +183,6 @@ async def rotate_keypair(
     Response:
     ---
         204 No Content
-
     """
     bound_logger = logger.bind(body={"did": did})
     bound_logger.debug("PATCH request received: Rotate keypair for DID")
@@ -210,7 +213,6 @@ async def get_did_endpoint(
     Response:
     ---
         Returns the endpoint for the DID.
-
     """
     bound_logger = logger.bind(body={"did": did})
     bound_logger.debug("GET request received: Get endpoint for DID")
@@ -245,7 +247,6 @@ async def set_did_endpoint(
         SetDidEndpointRequest:
             endpoint: str
     """
-
     # "Endpoint" type is for making connections using public indy DIDs
     bound_logger = logger.bind(body={"did": did, "body": body})
     bound_logger.debug("POST request received: Get endpoint for DID")

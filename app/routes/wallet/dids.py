@@ -31,12 +31,12 @@ async def create_did(
     ---
 
     This endpoint allows you to create a new DID in the wallet.
-    The `method` parameter is optional and can be set to 'key',
-    'sov', `web`, `did:peer:2` or `did:peer:4`.
+    The `method` parameter is optional and can be set to
+    'sov', 'key', 'web', 'did:peer:2', or 'did:peer:4'.
 
-    The `options` field is deprecated and has been flattened,
-    such that `did` and `key_type` are now top-level fields.
-    The `options` field will still take precedence over the top-level fields if it is present.
+    The `options` field is deprecated and has been flattened, such that `did` and
+    `key_type` are now top-level fields. The `options` field will still
+    take precedence over the top-level fields if it is present.
 
     Request Body:
     ---
@@ -79,7 +79,7 @@ async def list_dids(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[DID]:
     """
-    Retrieve list of DIDs
+    Retrieve List of DIDs
     ---
 
     This endpoint allows you to retrieve a list of DIDs in the wallet.
@@ -109,7 +109,7 @@ async def get_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
-    Fetch the current public DID
+    Fetch the Current Public DID
     ---
 
     This endpoint allows you to fetch the current public DID.
@@ -140,12 +140,14 @@ async def set_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
-    Set the current public DID
+    Set the Current Public DID
     ---
 
     This endpoint allows you to set the current public DID.
-    The tenant needs an endorser connection to make a DID public.
-    By default, only issuers have public DIDs and can update them.
+
+    **Notes:**
+        - Requires an active endorser connection to make a DID public.
+        - By default, only issuers can have and update public DIDs.
 
     Parameters:
     ---
@@ -171,7 +173,7 @@ async def rotate_keypair(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Rotate key pair for DID
+    Rotate Key Pair for DID
     ---
 
     This endpoint allows you to rotate the key pair for a DID.
@@ -201,7 +203,7 @@ async def get_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DIDEndpoint:
     """
-    Get DID endpoint
+    Get DID Endpoint
     ---
 
     This endpoint allows you to fetch the endpoint for a DID.
@@ -233,7 +235,7 @@ async def set_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Update endpoint of DID in wallet (and on ledger, if it is a public DID)
+    Update Endpoint of DID in Wallet (and on Ledger, if it is a Public DID)
     ---
 
     This endpoint allows you to update the endpoint for a DID.
@@ -242,7 +244,7 @@ async def set_did_endpoint(
     ---
         did: str
 
-    Request body:
+    Request Body:
     ---
         SetDidEndpointRequest:
             endpoint: str

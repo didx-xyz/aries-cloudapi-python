@@ -150,6 +150,7 @@ async def test_create_tenant_member_w_wallet_name(
         )
 
         assert wallet_id == wallet.wallet_id
+        assert tenant["group_id"] == group_id
         assert tenant["wallet_label"] == wallet_label
         assert tenant["created_at"] == wallet.created_at
         assert tenant["updated_at"] == wallet.updated_at

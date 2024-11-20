@@ -36,7 +36,7 @@ async def register_schema(schema_id: str) -> None:
             raise TrustRegistryException(
                 f"Error registering schema `{schema_id}`. Error: `{e.detail}`.",
                 e.status_code,
-            )
+            ) from e
 
     bound_logger.debug("Successfully registered schema on trust registry.")
 
@@ -62,7 +62,7 @@ async def fetch_schemas() -> List[Schema]:
             )
             raise TrustRegistryException(
                 f"Unable to fetch schemas: `{e.detail}`.", e.status_code
-            )
+            ) from e
 
     result = [Schema.model_validate(schema) for schema in schemas_res.json()]
     logger.debug("Successfully fetched schemas from trust registry.")
@@ -99,7 +99,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
                 raise TrustRegistryException(
                     f"Unable to fetch schema: `{e.detail}`.",
                     e.status_code,
-                )
+                ) from e
 
     result = Schema.model_validate(schema_response.json())
     logger.debug("Successfully fetched schema from trust registry.")
@@ -129,6 +129,6 @@ async def remove_schema_by_id(schema_id: str) -> None:
             raise TrustRegistryException(
                 f"Error removing schema from trust registry: `{e.detail}`.",
                 e.status_code,
-            )
+            ) from e
 
     bound_logger.debug("Successfully removed schema from trust registry.")

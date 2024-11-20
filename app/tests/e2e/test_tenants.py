@@ -104,6 +104,7 @@ async def test_create_tenant_member_wo_wallet_name(
         wallet_name = wallet.settings["wallet.name"]
         assert wallet_id == wallet.wallet_id
         assert tenant["wallet_label"] == wallet_label
+        assert tenant["group_id"] == group_id
         assert tenant["created_at"] == wallet.created_at
         assert tenant["updated_at"] == wallet.updated_at
         assert tenant["wallet_name"] == wallet_name
@@ -406,6 +407,7 @@ async def test_update_tenant_verifier_to_issuer(
         assert_that(new_tenant).has_image_url(new_image_url)
         assert_that(new_tenant).has_wallet_label(new_wallet_label)
         assert_that(new_tenant).has_created_at(wallet.created_at)
+        assert_that(new_tenant).has_group_id(group_id)
 
         new_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)
 

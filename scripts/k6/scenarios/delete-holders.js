@@ -78,8 +78,8 @@ export default function (data) {
   const walletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
   const deleteHolderResponse = deleteTenant(bearerToken, walletId);
   check(deleteHolderResponse, {
-    "Delete Holder Tenant Response status code is 200": (r) => {
-      if (r.status !== 200) {
+    "Delete Holder Tenant Response status code is 204": (r) => {
+      if (r.status !== 204) {
         console.error(
           `Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`
         );

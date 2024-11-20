@@ -64,22 +64,32 @@ async def create_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> CreateTenantResponse:
     """
-    Create a new Tenant
+    Create a New Tenant
     ---
 
-    Use this endpoint to create a Tenant, which generates a Wallet and onboards it with the specified roles.
+    Use this endpoint to create a new Tenant, which is the same as creating a new Wallet.
 
-    The `wallet_name` is an optional field that allows you to assign a name to the wallet,
-    useful with `get_tenants` to fetch Wallets by Wallet name.
+    The `wallet_label` is a required field that allows you to assign an alias to the Tenant.
+    This label is used as the default alias in connections (i.e. the other party will see this name in their records).
 
-    The roles can be `issuer` or `verifier`. If no roles are provided, the Tenant will be created
-    without any roles and be considered a `holder`.
+    If roles (issuer and/or verifier) are specified, the Tenant will be onboarded with these roles and added to the
+    trust registry. An issuer or a verifier is referred to as an 'actor' in the trust registry, and the `wallet_label`
+    will be used as the name for this actor.
 
-    The `image_url` is an optional field that allows you to assign an image to the Wallet.
+    If no roles are provided, then the created wallet represents a regular tenant
+    (also referred to as a 'user', 'wallet', 'holder', or 'prover', depending on the context).
 
-    Tenants onboarded with roles will be added to the trust registry.
+    The `wallet_label` does not have to be unique for regular tenants, but it may not match the name of an existing
+    actor in the trust registry, and will be blocked. Conversely, an issuer or verifier may not use a label that is
+    already in use by another tenant, and will also be blocked.
 
-    `extra_settings` is an optional field that allows you to configure the wallet behaviour for advanced users.
+    The `wallet_name` is an optional field that allows you to assign an additional identifier to the wallet, and is
+    useful with `get_tenants` to fetch Wallets by name. Wallet names must be unique.
+
+    The `image_url` is an optional field for assigning an image to the Wallet. For actors, this will also be added to
+    the trust registry.
+
+    `extra_settings` is an optional field intended for advanced users, which allows configuring wallet behaviour.
 
     Request body:
     ---
@@ -401,15 +411,12 @@ async def update_tenant(
 
     Update a Tenant's details based on their Wallet ID.
 
+    Issuers or verifiers can be promoted to hold both roles, but this endpoint does not support revoking roles.
+
     Holders cannot have their roles updated. Attempting to assign issuer or verifier
     roles to a holder will result in a 409 conflict error.
 
-    Only issuers or verifiers can be updated to hold both roles.
-
-    This endpoint does not support revoking roles from issuers or verifiers.
-
-    Updates to `image_url` for issuers and verifiers will be reflected on the trust registry.
-
+    Updates to `wallet_label` or `image_url` for issuers and verifiers will be reflected on the trust registry.
 
     Request body:
     ---
@@ -509,16 +516,16 @@ async def get_tenants(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """
-    Fetch all Tenants, or Fetch by Wallet Name
+    Fetch all Tenants (paginated), or Fetch by Wallet Name
     ---
 
-    Use this endpoint to fetch all tenants, or filter by wallet name and/or group ID.
+    Use this endpoint to fetch all tenants (using pagination), or filter by wallet name.
 
-    The default for `limit` is 1000.
+    The default for `limit` is 1000, with a maximum of 10000.
 
-    Results are ordered by record created time.
+    Results are ordered by creation time (newest first), and can be controlled to be in ascending order (oldest first).
 
-    Optional Request parameters:
+    Optional Request Parameters:
     ---
         wallet_name: str
             Filter by wallet name.
@@ -527,8 +534,7 @@ async def get_tenants(
         offset: int
             Number of results to skip.
         descending: bool
-            Whether to return results in descending order.
-
+            Whether to return results in descending order or not. Defaults to true (newest first).
 
     Response body:
     ---

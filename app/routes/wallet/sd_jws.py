@@ -94,7 +94,7 @@ async def sign_sd_jws(
             `did` (str, optional): The DID to sign the SD-JWS with.
             `verification_method` (str, optional): The verification method (DID with verkey) to use for signing.
             `payload` (dict): The JSON payload to be signed.
-            `headers` (dict, optional): Custom headers for the SD-JWS. The `typ`, `alg`, and `kid` fields are auto-populated.
+            `headers` (dict, optional): Custom headers for the SD-JWS.
             `non_sd_list` (List[str], optional): List of attributes excluded from selective disclosure.
 
     Response:
@@ -103,9 +103,10 @@ async def sign_sd_jws(
             `sd_jws` (str): The resulting SD-JWS string concatenated with the necessary disclosures in the format
             `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`.
 
-    References:
+    **References:**
 
-    - [Selective Disclosure JSON Web Token (SD-JWT) Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
+    - [Selective Disclosure JSON Web Token (SD-JWT)
+      Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
     """
     bound_logger = logger.bind(
         # Do not log payload:
@@ -187,7 +188,8 @@ async def verify_sd_jws(
 
     **References:**
 
-    - [Selective Disclosure JSON Web Token (SD-JWT) Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
+    - [Selective Disclosure JSON Web Token (SD-JWT)
+      Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify SD-JWS")

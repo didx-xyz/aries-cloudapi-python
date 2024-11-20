@@ -54,7 +54,9 @@ class DIDCreate(DIDCreateAcaPy):
 
     method: Optional[StrictStr] = Field(
         default="sov",
-        description="Method for the requested DID. Supported methods are 'sov', `web`, `did:peer:2` or `did:peer:4`.",
+        description=(
+            "Method for the requested DID. Supported methods are 'sov', 'key', 'web', 'did:peer:2', or 'did:peer:4'."
+        ),
         examples=["sov", "key", "web", "did:peer:2", "did:peer:4"],
     )
     options: Optional[DIDCreateOptions] = Field(
@@ -72,10 +74,9 @@ class DIDCreate(DIDCreateAcaPy):
         description="Key type to use for the DID key_pair. Validated with the chosen DID method's supported key types.",
         examples=["ed25519", "bls12381g2"],
     )
-    did: Optional[str] = Field(
+    did: Optional[StrictStr] = Field(
         default=None,
         description="Specify the final value of DID (including `did:<method>:` prefix) if the method supports it.",
-        strict=True,
     )
 
     @model_validator(mode="before")

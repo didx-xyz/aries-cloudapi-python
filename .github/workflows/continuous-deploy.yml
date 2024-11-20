@@ -188,7 +188,7 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
       - name: Install dependencies with Poetry
-        run: mise run poetry:install:all
+        run: mise run poetry:install
       - name: Run Pylint
         run: |
           poetry run pylint app/ endorser/ shared/ trustregistry/ waypoint/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
@@ -231,7 +231,7 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
       - name: Install dependencies with Poetry
-        run: mise run poetry:install:all
+        run: mise run poetry:install
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io

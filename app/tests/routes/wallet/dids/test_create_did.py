@@ -16,7 +16,10 @@ from app.routes.wallet.dids import create_did
 @pytest.mark.parametrize(
     "request_body, create_body",
     [
-        (None, None),
+        (
+            None,
+            DIDCreateAcaPy(method="sov", options={"key_type": "ed25519"}),
+        ),
         (
             DIDCreate(method="key"),
             DIDCreateAcaPy(

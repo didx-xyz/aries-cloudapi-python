@@ -103,6 +103,7 @@ async def create_tenant(
             wallet_name: str
             created_at: str
             image_url: Optional[str]
+            group_id: Optional[str]
             updated_at: str
             access_token: str
     """
@@ -431,7 +432,7 @@ async def update_tenant(
             created_at: str
             updated_at: Optional[str]
             image_url: Optional[str]
-
+            group_id: Optional[str]
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
     bound_logger.debug("PUT request received: Update tenant")
@@ -479,6 +480,7 @@ async def get_tenant(
             created_at: str
             updated_at: Optional[str]
             image_url: Optional[str]
+            group_id: Optional[str]
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("GET request received: Fetch tenant by id")
@@ -537,6 +539,7 @@ async def get_tenants(
             created_at: str
             updated_at: Optional[str]
             image_url: Optional[str]
+            group_id: Optional[str]
     """
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
     bound_logger.debug(

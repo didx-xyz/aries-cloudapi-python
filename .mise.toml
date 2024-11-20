@@ -31,11 +31,11 @@ POETRY_VIRTUALENVS_CREATE = "false"
 # Setup Python Virtual Environment
 _.python.venv = { path = ".venv", create = true }
 
-[tasks."poetry:install:all"]
+[tasks."poetry:install"]
 description = "Poetry Install dependencies for all submodules"
 depends = ["poetry:install:*"]
 
-[tasks."poetry:update:all"]
+[tasks."poetry:update"]
 description = "Poetry Update lockfiles for all submodules"
 depends = ["poetry:update:*"]
 
@@ -77,7 +77,7 @@ rm -rf tilt/docker
 
 [tasks.tests]
 description = "Run all tests"
-depends = ["poetry:install:all"]
+depends = ["poetry:install"]
 run = """
 #!/bin/bash
 cp .env.example .env
@@ -87,5 +87,5 @@ poetry run pytest . --ignore ./tilt
 
 [tasks."tests:unit"]
 description = "Run unit tests"
-depends = ["poetry:install:all"]
+depends = ["poetry:install"]
 run = "poetry run pytest app --ignore=app/tests/e2e"

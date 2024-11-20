@@ -34,7 +34,7 @@ class RichAsyncClient(AsyncClient):
         verify=ssl_context,
         raise_status_error=True,
         retries: int = 3,
-        retry_on: List[int] = [502, 503],
+        retry_on: Optional[List[int]] = None,
         retry_wait_seconds: float = 0.5,
         **kwargs,
     ) -> None:
@@ -42,7 +42,7 @@ class RichAsyncClient(AsyncClient):
         self.name = name + " - HTTP" if name else "HTTP"  # prepended to exceptions
         self.raise_status_error = raise_status_error
         self.retries = retries
-        self.retry_on = retry_on
+        self.retry_on = retry_on if retry_on is not None else [502, 503]
         self.retry_wait_seconds = retry_wait_seconds
 
     async def _handle_response(self, response: Response) -> Response:

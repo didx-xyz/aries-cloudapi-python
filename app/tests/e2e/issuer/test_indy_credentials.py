@@ -315,6 +315,7 @@ async def test_requesting_already_issued_credential(
             "credential_definition_id": credential_definition_id,
             "attributes": sample_credential_attributes,
         },
+        "save_exchange_record": True,
     }
 
     # Send credential offer

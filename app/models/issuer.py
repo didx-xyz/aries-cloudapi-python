@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from aries_cloudcontroller import LDProofVCDetail, TxnOrPublishRevocationsResult
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
+from app.util.save_exchange_record import SaveExchangeRecordField
 from shared.exceptions import CloudApiValueError
 
 
@@ -18,17 +19,10 @@ class IndyCredential(BaseModel):
     attributes: Dict[str, str]
 
 
-class CredentialBase(BaseModel):
+class CredentialBase(BaseModel, SaveExchangeRecordField):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
-    save_exchange_record: Optional[bool] = Field(
-        default=None,
-        description=(
-            "Whether the credential exchange record should be saved on completion. "
-            "Default is to use the setting configured for the wallet"
-        ),
-    )
 
     @field_validator("indy_credential_detail", mode="before")
     @classmethod

@@ -141,12 +141,22 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Sending v2 credential request")
         request_body = V20CredRequestRequest(auto_remove=auto_remove)
-        record = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=controller.issue_credential_v2_0.send_request,
-            cred_ex_id=credential_exchange_id,
-            body=request_body,
-        )
+
+        try:
+            record = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.issue_credential_v2_0.send_request,
+                cred_ex_id=credential_exchange_id,
+                body=request_body,
+            )
+        except CloudApiException as e:
+            # Provide improved error message:
+            if "create_request() called multiple times" in e.detail:
+                raise CloudApiException(
+                    f"Credential {credential_exchange_id} has already been issued",
+                    status_code=409,
+                ) from e
+            raise e
 
         bound_logger.debug("Returning v2 send request result as CredentialExchange.")
         return cls.__record_to_model(record)

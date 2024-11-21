@@ -38,9 +38,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TAILSCALE_VERSION: 1.76.0
-  HELMFILE_VERSION: v0.169.0
-  HELM_VERSION: v3.16.2
+  TAILSCALE_VERSION: 1.76.6
+  HELMFILE_VERSION: v0.169.1
+  HELM_VERSION: v3.16.3
+  MISE_VERSION: 2024.11.19
 
 jobs:
   build:
@@ -178,6 +179,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -221,6 +223,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -472,6 +475,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -685,6 +689,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true

@@ -15,7 +15,8 @@ from app.services.issuer.acapy_issuer_v2 import IssuerV2
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("record_type", ["indy", "ld_proof", "bad"])
-async def test_request_credential_success(record_type):
+@pytest.mark.parametrize("save_exchange_record", [None, True, False])
+async def test_request_credential_success(record_type, save_exchange_record):
     mock_aries_controller = AsyncMock()
     issuer = Mock()
     issuer.request_credential = IssuerV2.request_credential
@@ -53,11 +54,17 @@ async def test_request_credential_success(record_type):
 
         else:
             await request_credential(
-                credential_exchange_id="v2-test_id", auth="mocked_auth"
+                credential_exchange_id="v2-test_id",
+                save_exchange_record=save_exchange_record,
+                auth="mocked_auth",
             )
 
+            auto_remove = (
+                not save_exchange_record if save_exchange_record is not None else None
+            )
             mock_aries_controller.issue_credential_v2_0.send_request.assert_awaited_once_with(
-                cred_ex_id="test_id", body=V20CredRequestRequest()
+                cred_ex_id="test_id",
+                body=V20CredRequestRequest(auto_remove=auto_remove),
             )
 
 

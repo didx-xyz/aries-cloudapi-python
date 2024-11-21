@@ -299,3 +299,63 @@ async def test_revoke_credential(
 
     assert response.status_code == 200
     assert len(response.json()["cred_rev_ids_published"]) == 1
+
+
+@pytest.mark.anyio
+async def test_requesting_already_issued_credential(
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    credential_definition_id: str,
+):
+    # Create credential offer
+    credential = {
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": sample_credential_attributes,
+        },
+    }
+
+    # Send credential offer
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
+
+    # Wait for offer to be received
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="offer-received",
+        filter_map={
+            "thread_id": thread_id,
+        },
+    )
+
+    # Get credential exchange ID
+    await asyncio.sleep(0.5)  # credential may take moment to reflect after webhook
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"thread_id": thread_id},
+    )
+    credential_exchange_id = (response.json())[0]["credential_exchange_id"]
+
+    # First request should succeed
+    request_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
+    )
+    assert request_response.status_code == 200
+
+    await asyncio.sleep(1)  # sleep for record to update
+
+    # Second request should fail with 409
+    error_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
+    )
+    assert error_response.status_code == 409
+    assert error_response.json()["detail"] == (
+        f"Credential {credential_exchange_id} has already been issued"
+    )

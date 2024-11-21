@@ -63,9 +63,12 @@ class ProofRequestMetadata(BaseModel):
 
 
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
-    save_exchange_record: bool = Field(
-        default=False,
-        description="Whether the presentation exchange record should be saved on completion",
+    save_exchange_record: Optional[bool] = Field(
+        default=None,
+        description=(
+            "Whether the presentation exchange record should be saved on completion. "
+            "Default is to use the setting configured for the wallet"
+        ),
     )
 
 
@@ -81,9 +84,12 @@ class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
-    save_exchange_record: bool = Field(
-        default=False,
-        description="Whether the presentation exchange record should be saved on completion",
+    save_exchange_record: Optional[bool] = Field(
+        default=None,
+        description=(
+            "Whether the presentation exchange record should be saved on completion. "
+            "Default is to use the setting configured for the wallet"
+        ),
     )
 
     @field_validator("indy_presentation_spec", mode="before")

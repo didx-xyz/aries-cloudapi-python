@@ -50,10 +50,14 @@ class VerifierV2(Verifier):
                 status_code=501,
             )
 
+        auto_remove = None
+        if create_proof_request.save_exchange_record is not None:
+            auto_remove = not create_proof_request.save_exchange_record
+
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v2 proof request")
         request_body = V20PresCreateRequestRequest(
-            auto_remove=not create_proof_request.save_exchange_record,
+            auto_remove=auto_remove,
             presentation_request=presentation_request,
             auto_verify=True,
             comment=create_proof_request.comment,
@@ -93,9 +97,13 @@ class VerifierV2(Verifier):
                 status_code=501,
             )
 
+        auto_remove = None
+        if send_proof_request.save_exchange_record is not None:
+            auto_remove = not send_proof_request.save_exchange_record
+
         bound_logger = logger.bind(body=send_proof_request)
         request_body = V20PresSendRequestRequest(
-            auto_remove=not send_proof_request.save_exchange_record,
+            auto_remove=auto_remove,
             connection_id=send_proof_request.connection_id,
             presentation_request=presentation_request,
             auto_verify=True,
@@ -121,7 +129,10 @@ class VerifierV2(Verifier):
     async def accept_proof_request(
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
-        auto_remove = not accept_proof_request.save_exchange_record
+        auto_remove = None
+        if accept_proof_request.save_exchange_record is not None:
+            auto_remove = not accept_proof_request.save_exchange_record
+
         if accept_proof_request.type == ProofRequestType.INDY:
             presentation_spec = V20PresSpecByFormatRequest(
                 auto_remove=auto_remove,

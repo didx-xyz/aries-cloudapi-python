@@ -22,9 +22,12 @@ class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
-    save_exchange_record: bool = Field(
-        default=False,
-        description="Whether the credential exchange record should be saved on completion",
+    save_exchange_record: Optional[bool] = Field(
+        default=None,
+        description=(
+            "Whether the credential exchange record should be saved on completion. "
+            "Default is to use the setting configured for the wallet"
+        ),
     )
 
     @field_validator("indy_credential_detail", mode="before")

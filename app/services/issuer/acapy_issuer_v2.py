@@ -64,9 +64,13 @@ class IssuerV2(Issuer):
                 f"Unsupported credential type: {credential.type}", status_code=501
             )
 
+        auto_remove = None
+        if credential.save_exchange_record is not None:
+            auto_remove = not credential.save_exchange_record
+
         bound_logger.debug("Issue v2 credential (automated)")
         request_body = V20CredExFree(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=auto_remove,
             connection_id=credential.connection_id,
             filter=cred_filter,
             credential_preview=credential_preview,
@@ -111,9 +115,13 @@ class IssuerV2(Issuer):
                 f"Unsupported credential type: {credential.type}", status_code=501
             )
 
+        auto_remove = None
+        if credential.save_exchange_record is not None:
+            auto_remove = not credential.save_exchange_record
+
         bound_logger.debug("Creating v2 credential offer")
         request_body = V20CredOfferConnFreeRequest(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=auto_remove,
             credential_preview=credential_preview,
             filter=cred_filter,
         )

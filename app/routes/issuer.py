@@ -409,8 +409,8 @@ async def get_credential(
     NB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.
     The `thread_id` is the only record attribute that will be the same for the holder and the issuer.
 
-    An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
-    unless the `save_exchange_record` was set to true.
+    An exchange record will, by default, automatically be deleted after a flow completes (i.e. when state is 'done'),
+    unless the `save_exchange_record` was set to true, or the wallet is configured to preserve records by default.
 
     The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
 

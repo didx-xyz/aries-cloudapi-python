@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+from typing import Optional
 
 import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
@@ -544,16 +545,16 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("acme_save_exchange_record", [False, True])
-@pytest.mark.parametrize("alice_save_exchange_record", [False, True])
+@pytest.mark.parametrize("acme_save_exchange_record", [None, False, True])
+@pytest.mark.parametrize("alice_save_exchange_record", [None, False, True])
 async def test_saving_of_presentation_exchange_records(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     credential_definition_id: str,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
-    acme_save_exchange_record: bool,
-    alice_save_exchange_record: bool,
+    acme_save_exchange_record: Optional[bool],
+    alice_save_exchange_record: Optional[bool],
 ):
     request_body = {
         "connection_id": acme_and_alice_connection.acme_connection_id,

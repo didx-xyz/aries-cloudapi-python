@@ -153,7 +153,7 @@ class IssuerV2(Issuer):
             # Provide improved error message:
             if "create_request() called multiple times" in e.detail:
                 raise CloudApiException(
-                    f"Credential {credential_exchange_id} has already been issued",
+                    f"Credential {credential_exchange_id} has already been requested",
                     status_code=409,
                 ) from e
             raise e

@@ -357,5 +357,5 @@ async def test_requesting_already_issued_credential(
     )
     assert error_response.status_code == 409
     assert error_response.json()["detail"] == (
-        f"Credential {credential_exchange_id} has already been issued"
+        f"Credential {credential_exchange_id} has already been requested"
     )

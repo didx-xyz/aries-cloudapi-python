@@ -125,6 +125,7 @@ async def test_request_credential_with_save_exchange_record(
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "20", "name": "Alice", "age": "44"},
         },
+        "save_exchange_record": True,  # so we can safely delete faber cred ex record in finally block
     }
 
     # Create and send credential offer - issuer
@@ -152,9 +153,13 @@ async def test_request_credential_with_save_exchange_record(
         alice_credential_exchange_id = payload["credential_exchange_id"]
 
         # Send credential request - holder
+        params = {}
+        if save_exchange_record is not None:
+            params = {"save_exchange_record": save_exchange_record}
+
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request",
-            params={"save_exchange_record": save_exchange_record},
+            params=params,
         )
 
         await check_webhook_state(

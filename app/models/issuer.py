@@ -19,7 +19,7 @@ class IndyCredential(BaseModel):
     attributes: Dict[str, str]
 
 
-class CredentialBase(BaseModel, SaveExchangeRecordField):
+class CredentialBase(SaveExchangeRecordField):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None

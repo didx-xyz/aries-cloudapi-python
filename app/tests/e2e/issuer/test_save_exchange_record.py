@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Optional
 
 import pytest
 from fastapi import HTTPException
@@ -15,13 +16,13 @@ CREDENTIALS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("save_exchange_record", [False, True])
+@pytest.mark.parametrize("save_exchange_record", [None, False, True])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    save_exchange_record: bool,
+    save_exchange_record: Optional[bool],
 ) -> CredentialExchange:
     credential = {
         "connection_id": faber_and_alice_connection.faber_connection_id,

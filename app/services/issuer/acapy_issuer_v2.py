@@ -66,7 +66,7 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Issue v2 credential (automated)")
         request_body = V20CredExFree(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=credential.auto_remove,
             connection_id=credential.connection_id,
             filter=cred_filter,
             credential_preview=credential_preview,
@@ -113,7 +113,7 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Creating v2 credential offer")
         request_body = V20CredOfferConnFreeRequest(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=credential.auto_remove,
             credential_preview=credential_preview,
             filter=cred_filter,
         )

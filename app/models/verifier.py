@@ -5,6 +5,7 @@ from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
 from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
+from app.util.save_exchange_record import SaveExchangeRecordField
 from shared.exceptions import CloudApiValueError
 
 
@@ -62,11 +63,10 @@ class ProofRequestMetadata(BaseModel):
     comment: Optional[str] = None
 
 
-class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
-    save_exchange_record: bool = Field(
-        default=False,
-        description="Whether the presentation exchange record should be saved on completion",
-    )
+class CreateProofRequest(
+    ProofRequestBase, ProofRequestMetadata, SaveExchangeRecordField
+):
+    pass
 
 
 class SendProofRequest(CreateProofRequest):
@@ -77,14 +77,10 @@ class ProofId(BaseModel):
     proof_id: str
 
 
-class AcceptProofRequest(ProofId):
+class AcceptProofRequest(ProofId, SaveExchangeRecordField):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
-    save_exchange_record: bool = Field(
-        default=False,
-        description="Whether the presentation exchange record should be saved on completion",
-    )
 
     @field_validator("indy_presentation_spec", mode="before")
     @classmethod

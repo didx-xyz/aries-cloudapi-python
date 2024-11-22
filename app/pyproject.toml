@@ -8,7 +8,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 
-aiohttp = "~3.11.0"
+aiohttp = "~3.11.7"
 aries-cloudcontroller = "==1.1.1b3"
 base58 = "~2.1.1"
 fastapi = "~0.115.0"
@@ -19,8 +19,8 @@ pydantic = "~2.9.0"
 pyjwt = "~2.9.0"
 PyYAML = "~6.0.2"
 typing-extensions = "~4.12.0"
-uvicorn = "~0.32.0"
-ddtrace = "^2.14.0"
+uvicorn = "~0.32.1"
+ddtrace = "^2.17.0"
 scalar-fastapi = "^1.0.3"
 
 [tool.poetry.dev-dependencies]

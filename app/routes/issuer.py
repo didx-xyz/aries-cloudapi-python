@@ -32,6 +32,7 @@ from app.util.pagination import (
     order_by_query_parameter,
 )
 from app.util.retry_method import coroutine_with_retry_until_value
+from app.util.save_exchange_record import save_exchange_record_query
 from shared.log_config import get_logger
 from shared.models.credential_exchange import CredentialExchange, Role, State
 
@@ -211,7 +212,7 @@ async def create_offer(
 )
 async def request_credential(
     credential_exchange_id: str,
-    save_exchange_record: Optional[bool] = Query(default=None, strict=True),
+    save_exchange_record: Optional[bool] = save_exchange_record_query,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
@@ -226,7 +227,7 @@ async def request_credential(
     ---
         credential_exchange_id: str
             The holder's reference to the credential exchange that they want to accept
-        save_exchange_record: bool
+        save_exchange_record: Optional[bool]
             Whether to override environment setting for saving credential exchange records. Default is None (use
             environment setting). True means save record, False means delete record.
 

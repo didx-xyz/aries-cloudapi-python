@@ -1,13 +1,21 @@
 from typing import Optional
 
+from fastapi import Query
 from pydantic import BaseModel, Field
+
+save_exchange_record_description = (
+    "Controls exchange record retention after exchange is complete. None uses "
+    "wallet default (typically to delete), true forces save, false forces delete."
+)
 
 save_exchange_record_field = Field(
     default=None,
-    description=(
-        "Controls exchange record retention after exchange is complete. None uses "
-        "wallet default (typically to delete), true forces save, false forces delete."
-    ),
+    description=save_exchange_record_description,
+)
+
+save_exchange_record_query = Query(
+    default=None,
+    description=save_exchange_record_description,
 )
 
 

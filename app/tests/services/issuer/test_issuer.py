@@ -231,12 +231,13 @@ async def test_request_credential(
         to_async(True)
     ):
         await test_module.request_credential(
-            "v2-credential_exchange_id", mock_tenant_auth
+            "v2-credential_exchange_id", auth=mock_tenant_auth
         )
 
         verify(IssuerV2).request_credential(
             controller=mock_agent_controller,
             credential_exchange_id="v2-credential_exchange_id",
+            auto_remove=None,
         )
         verify(test_module).assert_valid_issuer(did, "schema_id2")
 
@@ -250,12 +251,13 @@ async def test_request_credential(
         to_async(True)
     ):
         await test_module.request_credential(
-            "v2-credential_exchange_id", mock_tenant_auth
+            "v2-credential_exchange_id", auth=mock_tenant_auth
         )
 
         verify(IssuerV2).request_credential(
             controller=mock_agent_controller,
             credential_exchange_id="v2-credential_exchange_id",
+            auto_remove=None,
         )
         verify(test_module).assert_valid_issuer(did, None)
 
@@ -275,7 +277,7 @@ async def test_request_credential_x_no_schema_cred_def(
         Exception, match="Record has no credential definition or schema associated."
     ):
         await test_module.request_credential(
-            "v2-credential_exchange_id", mock_tenant_auth
+            "v2-credential_exchange_id", auth=mock_tenant_auth
         )
 
         verify(IssuerV2, times=0).request_credential(

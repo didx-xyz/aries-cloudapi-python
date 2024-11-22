@@ -265,7 +265,7 @@ async def request_credential(
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
 
         auto_remove = None
-        if save_exchange_record is not None:
+        if isinstance(save_exchange_record, bool):
             auto_remove = not save_exchange_record
 
         bound_logger.debug("Requesting credential")

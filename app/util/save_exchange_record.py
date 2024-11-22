@@ -25,6 +25,6 @@ class SaveExchangeRecordField(BaseModel):
     @property
     def auto_remove(self) -> Optional[bool]:
         """Returns the inverse of save_exchange_record if set, otherwise None."""
-        if self.save_exchange_record is None:
-            return None
-        return not self.save_exchange_record
+        if isinstance(self.save_exchange_record, bool):
+            return not self.save_exchange_record
+        return None

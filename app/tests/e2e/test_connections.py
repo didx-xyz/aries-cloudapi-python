@@ -172,7 +172,6 @@ async def test_get_connections(
     finally:
         # clean up temp connection
         await alice_member_client.delete(f"{BASE_PATH}/{alice_connection_id}")
-        await bob_member_client.delete(f"{BASE_PATH}/{bob_connection_id}")
 
 
 @pytest.mark.anyio
@@ -373,4 +372,3 @@ async def test_get_connections_paginated(
         # Clean up connections
         for conn in bob_alice_connections:
             await alice_member_client.delete(f"{BASE_PATH}/{conn.alice_connection_id}")
-            await bob_member_client.delete(f"{BASE_PATH}/{conn.bob_connection_id}")

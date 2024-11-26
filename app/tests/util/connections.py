@@ -109,10 +109,13 @@ async def fetch_existing_connection_by_alias(
     member_client: RichAsyncClient,
     alias: Optional[str] = None,
     their_label: Optional[str] = None,
+    their_did: Optional[str] = None,
 ) -> Optional[Connection]:
     params = {"state": "completed", "limit": 10000}
     if alias:
         params.update({"alias": alias})
+    if their_did:
+        params.update({"their_did": their_did})
 
     list_connections_response = await member_client.get(
         CONNECTIONS_BASE_PATH, params=params
@@ -149,8 +152,12 @@ async def fetch_or_create_connection(
         alice_member_client, connection_alias
     )
 
+    their_did = alice_connection.my_did if alice_connection else None
+
     bob_connection = await fetch_existing_connection_by_alias(
-        bob_member_client, connection_alias
+        member_client=bob_member_client,
+        alias=connection_alias if not their_did else None,
+        their_did=their_did,
     )
 
     # Check if connections exist
@@ -265,9 +272,12 @@ async def fetch_or_create_trust_registry_connection(
     alice_connection = await fetch_existing_connection_by_alias(
         alice_member_client, alias=connection_alias
     )
-
+    their_did = alice_connection.my_did if alice_connection else None
     verifier_connection = await fetch_existing_connection_by_alias(
-        verifier_client, alias=None, their_label=alice_tenant.wallet_label
+        verifier_client,
+        alias=None,
+        their_label=alice_tenant.wallet_label,
+        their_did=their_did,
     )
 
     # Check if connections exist

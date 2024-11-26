@@ -269,3 +269,44 @@ async def fetch_or_create_trust_registry_connection(
             verifier=verifier,
             connection_alias=connection_alias,
         )
+
+
+async def create_did_exchange(
+    bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient, alias: str
+) -> BobAliceConnect:
+
+    # Get Bob's public DID
+    bob_public_did = (await bob_member_client.get(f"{DID_BASE_PATH}/public")).json()[
+        "did"
+    ]
+    # Alice create invitation
+    alice_connection = (
+        await alice_member_client.post(
+            f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request",
+            params={
+                "their_public_did": bob_public_did,
+                "alias": alias,
+            },
+        )
+    ).json()
+
+    their_did = alice_connection["my_did"]
+
+    bob_connection = await check_webhook_state(
+        client=bob_member_client,
+        topic="connections",
+        state="request-received",
+        filter_map={"their_did": their_did},
+    )
+
+    bob_connection_id = bob_connection["connection_id"]
+    alice_connection_id = alice_connection["connection_id"]
+
+    # validate both connections should be active
+    await assert_both_connections_ready(
+        alice_member_client, bob_member_client, alice_connection_id, bob_connection_id
+    )
+
+    return BobAliceConnect(
+        alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
+    )

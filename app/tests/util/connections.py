@@ -5,6 +5,7 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
+from app.routes.wallet.dids import router as did_router
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.regression_testing import (
     RegressionTestConfig,
@@ -18,6 +19,7 @@ from shared.models.connection_record import Connection
 
 OOB_BASE_PATH = oob_router.prefix
 CONNECTIONS_BASE_PATH = conn_router.prefix
+DID_BASE_PATH = did_router.prefix
 
 
 @dataclass

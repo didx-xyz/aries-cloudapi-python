@@ -173,11 +173,22 @@ async def create_connection_by_test_mode(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
     alias: str,
+    did_exchange: bool = False,
 ) -> BobAliceConnect:
     if test_mode == TestMode.clean_run:
-        return await create_bob_alice_connection(
-            alice_member_client, bob_member_client, alias=alias
-        )
+        if did_exchange:
+            return await create_did_exchange(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=alias,
+            )
+        else:
+
+            return await create_bob_alice_connection(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=alias,
+            )
     elif test_mode == TestMode.regression_run:
         connection_alias_prefix = RegressionTestConfig.reused_connection_alias
 
@@ -185,6 +196,7 @@ async def create_connection_by_test_mode(
             alice_member_client,
             bob_member_client,
             connection_alias=f"{connection_alias_prefix}-{alias}",
+            did_exchange=did_exchange,
         )
     else:
         assert False, f"unknown test mode: {test_mode}"

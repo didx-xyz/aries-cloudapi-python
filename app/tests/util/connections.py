@@ -142,6 +142,7 @@ async def fetch_or_create_connection(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
     connection_alias: str,
+    did_exchange: bool = False,
 ) -> BobAliceConnect:
     # fetch connection with this alias for both bob and alice
     alice_connection = await fetch_existing_connection_by_alias(
@@ -161,11 +162,18 @@ async def fetch_or_create_connection(
     else:
         # Create connection since they don't exist
         assert_fail_on_recreating_fixtures()
-        return await create_bob_alice_connection(
-            alice_member_client,
-            bob_member_client,
-            alias=connection_alias,
-        )
+        if did_exchange:
+            return await create_did_exchange(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=connection_alias,
+            )
+        else:
+            return await create_bob_alice_connection(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=connection_alias,
+            )
 
 
 async def create_connection_by_test_mode(

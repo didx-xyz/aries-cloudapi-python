@@ -31,16 +31,13 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
-)
 async def test_send_proof_request(
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": sample_indy_proof_request().to_dict(),
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
@@ -73,18 +70,15 @@ async def test_send_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
-)
 async def test_accept_proof_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     credential_definition_id: str,
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": {
             "name": "Proof Request",
             "version": "1.0.0",
@@ -163,13 +157,13 @@ async def test_accept_proof_request(
 @pytest.mark.anyio
 @pytest.mark.parametrize("delete_proof_record", [True, False])
 async def test_reject_proof_request(
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     delete_proof_record: bool,
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": sample_indy_proof_request().to_dict(),
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
@@ -234,13 +228,13 @@ async def test_reject_proof_request(
 
 @pytest.mark.anyio
 async def test_get_proof_and_get_proofs(
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     credential_definition_id: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
-    acme_connection_id = acme_and_alice_connection.acme_connection_id
+    acme_connection_id = acme_and_alice_oob_connection.acme_connection_id
 
     request_body = {
         "save_exchange_record": True,
@@ -399,11 +393,11 @@ async def test_get_proof_and_get_proofs(
 
 @pytest.mark.anyio
 async def test_delete_proof(
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": sample_indy_proof_request().to_dict(),
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
@@ -419,12 +413,12 @@ async def test_delete_proof(
 @pytest.mark.anyio
 async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": sample_indy_proof_request().to_dict(),
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
@@ -552,12 +546,12 @@ async def test_saving_of_presentation_exchange_records(
     credential_definition_id: str,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     acme_save_exchange_record: Optional[bool],
     alice_save_exchange_record: Optional[bool],
 ):
     request_body = {
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "indy_proof_request": sample_indy_proof_request(
             restrictions=[{"cred_def_id": credential_definition_id}]
         ).to_dict(),
@@ -657,7 +651,7 @@ async def test_regression_proof_valid_credential(
     get_or_issue_regression_cred_valid: ReferentCredDef,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
 ):
     unix_timestamp = int(time.time())
     referent = get_or_issue_regression_cred_valid.referent
@@ -682,7 +676,7 @@ async def test_regression_proof_valid_credential(
             "requested_predicates": {},
         },
         "save_exchange_record": True,
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
     acme_proof_exchange_id = send_proof_response["proof_id"]

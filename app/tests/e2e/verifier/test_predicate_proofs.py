@@ -17,7 +17,7 @@ VERIFIER_BASE_PATH = router.prefix
 @pytest.mark.parametrize("predicate", ["<", ">", "<=", ">="])
 async def test_predicate_proofs(
     acme_client: RichAsyncClient,
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     predicate: str,
@@ -34,7 +34,7 @@ async def test_predicate_proofs(
                 }
             },
         },
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
         "save_exchange_record": True,
     }
 

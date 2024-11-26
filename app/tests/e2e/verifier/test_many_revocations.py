@@ -26,7 +26,7 @@ async def test_revoke_many_credentials(
     credential_definition_id_revocable: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    acme_and_alice_connection: AcmeAliceConnect,
+    acme_and_alice_oob_connection: AcmeAliceConnect,
 ):
     time.sleep(10)  # moment for revocation registry to update
     # todo: remove sleep when issue resolved: https://github.com/openwallet-foundation/acapy/issues/3018
@@ -50,7 +50,7 @@ async def test_revoke_many_credentials(
             "requested_predicates": {},
         },
         "save_exchange_record": True,
-        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
     acme_proof_exchange_id = send_proof_response["proof_id"]

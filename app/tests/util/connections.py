@@ -65,28 +65,35 @@ async def assert_both_connections_ready(
 async def create_bob_alice_connection(
     alice_member_client: RichAsyncClient, bob_member_client: RichAsyncClient, alias: str
 ):
-    # create invitation on bob side
-    json_request = CreateInvitation(
-        alias=alias,
-        multi_use=False,
-        use_public_did=False,
-    ).model_dump()
-    invitation = (
+    # Bob create invitation
+    bob_invitation = (
         await bob_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/create-invitation", json=json_request
+            f"{OOB_BASE_PATH}/create-invitation",
+            json={
+                "alias": alias,
+                "multi_use": False,
+                "use_public_did": False,
+                "create_connection": True,
+            },
         )
     ).json()
 
-    # accept invitation on alice side
-    invitation_response = (
+    # Alice accept invitation
+    alice_connection = (
         await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-            json={"alias": alias, "invitation": invitation["invitation"]},
+            f"{OOB_BASE_PATH}/accept-invitation",
+            json={"alias": alias, "invitation": bob_invitation["invitation"]},
         )
     ).json()
 
-    bob_connection_id = invitation["connection_id"]
-    alice_connection_id = invitation_response["connection_id"]
+    bob_connection = (
+        await bob_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}?alias={alias}",
+        )
+    ).json()[0]
+
+    bob_connection_id = bob_connection["connection_id"]
+    alice_connection_id = alice_connection["connection_id"]
 
     # validate both connections should be active
     await assert_both_connections_ready(

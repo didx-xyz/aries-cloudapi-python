@@ -159,7 +159,7 @@ mise run tilt:up
 Install the requirements:
 
 ```bash
-mise run poetry:install:all
+mise run poetry:install
 ```
 
 To run the tests you need to set up some environment variables to point Pytest

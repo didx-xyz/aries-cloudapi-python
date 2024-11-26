@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudapi-endorser"
-version = "4.0.0"
+version = "4.1.0"
 description = "Endorser submodule for cloudapi"
 authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false
@@ -8,16 +8,16 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 
-aries-cloudcontroller = "==1.1.1b1"
+aries-cloudcontroller = "==1.1.1b3"
 dependency-injector-fork = "~=4.42.1"                    # https://github.com/ets-labs/python-dependency-injector/pull/765#issuecomment-1915100744
 fastapi = "~0.115.0"
 httpx = "~0.27.0"
 nats-py = {extras = ["nkeys"], version = "^2.9.0"}
 loguru = "~0.7.2"
 orjson = "~3.10.7"
-pydantic = "~2.9.0"
-uvicorn = "~0.32.0"
-ddtrace = "^2.14.0"
+pydantic = "~2.10.1"
+uvicorn = "~0.32.1"
+ddtrace = "^2.17.0"
 scalar-fastapi = "^1.0.3"
 
 [tool.poetry.dev-dependencies]

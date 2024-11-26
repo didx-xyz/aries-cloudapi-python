@@ -62,7 +62,7 @@ async def check_webhook_state(
                     timeout=max_duration,
                 )
             else:
-                raise Exception(
+                raise Exception(  # pylint: disable=W0719
                     "No longer implemented: cannot wait for event without filter_map"
                 )
         except SseListenerTimeout:

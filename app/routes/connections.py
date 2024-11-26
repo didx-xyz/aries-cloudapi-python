@@ -148,7 +148,7 @@ async def accept_invitation(
 
 
 @router.get("", summary="Fetch Connection Records", response_model=List[Connection])
-async def get_connections(
+async def get_connections(  # pylint: disable=R0913,R0917
     limit: Optional[int] = limit_query_parameter,
     offset: Optional[int] = offset_query_parameter,
     order_by: Optional[str] = order_by_query_parameter,

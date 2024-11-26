@@ -66,7 +66,7 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Issue v2 credential (automated)")
         request_body = V20CredExFree(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=credential.auto_remove,
             connection_id=credential.connection_id,
             filter=cred_filter,
             credential_preview=credential_preview,
@@ -113,7 +113,7 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Creating v2 credential offer")
         request_body = V20CredOfferConnFreeRequest(
-            auto_remove=not credential.save_exchange_record,
+            auto_remove=credential.auto_remove,
             credential_preview=credential_preview,
             filter=cred_filter,
         )
@@ -131,6 +131,7 @@ class IssuerV2(Issuer):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
+        auto_remove: Optional[bool] = None,
     ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
@@ -139,7 +140,7 @@ class IssuerV2(Issuer):
         credential_exchange_id = cred_ex_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Sending v2 credential request")
-        request_body = V20CredRequestRequest()
+        request_body = V20CredRequestRequest(auto_remove=auto_remove)
         record = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.issue_credential_v2_0.send_request,

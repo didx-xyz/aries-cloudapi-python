@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Optional
 
 import pytest
 from fastapi import HTTPException
@@ -15,13 +16,13 @@ CREDENTIALS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("save_exchange_record", [False, True])
+@pytest.mark.parametrize("save_exchange_record", [None, False, True])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    save_exchange_record: bool,
+    save_exchange_record: Optional[bool],
 ) -> CredentialExchange:
     credential = {
         "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -106,6 +107,101 @@ async def test_issue_credential_with_save_exchange_record(
             await faber_client.delete(
                 f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
             )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("save_exchange_record", [None, False, True])
+async def test_request_credential_with_save_exchange_record(
+    faber_client: RichAsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+    save_exchange_record: bool,
+):
+    # This test asserts that the holder can control `save_exchange_records` behaviour
+    credential = {
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "20", "name": "Alice", "age": "44"},
+        },
+        "save_exchange_record": True,  # so we can safely delete faber cred ex record in finally block
+    }
+
+    # Create and send credential offer - issuer
+    faber_send_response = (
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    ).json()
+
+    faber_credential_exchange_id = faber_send_response["credential_exchange_id"]
+    thread_id = faber_send_response["thread_id"]
+
+    try:
+        # Wait for holder to receive offer
+        payload = await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+
+        alice_credential_exchange_id = payload["credential_exchange_id"]
+
+        # Send credential request - holder
+        params = {}
+        if save_exchange_record is not None:
+            params = {"save_exchange_record": save_exchange_record}
+
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request",
+            params=params,
+        )
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "credential_exchange_id": alice_credential_exchange_id,
+            },
+        )
+
+        await asyncio.sleep(1)  # short sleep before fetching; allow records to update
+
+        if save_exchange_record:
+            # Get exchange record from alice side - should exist if save_exchange_record=True
+            alice_cred_ex_record = (
+                await alice_member_client.get(
+                    f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
+                )
+            ).json()
+
+            assert (
+                alice_cred_ex_record["credential_exchange_id"]
+                == alice_credential_exchange_id
+            )
+        else:
+            # If save_exchange_record was False, credential should not exist for holder
+            with pytest.raises(HTTPException) as exc:
+                await alice_member_client.get(
+                    f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
+                )
+            assert exc.value.status_code == 404
+
+    finally:
+        # Clean up
+        if save_exchange_record:
+            await alice_member_client.delete(
+                f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
+            )
+        await faber_client.delete(
+            f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+        )
 
 
 @pytest.mark.anyio

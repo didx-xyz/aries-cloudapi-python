@@ -16,7 +16,7 @@ from shared.models.trustregistry import Actor
 logger = get_logger(__name__)
 
 
-async def assert_valid_prover(
+async def assert_valid_prover(  # pylint: disable=R0912
     aries_controller: AcaPyClient, presentation: AcceptProofRequest
 ) -> None:
     """Check transaction requirements against trust registry for prover"""

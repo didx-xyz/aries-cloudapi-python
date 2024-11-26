@@ -433,3 +433,77 @@ async def get_or_issue_regression_cred_valid(
         referent=valid_credential["referent"],
         cred_def_revocable=valid_credential["cred_def_id"],
     )
+
+
+@pytest.fixture(scope="function")
+async def issue_alice_many_creds(
+    request,
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+) -> List[CredentialExchange]:
+
+    faber_conn_id = faber_and_alice_connection.faber_connection_id
+
+    faber_cred_ex_ids = []
+    num_creds = request.param if hasattr(request, "param") else 3
+    for i in range(num_creds):
+        credential = {
+            "connection_id": faber_conn_id,
+            "save_exchange_record": True,
+            "indy_credential_detail": {
+                "credential_definition_id": credential_definition_id,
+                "attributes": {"speed": str(i), "name": "Alice", "age": "44"},
+            },
+        }
+        response = (
+            await faber_client.post(
+                CREDENTIALS_BASE_PATH,
+                json=credential,
+            )
+        ).json()
+
+        faber_cred_ex_id = response["credential_exchange_id"]
+        faber_cred_ex_ids += [faber_cred_ex_id]
+
+        thread_id = response["thread_id"]
+
+        alice_event = await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+        alice_cred_ex_id = alice_event["credential_exchange_id"]
+
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request",
+            json={},
+        )
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        )
+
+    cred_ex_response = (
+        await faber_client.get(
+            CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
+        )
+    ).json()
+    cred_ex_response = [
+        record
+        for record in cred_ex_response
+        if record["credential_exchange_id"] in faber_cred_ex_ids
+    ]
+
+    assert len(cred_ex_response) == num_creds
+
+    return [CredentialExchange(**cred) for cred in cred_ex_response]

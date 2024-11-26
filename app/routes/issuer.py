@@ -32,6 +32,7 @@ from app.util.pagination import (
     order_by_query_parameter,
 )
 from app.util.retry_method import coroutine_with_retry_until_value
+from app.util.save_exchange_record import save_exchange_record_query
 from shared.log_config import get_logger
 from shared.models.credential_exchange import CredentialExchange, Role, State
 
@@ -211,6 +212,7 @@ async def create_offer(
 )
 async def request_credential(
     credential_exchange_id: str,
+    save_exchange_record: Optional[bool] = save_exchange_record_query,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
@@ -225,6 +227,9 @@ async def request_credential(
     ---
         credential_exchange_id: str
             The holder's reference to the credential exchange that they want to accept
+        save_exchange_record: Optional[bool]
+            Whether to override environment setting for saving credential exchange records. Default is None (use
+            environment setting). True means save record, False means delete record.
 
     Returns:
     ---
@@ -259,9 +264,15 @@ async def request_credential(
         await assert_valid_issuer(issuer_did, schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
 
+        auto_remove = None
+        if isinstance(save_exchange_record, bool):
+            auto_remove = not save_exchange_record
+
         bound_logger.debug("Requesting credential")
         result = await IssuerV2.request_credential(
-            controller=aries_controller, credential_exchange_id=credential_exchange_id
+            controller=aries_controller,
+            credential_exchange_id=credential_exchange_id,
+            auto_remove=auto_remove,
         )
 
     bound_logger.debug("Successfully sent credential request.")
@@ -409,8 +420,8 @@ async def get_credential(
     NB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.
     The `thread_id` is the only record attribute that will be the same for the holder and the issuer.
 
-    An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
-    unless the `save_exchange_record` was set to true.
+    An exchange record will, by default, automatically be deleted after a flow completes (i.e. when state is 'done'),
+    unless the `save_exchange_record` was set to true, or the wallet is configured to preserve records by default.
 
     The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
 

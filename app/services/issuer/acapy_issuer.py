@@ -58,6 +58,7 @@ class Issuer(ABC):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
+        auto_remove: Optional[bool] = None,
     ) -> CredentialExchange:
         """
         Request credential
@@ -69,7 +70,8 @@ class Issuer(ABC):
         credential_exchange_id: str
             The credential_exchange_id of the exchange
         auto_remove: Optional[bool]
-            Whether to override environment setting for auto-deleting cred ex records
+            Whether to override environment setting for auto-deleting cred ex records. Default is None (use environment
+            setting)
 
         Returns:
         --------

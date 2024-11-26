@@ -38,9 +38,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TAILSCALE_VERSION: 1.76.0
-  HELMFILE_VERSION: v0.169.0
-  HELM_VERSION: v3.16.2
+  TAILSCALE_VERSION: 1.76.6
+  HELMFILE_VERSION: v0.169.1
+  HELM_VERSION: v3.16.3
+  MISE_VERSION: 2024.11.19
 
 jobs:
   build:
@@ -178,6 +179,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -188,7 +190,7 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
       - name: Install dependencies with Poetry
-        run: mise run poetry:install:all
+        run: mise run poetry:install
       - name: Run Pylint
         run: |
           poetry run pylint app/ endorser/ shared/ trustregistry/ waypoint/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
@@ -221,6 +223,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -231,7 +234,7 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
       - name: Install dependencies with Poetry
-        run: mise run poetry:install:all
+        run: mise run poetry:install
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -343,13 +346,13 @@ jobs:
         run: docker logs cache-docker
       - name: Endorser Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-endorser --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=endorser --tail 10000
       - name: Governance Agent Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-ga-agent --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-agent --tail 10000
       - name: Governance Web Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-ga-web --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-web --tail 10000
       - name: Ingress Nginx Logs
         if: always()
         run: kubectl logs -n ingress-system -l app.kubernetes.io/instance=ingress-nginx --tail 10000
@@ -370,10 +373,10 @@ jobs:
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=mediator --tail 10000
       - name: Multitenant Agent Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-multitenant-agent --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=multitenant-agent --tail 10000
       - name: Multitenant Web Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-multitenant-web --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=multitenant-web --tail 10000
       - name: NATS Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=nats --tail 10000
@@ -385,16 +388,16 @@ jobs:
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=postgres,app.kubernetes.io/component=postgresql --tail 10000
       - name: Public Web Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-trust-registry-web --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=public-web --tail 10000
       - name: Tails Server Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=tails-server --tail 10000
       - name: Tenant Web Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-tenant-web --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=tenant-web --tail 10000
       - name: Trust Registry Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=governance-trust-registry --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=trust-registry --tail 10000
       - name: Waypoint Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=waypoint --tail 10000
@@ -472,6 +475,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true
@@ -685,6 +689,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true # Required for mise tasks
           install: true

@@ -1,21 +1,98 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from aries_cloudcontroller import DIDCreate
+from aries_cloudcontroller import DIDCreate as DIDCreateAcaPy
 from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
     NotFoundException,
 )
 
+from app.models.wallet import DIDCreate
 from app.routes.wallet.dids import create_did
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "request_body", [None, DIDCreate(method="key"), DIDCreate(method="sov")]
+    "request_body, create_body",
+    [
+        (
+            None,
+            DIDCreateAcaPy(method="sov", options={"key_type": "ed25519"}),
+        ),
+        (
+            DIDCreate(method="key"),
+            DIDCreateAcaPy(
+                method="key",
+                options={"key_type": "ed25519"},
+            ),
+        ),
+        (
+            DIDCreate(method="sov"),
+            DIDCreateAcaPy(
+                method="sov",
+                options={"key_type": "ed25519"},
+            ),
+        ),
+        (
+            DIDCreate(method="did:peer:2"),
+            DIDCreateAcaPy(
+                method="did:peer:2",
+                options={"key_type": "ed25519"},
+            ),
+        ),
+        (
+            DIDCreate(method="did:peer:4"),
+            DIDCreateAcaPy(
+                method="did:peer:4",
+                options={"key_type": "ed25519"},
+            ),
+        ),
+        (
+            DIDCreate(method="key", key_type="bls12381g2"),
+            DIDCreateAcaPy(
+                method="key",
+                options={"key_type": "bls12381g2"},
+            ),
+        ),
+        (
+            DIDCreate(method="sov", key_type="bls12381g2"),
+            DIDCreateAcaPy(
+                method="sov",
+                options={"key_type": "bls12381g2"},
+            ),
+        ),
+        (
+            DIDCreate(method="did:peer:2", key_type="bls12381g2"),
+            DIDCreateAcaPy(
+                method="did:peer:2",
+                options={"key_type": "bls12381g2"},
+            ),
+        ),
+        (
+            DIDCreate(method="did:peer:4", key_type="bls12381g2"),
+            DIDCreateAcaPy(
+                method="did:peer:4",
+                options={"key_type": "bls12381g2"},
+            ),
+        ),
+        (
+            DIDCreate(method="web", did="did:web:1234"),
+            DIDCreateAcaPy(
+                method="web",
+                options={"key_type": "ed25519", "did": "did:web:1234"},
+            ),
+        ),
+        (
+            DIDCreate(method="web", key_type="bls12381g2", did="did:web:1234"),
+            DIDCreateAcaPy(
+                method="web",
+                options={"key_type": "bls12381g2", "did": "did:web:1234"},
+            ),
+        ),
+    ],
 )
-async def test_create_did_success(request_body):
+async def test_create_did_success(request_body, create_body):
     mock_aries_controller = AsyncMock()
     mock_create_did = AsyncMock()
 
@@ -32,7 +109,7 @@ async def test_create_did_success(request_body):
         await create_did(did_create=request_body, auth="mocked_auth")
 
         mock_create_did.assert_awaited_once_with(
-            did_create=request_body, controller=mock_aries_controller
+            did_create=create_body, controller=mock_aries_controller
         )
 
 

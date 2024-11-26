@@ -12,20 +12,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Overwrite .mise.toml # It's not needed in this workflow
+        run: |
+          cat <<EOF > .mise.toml
+          [tools]
+          "pipx:black" = "24.10"
+          "pipx:isort" = "5.13"
+          python = "3.12"
+          uv = "0.4"
+
+          [settings]
+          pipx_uvx = true
+          EOF
+
       - name: Install dependencies
         uses: jdx/mise-action@v2
         with:
           cache: true
           experimental: true
-          mise_toml: |
-            [tools]
-            "pipx:black" = "24.10"
-            "pipx:isort" = "5.13"
-            python = "3.12"
-            uv = "0.4"
-
-            [settings]
-            pipx_uvx = true
+          install: true
 
       - name: Check import style with isort
         run: isort . --check --profile black --diff

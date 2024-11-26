@@ -53,7 +53,7 @@ class VerifierV2(Verifier):
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v2 proof request")
         request_body = V20PresCreateRequestRequest(
-            auto_remove=not create_proof_request.save_exchange_record,
+            auto_remove=create_proof_request.auto_remove,
             presentation_request=presentation_request,
             auto_verify=True,
             comment=create_proof_request.comment,
@@ -95,7 +95,7 @@ class VerifierV2(Verifier):
 
         bound_logger = logger.bind(body=send_proof_request)
         request_body = V20PresSendRequestRequest(
-            auto_remove=not send_proof_request.save_exchange_record,
+            auto_remove=send_proof_request.auto_remove,
             connection_id=send_proof_request.connection_id,
             presentation_request=presentation_request,
             auto_verify=True,
@@ -121,7 +121,8 @@ class VerifierV2(Verifier):
     async def accept_proof_request(
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
-        auto_remove = not accept_proof_request.save_exchange_record
+        auto_remove = accept_proof_request.auto_remove
+
         if accept_proof_request.type == ProofRequestType.INDY:
             presentation_spec = V20PresSpecByFormatRequest(
                 auto_remove=auto_remove,
@@ -283,8 +284,8 @@ class VerifierV2(Verifier):
         controller: AcaPyClient,
         proof_id: str,
         referent: Optional[str] = None,
-        count: Optional[str] = None,
-        start: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[IndyCredPrecis]:
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
@@ -296,8 +297,8 @@ class VerifierV2(Verifier):
                 acapy_call=controller.present_proof_v2_0.get_matching_credentials,
                 pres_ex_id=pres_ex_id,
                 referent=referent,
-                count=count,
-                start=start,
+                limit=limit,
+                offset=offset,
             )
         except CloudApiException as e:
             raise CloudApiException(

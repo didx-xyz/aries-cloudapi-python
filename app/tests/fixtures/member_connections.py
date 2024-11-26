@@ -48,6 +48,7 @@ async def faber_and_alice_connection(
         alice_member_client=alice_member_client,
         bob_member_client=faber_client,
         alias="AliceFaberConnection",
+        did_exchange=True,
     )
 
     return FaberAliceConnect(
@@ -136,6 +137,7 @@ async def meld_co_and_alice_connection(
             alice_member_client=alice_member_client,
             bob_member_client=meld_co_client,
             alias="AliceMeldCoConnection",
+            did_exchange=True,
         )
 
         return MeldCoAliceConnect(

@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from fastapi import HTTPException
 
-from app.routes.issuer import router
+from app.routes.revocation import router
 from app.routes.verifier import router as verifier_router
 from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient

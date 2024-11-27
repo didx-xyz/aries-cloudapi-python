@@ -20,6 +20,7 @@ from app.routes import (
     oob,
     sse,
     trust_registry,
+    revocation,
     verifier,
 )
 from app.routes.admin import tenants
@@ -58,6 +59,7 @@ tenant_routes = [
     connections,
     definitions,
     issuer,
+    revocation,
     jsonld,
     messaging,
     oob,

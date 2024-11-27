@@ -6,7 +6,7 @@ from aries_cloudcontroller import TxnOrPublishRevocationsResult
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.issuer import PublishRevocationsRequest
-from app.routes.issuer import publish_revocations
+from app.routes.revocation import publish_revocations
 from app.tests.util.models.dummy_txn_record_publish import txn_record
 
 
@@ -21,11 +21,11 @@ async def test_publish_revocations_success(publish_revocation_response):
 
     mock_get_transaction = AsyncMock()
 
-    with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
+    with patch("app.routes.revocation.client_from_auth") as mock_client_from_auth, patch(
         "app.services.revocation_registry.publish_pending_revocations",
         mock_publish_revocations,
     ), patch(
-        "app.routes.issuer.coroutine_with_retry_until_value", mock_get_transaction
+        "app.routes.revocation.coroutine_with_retry_until_value", mock_get_transaction
     ):
         mock_client_from_auth.return_value.__aenter__.return_value = (
             mock_aries_controller
@@ -64,7 +64,7 @@ async def test_publish_revocations_fail_acapy_error(
     )
 
     with patch(
-        "app.routes.issuer.client_from_auth"
+        "app.routes.revocation.client_from_auth"
     ) as mock_client_from_auth, pytest.raises(
         CloudApiException, match=expected_detail
     ) as exc, patch(
@@ -92,7 +92,7 @@ async def test_publish_revocations_fail_timeout():
     )
 
     with patch(
-        "app.routes.issuer.client_from_auth"
+        "app.routes.revocation.client_from_auth"
     ) as mock_client_from_auth, pytest.raises(
         CloudApiException,
         match="Timeout waiting for endorser to accept the revocations request.",
@@ -100,7 +100,7 @@ async def test_publish_revocations_fail_timeout():
         "app.services.revocation_registry.publish_pending_revocations",
         mock_publish_revocations,
     ), patch(
-        "app.routes.issuer.coroutine_with_retry_until_value",
+        "app.routes.revocation.coroutine_with_retry_until_value",
         AsyncMock(side_effect=asyncio.TimeoutError()),
     ):
         mock_client_from_auth.return_value.__aenter__.return_value = (

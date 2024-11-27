@@ -8,7 +8,7 @@ from aries_cloudcontroller.exceptions import (
 )
 from fastapi import HTTPException
 
-from app.routes.issuer import get_credential_revocation_record
+from app.routes.revocation import get_credential_revocation_record
 
 
 @pytest.mark.anyio
@@ -22,7 +22,7 @@ async def test_get_credential_revocation_record_success(
     mock_aries_controller = AsyncMock()
     mock_get_revocation_record = AsyncMock()
 
-    with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
+    with patch("app.routes.revocation.client_from_auth") as mock_client_from_auth, patch(
         "app.services.revocation_registry.get_credential_revocation_record",
         mock_get_revocation_record,
     ):
@@ -63,7 +63,7 @@ async def test_get_credential_revocation_record_fail_acapy_error(
     )
 
     with patch(
-        "app.routes.issuer.client_from_auth"
+        "app.routes.revocation.client_from_auth"
     ) as mock_client_from_auth, pytest.raises(
         HTTPException, match=expected_detail
     ) as exc:

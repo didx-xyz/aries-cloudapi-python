@@ -22,7 +22,7 @@ async def test_get_presentation_exchange_records_paginated(
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     credential_definition_id: str,
-    acme_and_alice_oob_connection: AcmeAliceConnect,
+    acme_and_alice_connection: AcmeAliceConnect,
 ):
     num_presentation_requests_to_test = 5
 
@@ -33,7 +33,7 @@ async def test_get_presentation_exchange_records_paginated(
         for _ in range(num_presentation_requests_to_test):
             request_body = {
                 "save_exchange_record": True,
-                "connection_id": acme_and_alice_oob_connection.acme_connection_id,
+                "connection_id": acme_and_alice_connection.acme_connection_id,
                 "indy_proof_request": sample_indy_proof_request(
                     restrictions=[{"cred_def_id": credential_definition_id}]
                 ).to_dict(),

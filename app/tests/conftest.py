@@ -25,7 +25,7 @@ from app.tests.fixtures.member_async_clients import (
     trust_registry_client,
 )
 from app.tests.fixtures.member_connections import (
-    acme_and_alice_oob_connection,
+    acme_and_alice_connection,
     bob_and_alice_connection,
     faber_and_alice_connection,
     meld_co_and_alice_connection,

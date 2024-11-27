@@ -27,13 +27,13 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 async def test_proof_model_failures(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_acapy_client: AcaPyClient,
-    acme_and_alice_oob_connection: AcmeAliceConnect,
+    acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     name: str,
     version: str,
 ):
-    acme_connection_id = acme_and_alice_oob_connection.acme_connection_id
-    alice_connection_id = acme_and_alice_oob_connection.alice_connection_id
+    acme_connection_id = acme_and_alice_connection.acme_connection_id
+    alice_connection_id = acme_and_alice_connection.alice_connection_id
 
     request_body = V20PresSendRequestRequest(
         auto_remove=False,

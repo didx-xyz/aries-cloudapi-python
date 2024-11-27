@@ -15,7 +15,7 @@ VERIFIER_BASE_PATH = router.prefix
 @pytest.mark.anyio
 async def test_self_attested_attributes(
     acme_client: RichAsyncClient,
-    acme_and_alice_oob_connection: AcmeAliceConnect,
+    acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
 ):
@@ -33,7 +33,7 @@ async def test_self_attested_attributes(
             },
             "requested_predicates": {},
         },
-        "connection_id": acme_and_alice_oob_connection.acme_connection_id,
+        "connection_id": acme_and_alice_connection.acme_connection_id,
         "save_exchange_record": True,
     }
 

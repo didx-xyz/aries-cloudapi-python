@@ -1,11 +1,12 @@
 import asyncio
 from typing import Optional
 
-from aries_cloudcontroller import IssuerCredRevRecord
+from aries_cloudcontroller import IssuerCredRevRecord, RevRegWalletUpdatedResult
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
+from app.exceptions import handle_acapy_call
 from app.exceptions import CloudApiException
 from app.models.issuer import (
     ClearPendingRevocationsRequest,
@@ -313,3 +314,50 @@ async def get_pending_revocations(
 
     bound_logger.debug("Successfully fetched pending revocations.")
     return PendingRevocations(pending_cred_rev_ids=result)
+
+
+@router.put(
+    "/fix-revocation-registry/{revocation_registry_id}",
+    summary="Fix Revocation Registry Entry State",
+)
+async def fix_revocation_registry_entry_state(
+    revocation_registry_id: str,
+    apply_ledger_update: bool = False,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> RevRegWalletUpdatedResult:
+    """
+    Fix Revocation Registry Entry State
+    ---
+    Fix the revocation registry entry state for a given revocation registry ID.
+
+    If issuer's revocation registry wallet state is out of sync with the ledger,
+    this endpoint can be used to fix/update the ledger state.
+
+    Path Parameters:
+    ---
+        revocation_registry_id: str
+            The ID of the revocation registry for which to fix the state
+
+    Query Parameters:
+    ---
+        apply_ledger_update: bool
+            Set to True to apply the ledger update
+
+    Returns:
+    ---
+        RevRegWalletUpdatedResult
+    """
+    bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
+    bound_logger.debug("PUT request received: Fix revocation registry entry state")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Fixing revocation registry entry state")
+        response = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.revocation.update_rev_reg_revoked_state,
+            rev_reg_id=revocation_registry_id,
+            apply_ledger_update=apply_ledger_update,
+        )
+
+    bound_logger.debug("Successfully fixed revocation registry entry state.")
+    return response

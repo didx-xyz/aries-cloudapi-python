@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
-from app.exceptions import handle_acapy_call
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.issuer import (
     ClearPendingRevocationsRequest,
     ClearPendingRevocationsResult,

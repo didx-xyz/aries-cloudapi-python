@@ -347,3 +347,30 @@ async def test_get_pending_revocations_bad_payload(
         await faber_client.get(f"{CREDENTIALS_BASE_PATH}/get-pending-revocations/bad")
 
     assert exc.value.status_code == 422
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
+@pytest.mark.parametrize(
+    "rev_reg_id, status_code",
+    [
+        (
+            "Ddhz428iyF5h96uLUgiuFa:4:Ddhz428iyF5h96uLUgiuFa:3:CL:8:Epic:CL_ACCUM:2e292c76-bc43-496c-a65a-297fc49c21c6",
+            404,
+        ),
+        ("bad_format", 422),
+    ],
+)
+async def test_fix_rev_reg_bad_id(
+    faber_client: RichAsyncClient, rev_reg_id: str, status_code: int
+):
+    with pytest.raises(HTTPException) as exc:
+        await faber_client.put(
+            f"{CREDENTIALS_BASE_PATH}/fix-revocation-registry/{rev_reg_id}",
+            params={"apply_ledger_update": False},
+        )
+
+    assert exc.value.status_code == status_code

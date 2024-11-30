@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncHTTPTransport
@@ -16,10 +16,9 @@ from shared import (
 )
 
 
-def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, Any]:
+def get_common_settings(api_key: str) -> Dict[str, Any]:
     return {
         "timeout": TEST_CLIENT_TIMEOUT,
-        "app": app,
         "headers": {
             "x-api-key": api_key,
             "content-type": "application/json",
@@ -29,8 +28,8 @@ def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, An
 
 
 # Governance Clients
-def get_governance_client(*, app: Optional[Any] = None) -> RichAsyncClient:
-    settings = get_common_settings(f"governance.{GOVERNANCE_ACAPY_API_KEY}", app)
+def get_governance_client() -> RichAsyncClient:
+    settings = get_common_settings(f"governance.{GOVERNANCE_ACAPY_API_KEY}")
     return RichAsyncClient(
         base_url=GOVERNANCE_FASTAPI_ENDPOINT, name="Governance", **settings
     )
@@ -41,8 +40,8 @@ def get_governance_acapy_client() -> AcaPyClient:
 
 
 # Tenant Admin Clients
-def get_tenant_admin_client(*, app: Optional[Any] = None) -> RichAsyncClient:
-    settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}", app)
+def get_tenant_admin_client() -> RichAsyncClient:
+    settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}")
     return RichAsyncClient(
         base_url=TENANT_ADMIN_FASTAPI_ENDPOINT, name="Tenant Admin", **settings
     )
@@ -53,10 +52,8 @@ def get_tenant_admin_acapy_client() -> AcaPyClient:
 
 
 # Tenant Clients
-def get_tenant_client(
-    *, token: str, app: Optional[Any] = None, name: str = ""
-) -> RichAsyncClient:
-    settings = get_common_settings(token, app)
+def get_tenant_client(*, token: str, name: str = "") -> RichAsyncClient:
+    settings = get_common_settings(token)
     return RichAsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT, name=f"Tenant {name}", **settings
     )

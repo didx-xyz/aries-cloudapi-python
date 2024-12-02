@@ -65,7 +65,7 @@ rev_reg_update = RevRegWalletUpdatedResult(
             },
         },
         "txnMetadata": {
-            "txnId": "5:RiDathgbUA5Z9fYTqF35Jd:4:RiDathgbUA5Z9fYTqF35Jd:3:cl:8:Epic:CL_ACCUM:1dae952e-b58a-4269-a4b7-526ae1c69156",
+            "txnId": f"5:{rev_reg_id_valid}",
             "txnTime": 1732708291,
             "seqNo": 19,
         },

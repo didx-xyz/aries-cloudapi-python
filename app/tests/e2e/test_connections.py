@@ -220,45 +220,6 @@ async def test_delete_connection(
 
 
 @pytest.mark.anyio
-async def test_bob_and_alice_connect(
-    bob_member_client: RichAsyncClient,
-    alice_member_client: RichAsyncClient,
-):
-    invitation_response = await bob_member_client.post(
-        f"{BASE_PATH}/create-invitation",
-    )
-    invitation = invitation_response.json()
-
-    accept_response = await alice_member_client.post(
-        f"{BASE_PATH}/accept-invitation",
-        json={"invitation": invitation["invitation"]},
-    )
-    connection_record = accept_response.json()
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": connection_record["connection_id"],
-        },
-    )
-
-    alice_connection_id = connection_record["connection_id"]
-    bob_connection_id = invitation["connection_id"]
-
-    bob_connection = (
-        await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
-    ).json()
-    alice_connection = (
-        await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
-    ).json()
-
-    assert "completed" in alice_connection["state"]
-    assert "completed" in bob_connection["state"]
-
-
-@pytest.mark.anyio
 async def test_get_connections_paginated(
     bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient
 ):

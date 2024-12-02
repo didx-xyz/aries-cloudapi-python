@@ -177,12 +177,19 @@ async def test_get_connections(
 @pytest.mark.anyio
 async def test_get_connection_by_id(
     bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
-    invitation = invitation_response.json()
-    connection_id = invitation["connection_id"]
+    connection_alias = "TempAliceBobConnectionById"
 
-    connection_response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias=connection_alias
+    )
+
+    bob_connection_id = bob_and_alice_connection.bob_connection_id
+
+    connection_response = await bob_member_client.get(
+        f"{BASE_PATH}/{bob_connection_id}"
+    )
     connection_record = connection_response.json()
 
     assert connection_response.status_code == 200

@@ -238,9 +238,9 @@ async def get_credential_revocation_status(
     summary="Fetch a list of W3C credentials from the wallet",
 )
 async def list_w3c_credentials(
-    schema_ids: Optional[List[str]] = None,
-    issuer_did: Optional[str] = None,
     limit: Optional[int] = None,
+    issuer_did: Optional[str] = None,
+    schema_ids: Optional[List[str]] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """
@@ -251,12 +251,12 @@ async def list_w3c_credentials(
 
     Optional Parameters:
     ---
-        schema_ids: List[str]
-            Schema identifiers to match
-        issuer_did: str
-            Credential issuer did to match
         limit: int
             Maximum number of results to return
+        issuer_did: str
+            Credential issuer did to match
+        schema_ids: List[str]
+            Schema identifiers to match
 
     Returns:
     ---

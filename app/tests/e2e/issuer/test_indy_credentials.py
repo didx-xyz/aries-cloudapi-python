@@ -3,16 +3,19 @@ import asyncio
 import pytest
 from assertpy import assert_that
 
+from app.routes.admin.tenants import router as tenant_admin_router
 from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.fixtures.credentials import sample_credential_attributes
 from app.tests.util.connections import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.regression_testing import TestMode
+from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
+TENANTS_BASE_PATH = tenant_admin_router.prefix
 
 
 @pytest.mark.anyio
@@ -302,12 +305,26 @@ async def test_revoke_credential(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="We don't want to modify wallet settings for regression runs",
+)
 async def test_requesting_already_issued_credential(
     alice_member_client: RichAsyncClient,
+    tenant_admin_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
 ):
+    # First, configure Alice to not auto-complete credential flow
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    update_request = {"extra_settings": {"ACAPY_AUTO_STORE_CREDENTIAL": False}}
+    update_response = await tenant_admin_client.put(
+        f"{TENANTS_BASE_PATH}/{alice_wallet_id}",
+        json=update_request,
+    )
+    assert update_response.status_code == 200
+
     # Create credential offer
     credential = {
         "connection_id": faber_and_alice_connection.faber_connection_id,

@@ -9,11 +9,11 @@ package-mode = false
 python = "^3.12"
 
 fastapi = "~0.115.0"
-httpx = "~0.27.0"
+httpx = "~0.28.0"
 loguru = "~0.7.2"
 orjson = "~3.10.7"
 psycopg2-binary = "~=2.9.6"
-pydantic = "~2.9.0"
+pydantic = "~2.10.1"
 sqlalchemy = "~=2.0.19"
 uvicorn = "~0.32.1"
 ddtrace = "^2.17.0"

@@ -64,6 +64,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+      deprecated: true
       security:
         - APIKeyHeader: []
   /v1/connections/accept-invitation:
@@ -104,6 +105,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+      deprecated: true
       security:
         - APIKeyHeader: []
   /v1/connections:
@@ -311,10 +313,13 @@ paths:
         - connections
       summary: Delete a Connection Record
       description: "Delete connection record by id\n---\nThis endpoint deletes a connection\
-        \ record by id.\n\nThe other party will still have their record of the connection,\
-        \ but it will become unusable.\n\nParameters:\n---\n    connection_id: str\n\
-        \        The identifier of the connection record that you want to delete\n\
-        \nReturns:\n---\n    status_code: 204"
+        \ record by id.\n\nIf the connection uses the didexchange protocol, then we\
+        \ hangup the connection, such that the other party also has\ntheir record\
+        \ deleted.\n\nIf the connection uses the deprecated connections protocol,\
+        \ then we just delete the record. The other party will\nstill have their record\
+        \ of the connection, but it will become unusable.\n\nParameters:\n---\n  \
+        \  connection_id: str\n        The identifier of the connection record that\
+        \ you want to delete\n\nReturns:\n---\n    status_code: 204"
       operationId: delete_connection_by_id_v1_connections__connection_id__delete
       security:
         - APIKeyHeader: []
@@ -328,6 +333,253 @@ paths:
       responses:
         "204":
           description: Successful Response
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/connections/did-exchange/create-request:
+    post:
+      tags:
+        - connections
+      summary: Create a DID Exchange Request
+      description: "Create a DID Exchange request\n---\nThis endpoint allows you to\
+        \ initiate a DID Exchange request with another party using their public DID.\n\
+        \nThe goal and goal_code parameters provide additional context for the request.\n\
+        \nOnly one of `use_did`, `use_did_method` or `use_public_did` should be specified.\
+        \ If none of these are specified,\na new local DID will be created for this\
+        \ connection.\n\nParameters:\n---\n    their_public_did: str\n        The\
+        \ DID of the party you want to connect to.\n    alias: str, optional\n   \
+        \     An alias for the connection. Defaults to None.\n    goal: str, optional\n\
+        \        Optional self-attested string for sharing the intent of the connection.\n\
+        \    goal_code: str, optional\n        Optional self-attested code for sharing\
+        \ the intent of the connection.\n    my_label: str, optional\n        Your\
+        \ label for the request.\n    use_did: str, optional\n        Your local DID\
+        \ to use for the connection.\n    use_did_method: str, optional\n        The\
+        \ method to use for the connection: \"did:peer:2\" or \"did:peer:4\".\n  \
+        \  use_public_did: bool\n        Use your public DID for this connection.\
+        \ Defaults to False.\n\nReturns:\n---\n    Connection\n        The connection\
+        \ record created by the DID exchange request."
+      operationId: create_did_exchange_request_v1_connections_did_exchange_create_request_post
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: their_public_did
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Their Public Did
+        - name: alias
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Alias
+        - name: goal
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Goal
+        - name: goal_code
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Goal Code
+        - name: my_label
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: My Label
+        - name: use_did
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Use Did
+        - name: use_did_method
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Use Did Method
+        - name: use_public_did
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+            title: Use Public Did
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Connection"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/connections/did-exchange/accept-request:
+    post:
+      tags:
+        - connections
+      summary: Accept a DID Exchange Request
+      description: "Accept a stored DID Exchange request\n---\nThis endpoint allows\
+        \ you to accept a request by providing the connection ID.\n\nParameters:\n\
+        ---\n    connection_id: str\n        The ID of the connection request you\
+        \ want to accept.\n\nReturns:\n---\n    Connection\n        The connection\
+        \ record created by accepting the DID exchange request."
+      operationId: accept_did_exchange_request_v1_connections_did_exchange_accept_request_post
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Connection Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Connection"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/connections/did-exchange/reject:
+    post:
+      tags:
+        - connections
+      summary: Reject or Abandon a DID Exchange
+      description: "Reject or abandon a DID Exchange\n---\nThis endpoint allows you\
+        \ to reject or abandon a DID Exchange request. You can optionally provide\
+        \ a reason\nfor the rejection.\n\nReturns:\n---\n    Connection\n        The\
+        \ connection record after rejecting the DID exchange request."
+      operationId: reject_did_exchange_v1_connections_did_exchange_reject_post
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Connection Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: "#/components/schemas/DIDXRejectRequest"
+                - type: "null"
+              title: Body
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Connection"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/connections/did-rotate:
+    post:
+      tags:
+        - connections
+      summary: Begin DID Rotation
+      description: "Begin the rotation of a DID as a rotator.\n---\nThis endpoint\
+        \ allows you to begin the DID rotation for an existing connection. The `to_did`\
+        \ parameter specifies\nthe new DID that the rotating party is rotating to.\n\
+        \nParameters:\n---\n    connection_id: str\n        The ID of the connection\
+        \ for which the DID is to be rotated.\n    to_did: str\n        The new DID\
+        \ that the rotating party is rotating to.\n\nReturns:\n---\n    Rotate\n \
+        \       The record after the DID rotation is initiated."
+      operationId: rotate_did_v1_connections_did_rotate_post
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Connection Id
+        - name: to_did
+          in: query
+          required: true
+          schema:
+            type: string
+            title: To Did
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rotate"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/connections/did-rotate/hangup:
+    post:
+      tags:
+        - connections
+      summary: Hangup DID Rotation
+      description: "Send a hangup for a DID rotation as the rotator.\n---\nThis endpoint\
+        \ allows you to hangup a DID rotation process for an existing connection.\n\
+        \nParameters:\n---\n    connection_id: str\n        The ID of the connection\
+        \ for which the DID rotation is being hung up.\n\nReturns:\n---\n    Hangup\n\
+        \        The record after the DID rotation is hung up."
+      operationId: hangup_did_rotation_v1_connections_did_rotate_hangup_post
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Connection Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hangup"
         "422":
           description: Validation Error
           content:
@@ -1882,28 +2134,45 @@ paths:
     get:
       tags:
         - wallet
-      summary: List Credentials
-      description: Fetch a list of credentials from the wallet.
+      summary: Fetch a list of credentials from the wallet
+      description: "Fetch a list of credentials from the wallet\n---\n\nThe `wql`\
+        \ (Wallet Query Language) parameter can be used to filter credentials returned\
+        \ from the wallet.\n\nThe following string will look for the credential with\
+        \ the attribute `age` with value `21`:\n\n    {\"attr::age::value\": \"21\"\
+        }\n\nOptional Parameters:\n---\n    limit: int\n        The number of records\
+        \ to return.\n    offset: int\n        The number of records to skip before\
+        \ starting to return records.\n    wql: str\n        A WQL query to filter\
+        \ records.\n\nReturns:\n---\n    CredInfoList\n        A list of credential\
+        \ records."
       operationId: list_credentials_v1_wallet_credentials_get
       security:
         - APIKeyHeader: []
       parameters:
-        - name: count
+        - name: limit
           in: query
           required: false
           schema:
             anyOf:
-              - type: string
+              - type: integer
+                maximum: 10000
+                minimum: 1
               - type: "null"
-            title: Count
-        - name: start
+            description: Number of results to return
+            default: 1000
+            title: Limit
+          description: Number of results to return
+        - name: offset
           in: query
           required: false
           schema:
             anyOf:
-              - type: string
+              - type: integer
+                minimum: 0
               - type: "null"
-            title: Start
+            description: Offset for pagination
+            default: 0
+            title: Offset
+          description: Offset for pagination
         - name: wql
           in: query
           required: false
@@ -1929,8 +2198,10 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get Credential Record
-      description: Fetch a specific credential by ID.
+      summary: Fetch a credential by ID
+      description: "Fetch a specific credential by ID\n---\n\nParameters:\n---\n \
+        \   credential_id: str\n        The ID of the credential to fetch.\n\nReturns:\n\
+        ---\n    IndyCredInfo\n        The credential record."
       operationId: get_credential_record_v1_wallet_credentials__credential_id__get
       security:
         - APIKeyHeader: []
@@ -1947,7 +2218,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IndyCredInfo"
+                $ref: "#/components/schemas/app__models__wallet__IndyCredInfo"
         "422":
           description: Validation Error
           content:
@@ -1957,8 +2228,10 @@ paths:
     delete:
       tags:
         - wallet
-      summary: Delete Credential
-      description: Remove a specific credential from the wallet by ID.
+      summary: Delete a credential by ID
+      description: "Remove a specific credential from the wallet by ID\n---\n\nParameters:\n\
+        ---\n    credential_id: str\n        The ID of the credential to delete.\n\
+        \nReturns:\n---\n    status_code: 204"
       operationId: delete_credential_v1_wallet_credentials__credential_id__delete
       security:
         - APIKeyHeader: []
@@ -1982,8 +2255,11 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get Credential Mime Types
-      description: Retrieve attribute MIME types of a specific credential by ID.
+      summary: Retrieve attribute MIME types of a credential
+      description: "Retrieve attribute MIME types of a specific credential by ID\n\
+        ---\n\nParameters:\n---\n    credential_id: str\n        The ID of the credential\
+        \ to fetch attribute MIME types for.\n\nReturns:\n---\n    AttributeMimeTypesResult\n\
+        \        The attribute MIME types of the credential."
       operationId: get_credential_mime_types_v1_wallet_credentials__credential_id__mime_types_get
       security:
         - APIKeyHeader: []
@@ -2011,8 +2287,16 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get Credential Revocation Status
-      description: Query the revocation status of a specific credential by ID.
+      summary: Get revocation status of a credential
+      description: "Query the revocation status of a specific credential by ID\n---\n\
+        \nThe revocation status of a credential can be queried over a specific time\
+        \ range\nby passing unix timestamps to the `from_` and `to` parameters.\n\
+        Leaving these parameters blank will return the current revocation status.\n\
+        \nParameters:\n---\n    credential_id: str\n        The ID of the credential\
+        \ to query revocation status for.\n    from_: Optional[str]\n        The timestamp\
+        \ to start the query from.\n    to: Optional[str]\n        The timestamp to\
+        \ end the query at.\n\nReturns:\n---\n    CredRevokedResult\n        The revocation\
+        \ status of the credential."
       operationId: get_credential_revocation_status_v1_wallet_credentials__credential_id__revocation_status_get
       security:
         - APIKeyHeader: []
@@ -2056,44 +2340,43 @@ paths:
     get:
       tags:
         - wallet
-      summary: List W3C Credentials
-      description: Fetch a list of W3C credentials from the wallet.
+      summary: Fetch a list of W3C credentials from the wallet
+      description: "Fetch a list of W3C credentials from the wallet\n---\n\nThe W3C\
+        \ credentials can be filtered by the parameters provided.\n\nOptional Parameters:\n\
+        ---\n    limit: int\n        Maximum number of results to return\n    issuer_did:\
+        \ str\n        Credential issuer did to match\n    schema_ids: List[str]\n\
+        \        Schema identifiers to match\n\nReturns:\n---\n    VCRecordList\n\
+        \        A list of W3C credential records."
       operationId: list_w3c_credentials_v1_wallet_credentials_w3c_get
       security:
         - APIKeyHeader: []
       parameters:
-        - name: count
+        - name: limit
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            title: Limit
+        - name: issuer_did
           in: query
           required: false
           schema:
             anyOf:
               - type: string
               - type: "null"
-            title: Count
-        - name: start
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: "null"
-            title: Start
-        - name: wql
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: "null"
-            title: Wql
+            title: Issuer Did
       requestBody:
         content:
           application/json:
             schema:
               anyOf:
-                - $ref: "#/components/schemas/W3CCredentialsListRequest"
+                - type: array
+                  items:
+                    type: string
                 - type: "null"
-              title: Body
+              title: Schema Ids
       responses:
         "200":
           description: Successful Response
@@ -2111,8 +2394,10 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get W3C Credential
-      description: Fetch a specific W3C credential by ID.
+      summary: Fetch a W3C credential by ID
+      description: "Fetch a specific W3C credential by ID\n---\n\nParameters:\n---\n\
+        \    credential_id: str\n        The ID of the W3C credential to fetch.\n\n\
+        Returns:\n---\n    VCRecord\n        The W3C credential."
       operationId: get_w3c_credential_v1_wallet_credentials_w3c__credential_id__get
       security:
         - APIKeyHeader: []
@@ -2139,8 +2424,10 @@ paths:
     delete:
       tags:
         - wallet
-      summary: Delete W3C Credential
-      description: Remove a specific W3C credential from the wallet by ID.
+      summary: Delete W3C credential
+      description: "Remove a specific W3C credential from the wallet by ID\n---\n\n\
+        Parameters:\n---\n    credential_id: str\n        The ID of the W3C credential\
+        \ to delete.\n\nReturns:\n---\n    status_code: 204"
       operationId: delete_w3c_credential_v1_wallet_credentials_w3c__credential_id__delete
       security:
         - APIKeyHeader: []
@@ -2466,13 +2753,21 @@ paths:
       tags:
         - sse
       summary: Subscribe To A Wallet Event By Topic, Field, And Desired State
-      description: "Wait for a desired state to be reached for some event for this\
-        \ wallet and topic,\nfiltering for payloads that contain `field:field_id`.\n\
-        \nParameters:\n-----------\n    wallet_id: The ID of the wallet subscribing\
-        \ to the events.\n    topic: The topic to which the wallet is subscribing.\n\
-        \    field: The field to which the wallet is subscribing.\n    field_id: The\
-        \ ID of the field subscribing to the events.\n    desired_state: The desired\
-        \ state to be reached."
+      description: "Subscribe to SSE events wait for a desired state with a field\
+        \ filter.\n---\n***This endpoint can't be called on the swagger UI, as it\
+        \ requires a stream response.***\n\nWait for a desired state to be reached\
+        \ for some event for this wallet and topic,\nfiltering for payloads that contain\
+        \ `field:field_id`.\n\nexample: `/{wallet_id}/credentials/connection_id/some-uuid/done`\
+        \ will stream a credential exchange event on a\nspecific connection with state\
+        \ done.\nThe field and field ID pair must be present in the payload (other\
+        \ than state) for the event to be streamed.\nThe stream will be closed after\
+        \ the event is returned.\n\nParameters:\n-----------\n    wallet_id:\n   \
+        \     The ID of the wallet subscribing to the events.\n    topic:\n      \
+        \  The topic to which the wallet is subscribing.\n    field:\n        The\
+        \ field to which the wallet is subscribing.\n    field_id:\n        The ID\
+        \ of the field subscribing to the events.\n    desired_state:\n        The\
+        \ desired state to be reached.\n    look_back:\n        Number of seconds\
+        \ to look back for events before subscribing."
       operationId: Subscribe_to_a_Wallet_Event_by_Topic__Field__and_Desired_State_v1_sse__wallet_id___topic___field___field_id___desired_state__get
       security:
         - APIKeyHeader: []
@@ -2507,6 +2802,17 @@ paths:
           schema:
             type: string
             title: Desired State
+        - name: look_back
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            description: Number of seconds to look back for events
+            default: 60
+            title: Look Back
+          description: Number of seconds to look back for events
       responses:
         "200":
           description: Successful Response
@@ -3282,13 +3588,12 @@ components:
         results:
           anyOf:
             - items:
-                $ref: "#/components/schemas/IndyCredInfo"
+                $ref: "#/components/schemas/app__models__wallet__IndyCredInfo"
               type: array
             - type: "null"
           title: Results
       type: object
       title: CredInfoList
-      description: CredInfoList
     CredRevokedResult:
       properties:
         revoked:
@@ -3542,7 +3847,10 @@ components:
           type: string
           enum:
             - ed25519
+            - x25519
+            - bls12381g1
             - bls12381g2
+            - bls12381g1g2
           title: Key Type
           description: Key type associated with the DID
         metadata:
@@ -3556,6 +3864,9 @@ components:
           enum:
             - sov
             - key
+            - web
+            - did:peer:2
+            - did:peer:4
           title: Method
           description: Did method associated with the DID
         posture:
@@ -3640,6 +3951,17 @@ components:
         - did
       title: DIDEndpoint
       description: DIDEndpoint
+    DIDXRejectRequest:
+      properties:
+        reason:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Reason
+          description: Reason for rejecting the DID Exchange
+      type: object
+      title: DIDXRejectRequest
+      description: DIDXRejectRequest
     DIFField:
       properties:
         filter:
@@ -3856,53 +4178,27 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    IndyCredInfo:
+    Hangup:
       properties:
-        attrs:
-          anyOf:
-            - additionalProperties:
-                type: string
-              type: object
-            - type: "null"
-          title: Attrs
-          description: Attribute names and value
-        cred_def_id:
+        "@id":
           anyOf:
             - type: string
             - type: "null"
-          title: Cred Def Id
-          description: Credential definition identifier
-        cred_rev_id:
+          title: "@Id"
+          description: Message identifier
+        "@type":
           anyOf:
             - type: string
             - type: "null"
-          title: Cred Rev Id
-          description: Credential revocation identifier
-        referent:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Referent
-          description: Wallet referent
-        rev_reg_id:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Rev Reg Id
-          description: Revocation registry identifier
-        schema_id:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Schema Id
-          description: Schema identifier
+          title: "@Type"
+          description: Message type
       type: object
-      title: IndyCredInfo
-      description: IndyCredInfo
+      title: Hangup
+      description: Hangup
     IndyCredPrecis:
       properties:
         cred_info:
-          $ref: "#/components/schemas/IndyCredInfo"
+          $ref: "#/components/schemas/aries_cloudcontroller__models__indy_cred_info__IndyCredInfo"
           description: Credential info
         interval:
           anyOf:
@@ -5569,6 +5865,29 @@ components:
             with auto_publish_on_ledger=False.
       type: object
       title: RevokedResponse
+    Rotate:
+      properties:
+        "@id":
+          anyOf:
+            - type: string
+            - type: "null"
+          title: "@Id"
+          description: Message identifier
+        "@type":
+          anyOf:
+            - type: string
+            - type: "null"
+          title: "@Type"
+          description: Message type
+        to_did:
+          type: string
+          title: To Did
+          description: The DID the rotating party is rotating to
+      type: object
+      required:
+        - to_did
+      title: Rotate
+      description: Rotate
     SDJWSCreateRequest:
       properties:
         did:
@@ -5975,12 +6294,11 @@ components:
               type: array
             - type: "null"
           title: Proof Types
-        record_id:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Record Id
-          description: Record identifier
+        credential_id:
+          type: string
+          title: Credential Id
+          description: (deprecated - renamed to credential_id) Credential identifier
+          deprecated: true
         schema_ids:
           anyOf:
             - items:
@@ -5995,9 +6313,15 @@ components:
               type: array
             - type: "null"
           title: Subject Ids
+        record_id:
+          type: string
+          title: Record Id
+          description: Credential identifier
       type: object
+      required:
+        - credential_id
+        - record_id
       title: VCRecord
-      description: VCRecord
     VCRecordList:
       properties:
         results:
@@ -6009,7 +6333,6 @@ components:
           title: Results
       type: object
       title: VCRecordList
-      description: VCRecordList
     ValidationError:
       properties:
         loc:
@@ -6031,74 +6354,97 @@ components:
         - msg
         - type
       title: ValidationError
-    W3CCredentialsListRequest:
+    app__models__wallet__IndyCredInfo:
       properties:
-        contexts:
-          anyOf:
-            - items:
-                type: string
-              type: array
-            - type: "null"
-          title: Contexts
-        given_id:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Given Id
-          description: Given credential id to match
-        issuer_id:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Issuer Id
-          description: Credential issuer identifier to match
-        max_results:
-          anyOf:
-            - type: integer
-            - type: "null"
-          title: Max Results
-          description: Maximum number of results to return
-        proof_types:
-          anyOf:
-            - items:
-                type: string
-              type: array
-            - type: "null"
-          title: Proof Types
-        schema_ids:
-          anyOf:
-            - items:
-                type: string
-              type: array
-            - type: "null"
-          title: Schema Ids
-          description: Schema identifiers, all of which to match
-        subject_ids:
-          anyOf:
-            - items:
-                type: string
-              type: array
-            - type: "null"
-          title: Subject Ids
-          description: Subject identifiers, all of which to match
-        tag_query:
+        attrs:
           anyOf:
             - additionalProperties:
                 type: string
               type: object
             - type: "null"
-          title: Tag Query
-          description: Tag filter
-        types:
+          title: Attrs
+          description: Attribute names and value
+        cred_def_id:
           anyOf:
-            - items:
-                type: string
-              type: array
+            - type: string
             - type: "null"
-          title: Types
+          title: Cred Def Id
+          description: Credential definition identifier
+        cred_rev_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Cred Rev Id
+          description: Credential revocation identifier
+        credential_id:
+          type: string
+          title: Credential Id
+          description: (deprecated - renamed to credential_id) Credential identifier
+          deprecated: true
+        rev_reg_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Rev Reg Id
+          description: Revocation registry identifier
+        schema_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Schema Id
+          description: Schema identifier
+        referent:
+          type: string
+          title: Referent
+          description: Credential identifier
       type: object
-      title: W3CCredentialsListRequest
-      description: W3CCredentialsListRequest
+      required:
+        - credential_id
+        - referent
+      title: IndyCredInfo
+    aries_cloudcontroller__models__indy_cred_info__IndyCredInfo:
+      properties:
+        attrs:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: "null"
+          title: Attrs
+          description: Attribute names and value
+        cred_def_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Cred Def Id
+          description: Credential definition identifier
+        cred_rev_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Cred Rev Id
+          description: Credential revocation identifier
+        referent:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Referent
+          description: Wallet referent
+        rev_reg_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Rev Reg Id
+          description: Revocation registry identifier
+        schema_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Schema Id
+          description: Schema identifier
+      type: object
+      title: IndyCredInfo
+      description: IndyCredInfo
   securitySchemes:
     APIKeyHeader:
       type: apiKey

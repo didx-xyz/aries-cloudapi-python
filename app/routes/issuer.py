@@ -6,11 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import CloudApiException
-from app.models.issuer import (
-    CreateOffer,
-    CredentialType,
-    SendCredential,
-)
+from app.models.issuer import CreateOffer, CredentialType, SendCredential
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
 from app.services.issuer.acapy_issuer_v2 import IssuerV2

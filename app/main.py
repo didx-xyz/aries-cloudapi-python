@@ -18,9 +18,9 @@ from app.routes import (
     jsonld,
     messaging,
     oob,
+    revocation,
     sse,
     trust_registry,
-    revocation,
     verifier,
 )
 from app.routes.admin import tenants

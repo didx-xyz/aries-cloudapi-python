@@ -16,7 +16,6 @@ from app.models.issuer import (
     RevokedResponse,
 )
 from app.services import revocation_registry
-
 from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
 

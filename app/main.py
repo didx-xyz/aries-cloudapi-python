@@ -21,7 +21,6 @@ from app.routes import (
     revocation,
     sse,
     trust_registry,
-    revocation,
     verifier,
 )
 from app.routes.admin import tenants

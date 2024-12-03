@@ -18,7 +18,9 @@ async def test_get_pending_revocations_success():
     mock_aries_controller = AsyncMock()
     mock_get_pending_revocations = AsyncMock(return_value=[1, 2, 3])
 
-    with patch("app.routes.revocation.client_from_auth") as mock_client_from_auth, patch(
+    with patch(
+        "app.routes.revocation.client_from_auth"
+    ) as mock_client_from_auth, patch(
         "app.services.revocation_registry.get_pending_revocations",
         mock_get_pending_revocations,
     ):

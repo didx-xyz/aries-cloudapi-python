@@ -339,4 +339,3 @@ async def test_create_offer(
     verify(IssuerV2).create_offer(
         controller=mock_agent_controller, credential=v2_credential
     )
-

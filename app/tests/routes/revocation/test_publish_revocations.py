@@ -21,7 +21,9 @@ async def test_publish_revocations_success(publish_revocation_response):
 
     mock_get_transaction = AsyncMock()
 
-    with patch("app.routes.revocation.client_from_auth") as mock_client_from_auth, patch(
+    with patch(
+        "app.routes.revocation.client_from_auth"
+    ) as mock_client_from_auth, patch(
         "app.services.revocation_registry.publish_pending_revocations",
         mock_publish_revocations,
     ), patch(

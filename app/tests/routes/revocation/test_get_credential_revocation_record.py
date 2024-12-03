@@ -22,7 +22,9 @@ async def test_get_credential_revocation_record_success(
     mock_aries_controller = AsyncMock()
     mock_get_revocation_record = AsyncMock()
 
-    with patch("app.routes.revocation.client_from_auth") as mock_client_from_auth, patch(
+    with patch(
+        "app.routes.revocation.client_from_auth"
+    ) as mock_client_from_auth, patch(
         "app.services.revocation_registry.get_credential_revocation_record",
         mock_get_revocation_record,
     ):

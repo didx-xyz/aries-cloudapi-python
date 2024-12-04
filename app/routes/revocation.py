@@ -347,7 +347,12 @@ async def fix_revocation_registry_entry_state(
     ---
         RevRegWalletUpdatedResult
     """
-    bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
+    bound_logger = logger.bind(
+        body={
+            "revocation_registry_id": revocation_registry_id,
+            "apply_ledger_update": apply_ledger_update,
+        }
+    )
     bound_logger.debug("PUT request received: Fix revocation registry entry state")
 
     async with client_from_auth(auth) as aries_controller:

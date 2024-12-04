@@ -6,6 +6,7 @@ import pytest
 from pydantic import BaseModel
 
 from app.routes.issuer import router
+from app.routes.revocation import router as revocation_router
 from app.routes.wallet.credentials import router as wallets_router
 from app.tests.util.connections import FaberAliceConnect, MeldCoAliceConnect
 from app.tests.util.regression_testing import assert_fail_on_recreating_fixtures
@@ -15,7 +16,7 @@ from shared.models.credential_exchange import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix
 WALLET_BASE_PATH = wallets_router.prefix
-
+REVOCATION_BASE_PATH = revocation_router.prefix
 sample_credential_attributes = {"speed": "10", "name": "Alice", "age": "44"}
 
 
@@ -212,7 +213,7 @@ async def revoke_alice_creds(
 
     for cred in issue_alice_creds:
         await faber_client.post(
-            f"{CREDENTIALS_BASE_PATH}/revoke",
+            f"{REVOCATION_BASE_PATH}/revoke",
             json={
                 "credential_exchange_id": cred.credential_exchange_id,
             },
@@ -234,7 +235,7 @@ async def revoke_alice_creds_and_publish(
 
     for cred in issue_alice_creds:
         await faber_client.post(
-            f"{CREDENTIALS_BASE_PATH}/revoke",
+            f"{REVOCATION_BASE_PATH}/revoke",
             json={
                 "credential_exchange_id": cred.credential_exchange_id,
                 "auto_publish_on_ledger": auto_publish,
@@ -244,7 +245,7 @@ async def revoke_alice_creds_and_publish(
 
     if not auto_publish:
         await faber_client.post(
-            f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+            f"{REVOCATION_BASE_PATH}/publish-revocations",
             json={
                 "revocation_registry_credential_map": {},
             },

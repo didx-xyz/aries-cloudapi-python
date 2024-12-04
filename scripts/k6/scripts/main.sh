@@ -49,7 +49,7 @@ main() {
   local deployments=""
   if [[ -n "${stack}" ]]; then
     case ${stack} in
-    WEBS | AGENT | SERVICE | AUTH | ALL) deployments="${!stack}" ;;
+    WEBS | AGENT | SERVICE | AUTH | STS | ALL) deployments="${!stack}" ;;
     *)
       echo "Error: Invalid stack specified" >&2
       usage

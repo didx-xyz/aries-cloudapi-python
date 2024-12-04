@@ -259,6 +259,9 @@ export function createCredential(
     },
   };
 
+  console.log(`credentialDefinitionId: ${credentialDefinitionId}`);
+  console.log(`Request Body: ${JSON.stringify(params)}`);
+
   try {
     // Construct the request body including the invitation object
     const requestBody = JSON.stringify({
@@ -788,12 +791,14 @@ export function genericWaitForSSEEvent(config) {
     sseUrlPath,
     topic,
     expectedState,
+    // lookBack with default value
+    lookBack = 5,
     maxDuration = 60,
     checkInterval = 1,
     sseTag,
   } = config;
 
-  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}`;
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}?look_back=${lookBack}`;
   const headers = {
     "x-api-key": accessToken,
   };
@@ -811,6 +816,7 @@ export function genericWaitForSSEEvent(config) {
     },
     (client) => {
       client.on("event", (event) => {
+        // console.log(`Received event: ${JSON.stringify(event)}`);
         if (!event.data || event.data.trim() === "") {
           console.log("Received empty event data");
           return;
@@ -860,6 +866,10 @@ export function genericWaitForSSEEvent(config) {
   let elapsedTime = 0;
   while (!eventReceived && elapsedTime < maxDuration) {
     console.log(`Waiting for event... Elapsed time: ${elapsedTime}s`);
+    console.log('Max duration: ', maxDuration);
+    console.log('Check interval: ', checkInterval);
+    console.log('Event received: ', eventReceived);
+    console.log('Elapsed time: ', elapsedTime);
     elapsedTime += checkInterval;
     sleep(checkInterval);
   }

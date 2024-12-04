@@ -7,6 +7,7 @@ import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger
@@ -141,7 +142,7 @@ class NatsEventsProcessor:
                         event = orjson.loads(message.data)
                         yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
-                except TimeoutError:
+                except FetchTimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
                     await asyncio.sleep(0.1)
 

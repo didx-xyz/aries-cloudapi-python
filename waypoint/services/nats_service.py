@@ -137,7 +137,7 @@ class NatsEventsProcessor:
                     break
 
                 try:
-                    messages = await subscription.fetch(batch=5, timeout=0.2)
+                    messages = await subscription.fetch(batch=5, timeout=0.2, heartbeat=0.01)
                     for message in messages:
                         event = orjson.loads(message.data)
                         yield CloudApiWebhookEventGeneric(**event)

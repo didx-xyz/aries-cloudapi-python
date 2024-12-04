@@ -40,7 +40,7 @@ export const options = {
     "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
     "iteration_duration{scenario:default}": ["max>=0"],
     checks: ["rate==1"],
-    // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
+    'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
   },
@@ -164,7 +164,7 @@ export default function (data) {
     },
   });
 
-  // testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 
   testFunctionReqs.add(1);
 

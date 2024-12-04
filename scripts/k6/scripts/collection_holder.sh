@@ -6,8 +6,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
   export VUS=1
-  export ITERATIONS=1000
+  export ITERATIONS=100
   export HOLDER_PREFIX="k6_holder_holder"
+  export SLEEP_DURATION=1
 }
 
 init() {
@@ -20,7 +21,7 @@ scenario() {
 
 cleanup() {
   log "Cleaning up..."
-  xk6 run ./scenarios/delete-holders.js
+  xk6 run --out statsd ./scenarios/delete-holders.js
 }
 
 run_collection() {

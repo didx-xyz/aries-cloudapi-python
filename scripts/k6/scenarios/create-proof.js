@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -120,6 +120,8 @@ export default function (data) {
     },
   });
 
+  // sleep(2);
+
   // TODO: return object and add check for the response
   const proofId = getProofIdByThreadId(wallet.access_token, threadId);
   // console.log(`Proof ID: ${proofId}`);
@@ -141,6 +143,7 @@ export default function (data) {
     },
   });
 
+  // console.log(`Initiate wait for SSE event: done`);
   const waitForSSEProofDoneRequest = genericWaitForSSEEvent({
     accessToken: wallet.issuer_access_token,
     walletId: wallet.issuer_wallet_id,

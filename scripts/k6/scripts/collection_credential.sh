@@ -6,9 +6,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
   export VUS=5
-  export ITERATIONS=10
+  export ITERATIONS=2
   export HOLDER_PREFIX="k6_holder_credential"
   export ISSUER_PREFIX="k6_issuer_credential"
+  # export SCHEMA_NAME="k6_proof_of_person"
   export NUM_ISSUERS=2
 }
 

@@ -212,7 +212,6 @@ async def create_connection_by_test_mode(
                 alias=alias,
             )
         else:
-
             return await create_bob_alice_connection(
                 bob_member_client=bob_member_client,
                 alice_member_client=alice_member_client,

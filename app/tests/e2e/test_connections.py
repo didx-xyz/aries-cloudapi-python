@@ -213,12 +213,18 @@ async def test_delete_connection(
     )
 
     bob_connection_id = bob_and_alice_connection.bob_connection_id
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     response = await bob_member_client.delete(f"{BASE_PATH}/{bob_connection_id}")
     assert response.status_code == 204
 
     with pytest.raises(HTTPException) as exc:
         response = await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
+    assert exc.value.status_code == 404
+
+    # Check that the connection is deleted for alice as well
+    with pytest.raises(HTTPException) as exc:
+        response = await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
     assert exc.value.status_code == 404
 
 

@@ -7,8 +7,7 @@ from pytest_mock import MockerFixture
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
 from app.exceptions import CloudApiException
-from app.models.issuer import CredentialBase, IndyCredential, RevokeCredential
-from app.services import revocation_registry
+from app.models.issuer import CredentialBase, IndyCredential
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
 from shared.models.credential_exchange import CredentialExchange

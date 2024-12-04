@@ -51,18 +51,48 @@ class NatsEventsProcessor:
                 deliver_policy=DeliverPolicy.BY_START_TIME,
                 opt_start_time=start_time,
             )
-            subscription = await self.js_context.pull_subscribe(
-                config=config, **subscribe_kwargs
-            )
+            attempt = 0
+            while True:
+                try:
+                    logger.trace(
+                        "Subscribing to JetStream (Attempt {}) for wallet_id: {}, group_id: {}",
+                        attempt + 1,
+                        wallet_id,
+                        group_id,
+                    )
 
-            return subscription
+                    subscription = await self.js_context.pull_subscribe(
+                        config=config, **subscribe_kwargs
+                    )
 
-        except BadSubscriptionError as e:
-            logger.error("BadSubscriptionError subscribing to NATS: {}", e)
-            raise
-        except Error as e:
-            logger.error("Error subscribing to NATS: {}", e)
-            raise
+                    return subscription
+
+                except TimeoutError as e:
+
+                    if attempt < 4:
+                        backoff_time = min(2**attempt, 16)
+                        logger.warning(
+                            f"Timeout error. Retrying in {backoff_time:.2f} seconds "
+                            f"(Attempt {attempt + 1})"
+                        )
+                        await asyncio.sleep(backoff_time)
+                    else:
+                        # After reaching 16 seconds, retry with fixed 16-second delay
+                        logger.warning(
+                            f"Timeout error. Retrying with fixed 16-second delay "
+                            f"(Attempt {attempt + 1})"
+                        )
+                        await asyncio.sleep(16)
+
+                    attempt += 1
+
+                except BadSubscriptionError as e:
+                    logger.error("BadSubscriptionError subscribing to NATS: {}", e)
+                    raise
+                except Error as e:
+                    logger.error("Error subscribing to NATS: {}", e)
+                    raise
+
         except Exception:
             logger.exception("Unknown error subscribing to NATS")
             raise

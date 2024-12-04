@@ -340,7 +340,8 @@ async def fix_revocation_registry_entry_state(
     Query Parameters:
     ---
         apply_ledger_update: bool
-            Set to True to apply the ledger update
+            Set to True to apply the ledger update, only calculates the difference
+            between the wallet and ledger state if False
 
     Returns:
     ---

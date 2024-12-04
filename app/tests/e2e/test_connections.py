@@ -186,16 +186,19 @@ async def test_get_connection_by_id(
     )
 
     bob_connection_id = bob_and_alice_connection.bob_connection_id
+    try:
+        connection_response = await bob_member_client.get(
+            f"{BASE_PATH}/{bob_connection_id}"
+        )
+        connection_record = connection_response.json()
 
-    connection_response = await bob_member_client.get(
-        f"{BASE_PATH}/{bob_connection_id}"
-    )
-    connection_record = connection_response.json()
-
-    assert connection_response.status_code == 200
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
+        assert connection_response.status_code == 200
+        assert_that(connection_record).contains(
+            "connection_id", "state", "created_at", "updated_at", "invitation_key"
+        )
+        assert_that(connection_record).has_alias(connection_alias)
+    finally:
+        await bob_member_client.delete(f"{BASE_PATH}/{bob_connection_id}")
 
 
 @pytest.mark.anyio

@@ -4,7 +4,7 @@ import pytest
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.models.issuer import RevokeCredential
-from app.routes.issuer import revoke_credential
+from app.routes.revocation import revoke_credential
 
 credential_exchange_id = "v2-db9d7025-b276-4c32-ae38-fbad41864112"
 
@@ -14,7 +14,9 @@ credential_exchange_id = "v2-db9d7025-b276-4c32-ae38-fbad41864112"
 async def test_revoke_credential_success(auto_publish_to_ledger):
     mock_aries_controller = AsyncMock()
     mock_revoke_credential = AsyncMock()
-    with patch("app.routes.issuer.client_from_auth") as mock_client_from_auth, patch(
+    with patch(
+        "app.routes.revocation.client_from_auth"
+    ) as mock_client_from_auth, patch(
         "app.services.revocation_registry.revoke_credential", mock_revoke_credential
     ):
         mock_client_from_auth.return_value.__aenter__.return_value = (
@@ -55,7 +57,7 @@ async def test_revoke_credential_fail_acapy_error(
     )
 
     with patch(
-        "app.routes.issuer.client_from_auth"
+        "app.routes.revocation.client_from_auth"
     ) as mock_client_from_auth, pytest.raises(
         CloudApiException, match=expected_detail
     ) as exc, patch(

@@ -340,12 +340,15 @@ async def fix_revocation_registry_entry_state(
     Query Parameters:
     ---
         apply_ledger_update: bool
-            Set to True to apply the ledger update, only calculates the difference
-            between the wallet and ledger state if False
+            Apply changes to ledger (default: False). If False, only computes the difference
+            between the wallet and ledger state.
 
     Returns:
     ---
-        RevRegWalletUpdatedResult
+        RevRegWalletUpdatedResult:
+            accum_calculated: The calculated accumulator value for any revocations not yet published to ledger
+            accum_fixed: The result of applying the ledger transaction to synchronize revocation state
+            rev_reg_delta: The delta between wallet and ledger state for this revocation registry
     """
     bound_logger = logger.bind(
         body={

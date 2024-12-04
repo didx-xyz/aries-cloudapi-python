@@ -318,10 +318,11 @@ async def create_did_exchange(
     bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient, alias: str
 ) -> BobAliceConnect:
 
-    # Get Bob's public DID
-    bob_public_did = (await bob_member_client.get(f"{DID_BASE_PATH}/public")).json()[
-        "did"
-    ]
+    # Get Bob's public DID. Bob is the issuer in this case i.e. should have public DID
+    did_response = (await bob_member_client.get(f"{DID_BASE_PATH}/public")).json()
+
+    bob_public_did = did_response["did"]
+
     # Alice create invitation
     alice_connection = (
         await alice_member_client.post(

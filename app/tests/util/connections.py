@@ -79,18 +79,32 @@ async def create_bob_alice_connection(
     ).json()
 
     # Alice accept invitation
-    alice_connection = (
+    alice_oob_response = (
         await alice_member_client.post(
             f"{OOB_BASE_PATH}/accept-invitation",
             json={"alias": alias, "invitation": bob_invitation["invitation"]},
         )
     ).json()
 
-    bob_connection = (
-        await bob_member_client.get(
-            f"{CONNECTIONS_BASE_PATH}?alias={alias}",
+    # Get connection details
+    alice_connection = (
+        await alice_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}/{alice_oob_response['connection_id']}"
         )
-    ).json()[0]
+    ).json()
+
+    # Use Alice's connection DID to fetch Bob's connection
+    their_did = alice_connection["my_did"]
+    bob_connections = (
+        await bob_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}?their_did={their_did}",
+        )
+    ).json()
+
+    assert (
+        len(bob_connections) == 1
+    ), f"Bob should have 1 connection, got: {len(bob_connections)}"
+    bob_connection = bob_connections[0]
 
     bob_connection_id = bob_connection["connection_id"]
     alice_connection_id = alice_connection["connection_id"]

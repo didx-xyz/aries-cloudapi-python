@@ -145,6 +145,9 @@ class NatsEventsProcessor:
                 except FetchTimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
                     await asyncio.sleep(0.1)
+                except TimeoutError:
+                    logger.error("FATAL: Timeout Error")
+                    raise
 
         try:
             yield event_generator()

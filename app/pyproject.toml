@@ -51,3 +51,4 @@ profile = "black"
 [tool.pytest.ini_options]
 addopts = "--junitxml=junit.xml -p no:cacheprovider --cov-report=xml --cov-report=term"
 junit_family = "xunit2"
+asyncio_default_fixture_loop_scope = "function"

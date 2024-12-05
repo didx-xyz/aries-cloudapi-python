@@ -63,7 +63,7 @@ class DIDCreate(DIDCreateAcaPy):
         default=None,
         deprecated=True,
         description="(Deprecated) Define a key type and/or a DID depending on the chosen DID method.",
-        examples=[{"key_type": "ed25519", "did": "did:peer:2"}],
+        examples=[{"key_type": "ed25519", "did": "did:peer:2..."}],
     )
     seed: Optional[StrictStr] = Field(
         default=None,

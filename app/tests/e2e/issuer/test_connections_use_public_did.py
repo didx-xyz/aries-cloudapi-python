@@ -6,7 +6,7 @@ from app.routes.connections import router
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
-BASE_PATH = router.prefix
+CONNECTIONS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -17,7 +17,7 @@ async def test_accept_use_public_did(
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
-        f"{BASE_PATH}/create-invitation", json=invite_json
+        f"{CONNECTIONS_BASE_PATH}/create-invitation", json=invite_json
     )
     assert response.status_code == 200
 
@@ -33,7 +33,7 @@ async def test_accept_use_public_did(
     ).model_dump()
 
     accept_response = await meld_co_client.post(
-        f"{BASE_PATH}/accept-invitation",
+        f"{CONNECTIONS_BASE_PATH}/accept-invitation",
         json=accept_invite_json,
     )
     connection_record = accept_response.json()
@@ -61,7 +61,7 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
-        f"{BASE_PATH}/create-invitation", json=invite_json
+        f"{CONNECTIONS_BASE_PATH}/create-invitation", json=invite_json
     )
     assert response.status_code == 200
 
@@ -77,7 +77,7 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     ).model_dump()
 
     accept_response = await alice_member_client.post(
-        f"{BASE_PATH}/accept-invitation",
+        f"{CONNECTIONS_BASE_PATH}/accept-invitation",
         json=accept_invite_json,
     )
     connection_record = accept_response.json()

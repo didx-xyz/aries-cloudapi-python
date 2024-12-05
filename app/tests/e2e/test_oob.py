@@ -2,11 +2,13 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
+from app.routes.connections import router as connections_router
 from app.routes.oob import router
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
 OOB_BASE_PATH = router.prefix
+CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
@@ -27,7 +29,6 @@ async def test_create_invitation_oob(
 async def test_accept_invitation_oob(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    alice_acapy_client: AcaPyClient,
 ):
     invitation_response = await bob_member_client.post(
         OOB_BASE_PATH + "/create-invitation",
@@ -46,14 +47,24 @@ async def test_accept_invitation_oob(
     )
 
     oob_record = accept_response.json()
-
-    connection_record = await alice_acapy_client.connection.get_connection(
-        conn_id=oob_record["connection_id"]
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        state="completed",
+        filter_map={
+            "connection_id": oob_record["connection_id"],
+        },
     )
+
+    connection_record = (
+        await alice_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}/{oob_record["connection_id"]}"
+        )
+    ).json()
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
+    assert_that(connection_record["connection_protocol"]).contains("didexchange/1.0")
 
 
 @pytest.mark.anyio

@@ -11,7 +11,7 @@ from app.tests.util.connections import BobAliceConnect, create_bob_alice_connect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
-BASE_PATH = router.prefix
+CONNECTIONS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -39,7 +39,7 @@ async def test_create_invitation_no_public_did(
         with pytest.raises(HTTPException) as exc_info:
             # regular holders cannot `use_public_did` as they do not have a public did
             await bob_member_client.post(
-                f"{BASE_PATH}/create-invitation", json=invite_json
+                f"{CONNECTIONS_BASE_PATH}/create-invitation", json=invite_json
             )
         assert exc_info.value.status_code == 400
         assert (
@@ -48,7 +48,7 @@ async def test_create_invitation_no_public_did(
         )
     else:
         response = await bob_member_client.post(
-            f"{BASE_PATH}/create-invitation", json=invite_json
+            f"{CONNECTIONS_BASE_PATH}/create-invitation", json=invite_json
         )
         assert response.status_code == 200
 
@@ -67,7 +67,9 @@ async def test_accept_invitation(
     alice_member_client: RichAsyncClient,
 ):
     alias = "test_alias"
-    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
+    invitation_response = await bob_member_client.post(
+        f"{CONNECTIONS_BASE_PATH}/create-invitation"
+    )
     invitation = invitation_response.json()
 
     accept_invite_json = AcceptInvitation(
@@ -76,7 +78,7 @@ async def test_accept_invitation(
     ).model_dump()
 
     accept_response = await alice_member_client.post(
-        f"{BASE_PATH}/accept-invitation",
+        f"{CONNECTIONS_BASE_PATH}/accept-invitation",
         json=accept_invite_json,
     )
     connection_record = accept_response.json()
@@ -113,138 +115,131 @@ async def test_get_connections(
 
     try:
         alice_connection = (
-            await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
+            await alice_member_client.get(
+                f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
+            )
         ).json()
         bob_connection = (
-            await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
+            await bob_member_client.get(f"{CONNECTIONS_BASE_PATH}/{bob_connection_id}")
         ).json()
 
         alice_invitation_msg_id_value = alice_connection["invitation_msg_id"]
         alice_did = alice_connection["my_did"]
 
         alice_connection_alias = (
-            await alice_member_client.get(f"{BASE_PATH}?alias={connection_alias}")
+            await alice_member_client.get(
+                f"{CONNECTIONS_BASE_PATH}?alias={connection_alias}"
+            )
         ).json()[0]["alias"]
         assert alice_connection_alias == connection_alias
 
         alice_state = (
-            await alice_member_client.get(f"{BASE_PATH}?state=completed")
+            await alice_member_client.get(f"{CONNECTIONS_BASE_PATH}?state=completed")
         ).json()[0]["state"]
         assert alice_state == "completed"
 
         alice_key = (
             await alice_member_client.get(
-                f"{BASE_PATH}?invitation_key={bob_connection['invitation_key']}"
+                f"{CONNECTIONS_BASE_PATH}?invitation_key={bob_connection['invitation_key']}"
             )
         ).json()[0]["invitation_key"]
         assert alice_key == alice_connection["invitation_key"]
 
         alice_invitation_msg_id = (
             await alice_member_client.get(
-                f"{BASE_PATH}?invitation_msg_id={alice_invitation_msg_id_value}"
+                f"{CONNECTIONS_BASE_PATH}?invitation_msg_id={alice_invitation_msg_id_value}"
             )
         ).json()[0]["invitation_msg_id"]
         assert alice_invitation_msg_id == alice_invitation_msg_id_value
 
         alice_my_did = (
-            await alice_member_client.get(f"{BASE_PATH}?my_did={alice_did}")
+            await alice_member_client.get(f"{CONNECTIONS_BASE_PATH}?my_did={alice_did}")
         ).json()[0]["my_did"]
         assert alice_my_did == alice_did
 
         alice_their_did = (
             await alice_member_client.get(
-                f"{BASE_PATH}?their_did={bob_connection['my_did']}"
+                f"{CONNECTIONS_BASE_PATH}?their_did={bob_connection['my_did']}"
             )
         ).json()[0]["their_did"]
         assert alice_their_did == alice_connection["their_did"]
 
         with pytest.raises(HTTPException) as exc:
             await alice_member_client.get(
-                f"{BASE_PATH}?their_public_did={bob_connection['their_public_did']}"
+                f"{CONNECTIONS_BASE_PATH}?their_public_did={bob_connection['their_public_did']}"
             )
         assert exc.value.status_code == 422
 
         alice_their_role = (
-            await alice_member_client.get(f"{BASE_PATH}?their_role=inviter")
+            await alice_member_client.get(f"{CONNECTIONS_BASE_PATH}?their_role=inviter")
         ).json()[0]["their_role"]
         assert alice_their_role == "inviter"
 
     finally:
         # clean up temp connection
-        await alice_member_client.delete(f"{BASE_PATH}/{alice_connection_id}")
-        await bob_member_client.delete(f"{BASE_PATH}/{bob_connection_id}")
+        await alice_member_client.delete(
+            f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
+        )
 
 
 @pytest.mark.anyio
 async def test_get_connection_by_id(
     bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
-    invitation = invitation_response.json()
-    connection_id = invitation["connection_id"]
+    connection_alias = "TempAliceBobConnectionById"
 
-    connection_response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
-    connection_record = connection_response.json()
-
-    assert connection_response.status_code == 200
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias=connection_alias
     )
+
+    bob_connection_id = bob_and_alice_connection.bob_connection_id
+    try:
+        connection_response = await bob_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}/{bob_connection_id}"
+        )
+        connection_record = connection_response.json()
+
+        assert connection_response.status_code == 200
+        assert_that(connection_record).contains(
+            "connection_id", "state", "created_at", "updated_at", "invitation_key"
+        )
+        assert_that(connection_record).has_alias(connection_alias)
+    finally:
+        await bob_member_client.delete(f"{CONNECTIONS_BASE_PATH}/{bob_connection_id}")
 
 
 @pytest.mark.anyio
 async def test_delete_connection(
     bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
-    invitation = invitation_response.json()
-    connection_id = invitation["connection_id"]
+    connection_alias = "TempAliceBobConnectionDelete"
 
-    response = await bob_member_client.delete(f"{BASE_PATH}/{connection_id}")
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias=connection_alias
+    )
+
+    bob_connection_id = bob_and_alice_connection.bob_connection_id
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
+
+    response = await bob_member_client.delete(
+        f"{CONNECTIONS_BASE_PATH}/{bob_connection_id}"
+    )
     assert response.status_code == 204
 
     with pytest.raises(HTTPException) as exc:
-        response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
+        response = await bob_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}/{bob_connection_id}"
+        )
     assert exc.value.status_code == 404
 
-
-@pytest.mark.anyio
-async def test_bob_and_alice_connect(
-    bob_member_client: RichAsyncClient,
-    alice_member_client: RichAsyncClient,
-):
-    invitation_response = await bob_member_client.post(
-        f"{BASE_PATH}/create-invitation",
-    )
-    invitation = invitation_response.json()
-
-    accept_response = await alice_member_client.post(
-        f"{BASE_PATH}/accept-invitation",
-        json={"invitation": invitation["invitation"]},
-    )
-    connection_record = accept_response.json()
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": connection_record["connection_id"],
-        },
-    )
-
-    alice_connection_id = connection_record["connection_id"]
-    bob_connection_id = invitation["connection_id"]
-
-    bob_connection = (
-        await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
-    ).json()
-    alice_connection = (
-        await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
-    ).json()
-
-    assert "completed" in alice_connection["state"]
-    assert "completed" in bob_connection["state"]
+    # Check that the connection is deleted for alice as well
+    with pytest.raises(HTTPException) as exc:
+        response = await alice_member_client.get(
+            f"{CONNECTIONS_BASE_PATH}/{alice_connection_id}"
+        )
+    assert exc.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -268,7 +263,7 @@ async def test_get_connections_paginated(
             retry = True
             while retry and num_tries < 5:  # Handle case where record doesn't exist yet
                 response = await alice_member_client.get(
-                    BASE_PATH,
+                    CONNECTIONS_BASE_PATH,
                     params={
                         "alias": test_alias,
                         "limit": limit,
@@ -288,7 +283,7 @@ async def test_get_connections_paginated(
 
         # Test ascending order
         response = await alice_member_client.get(
-            BASE_PATH,
+            CONNECTIONS_BASE_PATH,
             params={
                 "alias": test_alias,
                 "limit": num_connections_to_test,
@@ -305,7 +300,7 @@ async def test_get_connections_paginated(
 
         # Test descending order
         response = await alice_member_client.get(
-            BASE_PATH,
+            CONNECTIONS_BASE_PATH,
             params={
                 "alias": test_alias,
                 "limit": num_connections_to_test,
@@ -327,7 +322,7 @@ async def test_get_connections_paginated(
 
         # Test offset greater than number of records
         response = await alice_member_client.get(
-            BASE_PATH,
+            CONNECTIONS_BASE_PATH,
             params={
                 "alias": test_alias,
                 "limit": 1,
@@ -341,7 +336,7 @@ async def test_get_connections_paginated(
         prev_connections = []
         for offset in range(num_connections_to_test):
             response = await alice_member_client.get(
-                BASE_PATH,
+                CONNECTIONS_BASE_PATH,
                 params={
                     "alias": test_alias,
                     "limit": 1,
@@ -366,11 +361,12 @@ async def test_get_connections_paginated(
 
         for params in invalid_params:
             with pytest.raises(HTTPException) as exc:
-                await alice_member_client.get(BASE_PATH, params=params)
+                await alice_member_client.get(CONNECTIONS_BASE_PATH, params=params)
             assert exc.value.status_code == 422
 
     finally:
         # Clean up connections
         for conn in bob_alice_connections:
-            await alice_member_client.delete(f"{BASE_PATH}/{conn.alice_connection_id}")
-            await bob_member_client.delete(f"{BASE_PATH}/{conn.bob_connection_id}")
+            await alice_member_client.delete(
+                f"{CONNECTIONS_BASE_PATH}/{conn.alice_connection_id}"
+            )

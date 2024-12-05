@@ -5,6 +5,7 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
+from app.routes.wallet.dids import router as did_router
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.regression_testing import (
     RegressionTestConfig,
@@ -18,6 +19,7 @@ from shared.models.connection_record import Connection
 
 OOB_BASE_PATH = oob_router.prefix
 CONNECTIONS_BASE_PATH = conn_router.prefix
+DID_BASE_PATH = did_router.prefix
 
 
 @dataclass
@@ -63,33 +65,47 @@ async def assert_both_connections_ready(
 async def create_bob_alice_connection(
     alice_member_client: RichAsyncClient, bob_member_client: RichAsyncClient, alias: str
 ):
-    # create invitation on bob side
-    json_request = CreateInvitation(
-        alias=alias,
-        multi_use=False,
-        use_public_did=False,
-    ).model_dump()
-    invitation = (
+    # Bob create invitation
+    bob_invitation = (
         await bob_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/create-invitation", json=json_request
+            f"{OOB_BASE_PATH}/create-invitation",
+            json={
+                "alias": alias,
+                "multi_use": False,
+                "use_public_did": False,
+                "create_connection": True,
+            },
         )
     ).json()
 
-    # accept invitation on alice side
-    invitation_response = (
+    # Alice accept invitation
+    alice_oob_response = (
         await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-            json={"alias": alias, "invitation": invitation["invitation"]},
+            f"{OOB_BASE_PATH}/accept-invitation",
+            json={"alias": alias, "invitation": bob_invitation["invitation"]},
         )
     ).json()
 
-    bob_connection_id = invitation["connection_id"]
-    alice_connection_id = invitation_response["connection_id"]
-
-    # validate both connections should be active
-    await assert_both_connections_ready(
-        alice_member_client, bob_member_client, alice_connection_id, bob_connection_id
+    # Get connection details
+    alice_connection = await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        state="completed",
+        filter_map={"connection_id": alice_oob_response["connection_id"]},
     )
+
+    # Use Alice's connection DID to fetch Bob's connection
+    their_did = alice_connection["my_did"]
+
+    bob_connection = await check_webhook_state(
+        client=bob_member_client,
+        topic="connections",
+        state="completed",
+        filter_map={"their_did": their_did},
+    )
+
+    bob_connection_id = bob_connection["connection_id"]
+    alice_connection_id = alice_connection["connection_id"]
 
     return BobAliceConnect(
         alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
@@ -100,10 +116,13 @@ async def fetch_existing_connection_by_alias(
     member_client: RichAsyncClient,
     alias: Optional[str] = None,
     their_label: Optional[str] = None,
+    their_did: Optional[str] = None,
 ) -> Optional[Connection]:
     params = {"state": "completed", "limit": 10000}
     if alias:
         params.update({"alias": alias})
+    if their_did:
+        params.update({"their_did": their_did})
 
     list_connections_response = await member_client.get(
         CONNECTIONS_BASE_PATH, params=params
@@ -133,14 +152,19 @@ async def fetch_or_create_connection(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
     connection_alias: str,
+    did_exchange: bool = False,
 ) -> BobAliceConnect:
     # fetch connection with this alias for both bob and alice
     alice_connection = await fetch_existing_connection_by_alias(
         alice_member_client, connection_alias
     )
 
+    their_did = alice_connection.my_did if alice_connection else None
+
     bob_connection = await fetch_existing_connection_by_alias(
-        bob_member_client, connection_alias
+        member_client=bob_member_client,
+        alias=connection_alias if not their_did else None,
+        their_did=their_did,
     )
 
     # Check if connections exist
@@ -152,11 +176,18 @@ async def fetch_or_create_connection(
     else:
         # Create connection since they don't exist
         assert_fail_on_recreating_fixtures()
-        return await create_bob_alice_connection(
-            alice_member_client,
-            bob_member_client,
-            alias=connection_alias,
-        )
+        if did_exchange:
+            return await create_did_exchange(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=connection_alias,
+            )
+        else:
+            return await create_bob_alice_connection(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=connection_alias,
+            )
 
 
 async def create_connection_by_test_mode(
@@ -164,11 +195,21 @@ async def create_connection_by_test_mode(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
     alias: str,
+    did_exchange: bool = False,
 ) -> BobAliceConnect:
     if test_mode == TestMode.clean_run:
-        return await create_bob_alice_connection(
-            alice_member_client, bob_member_client, alias=alias
-        )
+        if did_exchange:
+            return await create_did_exchange(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=alias,
+            )
+        else:
+            return await create_bob_alice_connection(
+                bob_member_client=bob_member_client,
+                alice_member_client=alice_member_client,
+                alias=alias,
+            )
     elif test_mode == TestMode.regression_run:
         connection_alias_prefix = RegressionTestConfig.reused_connection_alias
 
@@ -176,6 +217,7 @@ async def create_connection_by_test_mode(
             alice_member_client,
             bob_member_client,
             connection_alias=f"{connection_alias_prefix}-{alias}",
+            did_exchange=did_exchange,
         )
     else:
         assert False, f"unknown test mode: {test_mode}"
@@ -236,9 +278,12 @@ async def fetch_or_create_trust_registry_connection(
     alice_connection = await fetch_existing_connection_by_alias(
         alice_member_client, alias=connection_alias
     )
-
+    their_did = alice_connection.my_did if alice_connection else None
     verifier_connection = await fetch_existing_connection_by_alias(
-        verifier_client, alias=None, their_label=alice_tenant.wallet_label
+        verifier_client,
+        alias=None,
+        their_label=alice_tenant.wallet_label,
+        their_did=their_did,
     )
 
     # Check if connections exist
@@ -260,3 +305,45 @@ async def fetch_or_create_trust_registry_connection(
             verifier=verifier,
             connection_alias=connection_alias,
         )
+
+
+async def create_did_exchange(
+    bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient, alias: str
+) -> BobAliceConnect:
+
+    # Get Bob's public DID. Bob is the issuer in this case i.e. should have public DID
+    did_response = (await bob_member_client.get(f"{DID_BASE_PATH}/public")).json()
+
+    bob_public_did = did_response["did"]
+
+    # Alice create invitation
+    alice_connection = (
+        await alice_member_client.post(
+            f"{CONNECTIONS_BASE_PATH}/did-exchange/create-request",
+            params={
+                "their_public_did": bob_public_did,
+                "alias": alias,
+            },
+        )
+    ).json()
+
+    their_did = alice_connection["my_did"]
+
+    bob_connection = await check_webhook_state(
+        client=bob_member_client,
+        topic="connections",
+        state="request-received",
+        filter_map={"their_did": their_did},
+    )
+
+    bob_connection_id = bob_connection["connection_id"]
+    alice_connection_id = alice_connection["connection_id"]
+
+    # validate both connections should be active
+    await assert_both_connections_ready(
+        alice_member_client, bob_member_client, alice_connection_id, bob_connection_id
+    )
+
+    return BobAliceConnect(
+        alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
+    )

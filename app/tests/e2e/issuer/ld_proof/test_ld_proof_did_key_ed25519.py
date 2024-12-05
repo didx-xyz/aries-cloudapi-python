@@ -7,7 +7,7 @@ from assertpy import assert_that
 from fastapi import HTTPException
 
 from app.models.issuer import SendCredential
-from app.routes.connections import router as con_router
+from app.routes.connections import router as conn_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.connections import FaberAliceConnect
@@ -16,7 +16,7 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
-CONNECTIONS_BASE_PATH = con_router.prefix
+CONNECTIONS_BASE_PATH = conn_router.prefix
 
 credential_ = SendCredential(
     type="ld_proof",

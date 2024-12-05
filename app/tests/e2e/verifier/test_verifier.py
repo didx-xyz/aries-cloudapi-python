@@ -7,7 +7,6 @@ import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from fastapi import HTTPException
 
-from app.routes.connections import router as conn_router
 from app.routes.definitions import router as def_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
@@ -23,7 +22,6 @@ from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 from shared.models.presentation_exchange import PresentationExchange
 
-CONNECTIONS_BASE_PATH = conn_router.prefix
 DEFINITIONS_BASE_PATH = def_router.prefix
 ISSUER_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
@@ -31,9 +29,6 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
-)
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
@@ -73,9 +68,6 @@ async def test_send_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
-)
 async def test_accept_proof_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,

@@ -1,4 +1,4 @@
-FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.1.1b5
+FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.2.0-20241205
 
 USER root
 

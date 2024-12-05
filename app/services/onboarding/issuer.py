@@ -115,7 +115,6 @@ async def onboard_issuer_no_public_did(
         )
 
         issuer_did = await register_issuer_did(
-            endorser_controller=endorser_controller,
             issuer_controller=issuer_controller,
             issuer_label=issuer_label,
             logger=bound_logger,

@@ -168,13 +168,15 @@ test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypo
 trio = ["trio (>=0.26.1)"]
 
 [[package]]
-name = "aries_cloudcontroller"
+name = "aries-cloudcontroller"
 version = "1.2.0.post20241205"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false
 python-versions = ">=3.9"
-files = []
-develop = false
+files = [
+    {file = "aries_cloudcontroller-1.2.0.post20241205-py3-none-any.whl", hash = "sha256:981adef02b774481ce7a79d2eb69db6f0d7a240cf917d23c956386ad3613bc66"},
+    {file = "aries_cloudcontroller-1.2.0.post20241205.tar.gz", hash = "sha256:b3c31e13bad3f8e48e392dfa6163a2d22cd5db7fe9fa4e194f8cf09a4d84df35"},
+]
 
 [package.dependencies]
 aiohttp = ">=3.9.4,<4.0"
@@ -184,12 +186,6 @@ pydantic = ">=2.6,<3.0"
 python-dateutil = ">=2"
 typing-extensions = ">=4,<5.0"
 urllib3 = ">=2.1,<3"
-
-[package.source]
-type = "git"
-url = "https://github.com/didx-xyz/aries-cloudcontroller-python.git"
-reference = "release-v1.2.0.post20241205"
-resolved_reference = "cdbc9147fe5dad226ce11fa957299c287fcf0b73"
 
 [[package]]
 name = "assertpy"
@@ -1955,4 +1951,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "693d36c413a86fb609472039ec4175932fc917cbafc4fcebf6b9c1507901179f"
+content-hash = "ab60469192972d8cb71fdce7e1cc9a4bb0f52db35cdc6190ae18881539c36a10"

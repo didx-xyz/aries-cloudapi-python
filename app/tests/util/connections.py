@@ -87,32 +87,25 @@ async def create_bob_alice_connection(
     ).json()
 
     # Get connection details
-    alice_connection = (
-        await alice_member_client.get(
-            f"{CONNECTIONS_BASE_PATH}/{alice_oob_response['connection_id']}"
-        )
-    ).json()
+    alice_connection = await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        state="completed",
+        filter_map={"connection_id": alice_oob_response["connection_id"]},
+    )
 
     # Use Alice's connection DID to fetch Bob's connection
     their_did = alice_connection["my_did"]
-    bob_connections = (
-        await bob_member_client.get(
-            f"{CONNECTIONS_BASE_PATH}?their_did={their_did}",
-        )
-    ).json()
 
-    assert (
-        len(bob_connections) == 1
-    ), f"Bob should have 1 connection, got: {len(bob_connections)}"
-    bob_connection = bob_connections[0]
+    bob_connection = await check_webhook_state(
+        client=bob_member_client,
+        topic="connections",
+        state="completed",
+        filter_map={"their_did": their_did},
+    )
 
     bob_connection_id = bob_connection["connection_id"]
     alice_connection_id = alice_connection["connection_id"]
-
-    # validate both connections should be active
-    await assert_both_connections_ready(
-        alice_member_client, bob_member_client, alice_connection_id, bob_connection_id
-    )
 
     return BobAliceConnect(
         alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id

@@ -4,17 +4,27 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 import orjson
+import tenacity
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
-from retry import retry
+from tenacity import RetryCallState
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 logger = get_logger(__name__)
+
+
+def retry_log(retry_state: RetryCallState):
+    """Custom logging for retry attempts."""
+    if retry_state.outcome.failed:
+        exception = retry_state.outcome.exception()
+        logger.warning(
+            f"Retry attempt {retry_state.attempt_number} failed due to {type(exception).__name__}: {exception}"
+        )
 
 
 class NatsEventsProcessor:
@@ -55,7 +65,12 @@ class NatsEventsProcessor:
             opt_start_time=start_time,
         )
 
-        @retry(TimeoutError, delay=1, backoff=2, max_delay=16, logger=logger)
+        @tenacity.retry(
+            retry=tenacity.retry_if_exception_type(TimeoutError),
+            wait=tenacity.wait_exponential(multiplier=1, max=16),
+            after=retry_log,
+            stop=tenacity.stop_never,
+        )
         async def pull_subscribe(config, **kwargs):
             try:
                 logger.trace(

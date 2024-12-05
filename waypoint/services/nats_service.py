@@ -135,7 +135,7 @@ class NatsEventsProcessor:
 
                 try:
                     messages = await subscription.fetch(
-                        batch=5, timeout=0.05, heartbeat=0.01
+                        batch=5, timeout=1, heartbeat=0.2
                     )
                     for message in messages:
                         event = orjson.loads(message.data)

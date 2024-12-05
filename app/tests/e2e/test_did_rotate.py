@@ -37,7 +37,7 @@ async def test_rotate_did(
 
     # Create a new did for Alice and rotate
     new_did = await acapy_wallet.create_did(controller=alice_acapy_client)
-    alice_new_did = new_did.did
+    alice_new_did = qualified_did_sov(new_did.did)
 
     rotate_response = await alice_member_client.post(
         f"{CONNECTIONS_BASE_PATH}/did-rotate",

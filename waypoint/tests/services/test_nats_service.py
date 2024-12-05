@@ -8,6 +8,7 @@ from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
@@ -164,14 +165,14 @@ async def test_process_events_cancelled_error(
 
 
 @pytest.mark.anyio
-async def test_process_events_timeout_error(
+async def test_process_events_fetch_timeout_error(
     mock_nats_client,  # pylint: disable=redefined-outer-name
 ):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
 
-    mock_subscription.fetch.side_effect = TimeoutError
+    mock_subscription.fetch.side_effect = FetchTimeoutError
 
     stop_event = asyncio.Event()
     async with processor.process_events(

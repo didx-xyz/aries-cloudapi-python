@@ -7,7 +7,7 @@ ARG PROTOBUF_VERSION=5.29.0
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # install nats-events plugin
-RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@79b75ee3c#subdirectory=nats_events
+RUN pip install --no-cache-dir git+https://github.com/didx-xyz/aries-acapy-plugins@1e4d4165#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

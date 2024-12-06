@@ -4,15 +4,27 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 import orjson
+import tenacity
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
+from tenacity import RetryCallState
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
 logger = get_logger(__name__)
+
+
+def retry_log(retry_state: RetryCallState):
+    """Custom logging for retry attempts."""
+    if retry_state.outcome.failed:
+        exception = retry_state.outcome.exception()
+        logger.warning(
+            f"Retry attempt {retry_state.attempt_number} failed due to {type(exception).__name__}: {exception}"
+        )
 
 
 class NatsEventsProcessor:
@@ -27,42 +39,58 @@ class NatsEventsProcessor:
     async def _subscribe(
         self, *, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
     ) -> JetStreamContext.PullSubscription:
+
+        logger.trace(
+            "Subscribing to JetStream for wallet_id: {}, group_id: {}",
+            wallet_id,
+            group_id,
+        )
+
+        group_id = group_id or "*"
+        subscribe_kwargs = {
+            "subject": f"{NATS_STATE_SUBJECT}.{group_id}.{wallet_id}.{topic}.{state}",
+            "stream": NATS_STATE_STREAM,
+        }
+
+        # Get the current time in UTC
+        current_time = datetime.now(timezone.utc)
+
+        # Subtract look_back time from the current time
+        look_back_time = current_time - timedelta(seconds=look_back)
+
+        # Format the time in the required format
+        start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        config = ConsumerConfig(
+            deliver_policy=DeliverPolicy.BY_START_TIME,
+            opt_start_time=start_time,
+        )
+
+        @tenacity.retry(
+            retry=tenacity.retry_if_exception_type(TimeoutError),
+            wait=tenacity.wait_exponential(multiplier=1, max=16),
+            after=retry_log,
+            stop=tenacity.stop_never,
+        )
+        async def pull_subscribe(config, **kwargs):
+            try:
+                logger.trace(
+                    "Subscribing to JetStream for wallet_id: {}, group_id: {}",
+                    wallet_id,
+                    group_id,
+                )
+                subscription = await self.js_context.pull_subscribe(
+                    config=config, **kwargs
+                )
+                return subscription
+            except BadSubscriptionError as e:
+                logger.error("BadSubscriptionError subscribing to NATS: {}", e)
+                raise
+            except Error as e:
+                logger.error("Error subscribing to NATS: {}", e)
+                raise
+
         try:
-            logger.trace(
-                "Subscribing to JetStream for wallet_id: {}, group_id: {}",
-                wallet_id,
-                group_id,
-            )
-            group_id = group_id or "*"
-            subscribe_kwargs = {
-                "subject": f"{NATS_STATE_SUBJECT}.{group_id}.{wallet_id}.{topic}.{state}",
-                "stream": NATS_STATE_STREAM,
-            }
-
-            # Get the current time in UTC
-            current_time = datetime.now(timezone.utc)
-
-            # Subtract look_back time from the current time
-            look_back_time = current_time - timedelta(seconds=look_back)
-
-            # Format the time in the required format
-            start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-            config = ConsumerConfig(
-                deliver_policy=DeliverPolicy.BY_START_TIME,
-                opt_start_time=start_time,
-            )
-            subscription = await self.js_context.pull_subscribe(
-                config=config, **subscribe_kwargs
-            )
-
-            return subscription
-
-        except BadSubscriptionError as e:
-            logger.error("BadSubscriptionError subscribing to NATS: {}", e)
-            raise
-        except Error as e:
-            logger.error("Error subscribing to NATS: {}", e)
-            raise
+            return await pull_subscribe(config, **subscribe_kwargs)
         except Exception:
             logger.exception("Unknown error subscribing to NATS")
             raise
@@ -106,14 +134,20 @@ class NatsEventsProcessor:
                     break
 
                 try:
-                    messages = await subscription.fetch(batch=5, timeout=0.2)
+                    messages = await subscription.fetch(
+                        batch=5, timeout=1, heartbeat=0.2
+                    )
                     for message in messages:
                         event = orjson.loads(message.data)
+                        logger.trace("Received event: {}", event)
                         yield CloudApiWebhookEventGeneric(**event)
                         await message.ack()
-                except TimeoutError:
+                except FetchTimeoutError:
                     logger.trace("Timeout fetching messages continuing...")
                     await asyncio.sleep(0.1)
+                except TimeoutError:
+                    logger.error("FATAL: Timeout Error")
+                    raise
 
         try:
             yield event_generator()

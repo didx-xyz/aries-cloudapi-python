@@ -3,6 +3,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from fastapi import HTTPException
 
+from app.models.wallet import DIDCreate
 from app.routes.connections import router as connections_router
 from app.services import acapy_wallet
 from app.tests.util.webhooks import check_webhook_state
@@ -13,10 +14,12 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("did_method", ["did:peer:2", "did:peer:4"])
 async def test_rotate_did(
     alice_member_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     faber_acapy_client: AcaPyClient,
+    did_method: str,
 ):
     # First, create did-exchange connections between Alice and Faber:
     faber_public_did = await acapy_wallet.get_public_did(controller=faber_acapy_client)
@@ -36,7 +39,9 @@ async def test_rotate_did(
     )
 
     # Create a new did for Alice and rotate
-    new_did = await acapy_wallet.create_did(controller=alice_acapy_client)
+    new_did = await acapy_wallet.create_did(
+        controller=alice_acapy_client, did_create=DIDCreate(method=did_method)
+    )
     alice_new_did = new_did.did
 
     rotate_response = await alice_member_client.post(

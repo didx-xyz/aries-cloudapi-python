@@ -162,7 +162,6 @@ async def configure_endorsement(
 
 async def register_issuer_did(
     *,
-    endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_label: str,
     logger: Logger,
@@ -171,10 +170,11 @@ async def register_issuer_did(
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 
     await acapy_ledger.register_nym_on_ledger(
-        endorser_controller,
+        issuer_controller,
         did=issuer_did.did,
         verkey=issuer_did.verkey,
         alias=issuer_label,
+        create_transaction_for_endorser=True,
     )
 
     logger.debug("Accepting TAA on behalf of issuer")

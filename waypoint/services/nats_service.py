@@ -170,12 +170,12 @@ class NatsEventsProcessor:
                                 start_time=start_time,
                             )
                             logger.info("Successfully resubscribed to NATS.")
-                        except Exception as resubscribe_error:
+                        except Exception as e:
                             logger.error(
-                                "Failed to resubscribe to NATS: {}", resubscribe_error
+                                "Failed to resubscribe to NATS: {}", e
                             )
-                            await asyncio.sleep(1)  # Backoff before retrying
-                    except Exception as e:
+                            await asyncio.sleep(1)
+                    except Exception as e: # pylint: disable=W0718
                         logger.exception("Unexpected error in event generator: {}", e)
                         stop_event.set()
                         break
@@ -205,7 +205,7 @@ class NatsEventsProcessor:
         except asyncio.CancelledError:
             logger.debug("Event generator cancelled")
             stop_event.set()
-        except Exception as e:
+        except Exception as e: # pylint: disable=W0718
             logger.exception("Error processing events: {}", e)
 
         finally:

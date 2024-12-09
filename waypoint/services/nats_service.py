@@ -194,7 +194,6 @@ class NatsEventsProcessor:
                 wallet_id=wallet_id,
                 topic=topic,
                 state=state,
-                look_back=look_back,
                 start_time=start_time,
             )
         except asyncio.CancelledError:

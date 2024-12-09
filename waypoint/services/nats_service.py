@@ -37,10 +37,17 @@ class NatsEventsProcessor:
         self.js_context: JetStreamContext = jetstream
 
     async def _subscribe(
-        self, *, group_id: str, wallet_id: str, topic: str, state: str, look_back: int
+        self,
+        *,
+        group_id: str,
+        wallet_id: str,
+        topic: str,
+        state: str,
+        look_back: int,
+        start_time: str = None,
     ) -> JetStreamContext.PullSubscription:
 
-        logger.trace(
+        logger.debug(
             "Subscribing to JetStream for wallet_id: {}, group_id: {}",
             wallet_id,
             group_id,
@@ -52,14 +59,6 @@ class NatsEventsProcessor:
             "stream": NATS_STATE_STREAM,
         }
 
-        # Get the current time in UTC
-        current_time = datetime.now(timezone.utc)
-
-        # Subtract look_back time from the current time
-        look_back_time = current_time - timedelta(seconds=look_back)
-
-        # Format the time in the required format
-        start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
         config = ConsumerConfig(
             deliver_policy=DeliverPolicy.BY_START_TIME,
             opt_start_time=start_time,
@@ -74,7 +73,7 @@ class NatsEventsProcessor:
         async def pull_subscribe(config, **kwargs):
             try:
                 logger.trace(
-                    "Subscribing to JetStream for wallet_id: {}, group_id: {}",
+                    "Attempting to subscribe to JetStream for wallet_id: {}, group_id: {}",
                     wallet_id,
                     group_id,
                 )
@@ -114,50 +113,107 @@ class NatsEventsProcessor:
             topic,
             state,
         )
+        # Get the current time in UTC
+        current_time = datetime.now(timezone.utc)
 
-        subscription = await self._subscribe(
-            group_id=group_id,
-            wallet_id=wallet_id,
-            topic=topic,
-            state=state,
-            look_back=look_back,
-        )
+        # Subtract look_back time from the current time
+        look_back_time = current_time - timedelta(seconds=look_back)
 
-        async def event_generator():
-            end_time = time.time() + duration
-            while not stop_event.is_set():
-                remaining_time = end_time - time.time()
-                logger.trace("remaining_time: {}", remaining_time)
-                if remaining_time <= 0:
-                    logger.debug("Timeout reached")
-                    stop_event.set()
-                    break
+        # Format the time in the required format
+        start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
-                try:
-                    messages = await subscription.fetch(
-                        batch=5, timeout=1, heartbeat=0.2
-                    )
-                    for message in messages:
-                        event = orjson.loads(message.data)
-                        logger.trace("Received event: {}", event)
-                        yield CloudApiWebhookEventGeneric(**event)
-                        await message.ack()
-                except FetchTimeoutError:
-                    logger.trace("Timeout fetching messages continuing...")
-                    await asyncio.sleep(0.1)
-                except TimeoutError:
-                    logger.error("FATAL: Timeout Error")
-                    raise
+        async def event_generator(
+            *,
+            subscription: JetStreamContext.PullSubscription,
+            group_id: str,
+            wallet_id: str,
+            topic: str,
+            state: str,
+            look_back: int,
+            stop_event: asyncio.Event,
+            start_time: str,
+        ):
+            try:
+                current_subscription = subscription
+                end_time = time.time() + duration
+                while not stop_event.is_set():
+                    remaining_time = end_time - time.time()
+                    logger.trace("remaining_time: {}", remaining_time)
+                    if remaining_time <= 0:
+                        logger.debug("Timeout reached")
+                        stop_event.set()
+                        break
+
+                    try:
+                        messages = await current_subscription.fetch(
+                            batch=5, timeout=0.2, heartbeat=0.02
+                        )
+                        for message in messages:
+                            event = orjson.loads(message.data)
+                            logger.trace("Received event: {}", event)
+                            yield CloudApiWebhookEventGeneric(**event)
+                            await message.ack()
+                    except FetchTimeoutError:
+                        logger.trace("Timeout fetching messages continuing...")
+                        await asyncio.sleep(0.1)
+                    except TimeoutError:
+                        logger.warning(
+                            "Subscription lost connection, attempting to resubscribe..."
+                        )
+                        await current_subscription.unsubscribe()
+                        try:
+                            current_subscription = await self._subscribe(
+                                group_id=group_id,
+                                wallet_id=wallet_id,
+                                topic=topic,
+                                state=state,
+                                look_back=look_back,
+                                start_time=start_time,
+                            )
+                            logger.info("Successfully resubscribed to NATS.")
+                        except Exception as resubscribe_error:
+                            logger.error(
+                                "Failed to resubscribe to NATS: {}", resubscribe_error
+                            )
+                            await asyncio.sleep(1)  # Backoff before retrying
+                    except Exception as e:
+                        logger.exception("Unexpected error in event generator: {}", e)
+                        stop_event.set()
+                        break
+            except asyncio.CancelledError:
+                logger.debug("Event generator cancelled")
+                stop_event.set()
 
         try:
-            yield event_generator()
+            subscription = await self._subscribe(
+                group_id=group_id,
+                wallet_id=wallet_id,
+                topic=topic,
+                state=state,
+                look_back=look_back,
+                start_time=start_time,
+            )
+            yield event_generator(
+                subscription=subscription,
+                stop_event=stop_event,
+                group_id=group_id,
+                wallet_id=wallet_id,
+                topic=topic,
+                state=state,
+                look_back=look_back,
+                start_time=start_time,
+            )
         except asyncio.CancelledError:
             logger.debug("Event generator cancelled")
             stop_event.set()
+        except Exception as e:
+            logger.exception("Error processing events: {}", e)
+
         finally:
-            logger.trace("Closing subscription...")
-            await subscription.unsubscribe()
-            logger.debug("Subscription closed")
+            if subscription:
+                logger.trace("Closing subscription...")
+                await subscription.unsubscribe()
+                logger.debug("Subscription closed")
 
     async def check_jetstream(self):
         try:

@@ -65,7 +65,7 @@ async def test_nats_events_processor_subscribe(
             wallet_id="wallet_id",
             topic="proofs",
             state="done",
-            look_back=300,
+            start_time="2024-10-24T09:17:17.998149541Z",
         )
         mock_nats_client.pull_subscribe.assert_called_once_with(
             subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
@@ -89,7 +89,7 @@ async def test_nats_events_processor_subscribe_error(
             wallet_id="wallet_id",
             topic="proofs",
             state="done",
-            look_back=300,
+            start_time="2024-10-24T09:17:17.998149541Z",
         )
 
 

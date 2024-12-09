@@ -43,7 +43,6 @@ class NatsEventsProcessor:
         wallet_id: str,
         topic: str,
         state: str,
-        look_back: int,
         start_time: str = None,
     ) -> JetStreamContext.PullSubscription:
 

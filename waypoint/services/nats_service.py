@@ -209,9 +209,14 @@ class NatsEventsProcessor:
 
         finally:
             if subscription:
-                logger.trace("Closing subscription...")
-                await subscription.unsubscribe()
-                logger.debug("Subscription closed")
+                try:
+                    logger.trace("Closing subscription...")
+                    await subscription.unsubscribe()
+                    logger.debug("Subscription closed")
+                except BadSubscriptionError as e:
+                    logger.warning(
+                        "BadSubscriptionError unsubscribing from NATS: {}", e
+                    )
 
     async def check_jetstream(self):
         try:

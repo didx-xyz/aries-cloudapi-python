@@ -390,5 +390,8 @@ def test_retry_log():
 
         # Assert that logger.warning was called with the expected message
         mock_logger.warning.assert_called_once_with(
-            "Retry attempt {} failed due to {}: {}", 3, "ValueError", mock_retry_state.outcome.exception()
+            "Retry attempt {} failed due to {}: {}",
+            3,
+            "ValueError",
+            mock_retry_state.outcome.exception(),
         )

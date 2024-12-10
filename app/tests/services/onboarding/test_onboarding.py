@@ -123,8 +123,8 @@ async def test_onboard_issuer_no_public_did(
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenAnswer(
         lambda conn_id, endorser_did: to_async()
     )
-    when(mock_agent_controller.endorse_transaction).get_records(...).thenReturn(
-        to_async(
+    when(mock_agent_controller.endorse_transaction).get_records(...).thenAnswer(
+        lambda: to_async(  # lambda to avoid "cannot reuse already awaited coroutine"
             TransactionList(
                 results=[
                     TransactionRecord(

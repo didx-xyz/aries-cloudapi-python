@@ -183,7 +183,7 @@ async def register_issuer_did(
     )
 
     logger.debug("Waiting for issuer DID transaction to be endorsed")
-    await wait_issuer_did_transaction_endorsed(
+    await wait_transactions_endorsed(  # Needs to be endorsed before setting public DID
         issuer_controller=issuer_controller,
         issuer_connection_id=issuer_endorser_connection_id,
         logger=logger,
@@ -194,6 +194,13 @@ async def register_issuer_did(
         issuer_controller,
         did=issuer_did.did,
         create_transaction_for_endorser=True,
+    )
+
+    logger.debug("Waiting for ATTRIB transaction to be endorsed")
+    await wait_transactions_endorsed(  # Needs to be endorsed before continuing
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_endorser_connection_id,
+        logger=logger,
     )
 
     logger.debug("Issuer DID registered.")
@@ -247,7 +254,7 @@ async def wait_endorser_connection_completed(
     raise asyncio.TimeoutError
 
 
-async def wait_issuer_did_transaction_endorsed(
+async def wait_transactions_endorsed(
     *,
     issuer_controller: AcaPyClient,
     issuer_connection_id: str,
@@ -263,12 +270,22 @@ async def wait_issuer_did_transaction_endorsed(
                 await issuer_controller.endorse_transaction.get_records()
             )
 
-            for transaction in transactions_response.results:
-                if (
-                    transaction.connection_id == issuer_connection_id
-                    and transaction.state == "transaction_acked"
-                ):
-                    return
+            connection_transactions = [
+                transaction
+                for transaction in transactions_response.results
+                if transaction.connection_id == issuer_connection_id
+            ]
+
+            if not connection_transactions:
+                raise CloudApiException("No transactions found for connection", 404)
+
+            all_acked = all(
+                transaction.state == "transaction_acked"
+                for transaction in connection_transactions
+            )
+
+            if all_acked:
+                return
 
         except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:

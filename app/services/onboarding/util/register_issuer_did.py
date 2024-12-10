@@ -173,7 +173,6 @@ async def register_issuer_did(
     logger.info("Creating DID for issuer")
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 
-    logger.info("Registering issuer DID on ledger")
     await acapy_ledger.register_nym_on_ledger(
         issuer_controller,
         did=issuer_did.did,
@@ -292,7 +291,7 @@ async def wait_transactions_endorsed(
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."
                 )
-                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
+                raise asyncio.TimeoutError("Timeout waiting for endorsement") from e
 
             logger.warning(
                 (
@@ -309,4 +308,4 @@ async def wait_transactions_endorsed(
         attempt += 1
 
     logger.error("Maximum number of retries exceeded while waiting for transaction ack")
-    raise asyncio.TimeoutError
+    raise asyncio.TimeoutError("Timeout waiting for endorsement")

@@ -79,6 +79,11 @@ class NatsEventsProcessor:
                 subscription = await self.js_context.pull_subscribe(
                     config=config, **kwargs
                 )
+                logger.debug(
+                    "Successfully subscribed to JetStream for wallet_id: {}, group_id: {}",
+                    wallet_id,
+                    group_id,
+                )
                 return subscription
             except BadSubscriptionError as e:
                 logger.error("BadSubscriptionError subscribing to NATS: {}", e)

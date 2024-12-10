@@ -181,7 +181,7 @@ class NatsEventsProcessor:
                             state=state,
                             start_time=start_time,
                         )
-                        logger.info("Successfully resubscribed to NATS.")
+                        logger.debug("Successfully resubscribed to NATS.")
 
                     except Exception as e:  # pylint: disable=W0718
                         logger.exception("Unexpected error in event generator: {}", e)
@@ -210,7 +210,7 @@ class NatsEventsProcessor:
                 start_time=start_time,
             )
         except Exception as e:  # pylint: disable=W0718
-            logger.exception("Error processing events: {}", e)
+            logger.exception("Unexpected error processing events: {}", e)
 
         finally:
             if subscription:

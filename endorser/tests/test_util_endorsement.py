@@ -1,10 +1,14 @@
 import asyncio
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
 
-from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
+from endorser.util.endorsement import (
+    accept_endorsement,
+    retry_is_valid_issuer,
+    should_accept_endorsement,
+)
 from shared.models.endorsement import Endorsement
 
 valid_endorsement = Endorsement(
@@ -370,6 +374,58 @@ async def test_should_accept_endorsement_fails_after_max_retries(
     assert (
         mock_is_valid_issuer.call_count == 5
     ), "is_valid_issuer should have been called exactly `max_retries` times."
+
+
+@pytest.mark.anyio
+async def test_retry_is_valid_issuer_success_after_retries(mocker):
+    # Setup
+    did = "did:sov:test-did"
+    schema_id = "test-schema-id"
+    endorsement = Endorsement(
+        state="request-received", transaction_id="test-transaction"
+    )
+
+    # Mock is_valid_issuer to raise HTTPException first, then return True
+    mock_is_valid_issuer = mocker.patch(
+        "endorser.util.endorsement.is_valid_issuer",
+        side_effect=[HTTPException(status_code=500), True],
+    )
+
+    # Test
+    result = await retry_is_valid_issuer(
+        did, schema_id, endorsement, max_retries=2, retry_delay=0.01
+    )
+
+    # Assertions
+    assert result is True
+    assert mock_is_valid_issuer.call_count == 2
+
+
+@pytest.mark.anyio
+async def test_retry_is_valid_issuer_fails_after_max_retries(mocker):
+    # Setup
+    did = "did:sov:test-did"
+    schema_id = "test-schema-id"
+    endorsement = Endorsement(
+        state="request-received", transaction_id="test-transaction"
+    )
+
+    # Mock is_valid_issuer to always raise HTTPException
+    mock_is_valid_issuer = mocker.patch(
+        "endorser.util.endorsement.is_valid_issuer",
+        side_effect=HTTPException(status_code=500),
+    )
+
+    # Test
+    with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+        result = await retry_is_valid_issuer(
+            did, schema_id, endorsement, max_retries=3, retry_delay=0.01
+        )
+
+    # Assertions
+    assert result is False
+    assert mock_is_valid_issuer.call_count == 3
+    assert mock_sleep.await_count == 2  # Retries should happen max_retries - 1 times
 
 
 @pytest.mark.anyio

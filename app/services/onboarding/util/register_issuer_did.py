@@ -164,11 +164,16 @@ async def register_issuer_did(
     *,
     issuer_controller: AcaPyClient,
     issuer_label: str,
+    issuer_endorser_connection_id: str,
     logger: Logger,
 ) -> DID:
+    logger.debug("Accepting TAA on behalf of issuer")
+    await acapy_ledger.accept_taa_if_required(issuer_controller)
+
     logger.info("Creating DID for issuer")
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 
+    logger.info("Registering issuer DID on ledger")
     await acapy_ledger.register_nym_on_ledger(
         issuer_controller,
         did=issuer_did.did,
@@ -177,10 +182,13 @@ async def register_issuer_did(
         create_transaction_for_endorser=True,
     )
 
-    logger.debug("Accepting TAA on behalf of issuer")
-    await acapy_ledger.accept_taa_if_required(issuer_controller)
-    # NOTE: Still needs endorsement in 0.7.5 release
-    # Otherwise did has no associated services.
+    logger.debug("Waiting for issuer DID transaction to be endorsed")
+    await wait_issuer_did_transaction_endorsed(
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_endorser_connection_id,
+        logger=logger,
+    )
+
     logger.debug("Setting public DID for issuer")
     await acapy_wallet.set_public_did(
         issuer_controller,

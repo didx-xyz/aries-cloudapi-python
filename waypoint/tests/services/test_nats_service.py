@@ -14,7 +14,7 @@ from tenacity import RetryCallState
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from shared.services.nats_jetstream import init_nats_client
-from waypoint.services.nats_service import NatsEventsProcessor, retry_log
+from waypoint.services.nats_service import NatsEventsProcessor
 
 
 @pytest.fixture
@@ -384,7 +384,9 @@ def test_retry_log():
 
     # Patch the logger to capture log calls
     with patch("waypoint.services.nats_service.logger") as mock_logger:
-        retry_log(mock_retry_state)
+        NatsEventsProcessor._retry_log(
+            mock_retry_state
+        )  # pylint: disable=protected-access
 
         # Assert that logger.warning was called with the expected message
         mock_logger.warning.assert_called_once_with(

@@ -60,11 +60,13 @@ class NatsEventsProcessor:
             opt_start_time=start_time,
         )
 
-        @tenacity.retry(
-            retry=tenacity.retry_if_exception_type(TimeoutError),
-            wait=tenacity.wait_exponential(multiplier=1, max=16),
-            after=retry_log,
-            stop=tenacity.stop_never,
+        # This is a custom retry decorator that will retry on TimeoutError
+        # and wait exponentially up to a max of 16 seconds between retries indefinitely
+        @retry(
+            retry=retry_if_exception_type(TimeoutError),
+            wait=wait_exponential(multiplier=1, max=16),
+            after=self._retry_log,
+            stop=stop_never,
         )
         async def pull_subscribe(config, **kwargs):
             try:

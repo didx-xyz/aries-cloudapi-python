@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Dict, Optional
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi import HTTPException
 
 from endorser.util.transaction_record import (
@@ -60,6 +60,9 @@ async def should_accept_endorsement(
 
     operation_type = await extract_operation_type(attachment)
     if not operation_type:
+        # The request to register a DID on ledger has no operation type, but has signature request
+        if await is_signature_request_applicable(transaction):
+            return True
         return False
 
     return await check_applicable_operation_type(
@@ -79,6 +82,31 @@ async def extract_operation_type(attachment: Dict[str, Any]) -> Optional[str]:
         return None
 
     return operation_type
+
+
+async def is_signature_request_applicable(transaction: TransactionRecord) -> bool:
+    """
+    Check if the signature_request in the transaction has the required author_goal_code.
+
+    Args:
+        transaction: The transaction object to check.
+
+    Returns:
+        bool: True if the signature_request is applicable, False otherwise.
+    """
+    signature_request = transaction.signature_request
+    if not signature_request or not isinstance(signature_request, list):
+        logger.debug("No valid signature_request found in transaction.")
+        return False
+
+    first_request = signature_request[0]
+    author_goal_code = first_request.get("author_goal_code")
+    if author_goal_code == "aries.transaction.register_public_did":
+        logger.debug("Transaction is applicable based on signature_request.")
+        return True
+
+    logger.debug("Transaction is not applicable based on signature_request.")
+    return False
 
 
 async def check_applicable_operation_type(

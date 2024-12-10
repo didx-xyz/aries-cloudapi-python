@@ -390,3 +390,61 @@ async def test_accept_endorsement(mock_acapy_client):
     mock_acapy_client.endorse_transaction.endorse_transaction.assert_awaited_once_with(
         tran_id=valid_endorsement.transaction_id
     )
+
+
+@pytest.mark.anyio
+async def test_should_accept_endorsement_signature_request_applicable(
+    mock_acapy_client, mocker
+):
+    # Mock transaction response with signature_request
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    transaction_mock.signature_request = [
+        {
+            "context": "did:sov",
+            "method": "add-signature",
+            "signature_type": "default",
+            "signer_goal_code": "aries.transaction.ledger.write_did",
+            "author_goal_code": "aries.transaction.register_public_did",
+        }
+    ]
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
+    # Assume the transaction has no operation type
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={"operation": {}},
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert (
+        result is True
+    ), "The endorsement should be accepted based on signature_request."
+
+
+@pytest.mark.anyio
+async def test_should_accept_endorsement_signature_request_not_applicable(
+    mock_acapy_client, mocker
+):
+    # Mock transaction response with signature_request
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    transaction_mock.signature_request = [{"author_goal_code": "wrong"}]
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
+    # Assume the transaction has no operation type
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={"operation": {}},
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert (
+        result is False
+    ), "The endorsement should not be accepted based on signature_request."

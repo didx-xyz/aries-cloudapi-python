@@ -164,14 +164,15 @@ async def test_onboard_issuer_no_public_did(
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
+    verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
     verify(acapy_wallet).create_did(mock_agent_controller)
     verify(acapy_ledger).register_nym_on_ledger(
-        endorser_controller,
+        mock_agent_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
         alias="issuer_name",
+        create_transaction_for_endorser=True,
     )
-    verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
     verify(acapy_wallet).set_public_did(
         mock_agent_controller,
         did="WgWxqztrNooG92RXvxSTWv",

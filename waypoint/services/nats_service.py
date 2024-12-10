@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 import orjson
-import tenacity
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
@@ -97,7 +96,7 @@ class NatsEventsProcessor:
             logger.exception("An exception occurred subscribing to NATS")
             raise
 
-    def _retry_log(retry_state: RetryCallState):
+    def _retry_log(self, retry_state: RetryCallState):
         """Custom logging for retry attempts."""
         if retry_state.outcome.failed:
             exception = retry_state.outcome.exception()
@@ -192,7 +191,7 @@ class NatsEventsProcessor:
                         )
                         logger.debug("Successfully resubscribed to NATS.")
 
-                    except Exception as e:  # pylint: disable=W0718
+                    except Exception:  # pylint: disable=W0718
                         logger.exception("Unexpected error in event generator: {}")
                         stop_event.set()
                         raise
@@ -218,7 +217,7 @@ class NatsEventsProcessor:
                 state=state,
             )
         except Exception as e:  # pylint: disable=W0718
-            logger.exception("Unexpected error processing events: {}", e)
+            logger.exception("Unexpected error processing events: {}")
             raise e
 
         finally:

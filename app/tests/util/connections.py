@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 from app.models.tenants import CreateTenantResponse
-from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
 from app.routes.wallet.dids import router as did_router

@@ -193,7 +193,7 @@ class NatsEventsProcessor:
                         logger.debug("Successfully resubscribed to NATS.")
 
                     except Exception as e:  # pylint: disable=W0718
-                        logger.exception("Unexpected error in event generator: {}", e)
+                        logger.exception("Unexpected error in event generator: {}")
                         stop_event.set()
                         raise
 

@@ -9,7 +9,13 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
-from tenacity import RetryCallState
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_never,
+    wait_exponential,
+)
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.log_config import get_logger

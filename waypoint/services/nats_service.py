@@ -186,7 +186,7 @@ class NatsEventsProcessor:
                     except Exception as e:  # pylint: disable=W0718
                         logger.exception("Unexpected error in event generator: {}", e)
                         stop_event.set()
-                        break
+                        raise
 
             except asyncio.CancelledError:
                 logger.debug("Event generator cancelled")
@@ -211,6 +211,7 @@ class NatsEventsProcessor:
             )
         except Exception as e:  # pylint: disable=W0718
             logger.exception("Unexpected error processing events: {}", e)
+            raise e
 
         finally:
             if subscription:

@@ -24,15 +24,6 @@ from shared.models.webhook_events import CloudApiWebhookEventGeneric
 logger = get_logger(__name__)
 
 
-def retry_log(retry_state: RetryCallState):
-    """Custom logging for retry attempts."""
-    if retry_state.outcome.failed:
-        exception = retry_state.outcome.exception()
-        logger.warning(
-            f"Retry attempt {retry_state.attempt_number} failed due to {type(exception).__name__}: {exception}"
-        )
-
-
 class NatsEventsProcessor:
     """
     Class to handle processing of NATS events. Calling the process_events method will
@@ -103,6 +94,17 @@ class NatsEventsProcessor:
         except Exception:
             logger.exception("Unknown error subscribing to NATS")
             raise
+
+    def _retry_log(retry_state: RetryCallState):
+        """Custom logging for retry attempts."""
+        if retry_state.outcome.failed:
+            exception = retry_state.outcome.exception()
+            logger.warning(
+                "Retry attempt {} failed due to {}: {}",
+                retry_state.attempt_number,
+                type(exception).__name__,
+                exception,
+            )
 
     @asynccontextmanager
     async def process_events(

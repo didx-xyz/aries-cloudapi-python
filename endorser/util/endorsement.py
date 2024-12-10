@@ -67,7 +67,7 @@ async def should_accept_endorsement(
     )
 
 
-async def extract_operation_type(attachment) -> Optional[str]:
+async def extract_operation_type(attachment: Dict[str, Any]) -> Optional[str]:
     operation = attachment.get("operation")
     if not operation:
         logger.debug("Key `operation` not in attachment: `{}`.", attachment)

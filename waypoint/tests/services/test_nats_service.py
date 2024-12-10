@@ -374,7 +374,8 @@ class MockFuture:
         return self._exception
 
 
-def test_retry_log():
+def test_retry_log(mock_nats_client):  # pylint: disable=redefined-outer-name
+    processor = NatsEventsProcessor(mock_nats_client)
     # Mock a retry state
     mock_retry_state = MagicMock(spec=RetryCallState)
 
@@ -384,8 +385,8 @@ def test_retry_log():
 
     # Patch the logger to capture log calls
     with patch("waypoint.services.nats_service.logger") as mock_logger:
-        NatsEventsProcessor._retry_log(  # pylint: disable=protected-access
-            mock_retry_state
+        processor._retry_log(  # pylint: disable=protected-access
+            retry_state=mock_retry_state
         )
 
         # Assert that logger.warning was called with the expected message

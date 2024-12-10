@@ -209,9 +209,6 @@ class NatsEventsProcessor:
                 state=state,
                 start_time=start_time,
             )
-        except asyncio.CancelledError:
-            logger.debug("Event generator cancelled")
-            stop_event.set()
         except Exception as e:  # pylint: disable=W0718
             logger.exception("Error processing events: {}", e)
 

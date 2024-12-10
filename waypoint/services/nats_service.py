@@ -94,7 +94,7 @@ class NatsEventsProcessor:
         try:
             return await pull_subscribe(config, **subscribe_kwargs)
         except Exception:
-            logger.exception("Unknown error subscribing to NATS")
+            logger.exception("An exception occurred subscribing to NATS")
             raise
 
     def _retry_log(retry_state: RetryCallState):

@@ -144,7 +144,6 @@ class NatsEventsProcessor:
             topic: str,
             state: str,
             stop_event: asyncio.Event,
-            start_time: str,
         ):
             try:
                 end_time = time.time() + duration
@@ -217,7 +216,6 @@ class NatsEventsProcessor:
                 wallet_id=wallet_id,
                 topic=topic,
                 state=state,
-                start_time=start_time,
             )
         except Exception as e:  # pylint: disable=W0718
             logger.exception("Unexpected error processing events: {}", e)

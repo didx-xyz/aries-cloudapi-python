@@ -384,9 +384,9 @@ def test_retry_log():
 
     # Patch the logger to capture log calls
     with patch("waypoint.services.nats_service.logger") as mock_logger:
-        NatsEventsProcessor._retry_log(
+        NatsEventsProcessor._retry_log(  # pylint: disable=protected-access
             mock_retry_state
-        )  # pylint: disable=protected-access
+        )
 
         # Assert that logger.warning was called with the expected message
         mock_logger.warning.assert_called_once_with(

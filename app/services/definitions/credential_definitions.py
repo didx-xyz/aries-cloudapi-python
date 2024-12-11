@@ -13,6 +13,7 @@ from app.util.assert_public_did import assert_public_did
 from app.util.definitions import credential_definition_from_acapy
 from app.util.transaction_acked import wait_for_transaction_ack
 from shared import REGISTRY_SIZE
+from shared.constants import CRED_DEF_ACK_TIMEOUT
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -58,7 +59,10 @@ async def create_credential_definition(
 
     if result.txn and result.txn.transaction_id:
         await wait_for_transaction_ack(
-            aries_controller=aries_controller, transaction_id=result.txn.transaction_id
+            aries_controller=aries_controller,
+            transaction_id=result.txn.transaction_id,
+            max_attempts=CRED_DEF_ACK_TIMEOUT,
+            retry_delay=1,
         )
 
     if support_revocation:

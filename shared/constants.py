@@ -62,6 +62,7 @@ TEST_CLIENT_TIMEOUT = int(os.getenv("TEST_CLIENT_TIMEOUT", "300"))
 MAX_NUM_RETRIES = int(os.getenv("MAX_NUM_RETRIES", "3"))
 
 # timeout for waiting for registries to be created
+CRED_DEF_ACK_TIMEOUT = int(os.getenv("CRED_DEF_ACK_TIMEOUT", "60"))
 REGISTRY_CREATION_TIMEOUT = int(os.getenv("REGISTRY_CREATION_TIMEOUT", "60"))
 REGISTRY_SIZE = int(os.getenv("REGISTRY_SIZE", "32767"))
 

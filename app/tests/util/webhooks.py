@@ -28,7 +28,7 @@ async def check_webhook_state(
     topic: CloudApiTopics,
     state: str,
     filter_map: Optional[Dict[str, str]] = None,
-    max_duration: int = 30,
+    max_duration: int = 45,
     max_tries: int = 2,
     delay: float = 0.5,
 ) -> Dict[str, Any]:

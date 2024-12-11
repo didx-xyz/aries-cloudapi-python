@@ -269,13 +269,13 @@ async def wait_transactions_endorsed(
                 await issuer_controller.endorse_transaction.get_records()
             )
 
-            connection_transactions = [
+            transactions = [
                 transaction
                 for transaction in transactions_response.results
                 if transaction.connection_id == issuer_connection_id
             ]
 
-            if not connection_transactions:
+            if not transactions:
                 logger.error(
                     "No transactions found for connection {}. Found {} transactions.",
                     issuer_connection_id,
@@ -284,16 +284,15 @@ async def wait_transactions_endorsed(
                 raise CloudApiException("No transactions found for connection", 404)
 
             all_acked = all(
-                transaction.state == "transaction_acked"
-                for transaction in connection_transactions
+                transaction.state == "transaction_acked" for transaction in transactions
             )
 
             if all_acked:
                 return
             else:
-                logger.error(
-                    "All transactions are not yet acknowledged. Got transactions {}",
-                    connection_transactions,
+                logger.debug(
+                    "Waiting for transaction acknowledgements. Current states: %s",
+                    ", ".join(f"{t.transaction_id}: {t.state}" for t in transactions),
                 )
 
         except Exception as e:  # pylint: disable=W0718

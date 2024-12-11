@@ -5,6 +5,13 @@ from aries_cloudcontroller import AcaPyClient
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_never,
+    wait_fixed,
+)
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import (
@@ -183,22 +190,44 @@ class EndorsementProcessor:
         Subscribes to the NATS subject for endorsement events.
         """
         logger.info("Subscribing to NATS subject: {}", self.endorser_nats_subject)
-        try:
-            subscribe_kwargs = {
+        subscribe_kwargs = {
                 "subject": self.endorser_nats_subject,
                 "durable": ENDORSER_DURABLE_CONSUMER,
                 "stream": NATS_STREAM,
             }
-            subscription = await self.jetstream.pull_subscribe(**subscribe_kwargs)
-        except (BadSubscriptionError, Error) as e:
-            logger.error("Error subscribing to NATS subject: {}", e)
-            raise e
-        except Exception:  # pylint: disable=W0703
-            logger.exception("Unknown error subscribing to NATS subject")
-            raise
-        logger.debug("Subscribed to NATS subject")
 
-        return subscription
+        @retry(
+            retry=retry_if_exception_type(TimeoutError),
+            wait=wait_fixed(1),
+            stop=stop_never,
+            after=self._retry_log,
+        )
+        async def pull_subscribe(**kwargs):
+            try:
+                subscription = await self.jetstream.pull_subscribe(**kwargs)
+                logger.debug("Subscribed to NATS subject")
+                return subscription
+            except (BadSubscriptionError, Error) as e:
+                logger.error("Error subscribing to NATS subject: {}", e)
+                raise e
+            except Exception:  # pylint: disable=W0703
+                logger.exception("Unknown error subscribing to NATS subject")
+                raise
+        try:
+            return await pull_subscribe(**subscribe_kwargs)
+        except Exception:  # pylint: disable=W0703
+            logger.exception("Error subscribing to NATS subject")
+
+    def _retry_log(self, retry_state: RetryCallState):
+        """Custom logging for retry attempts."""
+        if retry_state.outcome.failed:
+            exception = retry_state.outcome.exception()
+            logger.warning(
+                "Retry attempt {} failed due to {}: {}",
+                retry_state.attempt_number,
+                type(exception).__name__,
+                exception,
+            )
 
     async def check_jetstream(self):
         try:

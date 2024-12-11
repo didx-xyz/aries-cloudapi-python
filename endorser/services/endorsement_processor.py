@@ -91,7 +91,7 @@ class EndorsementProcessor:
                     message_subject = message.subject
                     message_data = message.data.decode()
                     logger.trace(
-                        "received message: {} with subject {}",
+                        "Received message: {}, with subject {}",
                         message_data,
                         message_subject,
                     )
@@ -105,10 +105,10 @@ class EndorsementProcessor:
                     finally:
                         await message.ack()
             except FetchTimeoutError:
-                logger.trace("FetchTimeoutError continuing...")
+                logger.trace("Encountered FetchTimeoutError. Continuing ...")
                 await asyncio.sleep(0.1)
             except TimeoutError as e:
-                logger.warning("Timeout error fetching messages re-subscribing: {}", e)
+                logger.warning("Timeout fetching messages: {}. Re-subscribing.", e)
                 await subscription.unsubscribe()
                 subscription = await self._subscribe()
             except Exception:  # pylint: disable=W0718

@@ -49,11 +49,37 @@ jobs:
         with:
           fetch-depth: 0 # Required for proper blame data in SonarCloud
 
-      # Setup Python
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - name: Overwrite .mise.toml # Simplify mise in this workflow
+        run: |
+          cat <<EOF > .mise.toml
+          [tools]
+          python = "3.12"
+          "pipx:poetry" = "1.8"
+          uv = "0.4"
+
+          [settings]
+          experimental = true
+          jobs = 1
+          pipx_uvx = true
+          python_compile = false
+
+          [env]
+          # Use Python/Mise managed virtual environment
+          POETRY_VIRTUALENVS_CREATE = "false"
+          # Setup Python Virtual Environment
+          _.python.venv = { path = ".venv", create = true }
+
+          [tasks."poetry:install"]
+          description = "Poetry Install dependencies for all submodules"
+          depends = ["poetry:install:*"]
+          EOF
+
+      - name: Install dependencies
+        uses: jdx/mise-action@v2
         with:
-          python-version: "3.12"
+          cache: true
+          experimental: true
+          install: true
 
       # Install dependencies
       - name: Install dependencies with Poetry
@@ -62,7 +88,13 @@ jobs:
       # Run tests and generate coverage report
       - name: Run Tests with Coverage
         run: |
-          pytest --cov --cov-report=xml --ignore=app/tests/e2e/ --ignore=trustregistry/tests/e2e/
+          source .venv/bin/activate
+          set +e
+
+          cp .env.example .env
+          source .env
+
+          poetry run pytest --cov --cov-report=xml --ignore=app/tests/e2e/ --ignore=trustregistry/tests/e2e/
 
       # Analyze with SonarCloud
       - name: Analyze with SonarCloud

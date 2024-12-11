@@ -276,6 +276,11 @@ async def wait_transactions_endorsed(
             ]
 
             if not connection_transactions:
+                logger.error(
+                    "No transactions found for connection {}. Found {} transactions.",
+                    issuer_connection_id,
+                    transactions_response,
+                )
                 raise CloudApiException("No transactions found for connection", 404)
 
             all_acked = all(
@@ -285,6 +290,11 @@ async def wait_transactions_endorsed(
 
             if all_acked:
                 return
+            else:
+                logger.error(
+                    "All transactions are not yet acknowledged. Got transactions {}",
+                    connection_transactions,
+                )
 
         except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:

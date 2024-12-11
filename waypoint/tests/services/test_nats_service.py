@@ -1,6 +1,6 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from nats.aio.client import Client as NATS
@@ -8,6 +8,8 @@ from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
+from nats.js.errors import FetchTimeoutError
+from tenacity import RetryCallState
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
@@ -64,7 +66,7 @@ async def test_nats_events_processor_subscribe(
             wallet_id="wallet_id",
             topic="proofs",
             state="done",
-            look_back=300,
+            start_time="2024-10-24T09:17:17.998149541Z",
         )
         mock_nats_client.pull_subscribe.assert_called_once_with(
             subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
@@ -88,7 +90,7 @@ async def test_nats_events_processor_subscribe_error(
             wallet_id="wallet_id",
             topic="proofs",
             state="done",
-            look_back=300,
+            start_time="2024-10-24T09:17:17.998149541Z",
         )
 
 
@@ -164,14 +166,14 @@ async def test_process_events_cancelled_error(
 
 
 @pytest.mark.anyio
-async def test_process_events_timeout_error(
+async def test_process_events_fetch_timeout_error(
     mock_nats_client,  # pylint: disable=redefined-outer-name
 ):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()
     mock_nats_client.pull_subscribe.return_value = mock_subscription
 
-    mock_subscription.fetch.side_effect = TimeoutError
+    mock_subscription.fetch.side_effect = FetchTimeoutError
 
     stop_event = asyncio.Event()
     async with processor.process_events(
@@ -188,6 +190,127 @@ async def test_process_events_timeout_error(
 
     assert len(events) == 0
     assert stop_event.is_set()
+
+
+@pytest.mark.anyio
+async def test_process_events_timeout_error(
+    mock_nats_client,
+):  # pylint: disable=redefined-outer-name
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Mock fetch to raise TimeoutError
+    mock_subscription.fetch.side_effect = TimeoutError
+
+    # Mock the _subscribe method to simulate resubscribe
+    mock_resubscribe = AsyncMock(return_value=mock_subscription)
+    processor._subscribe = mock_resubscribe  # pylint: disable=protected-access
+
+    stop_event = asyncio.Event()
+
+    async with processor.process_events(
+        group_id="group_id",
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=2,
+    ) as event_generator:
+        events = []
+        async for event in event_generator:
+            events.append(event)
+
+    # Assert no events are yielded
+    assert len(events) == 0
+
+    # Assert fetch was called
+    assert mock_subscription.fetch.called
+
+    # Assert _subscribe was called again after TimeoutError
+    assert mock_resubscribe.called
+
+
+@pytest.mark.anyio
+async def test_process_events_bad_subscription_error_on_unsubscribe(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Mock fetch to raise TimeoutError to trigger unsubscribe logic
+    mock_subscription.fetch.side_effect = TimeoutError
+
+    # Mock unsubscribe to raise BadSubscriptionError
+    mock_subscription.unsubscribe.side_effect = BadSubscriptionError("Test error")
+
+    # Mock the _subscribe method to simulate resubscribe
+    mock_resubscribe = AsyncMock(return_value=mock_subscription)
+    processor._subscribe = mock_resubscribe  # pylint: disable=protected-access
+
+    stop_event = asyncio.Event()
+
+    async with processor.process_events(
+        group_id="group_id",
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=2,
+    ) as event_generator:
+        events = []
+        async for event in event_generator:
+            events.append(event)
+
+    # Assert no events are yielded
+    assert len(events) == 0
+
+    # Assert fetch was called
+    assert mock_subscription.fetch.called
+
+    # Assert unsubscribe was called and raised BadSubscriptionError
+    assert mock_subscription.unsubscribe.called
+
+    # Assert _subscribe was called again after the unsubscribe error
+    assert mock_resubscribe.called
+
+
+@pytest.mark.anyio
+async def test_process_events_base_exception(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Mock fetch to raise a generic exception
+    mock_subscription.fetch.side_effect = Exception("Test base exception")
+
+    stop_event = asyncio.Event()
+
+    # Process events
+    with pytest.raises(Exception):
+        async with processor.process_events(
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="test_topic",
+            state="state",
+            stop_event=stop_event,
+            duration=2,
+        ) as event_generator:
+            events = []
+            async for event in event_generator:
+                events.append(event)
+
+    # Assert no events are yielded due to the base exception
+    assert len(events) == 0
+
+    # Verify unsubscribe was attempted
+    mock_subscription.unsubscribe.assert_called_once()
+
+    # Verify fetch was called once before raising the exception
+    assert mock_subscription.fetch.call_count == 1
 
 
 @pytest.mark.anyio
@@ -235,3 +358,41 @@ async def test_check_jetstream_exception(
 
     assert result == {"is_working": False}
     mock_nats_client.account_info.assert_called_once()
+
+
+class MockFuture:
+    """A mock class to simulate the behavior of a Future object."""
+
+    def __init__(self, exception=None):
+        self._exception = exception
+
+    @property
+    def failed(self):
+        return self._exception is not None
+
+    def exception(self):
+        return self._exception
+
+
+def test_retry_log(mock_nats_client):  # pylint: disable=redefined-outer-name
+    processor = NatsEventsProcessor(mock_nats_client)
+    # Mock a retry state
+    mock_retry_state = MagicMock(spec=RetryCallState)
+
+    # Mock the outcome attribute with a Future-like object
+    mock_retry_state.outcome = MockFuture(exception=ValueError("Test retry exception"))
+    mock_retry_state.attempt_number = 3  # Retry attempt number
+
+    # Patch the logger to capture log calls
+    with patch("waypoint.services.nats_service.logger") as mock_logger:
+        processor._retry_log(  # pylint: disable=protected-access
+            retry_state=mock_retry_state
+        )
+
+        # Assert that logger.warning was called with the expected message
+        mock_logger.warning.assert_called_once_with(
+            "Retry attempt {} failed due to {}: {}",
+            3,
+            "ValueError",
+            mock_retry_state.outcome.exception(),
+        )

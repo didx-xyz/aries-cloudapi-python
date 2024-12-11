@@ -12,8 +12,7 @@ from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.assert_public_did import assert_public_did
 from app.util.definitions import credential_definition_from_acapy
 from app.util.transaction_acked import wait_for_transaction_ack
-from shared import REGISTRY_SIZE
-from shared.constants import CRED_DEF_ACK_TIMEOUT
+from shared import CRED_DEF_ACK_TIMEOUT, REGISTRY_SIZE
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

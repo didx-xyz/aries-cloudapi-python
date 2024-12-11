@@ -1,5 +1,4 @@
 import asyncio
-import os
 from typing import Optional
 
 from aries_cloudcontroller import IssuerCredRevRecord, RevRegWalletUpdatedResult
@@ -18,14 +17,12 @@ from app.models.issuer import (
 )
 from app.services import revocation_registry
 from app.util.retry_method import coroutine_with_retry_until_value
+from shared import PUBLISH_REVOCATIONS_TIMEOUT
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/v1/issuer/credentials", tags=["revocation"])
-
-# Config for /publish-revocations
-publish_revocations_timeout = int(os.getenv("PUBLISH_REVOCATIONS_TIMEOUT", "60"))
 
 
 @router.post("/revoke", summary="Revoke a Credential (if revocable)")
@@ -213,7 +210,7 @@ async def publish_revocations(
                     field_name="state",
                     expected_value="transaction_acked",
                     logger=bound_logger,
-                    max_attempts=publish_revocations_timeout,
+                    max_attempts=PUBLISH_REVOCATIONS_TIMEOUT,
                     retry_delay=1,
                 )
             except asyncio.TimeoutError as e:

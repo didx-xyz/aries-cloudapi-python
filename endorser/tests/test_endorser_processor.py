@@ -231,6 +231,29 @@ async def test_process_endorsement_requests_loop_exit(
 
 
 @pytest.mark.anyio
+async def test_process_endorsement_requests_unexpected_error(
+    endorsement_processor_mock, mock_nats_client
+):
+    # Setup
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+
+    # Simulate an unexpected exception during message fetching
+    mock_subscription.fetch.side_effect = [
+        Exception("Unexpected error"),
+        asyncio.CancelledError,
+    ]
+
+    # Test
+    with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+        with pytest.raises(asyncio.CancelledError):
+            await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assertions
+    mock_sleep.assert_awaited_once_with(2)
+
+
+@pytest.mark.anyio
 async def test_process_endorsement_event_governance(endorsement_processor_mock):
     governance = GOVERNANCE_LABEL
     event_dict = {
@@ -336,3 +359,62 @@ async def test_endorsement_processor_subscribe_error(
 
     with pytest.raises(exception):
         await processor._subscribe()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_success(endorsement_processor_mock):
+    # Setup
+    mock_account_info = AsyncMock()
+    mock_account_info.streams = 5
+    mock_account_info.consumers = 10
+    endorsement_processor_mock.jetstream.account_info.return_value = mock_account_info
+
+    # Test
+    result = await endorsement_processor_mock.check_jetstream()
+
+    # Assertions
+    assert result == {
+        "is_working": True,
+        "streams_count": 5,
+        "consumers_count": 10,
+    }
+    endorsement_processor_mock.jetstream.account_info.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_no_streams(endorsement_processor_mock):
+    # Setup
+    mock_account_info = AsyncMock()
+    mock_account_info.streams = 0
+    mock_account_info.consumers = 0
+    endorsement_processor_mock.jetstream.account_info.return_value = mock_account_info
+
+    # Test
+    result = await endorsement_processor_mock.check_jetstream()
+
+    # Assertions
+    assert result == {
+        "is_working": False,
+        "streams_count": 0,
+        "consumers_count": 0,
+    }
+    endorsement_processor_mock.jetstream.account_info.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_check_jetstream_exception(endorsement_processor_mock):
+    # Setup
+    endorsement_processor_mock.jetstream.account_info.side_effect = Exception(
+        "JetStream error"
+    )
+
+    # Test
+    with patch("endorser.services.endorsement_processor.logger") as mock_logger:
+        result = await endorsement_processor_mock.check_jetstream()
+
+    # Assertions
+    assert result == {"is_working": False}
+    endorsement_processor_mock.jetstream.account_info.assert_awaited_once()
+    mock_logger.exception.assert_called_once_with(
+        "Caught exception while checking jetstream status"
+    )

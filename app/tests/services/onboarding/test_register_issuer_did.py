@@ -6,7 +6,7 @@ from aries_cloudcontroller import ConnRecord, TransactionRecord
 
 from app.services.onboarding.util.register_issuer_did import (
     wait_endorser_connection_completed,
-    wait_issuer_did_transaction_endorsed,
+    wait_transactions_endorsed,
 )
 
 
@@ -127,7 +127,7 @@ async def test_wait_issuer_did_transaction_endorsed_happy_path():
     )
 
     # Invocation
-    await wait_issuer_did_transaction_endorsed(
+    await wait_transactions_endorsed(
         issuer_controller=issuer_controller,
         issuer_connection_id="test_id",
         logger=logger,
@@ -153,7 +153,7 @@ async def test_wait_issuer_did_transaction_endorsed_retry_logic():
         ]
     )
 
-    await wait_issuer_did_transaction_endorsed(
+    await wait_transactions_endorsed(
         issuer_controller=issuer_controller,
         issuer_connection_id="test_id",
         logger=logger,
@@ -175,7 +175,7 @@ async def test_wait_issuer_did_transaction_endorsed_max_retries_with_exception()
     )
 
     with pytest.raises(asyncio.TimeoutError):
-        await wait_issuer_did_transaction_endorsed(
+        await wait_transactions_endorsed(
             issuer_controller=issuer_controller,
             issuer_connection_id="test_id",
             logger=logger,
@@ -202,7 +202,7 @@ async def test_wait_issuer_did_transaction_endorsed_max_retries_no_ack():
     )
 
     with pytest.raises(asyncio.TimeoutError):
-        await wait_issuer_did_transaction_endorsed(
+        await wait_transactions_endorsed(
             issuer_controller=issuer_controller,
             issuer_connection_id="test_id",
             logger=logger,

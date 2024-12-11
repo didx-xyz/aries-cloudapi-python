@@ -6,7 +6,6 @@ from app.services import acapy_wallet
 from app.services.onboarding.util.register_issuer_did import (
     create_connection_with_endorser,
     register_issuer_did,
-    wait_issuer_did_transaction_endorsed,
 )
 from app.util.did import qualified_did_sov
 from shared.log_config import get_logger
@@ -115,16 +114,10 @@ async def onboard_issuer_no_public_did(
         )
 
         issuer_did = await register_issuer_did(
-            endorser_controller=endorser_controller,
             issuer_controller=issuer_controller,
             issuer_label=issuer_label,
+            issuer_endorser_connection_id=issuer_connection_id,
             logger=bound_logger,
-        )
-
-        await wait_issuer_did_transaction_endorsed(
-            issuer_controller=issuer_controller,
-            issuer_connection_id=issuer_connection_id,
-            logger=logger,
         )
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")

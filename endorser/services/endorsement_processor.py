@@ -149,7 +149,7 @@ class EndorsementProcessor:
 
             logger.info(
                 "Endorsement request is applicable for endorsement, accepting transaction: {}",
-                transaction,
+                transaction.model_dump(exclude={"messages_attach"}),
             )
             await accept_endorsement(client, transaction_id)
 

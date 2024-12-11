@@ -191,10 +191,10 @@ class EndorsementProcessor:
         """
         logger.info("Subscribing to NATS subject: {}", self.endorser_nats_subject)
         subscribe_kwargs = {
-                "subject": self.endorser_nats_subject,
-                "durable": ENDORSER_DURABLE_CONSUMER,
-                "stream": NATS_STREAM,
-            }
+            "subject": self.endorser_nats_subject,
+            "durable": ENDORSER_DURABLE_CONSUMER,
+            "stream": NATS_STREAM,
+        }
 
         @retry(
             retry=retry_if_exception_type(TimeoutError),
@@ -213,6 +213,7 @@ class EndorsementProcessor:
             except Exception:  # pylint: disable=W0703
                 logger.exception("Unknown error subscribing to NATS subject")
                 raise
+
         try:
             return await pull_subscribe(**subscribe_kwargs)
         except Exception:  # pylint: disable=W0703

@@ -270,7 +270,7 @@ async def test_process_endorsement_event_governance(endorsement_processor_mock):
     ) as mock_should_accept_endorsement, patch(
         "endorser.services.endorsement_processor.accept_endorsement"
     ) as mock_accept_endorsement:
-        mock_should_accept_endorsement.return_value = True
+        mock_should_accept_endorsement.return_value = MagicMock()
         mock_accept_endorsement.return_value = AsyncMock()
         await endorsement_processor_mock._process_endorsement_event(event_json)
 
@@ -322,7 +322,6 @@ async def test_process_endorsement_event_not_governance(endorsement_processor_mo
     ) as mock_should_accept_endorsement, patch(
         "endorser.services.endorsement_processor.accept_endorsement"
     ) as mock_accept_endorsement:
-        mock_should_accept_endorsement.return_value = True
         mock_accept_endorsement.return_value = AsyncMock()
         await endorsement_processor_mock._process_endorsement_event(event_json)
 

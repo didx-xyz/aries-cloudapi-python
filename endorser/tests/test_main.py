@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI, HTTPException
+from fastapi.testclient import TestClient
 
 from endorser.main import app, app_lifespan, health_check, health_ready
 from endorser.services.endorsement_processor import EndorsementProcessor
@@ -152,3 +153,10 @@ async def test_health_ready_with_timeout():
         "status": "not ready",
         "error": "JetStream health check timed out",
     }
+
+
+def test_scalar_html():
+    client = TestClient(app)
+    # Simulate a request to the /docs endpoint
+    response = client.get("/docs")
+    assert response.status_code == 200

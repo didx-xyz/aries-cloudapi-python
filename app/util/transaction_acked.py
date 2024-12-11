@@ -10,7 +10,10 @@ logger = get_logger(__name__)
 
 
 async def wait_for_transaction_ack(
-    aries_controller: AcaPyClient, transaction_id: str
+    aries_controller: AcaPyClient,
+    transaction_id: str,
+    max_attempts: int = 15,
+    retry_delay: int = 1,
 ) -> None:
     """
     Wait for the transaction to be acknowledged by the endorser.
@@ -25,8 +28,8 @@ async def wait_for_transaction_ack(
             field_name="state",
             expected_value="transaction_acked",
             logger=bound_logger,
-            max_attempts=10,
-            retry_delay=2,
+            max_attempts=max_attempts,
+            retry_delay=retry_delay,
         )
     except asyncio.TimeoutError as e:
         raise CloudApiException(

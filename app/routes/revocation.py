@@ -17,6 +17,7 @@ from app.models.issuer import (
 )
 from app.services import revocation_registry
 from app.util.retry_method import coroutine_with_retry_until_value
+from shared import PUBLISH_REVOCATIONS_TIMEOUT
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -209,7 +210,7 @@ async def publish_revocations(
                     field_name="state",
                     expected_value="transaction_acked",
                     logger=bound_logger,
-                    max_attempts=30,
+                    max_attempts=PUBLISH_REVOCATIONS_TIMEOUT,
                     retry_delay=1,
                 )
             except asyncio.TimeoutError as e:

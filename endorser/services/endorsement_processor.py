@@ -86,12 +86,12 @@ class EndorsementProcessor:
         subscription = await self._subscribe()
         while True:
             try:
-                messages = await subscription.fetch(batch=1, timeout=5, heartbeat=1)
+                messages = await subscription.fetch(batch=1, timeout=0.5, heartbeat=0.2)
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()
                     logger.trace(
-                        "received message: {} with subject {}",
+                        "Received message: {}, with subject {}",
                         message_data,
                         message_subject,
                     )
@@ -105,10 +105,10 @@ class EndorsementProcessor:
                     finally:
                         await message.ack()
             except FetchTimeoutError:
-                logger.trace("FetchTimeoutError continuing...")
+                logger.trace("Encountered FetchTimeoutError. Continuing ...")
                 await asyncio.sleep(0.1)
             except TimeoutError as e:
-                logger.warning("Timeout error fetching messages re-subscribing: {}", e)
+                logger.warning("Timeout fetching messages: {}. Re-subscribing.", e)
                 await subscription.unsubscribe()
                 subscription = await self._subscribe()
             except Exception:  # pylint: disable=W0718
@@ -133,23 +133,25 @@ class EndorsementProcessor:
             return
 
         endorsement = Endorsement(**event.payload)
+        transaction_id = endorsement.transaction_id
 
         async with AcaPyClient(
             base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
         ) as client:
             # Check if endorsement request is indeed applicable
-            if not await should_accept_endorsement(client, endorsement):
-                logger.info(  # check already logged the reason as warning
+            transaction = await should_accept_endorsement(client, transaction_id)
+            if not transaction:
+                logger.info(  # The check has already logged the reason as warning
                     "Endorsement request with transaction id `{}` is not applicable for endorsement.",
-                    endorsement.transaction_id,
+                    transaction_id,
                 )
                 return
 
             logger.info(
-                "Endorsement request with transaction id `{}` is applicable for endorsement, accepting request.",
-                endorsement.transaction_id,
+                "Endorsement request is applicable for endorsement, accepting transaction: {}",
+                transaction.model_dump(exclude={"messages_attach"}),
             )
-            await accept_endorsement(client, endorsement)
+            await accept_endorsement(client, transaction_id)
 
     async def _handle_unprocessable_endorse_event(
         self, key: str, event_json: str, error: Exception

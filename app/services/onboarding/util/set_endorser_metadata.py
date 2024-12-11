@@ -13,7 +13,11 @@ DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
 
 # todo: Migrate to endorser service
 async def set_endorser_role(
-    *, endorser_controller: AcaPyClient, endorser_connection_id: str, logger: Logger
+    *,
+    endorser_controller: AcaPyClient,
+    endorser_connection_id: str,
+    logger: Logger,
+    delay: float = DEFAULT_DELAY,
 ):
     try:
         logger.debug("Setting roles for endorser on endorser-issuer connection.")
@@ -24,7 +28,7 @@ async def set_endorser_role(
             transaction_my_job="TRANSACTION_ENDORSER",
         )
         logger.debug("Successfully set endorser role.")
-        await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
+        await asyncio.sleep(delay)  # Allow ACA-Py records to update
     except CloudApiException as e:
         logger.error("Failed to set endorser role: {}.", e)
         raise CloudApiException(
@@ -35,7 +39,11 @@ async def set_endorser_role(
 
 
 async def set_author_role(
-    *, issuer_controller: AcaPyClient, issuer_connection_id: str, logger: Logger
+    *,
+    issuer_controller: AcaPyClient,
+    issuer_connection_id: str,
+    logger: Logger,
+    delay: float = DEFAULT_DELAY,
 ):
     try:
         logger.debug("Setting roles for author on issuer-endorser connection")
@@ -46,7 +54,7 @@ async def set_author_role(
             transaction_my_job="TRANSACTION_AUTHOR",
         )
         logger.debug("Successfully set author role.")
-        await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
+        await asyncio.sleep(delay)  # Allow ACA-Py records to update
     except CloudApiException as e:
         logger.error("Failed to set author role: {}.", e)
         raise CloudApiException(
@@ -62,6 +70,7 @@ async def set_endorser_info(
     issuer_connection_id: str,
     endorser_did: str,
     logger: Logger,
+    delay: float = DEFAULT_DELAY,
 ):
     try:
         logger.debug("Setting endorser info on issuer-endorser connection")
@@ -72,7 +81,7 @@ async def set_endorser_info(
             endorser_did=endorser_did,
         )
         logger.debug("Successfully set endorser info.")
-        await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
+        await asyncio.sleep(delay)  # Allow ACA-Py records to update
     except CloudApiException as e:
         logger.error("Failed to set endorser info: {}.", e)
         raise CloudApiException(

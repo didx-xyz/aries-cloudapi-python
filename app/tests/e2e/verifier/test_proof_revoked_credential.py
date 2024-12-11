@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import List
 
@@ -34,7 +35,7 @@ async def test_proof_revoked_credential(
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    time.sleep(10)  # moment for revocation registry to update
+    await asyncio.sleep(14)  # moment for revocation registry to update
     # todo: remove sleep when issue resolved: https://github.com/openwallet-foundation/acapy/issues/3018
 
     # Do proof request
@@ -124,7 +125,7 @@ async def test_regression_proof_revoked_credential(
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    time.sleep(10)  # moment for revocation registry to update
+    await asyncio.sleep(14)  # moment for revocation registry to update
     # todo: remove sleep when issue resolved: https://github.com/openwallet-foundation/acapy/issues/3018
 
     referent = get_or_issue_regression_cred_revoked.referent

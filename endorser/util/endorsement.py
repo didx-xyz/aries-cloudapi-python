@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Dict, Optional
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi import HTTPException
 
 from endorser.util.transaction_record import (
@@ -13,14 +13,14 @@ from endorser.util.transaction_record import (
 )
 from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement, applicable_transaction_state
+from shared.models.endorsement import applicable_transaction_state
 
 logger = get_logger(__name__)
 
 
 async def should_accept_endorsement(
-    client: AcaPyClient, endorsement: Endorsement
-) -> bool:
+    client: AcaPyClient, transaction_id: str
+) -> Optional[TransactionRecord]:
     """Check whether a transaction endorsement request should be endorsed.
 
     Whether the request should be accepted is based on the follow criteria:
@@ -29,15 +29,14 @@ async def should_accept_endorsement(
     3. The schema_id is registered in the trust registry.
 
     Args:
-        endorsement (Endorsement): The endorsement event model
+        transaction_id (str): The transaction id for this endorsement request
 
     Returns:
-        bool: Whether the endorsement request should be accepted
+        Optional[TransactionRecord]: The transaction record if it should be endorsed, None otherwise
     """
-    bound_logger = logger.bind(body=endorsement)
+    bound_logger = logger.bind(body={"transaction_id": transaction_id})
     bound_logger.debug("Validating if endorsement transaction should be endorsed")
 
-    transaction_id = endorsement.transaction_id
     bound_logger.debug("Fetching transaction with id: `{}`", transaction_id)
     transaction = await client.endorse_transaction.get_transaction(
         tran_id=transaction_id
@@ -51,23 +50,28 @@ async def should_accept_endorsement(
             applicable_transaction_state,
             transaction.state,
         )
-        return False
+        return None
 
     attachment = get_endorsement_request_attachment(transaction)
     if not attachment:
         bound_logger.warning("Could not extract attachment from transaction.")
-        return False
+        return None
 
     operation_type = await extract_operation_type(attachment)
     if not operation_type:
-        return False
+        # The request to register a DID on ledger has no operation type, but has signature request
+        if await is_signature_request_applicable(transaction):
+            return transaction
+        return None
 
-    return await check_applicable_operation_type(
-        client, endorsement, operation_type, attachment
-    )
+    if await check_applicable_operation_type(
+        client, transaction_id, operation_type, attachment
+    ):
+        return transaction
+    return None
 
 
-async def extract_operation_type(attachment) -> Optional[str]:
+async def extract_operation_type(attachment: Dict[str, Any]) -> Optional[str]:
     operation = attachment.get("operation")
     if not operation:
         logger.debug("Key `operation` not in attachment: `{}`.", attachment)
@@ -81,13 +85,38 @@ async def extract_operation_type(attachment) -> Optional[str]:
     return operation_type
 
 
+async def is_signature_request_applicable(transaction: TransactionRecord) -> bool:
+    """
+    Check if the signature_request in the transaction has the required author_goal_code.
+
+    Args:
+        transaction: The transaction object to check.
+
+    Returns:
+        bool: True if the signature_request is applicable, False otherwise.
+    """
+    signature_request = transaction.signature_request
+    if not signature_request or not isinstance(signature_request, list):
+        logger.debug("No valid signature_request found in transaction.")
+        return False
+
+    first_request = signature_request[0]
+    author_goal_code = first_request.get("author_goal_code")
+    if author_goal_code == "aries.transaction.register_public_did":
+        logger.debug("Transaction is applicable based on signature_request.")
+        return True
+
+    logger.debug("Transaction is not applicable based on signature_request.")
+    return False
+
+
 async def check_applicable_operation_type(
     client: AcaPyClient,
-    endorsement: Endorsement,
+    transaction_id: str,
     operation_type: str,
     attachment: Dict[str, Any],
 ) -> bool:
-    bound_logger = logger.bind(body=endorsement)
+    bound_logger = logger.bind(body={"transaction_id": transaction_id})
 
     if is_revocation_def_or_entry(operation_type):
         bound_logger.debug("Endorsement request is for revocation definition or entry.")
@@ -106,17 +135,17 @@ async def check_applicable_operation_type(
         client, attachment
     )
 
-    return await retry_is_valid_issuer(did, schema_id, endorsement)
+    return await retry_is_valid_issuer(did, schema_id, transaction_id)
 
 
 async def retry_is_valid_issuer(
     did: str,
     schema_id: str,
-    endorsement: Endorsement,
+    transaction_id: str,
     max_retries: int = 5,
     retry_delay: float = 1.0,
 ) -> bool:
-    bound_logger = logger.bind(body=endorsement)
+    bound_logger = logger.bind(body={"transaction_id": transaction_id})
     for attempt in range(max_retries):
         try:
             valid_issuer = await is_valid_issuer(did, schema_id)
@@ -125,7 +154,7 @@ async def retry_is_valid_issuer(
                 bound_logger.warning(
                     "Endorsement request with transaction id `{}` is not for did "
                     "and schema registered in the trust registry.",
-                    endorsement.transaction_id,
+                    transaction_id,
                 )
                 return False
 
@@ -146,8 +175,6 @@ async def retry_is_valid_issuer(
                 return False
 
 
-async def accept_endorsement(client: AcaPyClient, endorsement: Endorsement) -> None:
-    logger.debug("Endorsing transaction with id: `{}`", endorsement.transaction_id)
-    await client.endorse_transaction.endorse_transaction(
-        tran_id=endorsement.transaction_id
-    )
+async def accept_endorsement(client: AcaPyClient, transaction_id: str) -> None:
+    logger.debug("Endorsing transaction with id: `{}`", transaction_id)
+    await client.endorse_transaction.endorse_transaction(tran_id=transaction_id)

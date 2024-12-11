@@ -133,23 +133,25 @@ class EndorsementProcessor:
             return
 
         endorsement = Endorsement(**event.payload)
+        transaction_id = endorsement.transaction_id
 
         async with AcaPyClient(
             base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
         ) as client:
             # Check if endorsement request is indeed applicable
-            if not await should_accept_endorsement(client, endorsement):
-                logger.info(  # check already logged the reason as warning
+            transaction = await should_accept_endorsement(client, transaction_id)
+            if not transaction:
+                logger.info(  # The check has already logged the reason as warning
                     "Endorsement request with transaction id `{}` is not applicable for endorsement.",
-                    endorsement.transaction_id,
+                    transaction_id,
                 )
                 return
 
             logger.info(
-                "Endorsement request with transaction id `{}` is applicable for endorsement, accepting request.",
-                endorsement.transaction_id,
+                "Endorsement request is applicable for endorsement, accepting transaction: {}",
+                transaction,
             )
-            await accept_endorsement(client, endorsement)
+            await accept_endorsement(client, transaction_id)
 
     async def _handle_unprocessable_endorse_event(
         self, key: str, event_json: str, error: Exception

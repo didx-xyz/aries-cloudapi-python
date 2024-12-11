@@ -1,5 +1,4 @@
 import asyncio
-import os
 from logging import Logger
 
 from aries_cloudcontroller import (
@@ -17,9 +16,7 @@ from app.services.onboarding.util.set_endorser_metadata import (
     set_endorser_info,
     set_endorser_role,
 )
-from shared import ACAPY_ENDORSER_ALIAS
-
-MAX_ATTEMPTS = int(os.getenv("WAIT_ISSUER_DID_MAX_ATTEMPTS", "15"))
+from shared import ACAPY_ENDORSER_ALIAS, ISSUER_DID_ENDORSE_TIMEOUT
 
 
 async def create_connection_with_endorser(
@@ -162,30 +159,44 @@ async def configure_endorsement(
 
 async def register_issuer_did(
     *,
-    endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_label: str,
+    issuer_endorser_connection_id: str,
     logger: Logger,
 ) -> DID:
+    logger.debug("Accepting TAA on behalf of issuer")
+    await acapy_ledger.accept_taa_if_required(issuer_controller)
+
     logger.info("Creating DID for issuer")
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 
     await acapy_ledger.register_nym_on_ledger(
-        endorser_controller,
+        issuer_controller,
         did=issuer_did.did,
         verkey=issuer_did.verkey,
         alias=issuer_label,
+        create_transaction_for_endorser=True,
     )
 
-    logger.debug("Accepting TAA on behalf of issuer")
-    await acapy_ledger.accept_taa_if_required(issuer_controller)
-    # NOTE: Still needs endorsement in 0.7.5 release
-    # Otherwise did has no associated services.
+    logger.debug("Waiting for issuer DID transaction to be endorsed")
+    await wait_transactions_endorsed(  # Needs to be endorsed before setting public DID
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_endorser_connection_id,
+        logger=logger,
+    )
+
     logger.debug("Setting public DID for issuer")
     await acapy_wallet.set_public_did(
         issuer_controller,
         did=issuer_did.did,
         create_transaction_for_endorser=True,
+    )
+
+    logger.debug("Waiting for ATTRIB transaction to be endorsed")
+    await wait_transactions_endorsed(  # Needs to be endorsed before continuing
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_endorser_connection_id,
+        logger=logger,
     )
 
     logger.debug("Issuer DID registered.")
@@ -239,12 +250,12 @@ async def wait_endorser_connection_completed(
     raise asyncio.TimeoutError
 
 
-async def wait_issuer_did_transaction_endorsed(
+async def wait_transactions_endorsed(
     *,
     issuer_controller: AcaPyClient,
     issuer_connection_id: str,
     logger: Logger,
-    max_attempts: int = MAX_ATTEMPTS,
+    max_attempts: int = ISSUER_DID_ENDORSE_TIMEOUT,
     retry_delay: float = 1.0,
 ) -> None:
     attempt = 0
@@ -255,19 +266,38 @@ async def wait_issuer_did_transaction_endorsed(
                 await issuer_controller.endorse_transaction.get_records()
             )
 
-            for transaction in transactions_response.results:
-                if (
-                    transaction.connection_id == issuer_connection_id
-                    and transaction.state == "transaction_acked"
-                ):
-                    return
+            transactions = [
+                transaction
+                for transaction in transactions_response.results
+                if transaction.connection_id == issuer_connection_id
+            ]
+
+            if not transactions:
+                logger.error(
+                    "No transactions found for connection {}. Found {} transactions.",
+                    issuer_connection_id,
+                    transactions_response,
+                )
+                raise CloudApiException("No transactions found for connection", 404)
+
+            all_acked = all(
+                transaction.state == "transaction_acked" for transaction in transactions
+            )
+
+            if all_acked:
+                return
+            else:
+                logger.debug(
+                    "Waiting for transaction acknowledgements. Current states: %s",
+                    ", ".join(f"{t.transaction_id}: {t.state}" for t in transactions),
+                )
 
         except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."
                 )
-                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
+                raise asyncio.TimeoutError("Timeout waiting for endorsement") from e
 
             logger.warning(
                 (
@@ -284,4 +314,4 @@ async def wait_issuer_did_transaction_endorsed(
         attempt += 1
 
     logger.error("Maximum number of retries exceeded while waiting for transaction ack")
-    raise asyncio.TimeoutError
+    raise asyncio.TimeoutError("Timeout waiting for endorsement")

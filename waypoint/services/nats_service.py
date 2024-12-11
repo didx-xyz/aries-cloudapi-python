@@ -41,12 +41,17 @@ class NatsEventsProcessor:
         state: str,
         start_time: str = None,
     ) -> JetStreamContext.PullSubscription:
-
-        logger.debug(
-            "Subscribing to JetStream for wallet_id: {}, group_id: {}",
-            wallet_id,
-            group_id,
+        bound_logger = logger.bind(
+            body={
+                "wallet_id": wallet_id,
+                "group_id": group_id,
+                "topic": topic,
+                "state": state,
+                "start_time": start_time,
+            }
         )
+
+        bound_logger.debug("Subscribing to JetStream")
 
         group_id = group_id or "*"
         subscribe_kwargs = {
@@ -59,53 +64,45 @@ class NatsEventsProcessor:
             opt_start_time=start_time,
         )
 
+        def _retry_log(retry_state: RetryCallState):
+            """Custom logging for retry attempts."""
+            if retry_state.outcome.failed:
+                exception = retry_state.outcome.exception()
+                bound_logger.warning(
+                    "Retry attempt {} failed due to {}: {}",
+                    retry_state.attempt_number,
+                    type(exception).__name__,
+                    exception,
+                )
+
         # This is a custom retry decorator that will retry on TimeoutError
         # and wait exponentially up to a max of 16 seconds between retries indefinitely
         @retry(
             retry=retry_if_exception_type(TimeoutError),
             wait=wait_exponential(multiplier=1, max=16),
-            after=self._retry_log,
+            after=_retry_log,
             stop=stop_never,
         )
         async def pull_subscribe(config, **kwargs):
             try:
-                logger.trace(
-                    "Attempting to subscribe to JetStream for wallet_id: {}, group_id: {}",
-                    wallet_id,
-                    group_id,
-                )
+                bound_logger.trace("Attempting to subscribe to JetStream")
                 subscription = await self.js_context.pull_subscribe(
                     config=config, **kwargs
                 )
-                logger.debug(
-                    "Successfully subscribed to JetStream for wallet_id: {}, group_id: {}",
-                    wallet_id,
-                    group_id,
-                )
+                bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription
             except BadSubscriptionError as e:
-                logger.error("BadSubscriptionError subscribing to NATS: {}", e)
+                bound_logger.error("BadSubscriptionError subscribing to NATS: {}", e)
                 raise
             except Error as e:
-                logger.error("Error subscribing to NATS: {}", e)
+                bound_logger.error("Error subscribing to NATS: {}", e)
                 raise
 
         try:
             return await pull_subscribe(config, **subscribe_kwargs)
         except Exception:
-            logger.exception("An exception occurred subscribing to NATS")
+            bound_logger.exception("An exception occurred subscribing to NATS")
             raise
-
-    def _retry_log(self, retry_state: RetryCallState):
-        """Custom logging for retry attempts."""
-        if retry_state.outcome.failed:
-            exception = retry_state.outcome.exception()
-            logger.warning(
-                "Retry attempt {} failed due to {}: {}",
-                retry_state.attempt_number,
-                type(exception).__name__,
-                exception,
-            )
 
     @asynccontextmanager
     async def process_events(
@@ -119,13 +116,17 @@ class NatsEventsProcessor:
         duration: int = 10,
         look_back: int = 60,
     ):
-        logger.debug(
-            "Processing events for group {} and wallet {} on topic {} with state {}",
-            group_id,
-            wallet_id,
-            topic,
-            state,
+        bound_logger = logger.bind(
+            body={
+                "wallet_id": wallet_id,
+                "group_id": group_id,
+                "topic": topic,
+                "state": state,
+                "duration": duration,
+                "look_back": look_back,
+            }
         )
+        bound_logger.debug("Processing events")
         # Get the current time in UTC
         current_time = datetime.now(timezone.utc)
 
@@ -148,9 +149,9 @@ class NatsEventsProcessor:
                 end_time = time.time() + duration
                 while not stop_event.is_set():
                     remaining_time = end_time - time.time()
-                    logger.trace("remaining_time: {}", remaining_time)
+                    bound_logger.trace("Remaining time: {}", remaining_time)
                     if remaining_time <= 0:
-                        logger.debug("Timeout reached")
+                        bound_logger.debug("Timeout reached")
                         stop_event.set()
                         break
 
@@ -160,25 +161,25 @@ class NatsEventsProcessor:
                         )
                         for message in messages:
                             event = orjson.loads(message.data)
-                            logger.trace("Received event: {}", event)
+                            bound_logger.trace("Received event: {}", event)
                             yield CloudApiWebhookEventGeneric(**event)
                             await message.ack()
 
                     except FetchTimeoutError:
                         # Fetch timeout, continue
-                        logger.trace("Timeout fetching messages continuing...")
+                        bound_logger.trace("Timeout fetching messages continuing...")
                         await asyncio.sleep(0.1)
 
                     except TimeoutError:
                         # Timeout error, resubscribe
-                        logger.warning(
+                        bound_logger.warning(
                             "Subscription lost connection, attempting to resubscribe..."
                         )
                         try:
                             await subscription.unsubscribe()
                         except BadSubscriptionError as e:
                             # If we can't unsubscribe, log the error and continue
-                            logger.warning(
+                            bound_logger.warning(
                                 "BadSubscriptionError unsubscribing from NATS: {}", e
                             )
 
@@ -189,15 +190,15 @@ class NatsEventsProcessor:
                             state=state,
                             start_time=start_time,
                         )
-                        logger.debug("Successfully resubscribed to NATS.")
+                        bound_logger.debug("Successfully resubscribed to NATS.")
 
                     except Exception:  # pylint: disable=W0718
-                        logger.exception("Unexpected error in event generator")
+                        bound_logger.exception("Unexpected error in event generator")
                         stop_event.set()
                         raise
 
             except asyncio.CancelledError:
-                logger.debug("Event generator cancelled")
+                bound_logger.debug("Event generator cancelled")
                 stop_event.set()
 
         try:
@@ -217,17 +218,17 @@ class NatsEventsProcessor:
                 state=state,
             )
         except Exception as e:  # pylint: disable=W0718
-            logger.exception("Unexpected error processing events: {}")
+            bound_logger.exception("Unexpected error processing events: {}")
             raise e
 
         finally:
             if subscription:
                 try:
-                    logger.trace("Closing subscription...")
+                    bound_logger.trace("Closing subscription...")
                     await subscription.unsubscribe()
-                    logger.debug("Subscription closed")
+                    bound_logger.debug("Subscription closed")
                 except BadSubscriptionError as e:
-                    logger.warning(
+                    bound_logger.warning(
                         "BadSubscriptionError unsubscribing from NATS: {}", e
                     )
 

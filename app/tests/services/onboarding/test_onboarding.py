@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from aries_cloudcontroller import (
     DID,
@@ -88,22 +90,19 @@ async def test_onboard_issuer_no_public_did(
 
     endorser_controller = get_mock_agent_controller()
 
+    # Mock the necessary functions and methods
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="Error")
     )
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
         to_async(did_object)
     )
-
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
         to_async(InvitationRecord(invitation=InvitationMessage()))
     )
-
-    # Mock responses
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
         to_async(ConnRecord(connection_id=issuer_connection_id))
     )
-
     when(endorser_controller.connection).get_connections(...).thenReturn(
         to_async(
             ConnectionList(
@@ -115,20 +114,17 @@ async def test_onboard_issuer_no_public_did(
             )
         )
     )
-
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
-
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenAnswer(
         lambda conn_id, endorser_did: to_async()
     )
-
-    when(mock_agent_controller.endorse_transaction).get_records(...).thenReturn(
-        to_async(
+    when(mock_agent_controller.endorse_transaction).get_records(...).thenAnswer(
+        lambda: to_async(  # lambda to avoid "cannot reuse already awaited coroutine"
             TransactionList(
                 results=[
                     TransactionRecord(
@@ -138,7 +134,6 @@ async def test_onboard_issuer_no_public_did(
             )
         )
     )
-
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
         to_async(did_object)
     )
@@ -156,27 +151,32 @@ async def test_onboard_issuer_no_public_did(
         )
     )
 
-    onboard_result = await issuer.onboard_issuer(
-        issuer_label="issuer_name",
-        endorser_controller=endorser_controller,
-        issuer_controller=mock_agent_controller,
-        issuer_wallet_id="issuer_wallet_id",
-    )
+    # Patch asyncio.sleep to return immediately
+    with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+        onboard_result = await issuer.onboard_issuer(
+            issuer_label="issuer_name",
+            endorser_controller=endorser_controller,
+            issuer_controller=mock_agent_controller,
+            issuer_wallet_id="issuer_wallet_id",
+        )
 
+    # Assertions
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
+    verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
     verify(acapy_wallet).create_did(mock_agent_controller)
     verify(acapy_ledger).register_nym_on_ledger(
-        endorser_controller,
+        mock_agent_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
         alias="issuer_name",
+        create_transaction_for_endorser=True,
     )
-    verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
     verify(acapy_wallet).set_public_did(
         mock_agent_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         create_transaction_for_endorser=True,
     )
+    mock_sleep.assert_awaited()  # Ensure that sleep was called and patched
 
 
 @pytest.mark.anyio

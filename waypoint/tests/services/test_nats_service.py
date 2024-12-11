@@ -1,6 +1,6 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from nats.aio.client import Client as NATS
@@ -9,7 +9,6 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
-from tenacity import RetryCallState
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
@@ -44,7 +43,7 @@ async def test_init_nats_client(nats_creds_file):
 async def test_init_nats_client_error(exception):
     with patch("nats.connect", side_effect=exception):
         with pytest.raises(exception):
-            async for jetstream in init_nats_client():
+            async for _ in init_nats_client():
                 pass
 
 
@@ -123,7 +122,7 @@ async def test_process_events(
         topic="test_topic",
         state="state",
         stop_event=stop_event,
-        duration=1,
+        duration=0.5,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -155,7 +154,7 @@ async def test_process_events_cancelled_error(
             topic="test_topic",
             state="state",
             stop_event=stop_event,
-            duration=1,
+            duration=0.5,
         ) as event_generator:
             events = []
             async for event in event_generator:
@@ -182,7 +181,7 @@ async def test_process_events_fetch_timeout_error(
         topic="test_topic",
         state="state",
         stop_event=stop_event,
-        duration=1,
+        duration=0.5,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -215,7 +214,7 @@ async def test_process_events_timeout_error(
         topic="test_topic",
         state="state",
         stop_event=stop_event,
-        duration=2,
+        duration=0.5,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -257,7 +256,7 @@ async def test_process_events_bad_subscription_error_on_unsubscribe(
         topic="test_topic",
         state="state",
         stop_event=stop_event,
-        duration=2,
+        duration=0.5,
     ) as event_generator:
         events = []
         async for event in event_generator:
@@ -297,7 +296,7 @@ async def test_process_events_base_exception(
             topic="test_topic",
             state="state",
             stop_event=stop_event,
-            duration=2,
+            duration=0.5,
         ) as event_generator:
             events = []
             async for event in event_generator:
@@ -372,27 +371,3 @@ class MockFuture:
 
     def exception(self):
         return self._exception
-
-
-def test_retry_log(mock_nats_client):  # pylint: disable=redefined-outer-name
-    processor = NatsEventsProcessor(mock_nats_client)
-    # Mock a retry state
-    mock_retry_state = MagicMock(spec=RetryCallState)
-
-    # Mock the outcome attribute with a Future-like object
-    mock_retry_state.outcome = MockFuture(exception=ValueError("Test retry exception"))
-    mock_retry_state.attempt_number = 3  # Retry attempt number
-
-    # Patch the logger to capture log calls
-    with patch("waypoint.services.nats_service.logger") as mock_logger:
-        processor._retry_log(  # pylint: disable=protected-access
-            retry_state=mock_retry_state
-        )
-
-        # Assert that logger.warning was called with the expected message
-        mock_logger.warning.assert_called_once_with(
-            "Retry attempt {} failed due to {}: {}",
-            3,
-            "ValueError",
-            mock_retry_state.outcome.exception(),
-        )

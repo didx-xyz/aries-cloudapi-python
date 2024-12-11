@@ -41,7 +41,7 @@ async def test_should_accept_endorsement_success_claim_def(mock_acapy_client, mo
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is True
+    assert result is transaction_mock
 
 
 @pytest.mark.anyio
@@ -63,7 +63,7 @@ async def test_should_accept_endorsement_fail_not_claim_def(mock_acapy_client, m
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -83,7 +83,7 @@ async def test_should_accept_endorsement_fail_no_attach(mock_acapy_client, mocke
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -103,7 +103,7 @@ async def test_should_accept_endorsement_fail_no_operation(mock_acapy_client, mo
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -123,7 +123,7 @@ async def test_should_accept_endorsement_fail_no_type(mock_acapy_client, mocker)
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -145,7 +145,7 @@ async def test_should_accept_endorsement_is_cred_def(mock_acapy_client, mocker):
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is True
+    assert result is transaction_mock
 
 
 @pytest.mark.anyio
@@ -167,7 +167,7 @@ async def test_should_accept_endorsement_is_attrib(mock_acapy_client, mocker):
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is True
+    assert result is transaction_mock
 
 
 @pytest.mark.anyio
@@ -189,7 +189,7 @@ async def test_should_accept_endorsement_fail_not_cred_def(mock_acapy_client, mo
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -213,7 +213,7 @@ async def test_should_accept_endorsement_fail_not_correct_attach(
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -241,7 +241,7 @@ async def test_should_accept_endorsement_fail_not_valid_issuer(
 
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
@@ -369,7 +369,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
 
     # Assertions
     assert (
-        result is False
+        result is None
     ), "The endorsement should not be accepted due to is_valid_issuer failing repeatedly"
     assert (
         mock_is_valid_issuer.call_count == 5
@@ -381,9 +381,7 @@ async def test_retry_is_valid_issuer_success_after_retries(mocker):
     # Setup
     did = "did:sov:test-did"
     schema_id = "test-schema-id"
-    endorsement = Endorsement(
-        state="request-received", transaction_id="test-transaction"
-    )
+    transaction_id = "test-transaction"
 
     # Mock is_valid_issuer to raise HTTPException first, then return True
     mock_is_valid_issuer = mocker.patch(
@@ -393,7 +391,7 @@ async def test_retry_is_valid_issuer_success_after_retries(mocker):
 
     # Test
     result = await retry_is_valid_issuer(
-        did, schema_id, endorsement, max_retries=2, retry_delay=0.01
+        did, schema_id, transaction_id, max_retries=2, retry_delay=0.01
     )
 
     # Assertions
@@ -406,9 +404,7 @@ async def test_retry_is_valid_issuer_fails_after_max_retries(mocker):
     # Setup
     did = "did:sov:test-did"
     schema_id = "test-schema-id"
-    endorsement = Endorsement(
-        state="request-received", transaction_id="test-transaction"
-    )
+    transaction_id = "test-transaction"
 
     # Mock is_valid_issuer to always raise HTTPException
     mock_is_valid_issuer = mocker.patch(
@@ -419,7 +415,7 @@ async def test_retry_is_valid_issuer_fails_after_max_retries(mocker):
     # Test
     with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
         result = await retry_is_valid_issuer(
-            did, schema_id, endorsement, max_retries=3, retry_delay=0.01
+            did, schema_id, transaction_id, max_retries=3, retry_delay=0.01
         )
 
     # Assertions
@@ -436,12 +432,12 @@ async def test_should_accept_endorsement_fail_bad_state(mock_acapy_client):
 
     result = await should_accept_endorsement(mock_acapy_client, invalid_endorsement)
 
-    assert result is False
+    assert result is None
 
 
 @pytest.mark.anyio
 async def test_accept_endorsement(mock_acapy_client):
-    await accept_endorsement(mock_acapy_client, valid_endorsement)
+    await accept_endorsement(mock_acapy_client, valid_endorsement.transaction_id)
 
     mock_acapy_client.endorse_transaction.endorse_transaction.assert_awaited_once_with(
         tran_id=valid_endorsement.transaction_id
@@ -477,7 +473,7 @@ async def test_should_accept_endorsement_signature_request_applicable(
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
     assert (
-        result is True
+        result is transaction_mock
     ), "The endorsement should be accepted based on signature_request."
 
 
@@ -502,5 +498,5 @@ async def test_should_accept_endorsement_signature_request_not_applicable(
     result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
 
     assert (
-        result is False
+        result is None
     ), "The endorsement should not be accepted based on signature_request."

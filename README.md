@@ -1,4 +1,4 @@
-# aries-cloudapi-python
+# didx-cloud
 
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 [![Toolset: Mise](https://img.shields.io/badge/toolset-Mise-orange.svg?style=flat)](https://mise.jdx.dev/)

@@ -8,8 +8,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![DIDx GitHub](https://img.shields.io/badge/GitHub-DIDx-181717.svg?style=flat&logo=github)](https://github.com/didx-xyz)
 
-:construction: This project is currently under development. If you would like to use
-this in production, please contact us first to discuss your use case.
+🚧 This project is currently under development. If you would like to use
+this in production, please [contact us](mailto:info@didx.co.za) first to discuss your use case.
 
 ## Overview
 

@@ -218,6 +218,7 @@ class EndorsementProcessor:
             return await pull_subscribe(**subscribe_kwargs)
         except Exception:  # pylint: disable=W0703
             logger.exception("Error subscribing to NATS subject")
+            raise
 
     def _retry_log(self, retry_state: RetryCallState):
         """Custom logging for retry attempts."""

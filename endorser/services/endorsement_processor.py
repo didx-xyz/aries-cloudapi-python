@@ -194,7 +194,7 @@ class EndorsementProcessor:
             "durable": ENDORSER_DURABLE_CONSUMER,
             "stream": NATS_STREAM,
         }
-        
+
         logger.info("Subscribing to NATS: {}", subscribe_kwargs)
 
         @retry(

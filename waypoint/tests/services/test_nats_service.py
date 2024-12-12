@@ -1,6 +1,6 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 
 import pytest
 from nats.aio.client import Client as NATS
@@ -9,7 +9,7 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
-
+from tenacity import RetryCallState
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from shared.services.nats_jetstream import init_nats_client
@@ -359,15 +359,3 @@ async def test_check_jetstream_exception(
     mock_nats_client.account_info.assert_called_once()
 
 
-class MockFuture:
-    """A mock class to simulate the behavior of a Future object."""
-
-    def __init__(self, exception=None):
-        self._exception = exception
-
-    @property
-    def failed(self):
-        return self._exception is not None
-
-    def exception(self):
-        return self._exception

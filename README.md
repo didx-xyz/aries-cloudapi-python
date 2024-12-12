@@ -14,24 +14,29 @@ this in production, please contact us first to discuss your use case.
 
 ## Overview
 
-This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/)
-application built around the
-[Hyperledger Aries stack](https://github.com/hyperledger/), primarily tailored
-for [Yoma](https://yoma.world)-specific use cases.
+This project comprises a [FastAPI](https://fastapi.tiangolo.com/) application built
+around [ACA-Py](https://github.com/openwallet-foundation/aries-cloudagent-python),
+primarily tailored for [Yoma](https://yoma.world)-specific use cases.
 
 The FastAPI app serves as a wrapper around common workflows, facilitating
-real-life applications of the stack. It acts as a form of middleware or interface
-for client applications (e.g., a mobile app) and the backend stack, using
-[Aries CloudController](https://github.com/didx-xyz/aries-cloudcontroller-python)
-and [ACA-Py](https://github.com/openwallet-foundation/acapy). The aim is
-to streamline a client's workflow by providing convenient API endpoints for
-common workflows, such as creating wallets, managing connections, credentials,
-proofs, and workflows.
+real-life applications of self-sovereign identity. It acts as an interface
+for client applications (e.g., a mobile app) and the backend, using our
+[OpenAPI client](https://github.com/didx-xyz/aries-cloudcontroller-python) and ACA-Py.
 
-Multiple API calls to the AriesCloudAgent can often be condensed into a single
-call via this API. For example, creating a wallet, which involves writing to the
-ledger, awaiting the result, accepting a TAA, creating a DID, and finally
-creating the wallet itself, can be done in a single call. Convenient, isn't it?
+Multiple API calls to ACA-Py can be condensed into a single call through this API.
+For instance, onboarding an issuer — which involves creating a wallet, establishing a
+connection with an endorser, generating a public DID, accepting the Transaction Author
+Agreement (TAA), publishing the DID to the ledger, and awaiting confirmation — can all
+be achieved with a single API call. Convenient, isn't it?
+
+We enable and simplify several key capabilities, including:
+
+- Creating and managing wallets
+- Onboarding issuers and verifiers
+- Managing connections between parties
+- Creating schemas and credential definitions
+- Issuing verifiable credentials and handling revocations
+- Requesting and validating proofs
 
 ## How to Run It
 

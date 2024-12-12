@@ -2,6 +2,7 @@
 **
 
 # Except the following
+!pyproject.toml
 !app/
 !shared/
 !endorser/
@@ -9,7 +10,6 @@
 !waypoint/
 !scripts/
 !configuration/
-
 !LICENSE
 
 **/__pycache__/

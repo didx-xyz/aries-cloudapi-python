@@ -6,12 +6,7 @@ authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false
 
 [tool.coverage.run]
-omit = [
-  "app/tests/*",
-  "endorser/tests/*",
-  "trustregistry/tests/*",
-  "waypoint/tests/*",
-]
+omit = ["*/tests/*"]
 
 [tool.isort]
 profile = "black"

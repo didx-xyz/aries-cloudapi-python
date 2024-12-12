@@ -1,6 +1,6 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from nats.aio.client import Client as NATS
@@ -10,6 +10,7 @@ from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
 from tenacity import RetryCallState
+
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from shared.services.nats_jetstream import init_nats_client
@@ -357,5 +358,3 @@ async def test_check_jetstream_exception(
 
     assert result == {"is_working": False}
     mock_nats_client.account_info.assert_called_once()
-
-

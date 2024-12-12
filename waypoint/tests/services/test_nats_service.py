@@ -357,17 +357,3 @@ async def test_check_jetstream_exception(
 
     assert result == {"is_working": False}
     mock_nats_client.account_info.assert_called_once()
-
-
-class MockFuture:
-    """A mock class to simulate the behavior of a Future object."""
-
-    def __init__(self, exception=None):
-        self._exception = exception
-
-    @property
-    def failed(self):
-        return self._exception is not None
-
-    def exception(self):
-        return self._exception

@@ -9,7 +9,6 @@ from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
-from tenacity import RetryCallState
 
 from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
 from shared.models.webhook_events import CloudApiWebhookEventGeneric

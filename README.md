@@ -7,7 +7,6 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://app.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![DIDx GitHub](https://img.shields.io/badge/GitHub-DIDx-181717.svg?style=flat&logo=github)](https://github.com/didx-xyz)
-[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 :construction: This project is currently under development. If you would like to use
 this in production, please contact us first to discuss your use case.
@@ -150,11 +149,13 @@ You can find more detailed documentation in the
 
 ## Contributing
 
+[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
 While this project was primarily developed to meet the needs of
 [Yoma](https://yoma.world), it is an open-source project that can be used for
 other Hyperledger Aries projects as well. We welcome contributions from
-everyone. Feel free to engage in discussions, create a PR against a ticket, or
-open an issue yourself, following the GitHub guidelines.
+everyone. Feel free to engage in discussions, create pull requests against
+existing tickets, or open new issues following the GitHub guidelines.
 
 ## Running Tests
 

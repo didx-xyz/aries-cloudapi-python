@@ -932,26 +932,6 @@ jobs:
           OUTPUT_FILE: test_output.xml
           COVERAGE_FILE: test_coverage.txt
 
-      - name: Publish Pytest Report
-        uses: mikepenz/action-junit-report@v5
-        if: steps.pytest.outcome == 'success'
-        with:
-          check_name: JUnit Test Report
-          report_paths: "./pytest/test_output.xml"
-          fail_on_failure: true
-          detailed_summary: true
-          require_passed_tests: true
-
-      - name: Publish Pytest Regression Report
-        uses: mikepenz/action-junit-report@v5
-        if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
-        with:
-          check_name: JUnit Test Report Regression
-          report_paths: "./pytest-regression/test_output.xml"
-          fail_on_failure: true
-          detailed_summary: true
-          require_passed_tests: true
-
       - name: Pytest coverage comment
         if: steps.pytest.outcome == 'success'
         uses: MishaKav/pytest-coverage-comment@v1.1.53
@@ -975,6 +955,26 @@ jobs:
           # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
           hide-report: ${{ github.event_name != 'pull_request' }}
           hide-comment: ${{ github.event_name != 'pull_request' }}
+
+      - name: Publish Pytest Report
+        uses: mikepenz/action-junit-report@v5
+        if: steps.pytest.outcome == 'success'
+        with:
+          check_name: JUnit Test Report
+          report_paths: "./pytest/test_output.xml"
+          fail_on_failure: true
+          detailed_summary: true
+          require_passed_tests: true
+
+      - name: Publish Pytest Regression Report
+        uses: mikepenz/action-junit-report@v5
+        if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
+        with:
+          check_name: JUnit Test Report Regression
+          report_paths: "./pytest-regression/test_output.xml"
+          fail_on_failure: true
+          detailed_summary: true
+          require_passed_tests: true
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v2.0.2

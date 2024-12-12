@@ -7,6 +7,7 @@ from nats.aio.client import Client as NATS
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
+from tenacity import RetryCallState
 
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import (
@@ -417,3 +418,41 @@ async def test_check_jetstream_exception(endorsement_processor_mock):
     mock_logger.exception.assert_called_once_with(
         "Caught exception while checking jetstream status"
     )
+
+
+class MockFuture:
+    """A mock class to simulate the behavior of a Future object."""
+
+    def __init__(self, exception=None):
+        self._exception = exception
+
+    @property
+    def failed(self):
+        return self._exception is not None
+
+    def exception(self):
+        return self._exception
+
+
+def test_retry_log(endorsement_processor_mock):  # pylint: disable=redefined-outer-name
+
+    # Mock a retry state
+    mock_retry_state = MagicMock(spec=RetryCallState)
+
+    # Mock the outcome attribute with a Future-like object
+    mock_retry_state.outcome = MockFuture(exception=ValueError("Test retry exception"))
+    mock_retry_state.attempt_number = 3  # Retry attempt number
+
+    # Patch the logger to capture log calls
+    with patch("endorser.services.endorsement_processor.logger") as mock_logger:
+        endorsement_processor_mock._retry_log(  # pylint: disable=protected-access
+            retry_state=mock_retry_state
+        )
+
+        # Assert that logger.warning was called with the expected message
+        mock_logger.warning.assert_called_once_with(
+            "Retry attempt {} failed due to {}: {}",
+            3,
+            "ValueError",
+            mock_retry_state.outcome.exception(),
+        )

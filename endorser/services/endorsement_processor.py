@@ -189,12 +189,13 @@ class EndorsementProcessor:
         """
         Subscribes to the NATS subject for endorsement events.
         """
-        logger.info("Subscribing to NATS subject: {}", self.endorser_nats_subject)
         subscribe_kwargs = {
             "subject": self.endorser_nats_subject,
             "durable": ENDORSER_DURABLE_CONSUMER,
             "stream": NATS_STREAM,
         }
+        
+        logger.info("Subscribing to NATS: {}", subscribe_kwargs)
 
         @retry(
             retry=retry_if_exception_type(TimeoutError),

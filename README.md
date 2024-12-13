@@ -37,7 +37,13 @@ We enable and simplify several key capabilities, including:
 - Issuing verifiable credentials and handling revocations
 - Requesting and validating proofs
 
-## Docs
+To enable this, the project includes essential supporting services:
+
+- An [Endorser](endorser) for authorizing ledger transactions
+- A [Trust Registry](trustregistry) for authorizing valid issuers, verifiers,
+  and approved credential schemas
+- A webhooks service ([Waypoint](waypoint)) for real-time, server-sent event
+  (SSE) notifications and updates
 
 You can find more detailed documentation in the
 [`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and

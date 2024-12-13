@@ -1109,8 +1109,11 @@ paths:
         \ then they can use\nthis endpoint to accept that credential offer, and store\
         \ the credential in their wallet.\n\nParameters:\n---\n    credential_exchange_id:\
         \ str\n        The holder's reference to the credential exchange that they\
-        \ want to accept\n\nReturns:\n---\n    CredentialExchange\n        An updated\
-        \ record of this credential exchange"
+        \ want to accept\n    save_exchange_record: Optional[bool]\n        Whether\
+        \ to override environment setting for saving credential exchange records.\
+        \ Default is None (use\n        environment setting). True means save record,\
+        \ False means delete record.\n\nReturns:\n---\n    CredentialExchange\n  \
+        \      An updated record of this credential exchange"
       operationId: request_credential_v1_issuer_credentials__credential_exchange_id__request_post
       security:
         - APIKeyHeader: []
@@ -1121,6 +1124,20 @@ paths:
           schema:
             type: string
             title: Credential Exchange Id
+        - name: save_exchange_record
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: "null"
+            description: Controls exchange record retention after exchange is complete.
+              None uses wallet default (typically to delete), true forces save, false
+              forces delete.
+            title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
       responses:
         "200":
           description: Successful Response
@@ -1185,13 +1202,15 @@ paths:
         \ to (if an issuer) or received\nfrom (if a holder).\n\nNB: An issuer and\
         \ a holder will have distinct credential exchange ids, despite referring to\
         \ the same exchange.\nThe `thread_id` is the only record attribute that will\
-        \ be the same for the holder and the issuer.\n\nAn exchange record will automatically\
-        \ be deleted after a flow completes (i.e. when state is 'done'),\nunless the\
-        \ `save_exchange_record` was set to true.\n\nThe following parameters can\
-        \ be set to filter the fetched exchange records: connection_id, role, state,\
-        \ thread_id.\n\nParameters:\n---\n    credential_exchange_id: str\n      \
-        \  The identifier of the credential exchange record that you want to fetch\n\
-        \nReturns:\n---\n    CredentialExchange\n        The credential exchange record"
+        \ be the same for the holder and the issuer.\n\nAn exchange record will, by\
+        \ default, automatically be deleted after a flow completes (i.e. when state\
+        \ is 'done'),\nunless the `save_exchange_record` was set to true, or the wallet\
+        \ is configured to preserve records by default.\n\nThe following parameters\
+        \ can be set to filter the fetched exchange records: connection_id, role,\
+        \ state, thread_id.\n\nParameters:\n---\n    credential_exchange_id: str\n\
+        \        The identifier of the credential exchange record that you want to\
+        \ fetch\n\nReturns:\n---\n    CredentialExchange\n        The credential exchange\
+        \ record"
       operationId: get_credential_v1_issuer_credentials__credential_exchange_id__get
       security:
         - APIKeyHeader: []
@@ -1245,7 +1264,7 @@ paths:
   /v1/issuer/credentials/revoke:
     post:
       tags:
-        - issuer
+        - revocation
       summary: Revoke a Credential (if revocable)
       description: "Revoke a credential\n---\nRevoke a credential by providing the\
         \ identifier of the exchange.\n\nIf an issuer is going to revoke more than\
@@ -1285,7 +1304,7 @@ paths:
   /v1/issuer/credentials/revocation/record:
     get:
       tags:
-        - issuer
+        - revocation
       summary: Fetch a Revocation Record
       description: "Get a credential revocation record\n---\nFetch a credential revocation\
         \ record by providing the credential exchange id.\nRecords can also be fetched\
@@ -1343,7 +1362,7 @@ paths:
   /v1/issuer/credentials/publish-revocations:
     post:
       tags:
-        - issuer
+        - revocation
       summary: Publish Pending Revocations
       description: "Write pending revocations to the ledger\n---\nRevocations that\
         \ are in a pending state can be published to the ledger.\n\nThe endpoint accepts\
@@ -1394,7 +1413,7 @@ paths:
   /v1/issuer/credentials/clear-pending-revocations:
     post:
       tags:
-        - issuer
+        - revocation
       summary: Clear Pending Revocations
       description: "Clear pending revocations\n---\nRevocations that are in a pending\
         \ state can be cleared, such that they are no longer set to be revoked.\n\n\
@@ -1444,7 +1463,7 @@ paths:
   /v1/issuer/credentials/get-pending-revocations/{revocation_registry_id}:
     get:
       tags:
-        - issuer
+        - revocation
       summary: Get Pending Revocations
       description: "Get pending revocations\n---\nGet the pending revocations for\
         \ a given revocation registry ID.\n\nParameters:\n---\n    revocation_registry_id:\
@@ -1468,6 +1487,53 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PendingRevocations"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /v1/issuer/credentials/fix-revocation-registry/{revocation_registry_id}:
+    put:
+      tags:
+        - revocation
+      summary: Fix Revocation Registry Entry State
+      description: "Fix Revocation Registry Entry State\n---\nFix the revocation registry\
+        \ entry state for a given revocation registry ID.\n\nIf issuer's revocation\
+        \ registry wallet state is out of sync with the ledger,\nthis endpoint can\
+        \ be used to fix/update the ledger state.\n\nPath Parameters:\n---\n    revocation_registry_id:\
+        \ str\n        The ID of the revocation registry for which to fix the state\n\
+        \nQuery Parameters:\n---\n    apply_ledger_update: bool\n        Apply changes\
+        \ to ledger (default: False). If False, only computes the difference\n   \
+        \     between the wallet and ledger state.\n\nReturns:\n---\n    RevRegWalletUpdatedResult:\n\
+        \        accum_calculated: The calculated accumulator value for any revocations\
+        \ not yet published to ledger\n        accum_fixed: The result of applying\
+        \ the ledger transaction to synchronize revocation state\n        rev_reg_delta:\
+        \ The delta between wallet and ledger state for this revocation registry"
+      operationId: fix_revocation_registry_entry_state_v1_issuer_credentials_fix_revocation_registry__revocation_registry_id__put
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - name: revocation_registry_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Revocation Registry Id
+        - name: apply_ledger_update
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+            title: Apply Ledger Update
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevRegWalletUpdatedResult"
         "422":
           description: Validation Error
           content:
@@ -2451,8 +2517,10 @@ paths:
     get:
       tags:
         - wallet
-      summary: List Dids
-      description: Retrieve list of DIDs.
+      summary: List DIDs
+      description: "Retrieve List of DIDs\n---\n\nThis endpoint allows you to retrieve\
+        \ a list of DIDs in the wallet.\n\nResponse:\n---\n    Returns a list of DID\
+        \ objects."
       operationId: list_dids_v1_wallet_dids_get
       responses:
         "200":
@@ -2469,8 +2537,18 @@ paths:
     post:
       tags:
         - wallet
-      summary: Create Did
-      description: Create Local DID.
+      summary: Create Local DID
+      description: "Create Local DID\n---\n\nThis endpoint allows you to create a\
+        \ new DID in the wallet.\nThe `method` parameter is optional and can be set\
+        \ to\n'sov', 'key', 'web', 'did:peer:2', or 'did:peer:4'.\n\nThe `options`\
+        \ field is deprecated and has been flattened, such that `did` and\n`key_type`\
+        \ are now top-level fields. The `options` field will still\ntake precedence\
+        \ over the top-level fields if it is present.\n\nRequest Body:\n---\n    DIDCreate\
+        \ (Optional):\n        method (str, optional): Method for the requested DID.\n\
+        \        options (DIDCreateOptions, optional): Deprecated.\n        seed (str,\
+        \ optional): Optional seed for DID.\n        key_type (str, optional): Key\
+        \ type for the DID.\n        did (str, optional): Specific DID value.\n\n\
+        Response:\n---\n    Returns the created DID object."
       operationId: create_did_v1_wallet_dids_post
       requestBody:
         content:
@@ -2499,8 +2577,10 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get Public Did
-      description: Fetch the current public DID.
+      summary: Fetch Public DID
+      description: "Fetch the Current Public DID\n---\n\nThis endpoint allows you\
+        \ to fetch the current public DID.\nBy default, only issuers will have public\
+        \ DIDs.\n\nResponse:\n---\n    Returns the public DID."
       operationId: get_public_did_v1_wallet_dids_public_get
       security:
         - APIKeyHeader: []
@@ -2514,8 +2594,12 @@ paths:
     put:
       tags:
         - wallet
-      summary: Set Public Did
-      description: Set the current public DID.
+      summary: Set Public DID
+      description: "Set the Current Public DID\n---\n\nThis endpoint allows you to\
+        \ set the current public DID.\n\n**Notes:**\n    - Requires an active endorser\
+        \ connection to make a DID public.\n    - By default, only issuers can have\
+        \ and update public DIDs.\n\nParameters:\n---\n    did: str\n\nResponse:\n\
+        ---\n    Returns the public DID."
       operationId: set_public_did_v1_wallet_dids_public_put
       security:
         - APIKeyHeader: []
@@ -2543,7 +2627,10 @@ paths:
     patch:
       tags:
         - wallet
-      summary: Rotate Keypair
+      summary: Rotate Key Pair
+      description: "Rotate Key Pair for DID\n---\n\nThis endpoint allows you to rotate\
+        \ the key pair for a DID.\n\nParameters:\n---\n    did: str\n\nResponse:\n\
+        ---\n    204 No Content"
       operationId: rotate_keypair_v1_wallet_dids__did__rotate_keypair_patch
       security:
         - APIKeyHeader: []
@@ -2567,8 +2654,10 @@ paths:
     get:
       tags:
         - wallet
-      summary: Get Did Endpoint
-      description: Get DID endpoint.
+      summary: Get DID Endpoint
+      description: "Get DID Endpoint\n---\n\nThis endpoint allows you to fetch the\
+        \ endpoint for a DID.\n\nParameters:\n---\n    did: str\n\nResponse:\n---\n\
+        \    Returns the endpoint for the DID."
       operationId: get_did_endpoint_v1_wallet_dids__did__endpoint_get
       security:
         - APIKeyHeader: []
@@ -2595,8 +2684,11 @@ paths:
     post:
       tags:
         - wallet
-      summary: Set Did Endpoint
-      description: Update Endpoint in wallet and on ledger if posted to it.
+      summary: Set DID Endpoint
+      description: "Update Endpoint of DID in Wallet (and on Ledger, if it is a Public\
+        \ DID)\n---\n\nThis endpoint allows you to update the endpoint for a DID.\n\
+        \nParameters:\n---\n    did: str\n\nRequest Body:\n---\n    SetDidEndpointRequest:\n\
+        \        endpoint: str"
       operationId: set_did_endpoint_v1_wallet_dids__did__endpoint_post
       security:
         - APIKeyHeader: []
@@ -2627,10 +2719,30 @@ paths:
       tags:
         - wallet
       summary: Sign JWS
-      description: "Sign JSON Web Signature (JWS)
-
-
-        See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec."
+      description: "Sign a JSON Web Signature (JWS).\n---\n\nThis endpoint allows\
+        \ users to sign a JSON payload, creating a JWS,\nusing either a DID or a specific\
+        \ verification method.\n\n**Usage:**\n\n- **DID-Based Signing:** Provide the\
+        \ `did` field with a valid DID.\nThe Aries agent will automatically select\
+        \ the appropriate verification key associated with the DID.\n\n- **Verification\
+        \ Method-Based Signing:** Provide the `verification_method` field with a specific\
+        \ verification method\n(DID with a verkey) to explicitly specify which key\
+        \ to use for signing.\n\n**Notes:**\n\n- If the issuer uses a `did:sov` DID,\
+        \ ensure that the DID is public.\n- The `header` field is optional. While\
+        \ you can specify custom headers, the `typ`, `alg`,\n  and `kid` fields are\
+        \ automatically populated by the Aries agent based on the signing method.\n\
+        \nExample request body:\n```json\n{\n    \"did\": \"did:sov:WWMjrBJkUzz9suEtwKxmiY\"\
+        ,\n    \"payload\": {\n        \"credential_subject\": \"reference_to_holder\"\
+        ,\n        \"name\": \"Alice\",\n        \"surname\": \"Demo\"\n    }\n}\n\
+        ```\n**OR**\n```json\n{\n    \"payload\": {\n        \"subject\": \"reference_to_holder\"\
+        ,\n        \"name\": \"Alice\",\n        \"surname\": \"Demo\"\n    },\n \
+        \   \"verification_method\": \"did:key:z6Mkprf81ujG1n48n5LMD...M6S3#z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3\"\
+        \n}\n```\n\nRequest Body:\n---\n    JWSCreateRequest:\n        `did` (str,\
+        \ optional): The DID to sign the JWS with.\n        `verification_method`\
+        \ (str, optional): The verification method (DID with verkey) to use for signing.\n\
+        \        `payload` (dict): The JSON payload to be signed.\n        `headers`\
+        \ (dict, optional): Custom headers for the JWS.\n\nResponse:\n---\n    JWSCreateResponse:\n\
+        \        `jws` (str): The resulting JWS string representing the signed JSON\
+        \ Web Signature.\n\n**References:**\n\n- [JSON Web Signature (JWS) Specification](https://www.rfc-editor.org/rfc/rfc7515.html)"
       operationId: sign_jws_v1_wallet_jws_sign_post
       requestBody:
         content:
@@ -2658,10 +2770,16 @@ paths:
       tags:
         - wallet
       summary: Verify JWS
-      description: "Verify JSON Web Signature (JWS)
-
-
-        See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec."
+      description: "Verify a JSON Web Signature (JWS)\n---\n\nThis endpoint allows\
+        \ users to verify the authenticity and integrity of a JWS string previously\
+        \ generated\nby the /sign endpoint. It decodes the JWS to retrieve the payload\
+        \ and headers and assesses its validity.\n\nRequest Body:\n---\n    JWSVerifyRequest:\
+        \ The JWS to verify.\n        jws: str\n\nReturns:\n---\n    JWSVerifyResponse\n\
+        \        payload: dict:\n          The payload of the JWS.\n        headers:\
+        \ dict:\n          The headers of the JWS.\n        kid: str:\n          The\
+        \ key id of the signer.\n        valid: bool:\n          Whether the JWS is\
+        \ valid.\n        error: str:\n          The error message if the JWS is invalid.\n\
+        \n**References:**\n\n- [JSON Web Signature (JWS) Specification](https://www.rfc-editor.org/rfc/rfc7515.html)"
       operationId: verify_jws_v1_wallet_jws_verify_post
       requestBody:
         content:
@@ -2689,11 +2807,46 @@ paths:
       tags:
         - wallet
       summary: Sign SD-JWS
-      description: "Sign Select Disclosure for JWS (SD-JWS)
-
-
-        See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
-        for the SD-JWT / SD-JWS spec."
+      description: "Sign a Selective Disclosure JSON Web Signature (SD-JWS).\n---\n\
+        \nThis endpoint allows users to create a Selective Disclosure JSON Web Signature\
+        \ (SD-JWS).\nThe SD-JWS enables the selective disclosure of specific attributes\
+        \ to a verifier while keeping others confidential.\n\n**Usage:**\n\n- **DID-Based\
+        \ Signing:** Provide the `did` field with a valid DID.\nThe Aries agent will\
+        \ automatically select the appropriate verification key associated with the\
+        \ DID.\n\n- **Verification Method-Based Signing:** Provide the `verification_method`\
+        \ field with a specific verification method\n(DID with verkey) to explicitly\
+        \ specify which key to use for signing.\n\n**Notes:**\n\n- If the issuer uses\
+        \ a `did:sov` DID, ensure that the DID is public.\n- The `headers` field is\
+        \ optional. Custom headers can be specified, but the `typ`, `alg`,\n  and\
+        \ `kid` fields are automatically populated by the Aries agent based on the\
+        \ signing method.\n- The `non_sd_list` field specifies attributes that are\
+        \ **not** selectively disclosed.\n  Attributes listed here will always be\
+        \ included in the SD-JWS.\n\n**Non-Selective Disclosure (`non_sd_list`):**\n\
+        \n- To exclude list elements:\n    - Use the format `\"<attribute_name>[start:end]\"\
+        ` where `start` and `end` define the range\n      (e.g., `\"nationalities[1:3]\"\
+        `).\n- To exclude specific dictionary attributes:\n    - Use the format `\"\
+        <dictionary_name>.<attribute_name>\"` (e.g., `\"address.street_address\"`).\n\
+        \n**Example Request Body:**\n```json\n{\n    \"did\": \"did:sov:39TXHazGAYif5FUFCjQhYX\"\
+        ,\n    \"payload\": {\n        \"credential_subject\": \"reference_to_holder\"\
+        ,\n        \"given_name\": \"John\",\n        \"family_name\": \"Doe\",\n\
+        \        \"email\": \"johndoe@example.com\",\n        \"phone_number\": \"\
+        +27-123-4567\",\n        \"nationalities\": [\"a\",\"b\",\"c\",\"d\"],\n \
+        \       \"address\": {\n            \"street_address\": \"123 Main St\",\n\
+        \            \"locality\": \"Anytown\",\n            \"region\": \"Anywhere\"\
+        ,\n            \"country\": \"ZA\"\n        },\n        \"birthdate\": \"\
+        1940-01-01\"\n    },\n    \"non_sd_list\": [\n        \"given_name\",\n  \
+        \      \"address\",\n        \"address.street_address\",\n        \"nationalities\"\
+        ,\n        \"nationalities[1:3]\"\n    ]\n}\n```\n\nRequest Body:\n---\n \
+        \   SDJWSCreateRequest:\n        `did` (str, optional): The DID to sign the\
+        \ SD-JWS with.\n        `verification_method` (str, optional): The verification\
+        \ method (DID with verkey) to use for signing.\n        `payload` (dict):\
+        \ The JSON payload to be signed.\n        `headers` (dict, optional): Custom\
+        \ headers for the SD-JWS.\n        `non_sd_list` (List[str], optional): List\
+        \ of attributes excluded from selective disclosure.\n\nResponse:\n---\n  \
+        \  SDJWSCreateResponse:\n        `sd_jws` (str): The resulting SD-JWS string\
+        \ concatenated with the necessary disclosures in the format\n        `<Issuer-signed\
+        \ JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`.\n\n**References:**\n\
+        \n- [Selective Disclosure JSON Web Token (SD-JWT)\n  Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)"
       operationId: sign_sd_jws_v1_wallet_sd_jws_sign_post
       requestBody:
         content:
@@ -2721,11 +2874,28 @@ paths:
       tags:
         - wallet
       summary: Verify SD-JWS
-      description: "Verify Select Disclosure for JWS (SD-JWS)
-
-
-        See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
-        for the SD-JWT / SD-JWS spec."
+      description: "Verify a Selective Disclosure JSON Web Signature (SD-JWS).\n---\n\
+        \nThis endpoint allows users to verify the authenticity and integrity of a\
+        \ Selective Disclosure\nJSON Web Signature (SD-JWS). It decodes the SD-JWS\
+        \ to retrieve the payload and headers,\nassesses its validity, and processes\
+        \ the disclosures.\n\n**Usage:**\n\n- Submit the SD-JWS string concatenated\
+        \ with the necessary disclosures to this endpoint.\n- The format should be:\
+        \ `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`.\n\
+        - The holder provides the SD-JWS along with the required disclosures based\
+        \ on the verifier's request.\n\n**Notes:**\n\n- Only the disclosures relevant\
+        \ to the verifier's request needs to be provided.\n  Other disclosures can\
+        \ remain confidential.\n\n**Example Request Body:**\n```json\n{\n    \"sd_jws\"\
+        : \"<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>\"\
+        \n}\n```\n\nRequest Body:\n---\n    SDJWSVerifyRequest:\n        `sd_jws`\
+        \ (str): The concatenated SD-JWS and disclosures to verify and reveal.\n\n\
+        Response:\n---\n    SDJWSVerifyResponse:\n        `valid` (bool): Indicates\
+        \ whether the SD-JWS is valid.\n        `payload` (dict): The decoded payload\
+        \ of the SD-JWS.\n        `headers` (dict): The headers extracted from the\
+        \ SD-JWS.\n        `kid` (str): The Key ID of the signer.\n        `disclosed_attributes`\
+        \ (dict): The selectively disclosed attributes based on the provided disclosures.\n\
+        \        `error` (str, optional): Error message if the SD-JWS verification\
+        \ fails.\n\n**References:**\n\n- [Selective Disclosure JSON Web Token (SD-JWT)\n\
+        \  Specification](https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html)"
       operationId: verify_sd_jws_v1_wallet_sd_jws_verify_post
       requestBody:
         content:
@@ -2857,6 +3027,14 @@ components:
       title: AcceptOobInvitation
     AcceptProofRequest:
       properties:
+        save_exchange_record:
+          anyOf:
+            - type: boolean
+            - type: "null"
+          title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
         proof_id:
           type: string
           title: Proof Id
@@ -2871,12 +3049,6 @@ components:
           anyOf:
             - $ref: "#/components/schemas/DIFPresSpec"
             - type: "null"
-        save_exchange_record:
-          type: boolean
-          title: Save Exchange Record
-          description: Whether the presentation exchange record should be saved on
-            completion
-          default: false
       type: object
       required:
         - proof_id
@@ -3482,6 +3654,14 @@ components:
       title: CreateInvitation
     CreateOffer:
       properties:
+        save_exchange_record:
+          anyOf:
+            - type: boolean
+            - type: "null"
+          title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
         type:
           $ref: "#/components/schemas/CredentialType"
           default: indy
@@ -3493,11 +3673,6 @@ components:
           anyOf:
             - $ref: "#/components/schemas/LDProofVCDetail"
             - type: "null"
-        save_exchange_record:
-          type: boolean
-          title: Save Exchange Record
-          description: Whether the credential exchange record should be saved on completion
-          default: false
       type: object
       title: CreateOffer
     CreateOobInvitation:
@@ -3533,6 +3708,14 @@ components:
       title: CreateOobInvitation
     CreateProofRequest:
       properties:
+        save_exchange_record:
+          anyOf:
+            - type: boolean
+            - type: "null"
+          title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
         comment:
           anyOf:
             - type: string
@@ -3549,12 +3732,6 @@ components:
           anyOf:
             - $ref: "#/components/schemas/DIFProofRequest"
             - type: "null"
-        save_exchange_record:
-          type: boolean
-          title: Save Exchange Record
-          description: Whether the presentation exchange record should be saved on
-            completion
-          default: false
       type: object
       title: CreateProofRequest
     CreateSchema:
@@ -3898,23 +4075,60 @@ components:
             - type: string
             - type: "null"
           title: Method
-          description: Method for the requested DID.Supported methods are 'key', 'sov',
-            and any other registered method.
+          description: Method for the requested DID. Supported methods are 'sov',
+            'key', 'web', 'did:peer:2', or 'did:peer:4'.
+          default: sov
+          examples:
+            - sov
+            - key
+            - web
+            - did:peer:2
+            - did:peer:4
         options:
           anyOf:
             - $ref: "#/components/schemas/DIDCreateOptions"
             - type: "null"
-          description: To define a key type and/or a did depending on chosen DID method.
+          description: (Deprecated) Define a key type and/or a DID depending on the
+            chosen DID method.
+          deprecated: true
+          examples:
+            - did: did:peer:2...
+              key_type: ed25519
         seed:
           anyOf:
             - type: string
             - type: "null"
           title: Seed
-          description: Optional seed to use for DID, Must be enabled in configuration
+          description: Optional seed to use for DID. Must be enabled in configuration
             before use.
+        key_type:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Key Type
+          description: Key type to use for the DID key_pair. Validated with the chosen
+            DID method's supported key types.
+          default: ed25519
+          examples:
+            - ed25519
+            - bls12381g2
+        did:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Did
+          description: Specify the final value of DID (including `did:<method>:` prefix)
+            if the method supports it.
       type: object
       title: DIDCreate
-      description: DIDCreate
+      description: "Extends the AcapyDIDCreate model with smart defaults and a simplified
+        interface.
+
+        Handles deprecated `options` field from client requests by populating `key_type`
+        and `did`.
+
+        Downstream processes should use the appropriate `options` structure based
+        on the model's fields."
     DIDCreateOptions:
       properties:
         did:
@@ -5235,7 +5449,7 @@ components:
         payload:
           type: object
           title: Payload
-          default: {}
+          description: Payload to sign
         verification_method:
           anyOf:
             - type: string
@@ -5245,6 +5459,8 @@ components:
           examples:
             - did:key:z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq#z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq
       type: object
+      required:
+        - payload
       title: JWSCreateRequest
     JWSCreateResponse:
       properties:
@@ -5837,6 +6053,29 @@ components:
       required:
         - proof_id
       title: RejectProofRequest
+    RevRegWalletUpdatedResult:
+      properties:
+        accum_calculated:
+          anyOf:
+            - type: object
+            - type: "null"
+          title: Accum Calculated
+          description: Calculated accumulator for phantom revocations
+        accum_fixed:
+          anyOf:
+            - type: object
+            - type: "null"
+          title: Accum Fixed
+          description: Applied ledger transaction to fix revocations
+        rev_reg_delta:
+          anyOf:
+            - type: object
+            - type: "null"
+          title: Rev Reg Delta
+          description: Indy revocation registry delta
+      type: object
+      title: RevRegWalletUpdatedResult
+      description: RevRegWalletUpdatedResult
     RevokeCredential:
       properties:
         credential_exchange_id:
@@ -5904,7 +6143,7 @@ components:
         payload:
           type: object
           title: Payload
-          default: {}
+          description: Payload to sign
         verification_method:
           anyOf:
             - type: string
@@ -5927,6 +6166,8 @@ components:
               - address.street_address
               - nationalities[1:3]
       type: object
+      required:
+        - payload
       title: SDJWSCreateRequest
     SDJWSCreateResponse:
       properties:
@@ -6044,6 +6285,14 @@ components:
       description: SchemasInputDescriptorFilter
     SendCredential:
       properties:
+        save_exchange_record:
+          anyOf:
+            - type: boolean
+            - type: "null"
+          title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
         type:
           $ref: "#/components/schemas/CredentialType"
           default: indy
@@ -6055,11 +6304,6 @@ components:
           anyOf:
             - $ref: "#/components/schemas/LDProofVCDetail"
             - type: "null"
-        save_exchange_record:
-          type: boolean
-          title: Save Exchange Record
-          description: Whether the credential exchange record should be saved on completion
-          default: false
         connection_id:
           type: string
           title: Connection Id
@@ -6069,6 +6313,14 @@ components:
       title: SendCredential
     SendProofRequest:
       properties:
+        save_exchange_record:
+          anyOf:
+            - type: boolean
+            - type: "null"
+          title: Save Exchange Record
+          description: Controls exchange record retention after exchange is complete.
+            None uses wallet default (typically to delete), true forces save, false
+            forces delete.
         comment:
           anyOf:
             - type: string
@@ -6085,12 +6337,6 @@ components:
           anyOf:
             - $ref: "#/components/schemas/DIFProofRequest"
             - type: "null"
-        save_exchange_record:
-          type: boolean
-          title: Save Exchange Record
-          description: Whether the presentation exchange record should be saved on
-            completion
-          default: false
         connection_id:
           type: string
           title: Connection Id

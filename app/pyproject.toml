@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudapi-app"
-version = "4.1.0"
+version = "4.2.0"
 description = "Main app submodule for cloudapi"
 authors = ["Mourits de Beer <ff137@proton.me>"]
 package-mode = false
@@ -39,7 +39,7 @@ pytest-mock = "~3.14.0"
 pytest-xdist = "^3.6.1"
 
 [build-system]
-requires = ["poetry-core>=1.8.4"]
+requires = ["poetry-core>=1.8.5"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.run]

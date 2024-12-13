@@ -17,18 +17,19 @@ This project comprises a [FastAPI](https://fastapi.tiangolo.com/) application bu
 around [ACA-Py](https://github.com/openwallet-foundation/aries-cloudagent-python),
 primarily tailored for [Yoma](https://yoma.world)-specific use cases.
 
-The FastAPI app serves as a wrapper around common workflows, facilitating
-real-life applications of self-sovereign identity. It acts as an interface
-for client applications (e.g., a mobile app) and the backend, using our
-[OpenAPI client](https://github.com/didx-xyz/aries-cloudcontroller-python) and ACA-Py.
+The main [app](app) provides an API interface
+that simplifies complex self-sovereign identity (SSI) workflows. Using our
+[ACA-Py controller](https://github.com/didx-xyz/aries-cloudcontroller-python), it
+provides a streamlined layer of abstraction for client applications (e.g., a
+mobile app) to interact within an SSI ecosystem.
 
-Multiple API calls to ACA-Py can be condensed into a single call through this API.
-For instance, onboarding an issuer — which involves creating a wallet, establishing a
-connection with an endorser, generating a public DID, accepting the Transaction Author
-Agreement (TAA), publishing the DID to the ledger, and awaiting confirmation — can all
-be achieved with a single API call. Convenient, isn't it?
+What would normally require multiple calls to ACA-Py can be condensed into a single call
+through this API. For example, onboarding an issuer — which involves creating a wallet,
+establishing a connection with an endorser, generating a public DID, accepting the
+Transaction Author Agreement (TAA), publishing the DID to the ledger, and awaiting
+confirmation — can all be achieved with a single API call. Convenient, isn't it?
 
-We enable and simplify several key capabilities, including:
+We simplify several key capabilities, including:
 
 - Creating and managing wallets
 - Onboarding issuers and verifiers
@@ -39,25 +40,21 @@ We enable and simplify several key capabilities, including:
 
 To enable this, the project includes essential supporting services:
 
-- An [Endorser](endorser) for authorizing ledger transactions
-- A [Trust Registry](trustregistry) for authorizing valid issuers, verifiers,
+- An [Endorser](endorser) agent and service for authorizing ledger transactions
+- A [Trust Registry](trustregistry) implementation for authorizing valid issuers, verifiers,
   and approved credential schemas
 - A webhooks service ([Waypoint](waypoint)) for real-time, server-sent event
   (SSE) notifications and updates
 
-You can find more detailed documentation in the
-[`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and
-`Example Flows` will be most useful.
+You can find more detailed documentation in the [docs folder](docs/README.md).
+The `Quick Start`, `Common Steps` and `Example Flows` will be most useful.
 
 ## How to Run It
 
 > [!NOTE]
-> For local development we migrated away from Docker Compose and now use Tilt
-> and Kind.
->
-> The original `./manage` script and Docker Compose files are still available in
-> this repository, however they are now deprecated, no longer maintained, and
-> will be removed in the future.
+> For local development we now use Tilt and Kind instead of Docker Compose.
+> Legacy Docker Compose files are still available, but deprecated and will be
+> removed in the future.
 
 Running the project is straightforward — it's all containerized. Simply execute
 `mise run tilt:up` from the project root. This command will spin up a Kind

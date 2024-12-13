@@ -1,0 +1,71 @@
+fullnameOverride: ledger-browser
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+  ad.datadoghq.com/ledger-browser.logs: '[{"source": "grok.ledger-browser", "service": "ledger-browser", "auto_multi_line_detection": true}]'
+
+podLabels:
+  admission.datadoghq.com/enabled: "true"
+
+image:
+  name: ledger-browser
+  pullPolicy: Always
+  tag: master
+
+ingressDomain: cloudapi.127.0.0.1.nip.io
+ingress:
+  internal:
+    enabled: true
+    className: nginx
+    rules:
+      - host: ledger-browser.{{ .Values.ingressDomain }}
+        paths:
+          - path: /
+            port: 8000
+
+service:
+  hostNetwork: false
+  port: 8000
+  containerPort: 8000
+  appProtocol: tcp
+
+command:
+  - "bash"
+  - "-c"
+  - "cp ./config/sample_aml.json ./config/aml.json; cp ./config/sample_taa.json ./config/taa.json; ./scripts/start_webserver.sh"
+
+livenessProbe:
+  httpGet:
+    path: /status/text
+    port: "{{ trunc 15 .Release.Name }}"
+  timeoutSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /status/text
+    port: "{{ trunc 15 .Release.Name }}"
+
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 386Mi
+#   limits:
+#     cpu: 500m
+#     memory: 386Mi
+
+secretData:
+  LEDGER_SEED: 000000000000000000000000Trustee1
+
+env:
+  MAX_FETCH: "50000"
+  RESYNC_TIME: "120"
+  REGISTER_NEW_DIDS: "True"
+  LEDGER_INSTANCE_NAME: Indy Ledger Browser
+  LOG_LEVEL: info
+
+extraConfigmapNamesForEnvFrom:
+  - ips-configmap

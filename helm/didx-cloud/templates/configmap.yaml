@@ -1,0 +1,12 @@
+{{- range $configName, $configContent := .Values.configFiles }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "didx-cloud.fullname" $ }}-{{ $configName | replace "_" "" | lower }}"
+  labels:
+    {{- include "didx-cloud.labels" $ | nindent 4 }}
+data:
+  {{ $configName }}: |-
+    {{- tpl $configContent.content $ | nindent 4 }}
+{{- end }}

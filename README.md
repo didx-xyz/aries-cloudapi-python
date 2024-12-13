@@ -1,41 +1,60 @@
-# aries-cloudapi-python
+# didx-cloud
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Coverage)
+![Python](https://img.shields.io/badge/python-3.12-blue.svg)
+[![Toolset: Mise](https://img.shields.io/badge/toolset-Mise-orange.svg?style=flat)](https://mise.jdx.dev/)
+[![Dev Experience: Tilt](https://img.shields.io/badge/devex-Tilt-blue.svg?style=flat)](https://tilt.dev)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ceca5ac566f74a3a8bfb3095074117ad)](https://app.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://app.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![DIDx GitHub](https://img.shields.io/badge/GitHub-DIDx-181717.svg?style=flat&logo=github)](https://github.com/didx-xyz)
 
-:construction: This project is currently under development. Please do not use
-this in production.
+🚧 This project is currently under development. If you would like to use
+this in production, please [contact us](mailto:info@didx.co.za) first to discuss your use case.
 
 ## Overview
 
-This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/)
-application built around the
-[Hyperledger Aries stack](https://github.com/hyperledger/), primarily tailored
-for [Yoma](https://yoma.world)-specific use cases.
+This project comprises a [FastAPI](https://fastapi.tiangolo.com/) application built
+around [ACA-Py](https://github.com/openwallet-foundation/aries-cloudagent-python),
+primarily tailored for [Yoma](https://yoma.world)-specific use cases.
 
-The FastAPI app serves as a wrapper around common workflows, facilitating
-real-life applications of the stack. It acts as a form of middleware or interface
-for client applications (e.g., a mobile app) and the backend stack, using
-[Aries CloudController](https://github.com/didx-xyz/aries-cloudcontroller-python)
-and [ACA-Py](https://github.com/openwallet-foundation/acapy). The aim is
-to streamline a client's workflow by providing convenient API endpoints for
-common workflows, such as creating wallets, managing connections, credentials,
-proofs, and workflows.
+The main [app](app) provides an API interface
+that simplifies complex self-sovereign identity (SSI) workflows. Using our
+[ACA-Py controller](https://github.com/didx-xyz/aries-cloudcontroller-python), it
+provides a streamlined layer of abstraction for client applications (e.g., a
+mobile app) to interact within an SSI ecosystem.
 
-Multiple API calls to the AriesCloudAgent can often be condensed into a single
-call via this API. For example, creating a wallet, which involves writing to the
-ledger, awaiting the result, accepting a TAA, creating a DID, and finally
-creating the wallet itself, can be done in a single call. Convenient, isn't it?
+What would normally require multiple calls to ACA-Py can be condensed into a single call
+through this API. For example, onboarding an issuer — which involves creating a wallet,
+establishing a connection with an endorser, generating a public DID, accepting the
+Transaction Author Agreement (TAA), publishing the DID to the ledger, and awaiting
+confirmation — can all be achieved with a single API call. Convenient, isn't it?
+
+We simplify several key capabilities, including:
+
+- Creating and managing wallets
+- Onboarding issuers and verifiers
+- Managing connections between parties
+- Creating schemas and credential definitions
+- Issuing verifiable credentials and handling revocations
+- Requesting and validating proofs
+
+To enable this, the project includes essential supporting services:
+
+- An [Endorser](endorser) agent and service for authorizing ledger transactions
+- A [Trust Registry](trustregistry) implementation for authorizing valid issuers, verifiers,
+  and approved credential schemas
+- A webhooks service ([Waypoint](waypoint)) for real-time, server-sent event
+  (SSE) notifications and updates
+
+You can find more detailed documentation in the [docs folder](docs/README.md).
+The `Quick Start`, `Common Steps` and `Example Flows` will be most useful.
 
 ## How to Run It
 
 > [!NOTE]
-> For local development we migrated away from Docker Compose and now use Tilt
-> and Kind.
->
-> The original `./manage` script and Docker Compose files are still available in
-> this repository, however they are now deprecated, no longer maintained, and
-> will be removed in the future.
+> For local development we now use Tilt and Kind instead of Docker Compose.
+> Legacy Docker Compose files are still available, but deprecated and will be
+> removed in the future.
 
 Running the project is straightforward — it's all containerized. Simply execute
 `mise run tilt:up` from the project root. This command will spin up a Kind
@@ -131,20 +150,6 @@ information.
 > [additional steps](https://kind.sigs.k8s.io/docs/user/using-wsl2/) for Kind to
 > work.
 
-## Docs
-
-You can find more detailed documentation in the
-[`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and
-`Example Flows` will be most useful.
-
-## Contributing
-
-While this project was primarily developed to meet the needs of
-[Yoma](https://yoma.world), it is an open-source project that can be used for
-other Hyperledger Aries projects as well. We welcome contributions from
-everyone. Feel free to engage in discussions, create a PR against a ticket, or
-open an issue yourself, following the GitHub guidelines.
-
 ## Running Tests
 
 The tests use `pytest`. For convenience, use Mise to run them. First, ensure
@@ -218,3 +223,13 @@ helmfile apply \
 
 Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more
 information.
+
+## Contributing
+
+[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+While this project was primarily developed to meet the needs of
+[Yoma](https://yoma.world), it is an open-source project that can be used for
+other Hyperledger Aries projects as well. We welcome contributions from
+everyone. Feel free to engage in discussions, create pull requests against
+existing tickets, or open new issues following the GitHub guidelines.

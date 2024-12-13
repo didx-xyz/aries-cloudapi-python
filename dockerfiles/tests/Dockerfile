@@ -15,7 +15,7 @@ COPY trustregistry/poetry.lock trustregistry/
 COPY waypoint/poetry.lock waypoint/
 
 # Install all dependencies
-ARG POETRY_VERSION=1.8.4
+ARG POETRY_VERSION=1.8.5
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 
 ENV POETRY_VIRTUALENVS_CREATE=false

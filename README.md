@@ -37,6 +37,12 @@ We enable and simplify several key capabilities, including:
 - Issuing verifiable credentials and handling revocations
 - Requesting and validating proofs
 
+## Docs
+
+You can find more detailed documentation in the
+[`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and
+`Example Flows` will be most useful.
+
 ## How to Run It
 
 > [!NOTE]
@@ -141,22 +147,6 @@ information.
 > [additional steps](https://kind.sigs.k8s.io/docs/user/using-wsl2/) for Kind to
 > work.
 
-## Docs
-
-You can find more detailed documentation in the
-[`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and
-`Example Flows` will be most useful.
-
-## Contributing
-
-[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-
-While this project was primarily developed to meet the needs of
-[Yoma](https://yoma.world), it is an open-source project that can be used for
-other Hyperledger Aries projects as well. We welcome contributions from
-everyone. Feel free to engage in discussions, create pull requests against
-existing tickets, or open new issues following the GitHub guidelines.
-
 ## Running Tests
 
 The tests use `pytest`. For convenience, use Mise to run them. First, ensure
@@ -230,3 +220,13 @@ helmfile apply \
 
 Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more
 information.
+
+## Contributing
+
+[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+While this project was primarily developed to meet the needs of
+[Yoma](https://yoma.world), it is an open-source project that can be used for
+other Hyperledger Aries projects as well. We welcome contributions from
+everyone. Feel free to engage in discussions, create pull requests against
+existing tickets, or open new issues following the GitHub guidelines.

@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 env:
   # https://cbea.ms/git-commit/#limit-50
@@ -17,6 +16,8 @@ env:
 jobs:
   check-title:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Get PR info
         id: pr
@@ -27,7 +28,7 @@ jobs:
             const title = context.payload.pull_request.title;
             core.setOutput('title', title);
 
-            // Get PR Comments, filtering for only this bot's comments
+            // Get PR Comments
             const allComments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -42,25 +43,29 @@ jobs:
               comment.body.includes(process.env.BOT_COMMENT_IDENTIFIER)
             );
 
-            core.setOutput('comments', botComments);
+            core.setOutput('comments_json', JSON.stringify(botComments));
 
-            // Get JSON of valid Gitmojis
+            // Get Gitmojis
             const gitmojiResponse = await github.request('GET /repos/{owner}/{repo}/contents/{path}', {
               owner: 'carloscuesta',
               repo: 'gitmoji',
               path: 'packages/gitmojis/src/gitmojis.json'
             });
             const gitmojis = JSON.parse(Buffer.from(gitmojiResponse.data.content, 'base64').toString()).gitmojis;
-            core.setOutput('gitmojis', gitmojis);
+            core.setOutput('gitmojis_json', JSON.stringify(gitmojis));
 
       - name: PR title should start with emoji
+        env:
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+          PR_COMMENTS: ${{ steps.pr.outputs.comments_json }}
+          GITMOJIS: ${{ steps.pr.outputs.gitmojis_json }}
         uses: actions/github-script@v7
         if: always()
         with:
           script: |
-            const prTitle = "${{ steps.pr.outputs.title }}";
-            const comments = ${{ steps.pr.outputs.comments }};
-            const gitmojis = ${{ steps.pr.outputs.gitmojis }};
+            const prTitle = process.env.PR_TITLE;
+            const comments = JSON.parse(process.env.PR_COMMENTS);
+            const gitmojis = JSON.parse(process.env.GITMOJIS);
             const validEmojis = gitmojis.map(g => [g.emoji, g.code]);
 
             const titleStartsWithValidEmoji = validEmojis.some(([emoji, code]) =>
@@ -96,18 +101,19 @@ jobs:
               });
             }
 
-      - name: PR title should not exceed ${{ env.MAX_PR_TITLE_LENGTH }} characters
+      - name: Check PR title length
+        env:
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+          PR_COMMENTS: ${{ steps.pr.outputs.comments_json }}
+          MAX_LENGTH: ${{ env.MAX_PR_TITLE_LENGTH }}
         uses: actions/github-script@v7
         if: always()
         with:
           script: |
-            const prTitle = "${{ steps.pr.outputs.title }}";
-            const comments = ${{ steps.pr.outputs.comments }};
-            const MAX_LENGTH = ${{ env.MAX_PR_TITLE_LENGTH }};
+            const prTitle = process.env.PR_TITLE;
+            const comments = JSON.parse(process.env.PR_COMMENTS);
+            const MAX_LENGTH = parseInt(process.env.MAX_LENGTH, 10);
 
-            // Match either:
-            // 1. Unicode emoji at start (using Unicode properties)
-            // 2. GitHub emoji shortcode format (e.g. :fire:)
             const emojiRegex = /^(?:[\p{Emoji_Presentation}\p{Extended_Pictographic}]|:[a-z0-9_+-]+:)/u;
 
             // Remove emoji prefix and its trailing space for length check

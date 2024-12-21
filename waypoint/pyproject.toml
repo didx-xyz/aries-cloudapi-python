@@ -15,7 +15,7 @@ loguru = "~0.7.2"
 httpx = "~0.28.0"
 nats-py = {extras = ["nkeys"], version = "^2.9.0"}
 orjson = "~3.10.7"
-pydantic = "~2.10.1"
+pydantic = "~2.10.4"
 typing-extensions = "~4.12.0"
 uvicorn = "~0.32.1"
 sse-starlette = "~=2.1.3"

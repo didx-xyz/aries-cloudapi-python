@@ -3,7 +3,7 @@ FROM ghcr.io/didx-xyz/acapy-agent-bbs:py3.12-1.2.0-20241205
 USER root
 
 # Install Google Protobuf
-ARG PROTOBUF_VERSION=5.29.0
+ARG PROTOBUF_VERSION=5.29.2
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION}
 
 # Install wallet group id plugin

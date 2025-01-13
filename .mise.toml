@@ -1,7 +1,7 @@
 # https://mise.jdx.dev
 [tools]
 "aqua:nats-io/natscli" = "0.1"
-"pipx:poetry" = "1.8"
+"pipx:poetry" = "2.0"
 helm = "3"
 helmfile = "0.169"
 istioctl = "1.23"

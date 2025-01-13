@@ -5,7 +5,7 @@ WORKDIR /endorser
 COPY endorser/poetry.lock /endorser
 COPY endorser/pyproject.toml /endorser
 
-ARG POETRY_VERSION=1.8.5
+ARG POETRY_VERSION=2.0.1
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 # Set Poetry's cache and virtualenvs path to a writable directory
 ENV POETRY_CACHE_DIR=/tmp/.cache/pypoetry

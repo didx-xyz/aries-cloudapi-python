@@ -93,7 +93,9 @@ class EndorsementProcessor:
         subscription = await self._subscribe()
         while True:
             try:
+                logger.debug("Fetching messages from NATS")
                 messages = await subscription.fetch(batch=1, timeout=0.5, heartbeat=0.2)
+                logger.debug("Fetched {} messages from NATS", len(messages))
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()
@@ -112,7 +114,7 @@ class EndorsementProcessor:
                     finally:
                         await message.ack()
             except FetchTimeoutError:
-                logger.trace("Encountered FetchTimeoutError. Continuing ...")
+                logger.debug("Encountered FetchTimeoutError. Continuing ...")
                 await asyncio.sleep(0.1)
             except TimeoutError as e:
                 logger.warning("Timeout fetching messages: {}. Re-subscribing.", e)

@@ -16,6 +16,7 @@ from tenacity import (
     stop_never,
     wait_exponential,
 )
+from uuid_utils import uuid4
 
 from shared.constants import (
     NATS_STATE_STREAM,
@@ -57,8 +58,6 @@ class NatsEventsProcessor:
             }
         )
 
-        bound_logger.debug("Subscribing to JetStream")
-
         group_id = group_id or "*"
         subscribe_kwargs = {
             "subject": f"{NATS_STATE_SUBJECT}.{group_id}.{wallet_id}.{topic}.{state}",
@@ -66,6 +65,7 @@ class NatsEventsProcessor:
         }
 
         config = ConsumerConfig(
+            durable_name=f"consumer-{uuid4().hex}",  # Unique name for refetching events
             deliver_policy=DeliverPolicy.BY_START_TIME,
             opt_start_time=start_time,
         )

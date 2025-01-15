@@ -5,10 +5,6 @@ from datetime import datetime
 import orjson
 from loguru._logger import Core as _Core
 from loguru._logger import Logger as _Logger
-from tzlocal import get_localzone
-
-# Get the system timezone
-system_tz = get_localzone()
 
 STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
@@ -44,11 +40,8 @@ def formatter_builder(color: str):
 def _serialize_record(record):
     record_time: datetime = record["time"]
 
-    # Convert the UTC datetime to the system timezone
-    local_time = record_time.astimezone(system_tz)
-
     # format the time field to ISO8601 format
-    iso_date = local_time.isoformat()
+    iso_date = record_time.isoformat()
 
     # Handle exceptions as default
     exception = record["exception"]
@@ -92,7 +85,7 @@ def _serialize_record(record):
             "process": {"id": record["process"].id, "name": record["process"].name},
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
             "time": {
-                "repr": int(1000 * local_time.timestamp()),  # to milliseconds
+                "repr": int(1000 * record_time.timestamp()),  # to milliseconds
                 "uptime_h:m:s": record["elapsed"],
             },
         },

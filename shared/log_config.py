@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 import orjson
 from loguru._logger import Core as _Core
@@ -37,6 +38,11 @@ def formatter_builder(color: str):
 
 # Define custom formatter for serialized logs
 def _serialize_record(record):
+    record_time: datetime = record["time"]
+
+    # format the time field to ISO8601 format
+    iso_date = record_time.isoformat()
+
     # Handle exceptions as default
     exception = record["exception"]
 
@@ -56,7 +62,7 @@ def _serialize_record(record):
     subset = {
         "message": message_with_body,
         "levelname": record["level"].name,  # log level
-        "date": record["time"],
+        "date": iso_date,
         "name": record["name"],
         "record": {
             # "elapsed": {
@@ -79,7 +85,7 @@ def _serialize_record(record):
             "process": {"id": record["process"].id, "name": record["process"].name},
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
             "time": {
-                "repr": record["time"].timestamp(),
+                "repr": int(1000 * record_time.timestamp()),  # to milliseconds
                 "uptime_h:m:s": record["elapsed"],
             },
         },

@@ -202,6 +202,7 @@ class NatsEventsProcessor:
                 bound_logger.debug("Event generator cancelled")
                 stop_event.set()
 
+        subscription = None
         try:
             subscription = await self._subscribe(
                 group_id=group_id,
@@ -212,7 +213,7 @@ class NatsEventsProcessor:
             )
             yield event_generator(subscription=subscription)
         except Exception as e:  # pylint: disable=W0718
-            bound_logger.exception("Unexpected error processing events: {}")
+            bound_logger.exception("Unexpected error processing events")
             raise e
 
         finally:

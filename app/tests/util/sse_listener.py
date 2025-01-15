@@ -35,15 +35,17 @@ class SseListener:
         field_id,
         desired_state,
         timeout: int = DEFAULT_LISTENER_TIMEOUT,
+        look_back: int = 15,
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
-        url = f"{waypoint_base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}?look_back=5"
+        url = f"{waypoint_base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
+        params = {"look_back": look_back}
 
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:
-            async with client.stream("GET", url) as response:
+            async with client.stream("GET", url, params=params) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
                         data = json.loads(line[6:])

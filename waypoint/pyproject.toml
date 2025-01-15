@@ -22,7 +22,6 @@ sse-starlette = "~=2.2.1"
 ddtrace = "^2.17.0"
 scalar-fastapi = "^1.0.3"
 tenacity = "^9.0.0"
-uuid_utils = "^0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 anyio = "~4.8.0"

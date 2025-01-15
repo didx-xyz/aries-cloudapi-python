@@ -143,7 +143,7 @@ class NatsEventsProcessor:
         look_back_time = current_time - timedelta(seconds=look_back)
 
         # Format the time in the required format
-        start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        start_time = look_back_time.isoformat(timespec="milliseconds") + "Z"
 
         async def event_generator(*, subscription: JetStreamContext.PullSubscription):
             try:

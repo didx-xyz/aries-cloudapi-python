@@ -1,10 +1,10 @@
 from secrets import token_urlsafe
 from typing import List, Optional
-from uuid import uuid4
 
 import base58
 from aries_cloudcontroller import CreateWalletTokenRequest
 from fastapi import APIRouter, Depends, HTTPException, Query
+from uuid_utils import uuid4
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (

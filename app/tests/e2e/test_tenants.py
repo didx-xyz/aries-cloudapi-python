@@ -1,9 +1,8 @@
-from uuid import uuid4
-
 import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 from fastapi import HTTPException
+from uuid_utils import uuid4
 
 import app.services.trust_registry.actors as trust_registry
 from app.dependencies.acapy_clients import get_tenant_controller

@@ -1,9 +1,9 @@
 import asyncio
-from uuid import uuid4
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.exceptions import UnauthorizedException
+from uuid_utils import uuid4
 
 from app.routes.admin.tenants import router as tenants_router
 from app.routes.connections import router as connections_router

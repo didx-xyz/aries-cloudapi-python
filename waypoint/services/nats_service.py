@@ -1,7 +1,7 @@
 import asyncio
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 
 import orjson
@@ -136,8 +136,9 @@ class NatsEventsProcessor:
             }
         )
         bound_logger.debug("Processing events")
-        # Get the current time in UTC
-        current_time = datetime.now(timezone.utc)
+
+        # Get the current time
+        current_time = datetime.now()
 
         # Subtract look_back time from the current time
         look_back_time = current_time - timedelta(seconds=look_back)

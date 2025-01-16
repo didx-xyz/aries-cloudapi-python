@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 import pytest
@@ -10,8 +9,6 @@ from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
 WALLET_CREDENTIALS_PATH = router.prefix
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.anyio
@@ -41,7 +38,6 @@ async def test_get_and_delete_credential_record(
     )
     assert fetch_response.status_code == 200
     fetch_response = fetch_response.json()
-    logger.info("fetch_response: {}", fetch_response)
 
     # Assert we can delete this credential
     delete_response = await alice_member_client.delete(

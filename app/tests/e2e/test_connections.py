@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
 from app.tests.util.connections import BobAliceConnect, create_bob_alice_connection
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -243,6 +244,10 @@ async def test_delete_connection(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Skip pagination tests in regression mode",
+)
 async def test_get_connections_paginated(
     bob_member_client: RichAsyncClient, alice_member_client: RichAsyncClient
 ):

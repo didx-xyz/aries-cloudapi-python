@@ -31,6 +31,7 @@ async def check_webhook_state(
     max_duration: int = 45,
     max_tries: int = 2,
     delay: float = 0.5,
+    look_back: int = 15,
 ) -> Dict[str, Any]:
     assert max_duration >= 0, "Poll duration cannot be negative"
 
@@ -60,6 +61,7 @@ async def check_webhook_state(
                     field_id=field_id,
                     desired_state=state,
                     timeout=max_duration,
+                    look_back=look_back,
                 )
             else:
                 raise Exception(  # pylint: disable=W0719

@@ -5,7 +5,8 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import BackgroundTasks, Depends, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
-from shared import DISCONNECT_CHECK_PERIOD, SSE_TIMEOUT, APIRouter
+from shared import DISCONNECT_CHECK_PERIOD, APIRouter
+from shared.constants import SSE_LOOK_BACK
 from shared.log_config import get_logger
 from waypoint.services.dependency_injection.container import Container
 from waypoint.services.nats_service import NatsEventsProcessor
@@ -30,6 +31,8 @@ async def check_disconnect(request: Request, stop_event: asyncio.Event) -> None:
 
 
 async def nats_event_stream_generator(
+    *,
+    nats_processor: NatsEventsProcessor,
     request: Request,
     background_tasks: BackgroundTasks,
     wallet_id: str,
@@ -37,9 +40,8 @@ async def nats_event_stream_generator(
     field: str,
     field_id: str,
     desired_state: str,
-    group_id: Optional[str],
-    look_back: Optional[int],
-    nats_processor: NatsEventsProcessor,
+    group_id: Optional[str] = None,
+    look_back: Optional[int] = None,
 ) -> AsyncGenerator[str, None]:
     """
     Generator for NATS events
@@ -54,7 +56,6 @@ async def nats_event_stream_generator(
         topic=topic,
         state=desired_state,
         stop_event=stop_event,
-        duration=SSE_TIMEOUT,
         look_back=look_back,
     ) as event_generator:
         background_tasks.add_task(check_disconnect, request, stop_event)
@@ -98,7 +99,7 @@ async def sse_wait_for_event_with_field_and_state(
         default=None, description="Group ID to which the wallet belongs"
     ),
     look_back: Optional[int] = Query(
-        default=60,
+        default=SSE_LOOK_BACK,
         description="Number of seconds to look back for events before subscribing",
     ),
     nats_processor: NatsEventsProcessor = Depends(
@@ -120,6 +121,7 @@ async def sse_wait_for_event_with_field_and_state(
     )
 
     event_stream = nats_event_stream_generator(
+        nats_processor=nats_processor,
         request=request,
         background_tasks=background_tasks,
         wallet_id=wallet_id,
@@ -129,7 +131,6 @@ async def sse_wait_for_event_with_field_and_state(
         desired_state=desired_state,
         group_id=group_id,
         look_back=look_back,
-        nats_processor=nats_processor,
     )
 
     return EventSourceResponse(event_stream)

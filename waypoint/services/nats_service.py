@@ -1,7 +1,8 @@
 import asyncio
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from typing import Optional
 
 import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
@@ -16,7 +17,12 @@ from tenacity import (
     wait_exponential,
 )
 
-from shared.constants import NATS_STATE_STREAM, NATS_STATE_SUBJECT
+from shared.constants import (
+    NATS_STATE_STREAM,
+    NATS_STATE_SUBJECT,
+    SSE_LOOK_BACK,
+    SSE_TIMEOUT,
+)
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 
@@ -35,11 +41,11 @@ class NatsEventsProcessor:
     async def _subscribe(
         self,
         *,
-        group_id: str,
+        group_id: Optional[str] = None,
         wallet_id: str,
         topic: str,
         state: str,
-        start_time: str = None,
+        start_time: str,
     ) -> JetStreamContext.PullSubscription:
         bound_logger = logger.bind(
             body={
@@ -50,8 +56,6 @@ class NatsEventsProcessor:
                 "start_time": start_time,
             }
         )
-
-        bound_logger.debug("Subscribing to JetStream")
 
         group_id = group_id or "*"
         subscribe_kwargs = {
@@ -83,11 +87,11 @@ class NatsEventsProcessor:
             after=_retry_log,
             stop=stop_never,
         )
-        async def pull_subscribe(config, **kwargs):
+        async def pull_subscribe():
             try:
                 bound_logger.trace("Attempting to subscribe to JetStream")
                 subscription = await self.js_context.pull_subscribe(
-                    config=config, **kwargs
+                    config=config, **subscribe_kwargs
                 )
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription
@@ -99,7 +103,7 @@ class NatsEventsProcessor:
                 raise
 
         try:
-            return await pull_subscribe(config, **subscribe_kwargs)
+            return await pull_subscribe()
         except Exception:
             bound_logger.exception("An exception occurred subscribing to NATS")
             raise
@@ -108,14 +112,17 @@ class NatsEventsProcessor:
     async def process_events(
         self,
         *,
-        group_id: str,
+        group_id: Optional[str] = None,
         wallet_id: str,
         topic: str,
         state: str,
         stop_event: asyncio.Event,
-        duration: int = 10,
-        look_back: int = 60,
+        duration: Optional[int] = None,
+        look_back: Optional[int] = None,
     ):
+        duration = duration or SSE_TIMEOUT
+        look_back = look_back or SSE_LOOK_BACK
+
         bound_logger = logger.bind(
             body={
                 "wallet_id": wallet_id,
@@ -127,24 +134,17 @@ class NatsEventsProcessor:
             }
         )
         bound_logger.debug("Processing events")
-        # Get the current time in UTC
-        current_time = datetime.now(timezone.utc)
+
+        # Get the current time
+        current_time = datetime.now()
 
         # Subtract look_back time from the current time
         look_back_time = current_time - timedelta(seconds=look_back)
 
         # Format the time in the required format
-        start_time = look_back_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        start_time = look_back_time.isoformat(timespec="milliseconds") + "Z"
 
-        async def event_generator(
-            *,
-            subscription: JetStreamContext.PullSubscription,
-            group_id: str,
-            wallet_id: str,
-            topic: str,
-            state: str,
-            stop_event: asyncio.Event,
-        ):
+        async def event_generator(*, subscription: JetStreamContext.PullSubscription):
             try:
                 end_time = time.time() + duration
                 while not stop_event.is_set():
@@ -201,6 +201,7 @@ class NatsEventsProcessor:
                 bound_logger.debug("Event generator cancelled")
                 stop_event.set()
 
+        subscription = None
         try:
             subscription = await self._subscribe(
                 group_id=group_id,
@@ -209,16 +210,9 @@ class NatsEventsProcessor:
                 state=state,
                 start_time=start_time,
             )
-            yield event_generator(
-                subscription=subscription,
-                stop_event=stop_event,
-                group_id=group_id,
-                wallet_id=wallet_id,
-                topic=topic,
-                state=state,
-            )
+            yield event_generator(subscription=subscription)
         except Exception as e:  # pylint: disable=W0718
-            bound_logger.exception("Unexpected error processing events: {}")
+            bound_logger.exception("Unexpected error processing events")
             raise e
 
         finally:

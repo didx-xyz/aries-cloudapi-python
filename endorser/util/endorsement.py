@@ -176,5 +176,5 @@ async def retry_is_valid_issuer(
 
 
 async def accept_endorsement(client: AcaPyClient, transaction_id: str) -> None:
-    logger.debug("Endorsing transaction with id: `{}`", transaction_id)
+    logger.info("Endorsing transaction with id: `{}`", transaction_id)
     await client.endorse_transaction.endorse_transaction(tran_id=transaction_id)

@@ -41,7 +41,7 @@ async def test_get_and_delete_credential_record(
     )
     assert fetch_response.status_code == 200
     fetch_response = fetch_response.json()
-    logger.info("fetch_response: %s", fetch_response)
+    logger.info("fetch_response: {}", fetch_response)
 
     # Assert we can delete this credential
     delete_response = await alice_member_client.delete(

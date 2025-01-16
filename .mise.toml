@@ -25,6 +25,7 @@ pipx_uvx = true
 python_compile = false
 
 [env]
+DOCKER_HOST = "unix:///var/run/docker.sock"
 # Use Python/Mise managed virtual environment
 POETRY_VIRTUALENVS_CREATE = "false"
 # Setup Python Virtual Environment
@@ -81,10 +82,21 @@ run = """
 #!/bin/bash
 cp .env.example .env
 source .env
-poetry run pytest . --ignore ./tilt
+poetry run pytest . --ignore ./tilt $@
 """
 
 [tasks."tests:unit"]
 description = "Run unit tests"
 depends = ["poetry:install"]
-run = "poetry run pytest app --ignore=app/tests/e2e"
+run = "poetry run pytest app --ignore=app/tests/e2e $@"
+
+[tasks."tests:e2e"]
+description = "Run e2e tests"
+depends = ["poetry:install"]
+run = """
+#!/bin/bash
+cp .env.example .env
+source .env
+# pytest app/tests/e2e
+poetry run pytest --dist loadfile app/tests/e2e $@
+"""

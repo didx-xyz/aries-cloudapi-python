@@ -184,11 +184,18 @@ def setup_benthos(namespace):
 
 
 def build_cloudapi_service(service, image={}):
-    docker_build(
-        registry + "/" + service,
-        context=image.get("context", "."),
-        dockerfile=image.get("dockerfile", "Dockerfile is required"),
-        live_update=image.get("live_update", []),
+    #use custom_build instead of docker_build to support both docker and podman (in docker compatability mode)
+    custom_build(
+      registry + "/" + service,
+      # Command to build the image using docker with insecure registry
+      'docker build --network=host -t $EXPECTED_REF ' +
+      '--platform=linux/amd64 ' +
+      '--file=' + image.get("dockerfile", "Dockerfile is required") + ' ' +
+      image.get("context", ".") +
+      ' && docker push $EXPECTED_REF',
+      deps=['./'],
+      live_update=image.get("live_update", []),
+      skips_local_docker=True,
     )
     return [registry + "/" + service]
 
@@ -286,6 +293,7 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
         print(
             color.yellow("Skipping deploying Ledger Nodes to Kind due to instability.")
         )
+        print(color.yellow("Using docker compose for ledger nodes..."))
 
         von_dir = "tilt/.von-network"
         if not os.path.exists(von_dir):
@@ -297,16 +305,26 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
             )
 
         if build_enabled:
-            docker_build(
-                "ghcr.io/didx-xyz/d-cloud/ledger-nodes",
-                von_dir,
-                dockerfile=von_dir + "/Dockerfile",
-                platform="linux/amd64",
+            print(color.green("Docker Build of ledger-nodes for compose deployment..."))
+            custom_build(
+              registry + "/didx-xyz/d-cloud/ledger-nodes",
+              'docker build --network=host -t $EXPECTED_REF ' +
+              '--platform=linux/amd64 ' +
+              '--file=' + von_dir + '/Dockerfile ' +
+              von_dir +
+              ' && docker push $EXPECTED_REF',
+              deps=[von_dir],
+              skips_local_docker=True,
             )
         else:
             print(color.yellow("Skipping Docker Build for ledger-nodes"))
 
-        docker_compose("./docker-compose-ledger.yaml", wait=True)
+        # Only use env file if not in CI mode
+        env_file_args = {}
+        if config.tilt_subcommand != "ci":
+            env_file_args["env_file"] = "./docker-compose-ledger.local.env"
+
+        docker_compose("./docker-compose-ledger.yaml", wait=True, **env_file_args)
         dc_resource("ledger-nodes", labels=["02-indy-ledger"])
         dc_resource("ledger-browser", labels=["02-indy-ledger"])
 

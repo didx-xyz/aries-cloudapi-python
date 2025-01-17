@@ -26,6 +26,11 @@ python_compile = false
 
 [env]
 DOCKER_HOST = "unix:///var/run/docker.sock"
+KIND_CLUSTER_NAME = "aries-cloudapi"
+KIND_K8S_CONTEXT = "kind-{{env.KIND_CLUSTER_NAME}}"
+KIND_DOCKER_CACHE = "docker-cache"
+KIND_DOCKER_REGISTRY = "docker-registry"
+KIND_DOCKER_REGISTRY_PORT = "5001"
 # Use Python/Mise managed virtual environment
 POETRY_VIRTUALENVS_CREATE = "false"
 # Setup Python Virtual Environment
@@ -67,11 +72,10 @@ depends = ["kind:create"]
 run = "tilt ci -- --no-build"
 
 [tasks."kind:destroy:all"]
-description = "Destroy Kind and delete Docker Cache"
-depends = ["kind:destroy"]
+description = "Destroy Kind and delete Docker Registry & Cache"
 run = """
-docker rm -f kind-registry
-docker rm -f cache-docker
+#!/bin/bash
+mise run kind:destroy --destroy-registry-containers"
 rm -rf tilt/docker
 """
 

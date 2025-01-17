@@ -7,7 +7,7 @@ load("ext://uibutton", "cmd_button", "location", "choice_input")
 
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
-config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker cache")
+config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker registry & cache")
 config.define_bool(
     "expose",
     False,
@@ -118,7 +118,7 @@ if config.tilt_subcommand in ("down"):
     destroy_all = config.parse().get("destroy-all")
 
     if destroy_all:
-        print(color.red("Destroying Kind cluster and deleting docker cache"))
+        print(color.red("Destroying Kind cluster and deleting docker registry & cache"))
         local(
             "docker compose -f ./docker-compose-ledger.yaml down -v",
             dir=os.path.dirname(__file__),

@@ -3,10 +3,8 @@
 # mise depends=["kind:create"]
 # mise env={KUBECONFIG = ".mise/kubeconfig.yaml"}
 
-kindClusterName=kind-aries-cloudapi
-
 # Ensure we are on the right kube context
-kubectl config use-context ${kindClusterName}
+kubectl config use-context ${KIND_K8S_CONTEXT}
 
 # Check if Istio is already installed
 if kubectl get pods -n istio-system | grep -q istiod; then

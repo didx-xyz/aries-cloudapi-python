@@ -19,7 +19,7 @@ pydantic = "~2.10.1"
 typing-extensions = "~4.12.0"
 uvicorn = "~0.34.0"
 sse-starlette = "~=2.2.1"
-ddtrace = "^2.17.0"
+ddtrace = "^2.19.0"
 scalar-fastapi = "^1.0.3"
 tenacity = "^9.0.0"
 

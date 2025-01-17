@@ -1,0 +1,18 @@
+# Summary
+
+- [Introduction to Aries Cloud API](./README.md)
+- [Quick Start Guide](./Quick%20Start%20Guide.md)
+- [Trust Registry](./Trust%20Registry.md)
+- [NATS](./NATS.md)
+- [Governance as Code](./Governance%20as%20Code.md)
+- [Example Flows](./Example%20Flows.md)
+  - [Onboarding an Issuer, Verifier and a Holder](./examples/1.%20Onboarding.md)
+  - [Creating a Credential Schema](./examples/2.%20Create%20Schema.md)
+  - [The Issuer creating a Credential definition](./examples/3.%20Create%20Credential%20Definition.md)
+  - [Create Connection between Issuer and Holder](./examples/4.%20Create%20Connection%20with%20Issuer.md)
+  - [Issuing a credential to a Holder](./examples/5.%20Issue%20Credential.md)
+  - [Create Connection between Verifier and Holder](./examples/6.%20Create%20Connection%20with%20Verifier.md)
+  - [The Verifier doing a proof request against the Holder's Credential](./examples/7.%20Verify%20Credential.md)
+- [Common Steps](./Common%20Steps.md)
+- [Bootstrap Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
+- [Aries Cloud API Architecture](./Aries%20Cloud%20API%20Architecture.md)

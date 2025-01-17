@@ -9,7 +9,7 @@ package-mode = false
 python = "^3.13"
 
 aries-cloudcontroller = "==1.2.0.post20241205"
-dependency-injector-fork = "~=4.42.1"                    # https://github.com/ets-labs/python-dependency-injector/pull/765#issuecomment-1915100744
+dependency-injector = "~=4.45.0"
 fastapi = "~0.115.0"
 httpx = "~0.28.0"
 nats-py = {extras = ["nkeys"], version = "^2.9.0"}

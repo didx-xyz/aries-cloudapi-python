@@ -29,10 +29,11 @@
 name: SonarCloud analysis
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+  # Temporarily disable workflow, as mise install needs to be fixed
+  # push:
+  #   branches: [master]
+  # pull_request:
+  #   branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -54,7 +55,7 @@ jobs:
         run: |
           cat <<EOF > .mise.toml
           [tools]
-          python = "3.12"
+          python = "3.13"
           "pipx:poetry" = "2.0"
           uv = "0.4"
 

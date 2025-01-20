@@ -29,11 +29,10 @@
 name: SonarCloud analysis
 
 on:
-  # Temporarily disable workflow, as mise install needs to be fixed
-  # push:
-  #   branches: [master]
-  # pull_request:
-  #   branches: [master]
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:

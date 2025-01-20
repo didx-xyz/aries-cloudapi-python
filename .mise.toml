@@ -110,28 +110,24 @@ source .env
 poetry run pytest --dist loadfile app/tests/e2e $@
 """
 
+[tasks.fmt]
+description = "Format files"
+run = """
+#!/bin/bash
+isort . --profile black --diff
+black . --diff
+find . -type f -name "Tiltfile" | while read -r file; do
+    black "$file"
+  done
+"""
+
 [tasks."fmt:check"]
 description = "Check all files for formatting"
 run = """
 #!/bin/bash
 isort . --check --profile black --diff
 black . --check --diff
-"""
-
-[tasks."fmt:check:tiltfiles"]
-description = "Check Tiltfiles for formatting"
-run = """
-#!/bin/bash
 find . -type f -name "Tiltfile" | while read -r file; do
     black --check --diff "$file"
-  done
-"""
-
-[tasks."fmt:tiltfiles"]
-description = "Format Tiltfiles"
-run = """
-#!/bin/bash
-find . -type f -name "Tiltfile" | while read -r file; do
-    black "$file"
   done
 """

@@ -25,6 +25,12 @@ pipx_uvx = true
 python_compile = false
 
 [env]
+DOCKER_HOST_OVERRIDE = "unix:///var/run/docker.sock"
+KIND_CLUSTER_NAME = "aries-cloudapi"
+KIND_K8S_CONTEXT = "kind-{{env.KIND_CLUSTER_NAME}}"
+KIND_DOCKER_CACHE = "docker-cache"
+KIND_DOCKER_REGISTRY = "docker-registry"
+KIND_DOCKER_REGISTRY_PORT = "5001"
 # Use Python/Mise managed virtual environment
 POETRY_VIRTUALENVS_CREATE = "false"
 # Setup Python Virtual Environment
@@ -42,6 +48,11 @@ depends = ["poetry:update:*"]
 description = "Start Tilt"
 depends = ["kind:create"]
 run = "tilt up"
+
+[tasks."tilt:up:podman"]
+description = "Start Tilt with Podman"
+depends = ["kind:create"]
+run = "DOCKER_HOST=$DOCKER_HOST_OVERRIDE tilt up"
 
 [tasks."tilt:up:expose"]
 description = "Start Tilt with `--expose` flag"
@@ -66,11 +77,10 @@ depends = ["kind:create"]
 run = "tilt ci -- --no-build"
 
 [tasks."kind:destroy:all"]
-description = "Destroy Kind and delete Docker Cache"
-depends = ["kind:destroy"]
+description = "Destroy Kind and delete Docker Registry & Cache"
 run = """
-docker rm -f kind-registry
-docker rm -f cache-docker
+#!/bin/bash
+mise run kind:destroy --destroy-registry-containers"
 rm -rf tilt/docker
 """
 
@@ -81,10 +91,43 @@ run = """
 #!/bin/bash
 cp .env.example .env
 source .env
-poetry run pytest . --ignore ./tilt
+poetry run pytest . --ignore ./tilt $@
 """
 
 [tasks."tests:unit"]
 description = "Run unit tests"
 depends = ["poetry:install"]
-run = "poetry run pytest app --ignore=app/tests/e2e"
+run = "poetry run pytest app --ignore=app/tests/e2e $@"
+
+[tasks."tests:e2e"]
+description = "Run e2e tests"
+depends = ["poetry:install"]
+run = """
+#!/bin/bash
+cp .env.example .env
+source .env
+# pytest app/tests/e2e
+poetry run pytest --dist loadfile app/tests/e2e $@
+"""
+
+[tasks.fmt]
+description = "Format files"
+run = """
+#!/bin/bash
+isort . --profile black --diff
+black . --diff
+find . -type f -name "Tiltfile" | while read -r file; do
+    black "$file"
+  done
+"""
+
+[tasks."fmt:check"]
+description = "Check all files for formatting"
+run = """
+#!/bin/bash
+isort . --check --profile black --diff
+black . --check --diff
+find . -type f -name "Tiltfile" | while read -r file; do
+    black --check --diff "$file"
+  done
+"""

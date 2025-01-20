@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# mise description="Start up the local Kind Docker Registry"
+
+## Setup local docker registry and caches
+# https://kind.sigs.k8s.io/docs/user/local-registry/
+
+# Create main registry
+if ! docker container ls -a --format '{{.Names}}' | grep -q "^${KIND_DOCKER_REGISTRY}$"; then
+  docker run \
+    -d --restart=always -p "127.0.0.1:${KIND_DOCKER_REGISTRY_PORT}:5000" --network bridge --name "${KIND_DOCKER_REGISTRY}" \
+    registry:2
+fi
+
+# Start registry container if not running
+if [ "$(docker inspect -f '{{.State.Running}}' "${KIND_DOCKER_REGISTRY}" 2>/dev/null || true)" != 'true' ]; then
+  docker start ${KIND_DOCKER_REGISTRY}
+fi

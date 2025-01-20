@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
+set -e
 # mise description="Destroy Kubernetes Kind Cluster"
+#USAGE flag "--destroy-registry-containers" help="Destroy Kind registry & cache containers"
 
-kindClusterName=aries-cloudapi
-kind delete cluster --name $kindClusterName
-
-docker rm -f kind-registry cache-docker
-
+kind delete cluster --name ${KIND_CLUSTER_NAME}
 rm -f .mise/kubeconfig.yaml
+
+if [ "$usage_destroy_registry_containers" = "true" ]; then
+  echo "Destroying Kind registry & cache containers: $KIND_DOCKER_REGISTRY & $KIND_DOCKER_CACHE"
+  docker rm -f ${KIND_DOCKER_REGISTRY} ${KIND_DOCKER_CACHE}
+fi

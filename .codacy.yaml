@@ -7,3 +7,8 @@ engines:
           - code_block_line_length: 240
       - MD033: false
       - MD043: false
+---
+exclude_paths:
+  - "docs/book/**"
+  - "docs/mermaid-init.js"
+  - "docs/mermaid.min.js"

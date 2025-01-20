@@ -29,11 +29,10 @@
 name: SonarCloud analysis
 
 on:
-  # Temporarily disable workflow, as mise install needs to be fixed
-  # push:
-  #   branches: [master]
-  # pull_request:
-  #   branches: [master]
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -55,9 +54,9 @@ jobs:
         run: |
           cat <<EOF > .mise.toml
           [tools]
+          poetry = "2.0"
           python = "3.13"
-          "pipx:poetry" = "2.0"
-          uv = "0.4"
+          uv = "0.5"
 
           [settings]
           experimental = true
@@ -76,7 +75,7 @@ jobs:
           depends = ["poetry:install:*"]
           EOF
 
-      - name: Install dependencies
+      - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
           cache: true

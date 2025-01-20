@@ -21,13 +21,13 @@ jobs:
           "pipx:black" = "24.10"
           "pipx:isort" = "5.13"
           python = "3.13"
-          uv = "0.4"
+          uv = "0.5"
 
           [settings]
           pipx_uvx = true
           EOF
 
-      - name: Install dependencies
+      - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
           cache: true

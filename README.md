@@ -94,7 +94,7 @@ cargo install mise
 yay -S mise-bin
 
 # Debian/Ubuntu APT (amd64)
-sudo apt-get update -y && sudo apt-get install -y gpg wget curl
+sudo apt-get update && sudo apt-get install -y gpg wget curl
 sudo install -dm 755 /etc/apt/keyrings
 wget -qO - https://mise.jdx.dev/gpg-key.pub \
   | gpg --dearmor \
@@ -105,7 +105,7 @@ sudo apt-get update
 sudo apt-get install -y mise
 
 # Debian/Ubuntu APT (arm64)
-sudo apt-get update -y && sudo apt-get install -y gpg wget curl
+sudo apt-get update && sudo apt-get install -y gpg wget curl
 sudo install -dm 755 /etc/apt/keyrings
 wget -qO - https://mise.jdx.dev/gpg-key.pub \
   | gpg --dearmor \

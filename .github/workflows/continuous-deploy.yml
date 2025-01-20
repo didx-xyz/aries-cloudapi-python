@@ -351,7 +351,7 @@ jobs:
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=benthos --tail 10000
       - name: Docker Cache Logs
         if: always()
-        run: docker logs cache-docker
+        run: docker logs docker-cache
       - name: Endorser Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=endorser --tail 10000

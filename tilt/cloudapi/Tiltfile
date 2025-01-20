@@ -184,18 +184,20 @@ def setup_benthos(namespace):
 
 
 def build_cloudapi_service(service, image={}):
-    #use custom_build instead of docker_build to support both docker and podman (in docker compatability mode)
+    # use custom_build instead of docker_build to support both docker and podman (in docker compatability mode)
     custom_build(
-      registry + "/" + service,
-      # Command to build the image using docker with insecure registry
-      'docker build --network=host -t $EXPECTED_REF ' +
-      '--platform=linux/amd64 ' +
-      '--file=' + image.get("dockerfile", "Dockerfile is required") + ' ' +
-      image.get("context", ".") +
-      ' && docker push $EXPECTED_REF',
-      deps=['./'],
-      live_update=image.get("live_update", []),
-      skips_local_docker=True,
+        registry + "/" + service,
+        # Command to build the image using docker with insecure registry
+        "docker build --network=host -t $EXPECTED_REF "
+        + "--platform=linux/amd64 "
+        + "--file="
+        + image.get("dockerfile", "Dockerfile is required")
+        + " "
+        + image.get("context", ".")
+        + " && docker push $EXPECTED_REF",
+        deps=["./"],
+        live_update=image.get("live_update", []),
+        skips_local_docker=True,
     )
     return [registry + "/" + service]
 
@@ -307,14 +309,16 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
         if build_enabled:
             print(color.green("Docker Build of ledger-nodes for compose deployment..."))
             custom_build(
-              registry + "/didx-xyz/d-cloud/ledger-nodes",
-              'docker build --network=host -t $EXPECTED_REF ' +
-              '--platform=linux/amd64 ' +
-              '--file=' + von_dir + '/Dockerfile ' +
-              von_dir +
-              ' && docker push $EXPECTED_REF',
-              deps=[von_dir],
-              skips_local_docker=True,
+                registry + "/didx-xyz/d-cloud/ledger-nodes",
+                "docker build --network=host -t $EXPECTED_REF "
+                + "--platform=linux/amd64 "
+                + "--file="
+                + von_dir
+                + "/Dockerfile "
+                + von_dir
+                + " && docker push $EXPECTED_REF",
+                deps=[von_dir],
+                skips_local_docker=True,
             )
         else:
             print(color.yellow("Skipping Docker Build for ledger-nodes"))

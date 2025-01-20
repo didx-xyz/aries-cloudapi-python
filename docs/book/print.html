@@ -1,0 +1,3638 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DIDx-Cloud</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">DIDx-Cloud</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction-to-aries-cloud-api"><a class="header" href="#introduction-to-aries-cloud-api">Introduction to Aries Cloud API</a></h1>
+<h2 id="trust-ecosystem-in-a-box"><a class="header" href="#trust-ecosystem-in-a-box">Trust Ecosystem in a Box</a></h2>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="index.html#first-steps">First Step and Overview</a></li>
+<li><a href="index.html#cloudapi-roles">Cloud API Roles</a></li>
+<li><a href="index.html#workflows-and-roles-overview">Workflows and Roles Overview</a></li>
+<li><a href="index.html#further-reading">Further Reading</a></li>
+</ol>
+<h2 id="first-steps"><a class="header" href="#first-steps">First Steps</a></h2>
+<p>After spinning up the containers following the <a href="Quick%20Start%20Guide.html">Quick Start Guide</a>, you are ready to rumble. Navigating to the <strong>Swagger UI</strong> :</p>
+<ul>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/public/docs">CloudAPI-Public</a></li>
+</ul>
+<p>provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.</p>
+<blockquote>
+<p>NOTE: Regardless of the multitude of containers and mechanisms running in <strong>CloudAPI</strong>, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.</p>
+</blockquote>
+<h3 id="using-the-swagger-ui"><a class="header" href="#using-the-swagger-ui">Using the Swagger UI</a></h3>
+<p>The Swagger UI is documented. It shows you endpoints, expected parameters, and what example requests and responses look like. At the bottom of the UI, you can also find a list of all request/response models used, with definitions and example values.</p>
+<h3 id="following-docker-container-logs"><a class="header" href="#following-docker-container-logs">Following Docker Container Logs</a></h3>
+<p>It can be handy to follow the logs of a specific container. A convenient way to do so is using:</p>
+<pre><code class="language-bash">kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
+</code></pre>
+<p>And replacing <code>YOUR_CONTAINER_NAME</code> with the name of the container you want to follow (e.g., governance-endorser-web). You can find the container name in the docker-compose.yaml.</p>
+<h3 id="authentication"><a class="header" href="#authentication">Authentication</a></h3>
+<p>Authentication is handled by the CloudAPI, and from a client perspective it's kept simple and convenient. Either, via the Swagger UI auth (padlock button in UI) or via the header data of your client specifying an <code>x-api-key</code>. Regardless of whether you use the UI or another client, the <code>x-api-key</code> value consists of two parts, separated by a dot:</p>
+<p><code>{role}.{key/token}</code></p>
+<p>This means the header has the format <code>'x-api-key: {role}.{key/token}</code>, which would look like, e.g., <code>'x-api-key: governance.adminApiKey'</code> or <code>'x-api-key: tenant.ey..'</code> (JWT token).</p>
+<p>The first part, <code>role</code>, specifies the role on the surface and targets the correct endpoints and authentication mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for the ACA-Py agent (<code>tenant</code> and <code>tenant-admin</code> target the multitenant agent, and <code>governance</code> targets the governance agent) with the correct headers expected by the agent.</p>
+<p>For admin roles, pass the agent API key as the second part of <code>{role}.{key}</code>:</p>
+<ul>
+<li>The <code>governance</code> role requires the Governance Agent API Key (which was used in starting up the governance agent) as the right-hand side token in the <code>x-api-key</code> header (in order to authenticate access to the governance agent).</li>
+<li>The <code>tenant-admin</code> role requires the Multitenant Agent API Key (which was used in starting up the multitenant agent) as the right-hand side token in the <code>x-api-key</code> header (in order to target the admin interface of the multitenant agent).</li>
+</ul>
+<p>Requests for the <code>tenant</code> role require the wallet JWT as the token in <code>{role}.{token}</code>. These requests will internally obtain a <code>Bearer {TOKEN}</code> header passed to the multitenant agent.</p>
+<p>The definitions and capabilities of the three roles are as follows:</p>
+<h3 id="cloudapi-roles"><a class="header" href="#cloudapi-roles">CloudAPI Roles</a></h3>
+<h4 id="governance-role"><a class="header" href="#governance-role">Governance Role</a></h4>
+<p>Authentication header: <code>'x-api-key: governance.&lt;GOVERNANCE AGENT API KEY&gt;'</code></p>
+<ul>
+<li>governance
+<ul>
+<li>is:
+<ul>
+<li>trust authority</li>
+<li>transaction endorser</li>
+</ul>
+</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>create schemas</li>
+<li>create credential definitions</li>
+<li>manage trust registry</li>
+<li>issue credential</li>
+<li>verify credential</li>
+<li>send basic messages</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="tenant-administration-role"><a class="header" href="#tenant-administration-role">Tenant Administration Role</a></h4>
+<p>Authentication header: <code>'x-api-key: tenant-admin.&lt;MULTITENANT AGENT API KEY&gt;'</code></p>
+<ul>
+<li>tenant-admin
+<ul>
+<li>is:
+<ul>
+<li>trust ecosystem admin</li>
+<li>is transaction author</li>
+</ul>
+</li>
+<li>can:
+<ul>
+<li>only create, update, and delete tenants (<em>wallets</em>) for trust ecosystem issuers, verifiers, and users</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="tenant-role-trust-ecosystem-issuers-verifiers-and-holders"><a class="header" href="#tenant-role-trust-ecosystem-issuers-verifiers-and-holders">Tenant Role (Trust Ecosystem Issuers, Verifiers, and Holders)</a></h4>
+<p>Authentication header: <code>'x-api-key: tenant.&lt;TENANT JWT&gt;'</code></p>
+<ul>
+<li>tenant
+<ul>
+<li>is:
+<ul>
+<li>holder</li>
+<li>issuer/verifier</li>
+</ul>
+</li>
+<li>if is issuer or verifier
+<ul>
+<li>issuers are transaction authors</li>
+<li>verifiers are not transaction authors</li>
+<li>automatically registered with the trust registry</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>create credential definitions</li>
+<li>issue credential</li>
+<li>create/manage wallets</li>
+<li>all transactions written to the ledger are counter-signed by the governance transaction endorser role</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>if is user (<em>holder</em>):
+<ul>
+<li>holder only</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>manage own wallet (holder)</li>
+<li>receive and store credentials</li>
+<li>respond to/create proof request</li>
+<li>send basic messages</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="workflows-and-roles-overview"><a class="header" href="#workflows-and-roles-overview">Workflows and Roles Overview</a></h3>
+<h4 id="creating-schemas"><a class="header" href="#creating-schemas">Creating schemas</a></h4>
+<p>Using the admin role(s) you can create and register schemas. Successful schema creation will automatically write it to the ledger.</p>
+<p>The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way, because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.</p>
+<h4 id="credentials"><a class="header" href="#credentials">Credentials</a></h4>
+<p>The main feature revolves around issuing credentials, and verifying proofs based on these credentials.</p>
+<h4 id="creating-and-issuing-credentials"><a class="header" href="#creating-and-issuing-credentials">Creating and issuing credentials</a></h4>
+<p>In order to issue a credential one must first:</p>
+<ul>
+<li>Create a schema and</li>
+<li>Register the schema with the trust registry.</li>
+</ul>
+<p>via the governance agent.</p>
+<p>Then:</p>
+<ul>
+<li>Register an issuer (on the trust registry) with a tenant admin controller.</li>
+</ul>
+<p>The registered issuer can then issue a credential and related schema on the trust registry with the following steps:</p>
+<ul>
+<li>Create a connection between the issuer and some other entity that you want to hold a credential</li>
+<li>Once a connection is established, use the connection ID to create and issue a credential (have a look at the models in Swagger - it will tell you what data you need to provide and will receive back)</li>
+<li>Holder accepts credential issuance</li>
+<li>Holder stores credential in wallet</li>
+</ul>
+<p>In summary, we have:</p>
+<ul>
+<li>Created a schema (using the governance admin)</li>
+<li>Registered a schema on the ledger (via the governance admin)</li>
+<li>Created (a wallet for) an issuer and future holder using the tenant-admin</li>
+<li>Registered an issuer (for a schema)</li>
+<li>Created a connection between an issuer and a prospective holder (using connections API)</li>
+<li>Proposed a credential to a prospective holder from an issuer</li>
+<li>Accepted and stored an offered credential</li>
+</ul>
+<p>Please note that when creating/issuing a credential, endorsing, and verifying credentials, the CloudAPI checks whether the requested instructions are valid against the trust registry.</p>
+<h4 id="requesting-a-proofusing-a-credential"><a class="header" href="#requesting-a-proofusing-a-credential">Requesting a proof/using a credential</a></h4>
+<p>Now that we have an entity holding a credential (having a stored credential in their wallet), the next step is to use this credential. What we need to do:</p>
+<ul>
+<li>Register a verifier on the trust registry (using a tenant-admin controller).</li>
+<li>Establish a connection between a holder (of a credential) and a verifier (using connections/invitations API).</li>
+<li>Using the data models and the <a href="https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof">'dance' described in the ACA-Py docs</a>, you can now arrange for negotiating a proof exchange</li>
+</ul>
+<h4 id="user-managementcreating-wallets"><a class="header" href="#user-managementcreating-wallets">User management/Creating wallets</a></h4>
+<p>Using the admin role(s), you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation returns the wallet creation response, including the wallet id and JWT for authentication.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further Reading</a></h2>
+<ul>
+<li><a href="Aries%20Cloud%20API%20Architecture.html">Aries Cloud API Architecture Overview</a></li>
+<li><a href="Quick%20Start%20Guide.html">Quick Start Guide</a></li>
+<li><a href="./Bootstrap%20Trust%20Ecosystem.html">Bootstrap the Trust Ecosystem</a></li>
+<li><a href="./Common%20Steps.html">Common Steps</a></li>
+<li><a href="./Example%20Flows.html">Example Flows</a></li>
+<li><a href="./Governance%20as%20Code.html">Governance as Code</a></li>
+<li><a href="Trust%20Registry.html">Trust Registry</a></li>
+<li><a href="./Webhooks.html">Webhooks</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quick-start-guide"><a class="header" href="#quick-start-guide">Quick Start Guide</a></h1>
+<p>This guide provides a simple walkthrough for starting, managing, and stopping a
+Docker-based project. Please ensure you have the necessary system requirements
+and a basic understanding of Docker and Docker Compose.</p>
+<ol>
+<li>
+<p>Ensure you have Docker, Docker Compose, Bash, and Mise installed on your
+machine. The project will require about 25GB of free disk space, 16GB of RAM, and
+an average CPU like an modern Intel i5 (min 4 cores).</p>
+</li>
+<li>
+<p>In the root directory of the project, you can start the entire project:</p>
+<pre><code class="language-bash">mise run tilt:up
+</code></pre>
+</li>
+<li>
+<p>When you're done, you can stop the project by running:</p>
+<pre><code class="language-bash">mise run tilt:down
+</code></pre>
+</li>
+<li>
+<p>If you want to destroy the Kind cluster too:</p>
+<pre><code class="language-bash">mise run tilt:down:destroy
+</code></pre>
+</li>
+<li>
+<p>If you want to remove absolutely everything, including the docker cache, for
+a clean slate:</p>
+<pre><code class="language-bash">mise run tilt:down:destroy:all
+</code></pre>
+</li>
+</ol>
+<h2 id="accessing-services"><a class="header" href="#accessing-services">Accessing Services</a></h2>
+<p>Once the project is running, you'll have access to several services via Swagger
+interfaces. These can be found at the following URLs:</p>
+<ul>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/public/docs">CloudAPI-Public</a></li>
+<li><a href="http://governance-agent.cloudapi.127.0.0.1.nip.io">ACA-Py Governance Agent Admin</a></li>
+<li><a href="http://multitenant-agent.cloudapi.127.0.0.1.nip.io">ACA-Py Multitenant Agent Admin</a></li>
+<li><a href="http://waypoint.cloudapi.127.0.0.1.nip.io/docs">Waypoint</a></li>
+<li><a href="http://trust-registry.cloudapi.127.0.0.1.nip.io/docs">Trust Registry</a></li>
+</ul>
+<h2 id="customization"><a class="header" href="#customization">Customization</a></h2>
+<p>Each Docker container's environment parameters can be adjusted via its respective
+<code>.env</code> file, located in a correspondingly named sub-folder within the
+<code>environments</code> directory. For example, if you want to change the
+<code>auto-provision</code> setting for the ACA-Py multitenant instance from <code>true</code> to
+<code>false</code>, adjust the <code>ACAPY_AUTO_PROVISION</code> value in
+<code>environments/governance-multitenant/aca-py-agent.default.env</code>.</p>
+<p>Remember to stop and restart the affected containers after making changes.However, be careful when
+changing settings like port numbers. These changes will also need to be reflected in the <code>docker-compose.yaml</code>
+file to ensure that other services are aware of the changes. For instance, if you change <code>ACAPY_ENDPOINT</code> or
+<code>ACAPY_WEBHOOK_URL</code> in an env file of e.g. the multitenant container, you will also want to look to change the
+values within the <code>docker-compose.yaml</code> to reflect these changes.</p>
+<p>The <a href="Common%20Steps.html">Common Steps</a> document can help you understand how to use the project's infrastructure
+once it's up and running.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trust-registry"><a class="header" href="#trust-registry">Trust Registry</a></h1>
+<p>As a client, you can retrieve the trust registry but not alter it. This design is intentional as only administrative
+actions should modify the trust registry, and such actions are only possible with an admin role.</p>
+<blockquote>
+<p>NOTE: The Trust Registry GET API endpoint is not protected and should not be publicly accessible.</p>
+</blockquote>
+<p>The <a href="http://trust-registry.cloudapi.127.0.0.1.nip.io/docs">Trust Registry</a> serves
+as a gatekeeper interface for interactions, maintaining the truth states about
+actors, their respective roles as issuers and/or verifiers, and schemas.</p>
+<p>The <a href="http://trust-registry.cloudapi.127.0.0.1.nip.io/docs">Swagger docs</a> are
+divided into three main sections:</p>
+<ul>
+<li>Actor - For actor information and actions on the ledger</li>
+<li>Schema - For schema information and actions on the ledger</li>
+<li>Default - To retrieve all information from the registry</li>
+</ul>
+<p>The trust registry provides access to this data via <code>actors</code> and <code>schemas</code> keys, which can be found in the JSON blob
+retrieved from requesting the endpoint. Their structures are as follows:</p>
+<pre><code class="language-json">{
+    "actors": [
+    {
+      "name": "Test Actor-0.26703024264670694",
+      "roles": [
+        "issuer",
+        "verifier"
+      ],
+      "did": "did:sov:XfbLjZFxgoznN24LUVxaQH",
+      "id": "test-actor-0.26703024264670694",
+      "didcomm_invitation": null,
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+    },
+    ...
+}
+</code></pre>
+<p>The fields here should be self-explanatory.</p>
+<p>And,</p>
+<pre><code class="language-json">{
+    "schemas": [
+        "z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3",
+        "MnspmfkzjLXd6WXyjCYJKW:2:test_schema:0.3",
+        "E2HWvrZYs9SCXXHCZtFV1U:2:test_schema:0.3",
+        ...
+    ]
+}
+</code></pre>
+<p>where <code>"z5Bug71M7Sj7cYpbVBDmN:2:test_schema:0.3"</code> represents the schema ID, name, and version respectively.</p>
+<blockquote>
+<p><strong><em>NOTE</em></strong>: In a production environment, this should not be exposed to the internet or interacted with directly.
+It's advisable to either avoid exposing this to the internet or set up a separate security layer for the trust
+registry. This is because it's crucial to prevent unauthorized individuals from making changes to the trust registry.</p>
+</blockquote>
+<h2 id="trust-registry-interactions"><a class="header" href="#trust-registry-interactions">Trust Registry Interactions</a></h2>
+<p>Below, we outline where and how the Trust Registry is consulted to verify that Issuers, Verifiers, and Schemas are
+compliant.</p>
+<h3 id="issuer-actions"><a class="header" href="#issuer-actions">Issuer Actions</a></h3>
+<p>When a user/tenant initiates any issuer-related action, the Trust Registry is used to verify the following:</p>
+<ol>
+<li>Issuer Verification:
+<ul>
+<li>For <strong>creating credential definitions</strong>, <strong>creating credential offers</strong>, and <strong>issuing credentials</strong>:
+Confirms that the tenant is registered with the role of an issuer.</li>
+<li>For <strong>accepting credentials</strong>: Confirms that the tenant is receiving a credential from a registered issuer.</li>
+</ul>
+</li>
+<li>Schema Validation: Ensures that the referenced schema is valid and registered within the Trust Registry.</li>
+</ol>
+<p>If either step fails, the operation is blocked, and an appropriate error message is returned to the user.
+The operation is logged and able to be reviewed by an administrator.</p>
+<pre class="mermaid">---
+title: Trust Registry called during issuer operations
+---
+flowchart LR
+    App(Issuer Action:&lt;br&gt;Credential Operations) --&gt;|Consults| TR[Trust Registry]
+    subgraph Trust Registry Checks
+      TR --&gt;|Validates| Check1{Issuer Verification}
+      Check1 --&gt;|If Unauthorized| Block[⨯ Block Operation]
+      Check1 --&gt;|If Authorized| Check2{Schema Validation}
+      Check2 --&gt;|Not on TR| Block
+    end
+    Check2 --&gt;|If Registered| Continue[✓ Proceed with Operation]
+
+    style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+    style Block fill:#ffcdd2,stroke:#e53935,color:black
+    style Continue fill:#c8e6c9,stroke:#43a047,color:black
+</pre>
+<hr />
+<h3 id="verifier-actions"><a class="header" href="#verifier-actions">Verifier Actions</a></h3>
+<p>When a tenant initiates any verifier-related action (sending proof requests or receiving proof presentations),
+the Trust Registry is used to verify the following:</p>
+<ol>
+<li>Verifier Verification:
+<ul>
+<li>For <strong>sending proof requests</strong>: Confirms that the tenant sending the request is registered as a verifier.</li>
+<li>For <strong>accepting proof requests</strong>: Validates that the proof is being presented to a registered verifier.</li>
+</ul>
+</li>
+<li>Schema Validation: Ensures that the attributes being requested are associated with schemas registered
+within the Trust Registry.</li>
+</ol>
+<p>If either step fails, the operation is blocked as a bad request, with an appropriate error message returned to the user.</p>
+<pre class="mermaid">---
+title: Trust Registry called during proof requests
+---
+flowchart LR
+  Start(Verifier Action:&lt;br&gt;Proof Request Operations) --&gt;|Consult| TR[Trust Registry]
+  subgraph Trust Registry Checks
+    TR --&gt;|Validates| Check1{Verifier Verification}
+    Check1 --&gt;|If Unauthorized| Block[⨯ Block Operation]
+    Check1 --&gt;|If Authorized| Check2{Schema exists on TR}
+    Check2 --&gt;|Not on TR| Block
+  end
+  Check2 --&gt;|If Registered| Continue[✓ Proceed with Operation]
+
+  style TR fill:#a8d1ff,stroke:#1e88e5,color:black
+  style Block fill:#ffcdd2,stroke:#e53935,color:black
+  style Continue fill:#c8e6c9,stroke:#43a047,color:black
+</pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nats"><a class="header" href="#nats">NATS</a></h1>
+<p><strong>NATS</strong> is an open-source messaging system designed for high-performance, lightweight, and reliable communication between
+distributed applications. It supports <strong>pub-sub</strong> (publish-subscribe), <strong>request-reply</strong>, and <strong>message queue</strong> patterns,
+allowing for flexible communication between microservices, IoT devices, and cloud-native systems.</p>
+<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<ul>
+<li>Simple: Text-based protocol with straightforward publish-subscribe semantics</li>
+<li>Fast: Written in Go, capable of millions of messages per second</li>
+<li>Lightweight: Small footprint, minimal dependencies</li>
+<li>Cloud Native: Built for modern distributed systems</li>
+</ul>
+<h2 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h2>
+<ul>
+<li>Publishers: Send messages to subjects</li>
+<li>Subscribers: Receive messages from subjects</li>
+<li>Subjects: Named channels for message routing</li>
+<li>Queue Groups: Load balance messages across subscribers</li>
+</ul>
+<h2 id="message-patterns"><a class="header" href="#message-patterns">Message Patterns</a></h2>
+<ul>
+<li>Publish/Subscribe: One-to-many message distribution</li>
+<li>Request/Reply: Synchronous communication</li>
+<li>Queue Groups: Load balanced message processing</li>
+<li>Stream Processing: Persistent message streams (via NATS Streaming/JetStream)</li>
+</ul>
+<h2 id="consuming-our-nats"><a class="header" href="#consuming-our-nats">Consuming our NATS</a></h2>
+<p>Please contact us for help with connecting/authenticating to our NATS service</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="define-your-trust-ecosystem-governance"><a class="header" href="#define-your-trust-ecosystem-governance">Define Your Trust Ecosystem Governance</a></h1>
+<h2 id="1-schemas"><a class="header" href="#1-schemas">1. Schemas</a></h2>
+<p>Schemas are used to define attributes related to credentials. To define schemas for your trust ecosystem, follow the
+steps below:</p>
+<ol>
+<li>Access the API through the <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">Governance Cloud API</a>.</li>
+<li>Authenticate with <code>governance.</code> + <code>APIKEY</code> role.</li>
+<li>Generate a new schema with a <code>POST</code> to the following API endpoint: <code>/v1/definitions/schemas</code>.</li>
+</ol>
+<p>An example of a successful response to generate a DID:</p>
+<pre><code class="language-json">{
+  "id": "PWmeoVrsLE2pu1idEwWFRW:2:test_schema:0.3.0",
+  "name": "test_schema",
+  "version": "0.3.0",
+  "attribute_names": ["speed"]
+}
+</code></pre>
+<h2 id="2-creating-tenants"><a class="header" href="#2-creating-tenants">2. Creating Tenants</a></h2>
+<p>Creating new tenants in the multi-tenant environment for the various tenant types in the Trust Ecosystem:</p>
+<h3 id="issuers"><a class="header" href="#issuers">Issuers</a></h3>
+<p>Tenants are custodial wallets created within the Trust Ecosystem's multitenant AcaPy agent. To create new tenants
+for your trust ecosystem, follow the steps below:</p>
+<ol>
+<li>Access the API through the <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a>.</li>
+<li>Authenticate with <code>tenant-admin.</code> + <code>APIKEY</code> role.</li>
+<li>Create a new tenant with a <code>POST</code> to the following API endpoint: <code>/tenant-admin/v1/admin/tenants/</code>, using the
+example request body below.</li>
+</ol>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": ["issuer"],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+<p>An example of a successful response to create a new Issuer Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIwNTYxODM2Mi1iMDI0LTQ2YzUtYjgzYy02YzZiOGM3NzkyZDgiLCJpYXQiOjE3MDAxMjgxNTN9.x_0xa9glFFW44PbfoBiEQY0Lt0dOBLVJgUkdavgusWU",
+  "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "created_at": "2023-11-16T09:49:13.067595Z",
+  "updated_at": "2023-11-16T09:49:13.111843Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+<h3 id="verifiers"><a class="header" href="#verifiers">Verifiers</a></h3>
+<p>Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant AcaPy agent.
+Follow the steps below to create new tenants for your trust ecosystem:</p>
+<ol>
+<li>
+<p>Access the API through <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></p>
+</li>
+<li>
+<p>Authenticate using the <code>tenant-admin.</code>+<code>APIKEY</code> role</p>
+</li>
+<li>
+<p>Generate a new tenant with a <code>POST</code> request to the API endpoint <code>/tenant-admin/v1/admin/tenants/</code> using the
+request body detailed in the example below</p>
+<pre><code class="language-json">{
+ "wallet_label": "Demo Verifier",
+ "wallet_name": "Acme",
+ "roles": [
+  "verifier"
+ ],
+ "group_id": "API demo",
+ "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+</code></pre>
+</li>
+<li>
+<p>Below is an example of a successful response to the creation of a new Verifier Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIwNTYxODM2Mi1iMDI0LTQ2YzUtYjgzYy02YzZiOGM3NzkyZDgiLCJpYXQiOjE3MDAxMjgxNTN9.x_0xa9glFFW44PbfoBiEQY0Lt0dOBLVJgUkdavgusWU",
+  "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "created_at": "2023-11-16T09:49:13.067595Z",
+  "updated_at": "2023-11-16T09:49:13.111843Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+</li>
+</ol>
+<h3 id="holders"><a class="header" href="#holders">Holders</a></h3>
+<p>Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant AcaPy agent.
+Follow these steps to create new Holders for your trust ecosystem:</p>
+<ol>
+<li>
+<p>Access the API through <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></p>
+</li>
+<li>
+<p>Authenticate using <code>tenant-admin.</code>+<code>APIKEY</code> role</p>
+</li>
+<li>
+<p>Generate a new tenant with a <code>POST</code> to the API endpoint <code>/tenant-admin/v1/admin/tenants/</code> using the request body</p>
+</li>
+<li>
+<p>in the example below</p>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+</li>
+<li>
+<p>Here is an example of a successful response to creating a new Holder Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiI0ZTBjNzBmYi1mMmFkLTRmNTktODFmMy05M2Q4ZGY5Yjk3N2EiLCJpYXQiOjE3MDAxMTkzMjJ9.lXrNVWN_bzRXkkBfOd1Yey6D0iqsHpOuXt6aZYwMLp4",
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "created_at": "2023-11-16T07:22:02.086605Z",
+  "updated_at": "2023-11-16T07:22:02.105980Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+</li>
+</ol>
+<h2 id="3-credential-definitions"><a class="header" href="#3-credential-definitions">3. Credential Definitions</a></h2>
+<p>Credential definitions are expected to be created by all <strong><em>Issuers</em></strong> within the trust ecosystem who wish to issue
+credentials to holders. The Trust Authority, which administers the trust ecosystem and enables tenants to write to
+the Indy Ledger, acts as the <code>Transaction Endorser</code> of the Trust Ecosystem. Meanwhile, Issuers serve as
+<code>Transaction Authors</code> within the Trust Ecosystem. For additional information on <code>Transaction Endorsers</code> and
+<code>Transaction Authors</code>, please refer to
+<a href="https://github.com/openwallet-foundation/acapy/blob/main/docs/features/Endorser.md">Aries Transaction Endorser Support</a>.</p>
+<p>To create credential definitions through the <code>Transaction Endorser Protocol</code> for trust ecosystem <em>issuers</em>,
+follow the steps below:</p>
+<ol>
+<li>
+<p>Access the <a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant Swagger UI</a></p>
+</li>
+<li>
+<p>Authenticate as an Issuer using <code>tenant.</code>+<code>JWTKey</code> x-api-key</p>
+</li>
+<li>
+<p>Create a new schema with a <code>POST</code> to the API endpoint <code>/v1/definitions/credentials</code> using the request body</p>
+</li>
+<li>
+<p>illustrated in the example below.</p>
+<blockquote>
+<p>NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry</p>
+</blockquote>
+<pre><code class="language-json">{
+  "tag": "default",
+  "schema_id": "JPqFhPEM4UiR2ZNK9CM4NA:2:test_schema:0.3.0"
+}
+</code></pre>
+</li>
+<li>
+<p>Below is an example of a successful response to writing a credential definition:</p>
+<pre><code class="language-json">{
+  "id": "EfFA6wi7fcZNWzRuHeQqaj:3:CL:8:default",
+  "tag": "default",
+  "schema_id": "JPqFhPEM4UiR2ZNK9CM4NA:2:test_schema:0.3.0"
+}
+</code></pre>
+</li>
+</ol>
+<h2 id="4-trust-registry"><a class="header" href="#4-trust-registry">4. Trust Registry</a></h2>
+<p>To query entries in the Trust Registry, adhere to the following steps:</p>
+<ol>
+<li>
+<p>Access the <a href="http://cloudapi.127.0.0.1.nip.io/public/docs">CloudAPI-Public Swagger UI</a></p>
+</li>
+<li>
+<p>Authenticate as an Issuer using <code>tenant.</code>+<code>JWTKey</code> role</p>
+<blockquote>
+<p>NOTE: The Trust Registry is currently public and accessible to anyone on the internet</p>
+</blockquote>
+</li>
+<li>
+<p>The trust-registry has 5 GET endpoints:</p>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/schemas</code> will return all schemas on the trust registry</p>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">[
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Person",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Person:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Address",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Address:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Medical Aid",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Medical Aid:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Bank Account",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
+  }
+]
+</code></pre>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/schemas/{schema_id}</code> will return the schema based on id passed</p>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">{
+  "did": "GXK1Ubc58DvZDe48zPYdcf",
+  "name": "Proof of Bank Account",
+  "version": "0.1.0",
+  "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
+}
+</code></pre>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/actors</code> will return all actors on the trust registry</p>
+</li>
+<li>
+<p>Optionally one of the following query parameters can be passed to get a specific actor:</p>
+<ul>
+<li><code>actor_did</code></li>
+<li><code>actor_id</code></li>
+<li><code>actor_name</code></li>
+</ul>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">[
+  {
+    "id": "9bdbc626-1499-48e2-a5db-878d347e290b",
+    "name": "didxissuer@didx.co.za",
+    "roles": ["issuer"],
+    "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1...Y29tbS5vcmcvZGlkZXhjaGFuZ2UvMS4wIl19"
+  },
+  {
+    "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
+    "name": "didxverifier@didx.co.za",
+    "roles": ["verifier"],
+    "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW...jb21tLm9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
+  },
+  {
+    "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
+    "name": "Bank Issuer &amp; Verifier",
+    "roles": ["issuer", "verifier"],
+    "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3Jn...odHRovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+  }
+]
+</code></pre>
+<ul>
+<li><code>GET</code> <code>/v1/trust-registry/actors/issuers</code> will return all actors with <code>issuer</code> as a role</li>
+<li><code>GET</code> <code>/v1/trust-registry/actors/verifiers</code> will return all actors with <code>verifier</code> as a role</li>
+</ul>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="example-flow"><a class="header" href="#example-flow">Example Flow</a></h1>
+<p>This document will provide you with more detail through the end-to-end flows:</p>
+<blockquote>
+<p>Please be aware that it is assumed at this point that your ecosystem has been <a href="./Bootstrap%20Trust%20Ecosystem.html">bootstrapped</a> with an endorser.</p>
+</blockquote>
+<ol>
+<li><a href="./examples/1.%20Onboarding.html">Onboarding an Issuer, Verifier and a Holder</a></li>
+<li><a href="./examples/2.%20Create%20Schema.html">Creating a Credential Schema</a></li>
+<li><a href="./examples/3.%20Create%20Credential%20Definition.html">The Issuer creating a Credential definition</a></li>
+<li><a href="./examples/4.%20Create%20Connection%20with%20Issuer.html">Create Connection between Issuer and Holder</a></li>
+<li><a href="./examples/5.%20Issue%20Credential.html">Issuing a credential to a Holder</a></li>
+<li><a href="./examples/6.%20Create%20Connection%20with%20Verifier.html">Create Connection between Verifier and Holder</a></li>
+<li><a href="./examples/7.%20Verify%20Credential.html">The Verifier doing a proof request against the Holder's Credential</a></li>
+<li><a href="./examples/8.%20Revoking%20Credentials.html">Revoking Credentials</a></li>
+<li><a href="./examples/9.%20Verify%20Revoked%20Credentials.html">Verifying Revoked Credentials</a></li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="1-onboarding-tenants"><a class="header" href="#1-onboarding-tenants">1: Onboarding Tenants</a></h1>
+<p>When onboarding users, also referred to as tenants or wallets, you need to use
+the <code>tenant-admin</code> role. Below, you will find the curl commands used to create
+an <code>Issuer</code>, <code>Verifier</code> and a <code>Holder</code>. If you are using the
+<a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin Swagger UI</a>
+to do the onboarding, just use the JSON in the field marked with <code>-d</code> in the
+curl commands.</p>
+<p>The difference between an <code>Issuer</code>, <code>Verifier</code> and <code>Holder</code> is that issuers and
+verifiers have privileged roles, and are therefore written to the trust registry,
+allowing them to issue credentials and to verify proof requests in our ecosystem.
+A holder is a regular tenant without a role, and therefore cannot act as an
+issuer or verifier. They are all "tenants", and therefore each will have a
+tenant access token.</p>
+<h2 id="onboard-issuer"><a class="header" href="#onboard-issuer">Onboard Issuer</a></h2>
+<blockquote>
+<p>Note the <code>x-api-key</code> used during the tenant creation that follows</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant-admin/v1/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": [
+    "issuer"
+  ],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiJkZWEwYTlmYi0wODhkLTQ2ODktYmM5Yy04YTFiYWI5MDYxNzAiLCJpYXQiOjE3MDA2MzE4NzN9.7Pwb5Q6BKHA6N9luJH1uDiHdgSZXPWwvdV4O0xZeqFQ",
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "created_at": "2023-11-20T09:49:45.809544Z",
+  "updated_at": "2023-11-20T09:49:45.841851Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+<p>The <code>access_token</code> is what must be used as x-api-key to act as this tenant.</p>
+<h2 id="onboard-verifier"><a class="header" href="#onboard-verifier">Onboard Verifier</a></h2>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant-admin/v1/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "roles": [
+    "verifier"
+  ],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiI5Mjg5MzY1OC1mZTJkLTRmMmQtODI2OC1hNjBhNjAxOTQ1YTkiLCJpYXQiOjE3MDA2MzE2MTd9.E5USXOEmKlpZelGzwGs7VxZWfQzvOBPADB2r95pyuWA",
+  "wallet_id": "92893658-fe2d-4f2d-8268-a60a601945a9",
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "created_at": "2023-11-22T05:40:16.606565Z",
+  "updated_at": "2023-11-22T05:40:16.630619Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+<h2 id="onboard-holder"><a class="header" href="#onboard-holder">Onboard Holder</a></h2>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant-admin/v1/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIyMjcxZjdmMi03MzU5LTRkMDgtYWI2Ni0xMWI2NjFlZDA5ZjQiLCJpYXQiOjE3MDA2MzE2OTN9.uKfcvq06KSlLHlGkH9zaXHcFA3V2WzNvxRVbyNgjXNc",
+  "wallet_id": "2271f7f2-7359-4d08-ab66-11b661ed09f4",
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "created_at": "2023-11-22T05:41:32.662976Z",
+  "updated_at": "2023-11-22T05:41:32.707778Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+<p>Next: <a href="examples/2.%20Create%20Schema.html">Create Credential Schema</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="2-create-schema"><a class="header" href="#2-create-schema">2: Create Schema</a></h1>
+<p>Only the <code>Governance</code> role can create Schemas. Note the <code>x-api-key</code> used in the
+following request.</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/governance/v1/definitions/schemas' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: governance.adminApiKey' \
+  -d '{
+  "name": "Person",
+  "version": "0.1.0",
+  "attribute_names": [
+    "Name","Surname","Age"
+  ]
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+  "name": "Person",
+  "version": "0.1.0",
+  "attribute_names": ["Surname", "Age", "Name"]
+}
+</code></pre>
+<p>Note down the schema id in the <code>id</code> field.</p>
+<p>Next: <a href="examples/3.%20Create%20Credential%20Definition.html">Create Credential Definition</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="3-create-credential-definition"><a class="header" href="#3-create-credential-definition">3: Create Credential Definition</a></h1>
+<p>Once a schema has been created by the governance agent, the <code>Issuer</code> can create a <code>credential definition</code>.
+They will use the credential definition as a unique reference to the schema.</p>
+<h2 id="creating-a-credential-definition"><a class="header" href="#creating-a-credential-definition">Creating a Credential Definition</a></h2>
+<p>To create a credential definition, the issuer needs to send a POST request to the appropriate endpoint.
+Below is an example of how to create a non-revocable credential definition:</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/definitions/credentials' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant.&lt;Issuer token&gt;' \
+  -d '{
+  "tag": "Demo Person",
+  "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+  "support_revocation": false
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+  "tag": "Demo Person",
+  "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0"
+}
+</code></pre>
+<p>Note down the credential definition id in the <code>id</code> field.</p>
+<p>If you don't need revocation support, you can continue to the next section:
+<a href="examples/4.%20Create%20Connection%20with%20Issuer.html">Create Connection</a>.
+Otherwise, stick around for an explanation of revocable credential definitions.</p>
+<h2 id="creating-a-revocable-credential-definition"><a class="header" href="#creating-a-revocable-credential-definition">Creating a Revocable Credential Definition</a></h2>
+<p>Revocation enables an issuer to revoke credentials, i.e., make a credential invalid some time after issuance.
+The process to make credentials revocable is straightforward, but there are a few things the issuer should keep
+track of. The goal of this section is to explain everything involved in revocation.</p>
+<p>To issue credentials that are revocable, the credential definition needs to be created with revocation support enabled.
+When creating a credential definition, set <code>"support_revocation": true</code>. This will enable revocation on all credentials
+issued against this credential definition.</p>
+<p>Example payload for creating a revocable credential definition:</p>
+<pre><code class="language-json">{
+  "tag": "My cred def",
+  "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+  "support_revocation": true
+}
+</code></pre>
+<p>The creation of a credential definition with revocation enabled can take up to a minute before a user gets a response
+from the API endpoint. The reason for this is the creation of revocation registries. These registries are essential
+for the cryptographic processes involved with revocation.
+See more on this <a href="https://github.com/hyperledger/indy-hipe/blob/main/text/0011-cred-revocation/README.md">here</a>.</p>
+<p>The management of these registries is obfuscated away from the user as it can be complicated and cumbersome.
+However, there are a few things to take note of. Once a registry is full, the application will automatically switch
+to a new registry. These registries are created on the fly, and the application will always have two "active"
+registries: one that is currently being used and the next one in the queue, i.e., the one the application will switch
+to once the current one is filled.</p>
+<p>There is also a fee associated with the creation of these registries as there is a definition of them that needs to
+end up on the ledger. These definitions are needed for the revocation process to work.</p>
+<p>There is an event associated with the creation of these revocation registries with the topic name <code>revocation</code>.
+Here is an example event of an initial event associated with the creation of the revocation registries:</p>
+<pre><code class="language-json">{
+  "wallet_id": "8960ee4d-d79d-4444-abca-ad2edbfef600",
+  "topic": "revocation",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "created_at": "2024-05-02T08:11:11.039583Z",
+    "cred_def_id": "WWzcvsHULP1Fkf9GUYRZg8:3:CL:8:Epic",
+    "error_msg": null,
+    "issuer_did": "WWzcvsHULP1Fkf9GUYRZg8",
+    "max_cred_num": 4,
+    "pending_pub": [],
+    "record_id": "bf1219ca-75bf-4931-911b-1fe2ace39683",
+    "revoc_def_type": "CL_ACCUM",
+    "revoc_reg_def": null,
+    "revoc_reg_entry": null,
+    "revoc_reg_id": "WWzcvsHULP1Fkf9GUYRZg8:4:WWzcvsHULP1Fkf9GUYRZg8:3:CL:8:Epic:CL_ACCUM:bf1219ca-75bf-4931-911b-1fe2ace39683",
+    "state": "init",
+    "tag": null,
+    "tails_hash": null,
+    "tails_local_path": null,
+    "tails_public_uri": null,
+    "updated_at": "2024-05-02T08:11:11.039583Z"
+  }
+}
+</code></pre>
+<blockquote>
+<p>Note: This event only fires on the creation of registries or when registries fill up and a new one takes its place.
+This event does not fire with the revocation of credentials.</p>
+</blockquote>
+<p>When a credential is issued with revocation support, it will be intrinsically connected with a registry.</p>
+<p>Next: <a href="examples/4.%20Create%20Connection%20with%20Issuer.html">Create Connection</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="4-create-connection"><a class="header" href="#4-create-connection">4: Create Connection</a></h1>
+<p>Now that the Issuer has a credential definition, they can start issuing
+credentials. However, in order to do that, they first needs to create a
+connection to the holder. There are multiple ways to create connections. We will
+use the <code>/v1/connections/</code> endpoints in these examples.</p>
+<h2 id="create-connection-between-issuer-and-holder"><a class="header" href="#create-connection-between-issuer-and-holder">Create connection between Issuer and Holder</a></h2>
+<p>As the <code>Issuer</code> we create a connection invitation.</p>
+<blockquote>
+<p>Note: The <code>multi_use</code> field indicates that the <code>invitation url</code> can be accepted
+by multiple tenants to create connections with them. <code>use_public_did</code> can be set
+to true for issuers making the invitation, because they are onboarded with a
+public did, but it's not necessary. It will simply allow the holder to validate
+the did of the issuer, as they will then be able to see it in the connection
+record.</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/connections/create-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant.&lt;Issuer token&gt;' \
+  -d '{
+  "alias": "Issuer &lt;&gt; Holder",
+  "multi_use": false,
+  "use_public_did": false
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "connection_id": "c78f9423-370e-4800-a48e-962456083943",
+  "invitation": {
+    "@id": "6a86e6c7-af25-4e5d-87fe-b42f559b13b9",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Issuer",
+    "recipientKeys": ["91ZNSpDgVoV12kHcmUqyp1JmGeKE7oGi9NFd2WMzKt4X"],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  },
+  "invitation_url": "http://governance-multitenant-agent:3020?c_i=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL2Nvbm5lY3Rpb25zLzEuMC9pbnZpdGF0aW9uIiwgIkBpZCI6ICI2YTg2ZTZjNy1hZjI1LTRlNWQtODdmZS1iNDJmNTU5YjEzYjkiLCAic2VydmljZUVuZHBvaW50IjogImh0dHA6Ly9nb3Zlcm5hbmNlLW11bHRpdGVuYW50LWFnZW50OjMwMjAiLCAiaW1hZ2VVcmwiOiAiaHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy83LzcwL0V4YW1wbGUucG5nIiwgInJlY2lwaWVudEtleXMiOiBbIjkxWk5TcERnVm9WMTJrSGNtVXF5cDFKbUdlS0U3b0dpOU5GZDJXTXpLdDRYIl0sICJsYWJlbCI6ICJEZW1vIElzc3VlciJ9"
+}
+</code></pre>
+<p>The <code>Holder</code> accepts the connection by using the <code>invitation</code> object above, and
+by posting to the <code>/v1/connections/accept-invitation</code> endpoint.</p>
+<blockquote>
+<p>Note: the <code>invitation</code> object can also be obtained by decoding the base64
+payload in the invitation_url, after the <code>c_i=</code> indicator.</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/connections/accept-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant.&lt;Holder token&gt;' \
+  -d '{
+  "alias": "Holder &lt;&gt; Issuer",
+  "use_existing_connection": false,
+  "invitation": {
+    "@id": "6a86e6c7-af25-4e5d-87fe-b42f559b13b9",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Issuer",
+    "recipientKeys": [
+      "91ZNSpDgVoV12kHcmUqyp1JmGeKE7oGi9NFd2WMzKt4X"
+    ],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  }
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "alias": "Holder &lt;&gt; Issuer",
+  "connection_id": "ac3b0d56-eb33-408a-baeb-0370164d47ae",
+  "connection_protocol": "connections/1.0",
+  "created_at": "2023-11-20T09:56:41.437966Z",
+  "error_msg": null,
+  "invitation_key": "91ZNSpDgVoV12kHcmUqyp1JmGeKE7oGi9NFd2WMzKt4X",
+  "invitation_mode": "once",
+  "invitation_msg_id": "6a86e6c7-af25-4e5d-87fe-b42f559b13b9",
+  "my_did": "MYhLew4uq58mou8SCTNFYp",
+  "state": "request-sent",
+  "their_did": null,
+  "their_label": "Demo Issuer",
+  "their_public_did": null,
+  "their_role": "inviter",
+  "updated_at": "2023-11-20T09:56:41.472385Z"
+}
+</code></pre>
+<p>Both of the tenants can listen to <code>SSE events</code> to track the progress of
+the connection being made. Once the <code>state</code> is <code>completed</code>, the connection is
+made. This can also be asserted by fetching connection records for the holder or
+issuer, and validating that their connection has transitioned to state:
+completed.</p>
+<p>Below is an example of a webhook event indicating the <code>completed</code> state.</p>
+<blockquote>
+<p>NOTE: The field IDs will be unique to each tenant i.e. the <code>connection_id</code> of
+the <code>Issuer</code> will be different from that of the <code>Holder</code>, even though they refer
+to the same connection.</p>
+</blockquote>
+<pre><code class="language-json">{
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "topic": "connections",
+  "origin": "multitenant",
+  "payload": {
+    "alias": "Holder &lt;&gt; Issuer",
+    "connection_id": "359b30a2-c98d-4c00-b318-8185d1d0e64d",
+    "connection_protocol": "connections/1.0",
+    "created_at": "2023-11-16T07:57:18.451554Z",
+    "error_msg": null,
+    "invitation_key": "8Vd5YSVBw5p6BJ8nHngZ2UcCKBmTSxQHoNWfaBQJXW5U",
+    "invitation_mode": "once",
+    "invitation_msg_id": "0ef82415-20ba-4d1e-818b-92a70355ec6e",
+    "my_did": "NXk4JkDpFff4MpnTwvn1Wa",
+    "state": "completed",
+    "their_did": "LN2WMyrMFH74L1GTkSteka",
+    "their_label": "Demo Issuer",
+    "their_public_did": null,
+    "their_role": "inviter",
+    "updated_at": "2023-11-16T07:57:18.748560Z"
+  }
+}
+</code></pre>
+<p>Next: <a href="examples/5.%20Issue%20Credential.html">5: Issue a Credential</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="5-issuing-a-credential"><a class="header" href="#5-issuing-a-credential">5: Issuing a Credential</a></h1>
+<h2 id="now-the-issuer-issues-credentials"><a class="header" href="#now-the-issuer-issues-credentials">Now the Issuer issues credentials</a></h2>
+<p>Now that a connection has been made between the <code>Issuer</code> and the <code>Holder</code>, the <code>Issuer</code> can send the credential to the
+<code>Holder</code> using the <code>connection_id</code> from the <code>Issuer's</code> perspective.</p>
+<blockquote>
+<p>Again both tenants can listen for events on the topic: <code>credentials</code></p>
+</blockquote>
+<h3 id="issuing-a-non-revocable-credential"><a class="header" href="#issuing-a-non-revocable-credential">Issuing a Non-Revocable Credential</a></h3>
+<p>To issue a non-revocable credential, the issuer needs to send a POST request to the appropriate endpoint.
+Below is an example of how to issue a non-revocable credential:</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/issuer/credentials' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant.&lt;Issuer token&gt;' \
+  -d '{
+  "type": "indy",
+  "indy_credential_detail": {
+    "credential_definition_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+    "attributes": {
+      "Name": "Alice",
+      "Surname": "Holder",
+      "Age": "25"
+    }
+  },
+  "connection_id": "c78f9423-370e-4800-a48e-962456083943"
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "attributes": {
+    "Name": "Alice",
+    "Surname": "Holder",
+    "Age": "25"
+  },
+  "connection_id": "c78f9423-370e-4800-a48e-962456083943",
+  "created_at": "2023-11-20T09:59:29.820002Z",
+  "credential_definition_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+  "credential_exchange_id": "v2-f126edb7-1ac1-43a3-bf1f-60b8feae4701",
+  "did": null,
+  "error_msg": null,
+  "role": "issuer",
+  "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+  "state": "offer-sent",
+  "thread_id": "9ceeb941-4ebd-42ec-9ffc-ea0b7fe39722",
+  "type": "indy",
+  "updated_at": "2023-11-20T09:59:29.820002Z"
+}
+</code></pre>
+<p>As you can see from the state, an offer has now been sent, and needs to be
+accepted/requested by the holder.</p>
+<blockquote>
+<p>Note that the issuer will now have what's called a <em>credential exchange record</em> in state: offer-sent.
+<em>Pending</em> exchange records can be viewed by calling <code>GET /v1/issuer/credentials</code>, and <em>completed</em>
+credential exchange records are deleted by default, but can be preserved by adding an optional
+<code>save_exchange_record=True</code> field to the request.</p>
+</blockquote>
+<h3 id="issuing-a-revocable-credential"><a class="header" href="#issuing-a-revocable-credential">Issuing a Revocable Credential</a></h3>
+<p>Credentials that support revocation are issued in the same way as described above, but there is additional information
+that the issuer needs to keep track of.</p>
+<p>There is a webhook event topic that an issuer can subscribe to called <code>"issuer_cred_rev"</code>. The <code>"issuer_cred_rev"</code>
+event has information on the issued credential and how it is connected to the revocation registries and some metadata.</p>
+<p>This event will fire under two circumstances:</p>
+<ul>
+<li>Once a credential (with revocation support) is issued.</li>
+<li>And when a credential is revoked.</li>
+</ul>
+<p>The state of the event will correspond with these events, i.e. first it will be <strong>"issued"</strong> and after revocation it
+will be <strong>"revoked"</strong>.</p>
+<p>Let's take a look at an example event:</p>
+<pre><code class="language-json">{
+  "wallet_id": "5df42bab-6719-4c8a-a615-8086435d4de4",
+  "topic": "issuer_cred_rev",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "created_at": "2024-04-30T08:51:18.177543Z",
+    "cred_def_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+    "cred_ex_id": "af4bad3f-3fcc-47ab-85e6-24224dcb2779",
+    "cred_ex_version": "2",
+    "cred_rev_id": "2",
+    "record_id": "57bd9c72-fa29-4f65-bd89-4e241471073a",
+    "rev_reg_id": "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4",
+    "state": "issued",
+    "updated_at": "2024-04-30T08:51:18.177543Z"
+  }
+}
+</code></pre>
+<p>Taking a look at the payload, there are a few fields we are interested in:</p>
+<ul>
+<li><code>"cred_def_id"</code> or <strong>credential definition id</strong>: The same id the issuer gets when creating a credential definition
+(also used when issuing credentials).</li>
+<li><code>"cred_ex_id"</code> or <strong>credential exchange id</strong>: This is the same exchange id that can be found in the credential
+exchange record.</li>
+<li><code>"cred_rev_id"</code> or <strong>credential revocation id</strong>: This is the id that ties the credential to the revocation registry.</li>
+<li><code>"rev_reg_id"</code> or <strong>revocation registry id</strong>: This is the id of the revocation registry the credential was
+issued against.</li>
+</ul>
+<p>The <code>"issuer_cred_rev"</code> event is not the only place this data is available. Under the issuer API,
+there is an endpoint: <code>GET /v1/issuer/credentials/revocation/record</code>.
+This endpoint will return the payload object of the <code>"issuer_cred_rev"</code> event:</p>
+<pre><code class="language-json">{
+  "created_at": "2024-04-30T08:51:18.177543Z",
+  "cred_def_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+  "cred_ex_id": "af4bad3f-3fcc-47ab-85e6-24224dcb2779",
+  "cred_ex_version": "2",
+  "cred_rev_id": "2",
+  "record_id": "57bd9c72-fa29-4f65-bd89-4e241471073a",
+  "rev_reg_id": "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4",
+  "state": "issued",
+  "updated_at": "2024-04-30T08:51:18.177543Z"
+}
+</code></pre>
+<p>This endpoint has three query parameters:</p>
+<ul>
+<li><code>"credential_exchange_id"</code></li>
+<li><code>"credential_revocation_id"</code></li>
+<li><code>"revocation_registry_id"</code></li>
+</ul>
+<p>If <code>"credential_exchange_id"</code> is not provided, both the <code>"credential_revocation_id"</code> and <code>"revocation_registry_id"</code>
+must be provided.</p>
+<p>So with the <code>"credential_exchange_id"</code> (from the credential exchange record), an issuer can get the relevant data
+needed to revoke the credential associated with the exchange id.</p>
+<blockquote>
+<p>[!NOTE] Issuers take note:
+The <em>most</em> important thing the issuer needs to keep track of is how their credential exchange ids map to
+credentials they have issued to holders. Without knowing how their exchange ids map to their holders,
+they won't know which credential to revoke.</p>
+</blockquote>
+<h2 id="holder-requests-credential"><a class="header" href="#holder-requests-credential">Holder requests credential</a></h2>
+<p>Now the <code>Holder</code> needs to respond to the credential sent to them. Below the <code>Holder</code> is getting all their connections.
+We are doing this to get the <code>connection_id</code> of the connection to the issuer.
+This <code>connection_id</code> can also be gotten from the <code>SSE events</code>.</p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/connections' \
+  -H 'accept: application/json' \
+  -H 'x-api-key: tenant.&lt;Holder token&gt;'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">[
+  {
+    "alias": "Holder &lt;&gt; Issuer",
+    "connection_id": "ac3b0d56-eb33-408a-baeb-0370164d47ae",
+    "connection_protocol": "connections/1.0",
+    "created_at": "2023-11-20T09:56:41.437966Z",
+    "error_msg": null,
+    "invitation_key": "91ZNSpDgVoV12kHcmUqyp1JmGeKE7oGi9NFd2WMzKt4X",
+    "invitation_mode": "once",
+    "invitation_msg_id": "6a86e6c7-af25-4e5d-87fe-b42f559b13b9",
+    "my_did": "MYhLew4uq58mou8SCTNFYp",
+    "state": "completed",
+    "their_did": "6wMwbinRJ5XKyBJKm7P5av",
+    "their_label": "Demo Issuer",
+    "their_public_did": null,
+    "their_role": "inviter",
+    "updated_at": "2023-11-20T09:56:41.656141Z"
+  }
+]
+</code></pre>
+<p>Note the <code>connection_id</code> in the above response.</p>
+<p>The <code>Holder</code> can then find the credentials offered to them on this <code>connection_id</code> by calling <code>/v1/issuer/credentials</code>
+with the optional <code>connection_id</code> query parameter:</p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/issuer/credentials?connection_id=ac3b0d56-eb33-408a-baeb-0370164d47ae' \
+  -H 'accept: application/json' \
+  -H 'x-api-key: tenant.&lt;Holder token&gt;'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">[
+  {
+    "attributes": {
+      "Name": "Alice",
+      "Surname": "Holder",
+      "Age": "25"
+    },
+    "connection_id": "ac3b0d56-eb33-408a-baeb-0370164d47ae",
+    "created_at": "2023-11-20T09:59:29.868946Z",
+    "credential_definition_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+    "credential_exchange_id": "v2-c492cec7-2f2d-4d5f-b839-b57dcd8f8eee",
+    "did": null,
+    "error_msg": null,
+    "role": "holder",
+    "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+    "state": "offer-received",
+    "thread_id": "9ceeb941-4ebd-42ec-9ffc-ea0b7fe39722",
+    "type": "indy",
+    "updated_at": "2023-11-20T09:59:29.868946Z"
+  }
+]
+</code></pre>
+<p>Note the <code>credential_exchange_id</code> and <code>state: offer-received</code>. Additionally, note that the holder and the issuer have
+different <code>credential_exchange_id</code> references for the same credential exchange interaction.</p>
+<p>The <code>Holder</code> can now request the credential, using the <code>credential_exchange_id</code> from the above response,
+by calling <code>/v1/issuer/credentials/{credential_exchange_id}/request</code>:</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/issuer/credentials/v2-c492cec7-2f2d-4d5f-b839-b57dcd8f8eee/request' \
+  -H 'accept: application/json' \
+  -H 'x-api-key: tenant.&lt;Holder token&gt;' \
+  -d ''
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "attributes": {
+    "Name": "Alice",
+    "Surname": "Holder",
+    "Age": "25"
+  },
+  "connection_id": "ac3b0d56-eb33-408a-baeb-0370164d47ae",
+  "created_at": "2023-11-20T09:59:29.868946Z",
+  "credential_definition_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+  "credential_exchange_id": "v2-c492cec7-2f2d-4d5f-b839-b57dcd8f8eee",
+  "did": null,
+  "error_msg": null,
+  "role": "holder",
+  "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+  "state": "request-sent",
+  "thread_id": "9ceeb941-4ebd-42ec-9ffc-ea0b7fe39722",
+  "type": "indy",
+  "updated_at": "2023-11-20T10:02:02.708045Z"
+}
+</code></pre>
+<p>The holder request has been sent, and an automated workflow will transition the credential to
+being stored in the holder's wallet.</p>
+<p>We can listen on SSE and wait for <code>state</code> to be <code>done</code> on the <code>topic</code>: <code>credentials</code></p>
+<pre><code class="language-json">  {
+    "wallet_id": "7bb24cc8-2e56-4326-9020-7870ad67b257",
+    "topic": "credentials",
+    "origin": "multitenant",
+    "payload": {
+      "attributes": null,
+      "connection_id": "ac3b0d56-eb33-408a-baeb-0370164d47ae",
+      "created_at": "2023-11-20T09:59:29.868946Z",
+      "credential_definition_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+      "credential_exchange_id": "v2-c492cec7-2f2d-4d5f-b839-b57dcd8f8eee",
+      "did": null,
+      "error_msg": null,
+      "role": "holder",
+      "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+      "state": "done",
+      "thread_id": "9ceeb941-4ebd-42ec-9ffc-ea0b7fe39722",
+      "type": "indy",
+      "updated_at": "2023-11-20T10:02:03.043100Z"
+    }
+  }
+</code></pre>
+<p>Once the state is done, the credential will be in the <code>Holder</code>'s wallet. We can list the credential in
+the wallet by doing the following call as the <code>Holder</code>:</p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/wallet/credentials' \
+  -H 'accept: application/json' \
+  -H 'x-api-key: tenant.&lt;Holder token&gt;'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "attrs": {
+        "Surname": "Holder",
+        "Name": "Alice",
+        "Age": "25"
+      },
+      "cred_def_id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+      "cred_rev_id": null,
+      "referent": "86dfb6ef-1ff5-41fd-977b-092a1d97e20b",
+      "rev_reg_id": null,
+      "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0"
+    }
+  ]
+}
+</code></pre>
+<blockquote>
+<p>Note: the credential has no reference to a <code>credential_exchange_id</code>. In the wallet context, the <code>referent</code>
+is the credential id, and is different from the <code>credential_exchange_id</code> used during the credential exchange.</p>
+</blockquote>
+<p>Hooray! 🥳🎉 The holder now has a credential!</p>
+<p>Next: <a href="examples/6.%20Create%20Connection%20with%20Verifier.html">Create connection with Verifier</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="6-create-connection-between-verifier-and-holder"><a class="header" href="#6-create-connection-between-verifier-and-holder">6: Create connection between Verifier and Holder</a></h1>
+<p>Again we first create a <code>connection</code>. This time between the <code>Verifier</code> and
+<code>Holder</code>.</p>
+<blockquote>
+<p>Note: a verifier is not necessarily onboarded with a public did - only if they
+have an issuer tole too - so they can only set <code>use_public_did</code> to true if they
+have configured it themselves.</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/connections/create-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "alias": "Verifier &lt;&gt; Holder",
+  "multi_use": false,
+  "use_public_did": false
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "connection_id": "30f0c10e-b8d6-4609-8a13-fca96b2ff00f",
+  "invitation": {
+    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Verifier",
+    "recipientKeys": ["Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  },
+  "invitation_url": "http://governance-multitenant-agent:3020?c_i=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL2Nvbm5lY3Rpb25zLzEuMC9pbnZpdGF0aW9uIiwgIkBpZCI6ICI0YTY4ZWQ0Yi02YTg2LTQ1ZTItOTVlOS1hNzZlZGNkOTNiYzQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHA6Ly9nb3Zlcm5hbmNlLW11bHRpdGVuYW50LWFnZW50OjMwMjAiLCAiaW1hZ2VVcmwiOiAiaHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy83LzcwL0V4YW1wbGUucG5nIiwgInJlY2lwaWVudEtleXMiOiBbIkNuM3JIdWZYYTk0eENVS29TR3NlWGluRlNuNm9OQmI1NDNuMTVORTZtTHpKIl0sICJsYWJlbCI6ICJEZW1vIFZlcmlmaWVyIn0="
+}
+</code></pre>
+<p>The <code>Holder</code> accepts the invitation, using the <code>invitation</code> object in the above
+(can also be decoded from the base64 payload in the invitation_url, after the
+<code>c_i=</code> indicator):</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/connections/accept-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "alias": "Holder &lt;&gt; Verifier",
+  "use_existing_connection": false,
+  "invitation": {
+    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Verifier",
+    "recipientKeys": [
+      "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"
+    ],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  }
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "alias": "Holder &lt;&gt; Verifier",
+  "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
+  "connection_protocol": "connections/1.0",
+  "created_at": "2023-11-20T10:06:01.683789Z",
+  "error_msg": null,
+  "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
+  "invitation_mode": "once",
+  "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+  "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
+  "state": "request-sent",
+  "their_did": null,
+  "their_label": "Demo Verifier",
+  "their_public_did": null,
+  "their_role": "inviter",
+  "updated_at": "2023-11-20T10:06:01.721340Z"
+}
+</code></pre>
+<p>Listen to SSE until this connection is in <code>state</code>: <code>completed</code></p>
+<pre><code class="language-json">{
+  "wallet_id": "7bb24cc8-2e56-4326-9020-7870ad67b257",
+  "topic": "connections",
+  "origin": "multitenant",
+  "payload": {
+    "alias": "Holder &lt;&gt; Verifier",
+    "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
+    "connection_protocol": "connections/1.0",
+    "created_at": "2023-11-20T10:06:01.683789Z",
+    "error_msg": null,
+    "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
+    "invitation_mode": "once",
+    "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+    "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
+    "state": "completed",
+    "their_did": "2guow2rkGp9wESxZPEWPSJ",
+    "their_label": "Demo Verifier",
+    "their_public_did": null,
+    "their_role": "inviter",
+    "updated_at": "2023-11-20T10:06:01.922033Z"
+  }
+}
+</code></pre>
+<p>Next: <a href="examples/7.%20Verify%20Credential.html">Verify Issued Credential</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="7-verify-issued-credential"><a class="header" href="#7-verify-issued-credential">7: Verify Issued Credential</a></h1>
+<h2 id="sending-proof-request"><a class="header" href="#sending-proof-request">Sending proof request</a></h2>
+<p>Once the connection is established, the Verifier can send a proof request.</p>
+<blockquote>
+<p>There are optional restrictions and additional fields that can be added to the proof request, which are beyond the
+scope of this simple example. For more information, please see our docs for
+<a href="examples/./Restrictions%20on%20Proofs/1.%20Restrictions%20on%20Proofs.html">restrictions on proofs</a>.</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/verifier/send-request' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "comment": "Demo",
+  "type": "indy",
+  "indy_proof_request": {
+       "requested_attributes": { 
+           "holder_surname": { "name": "Surname", "restrictions":[]},
+           "holder_name": { "name": "Name", "restrictions": []},
+           "holder_age": { "name": "Age", "restrictions": []}
+        }, 
+       "requested_predicates": {}   
+  },
+  "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40"
+}'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+  "created_at": "2023-11-22T10:12:20.755226Z",
+  "error_msg": null,
+  "parent_thread_id": "ce5b5597-d3fa-437b-a857-0927694cc4b9",
+  "presentation": null,
+  "presentation_request": {
+    "name": null,
+    "non_revoked": null,
+    "nonce": "1040329690360437135931695",
+    "requested_attributes": {
+      "holder_surname": {
+        "name": "Surname",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder_name": {
+        "name": "Name",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder_age": {
+        "name": "Age",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {},
+    "version": null
+  },
+  "proof_id": "v2-57c1bf16-1fc3-4506-b672-8b11580c4920",
+  "role": "verifier",
+  "state": "request-sent",
+  "thread_id": "ce5b5597-d3fa-437b-a857-0927694cc4b9",
+  "updated_at": "2023-11-22T10:12:20.755226Z",
+  "verified": null
+}
+</code></pre>
+<blockquote>
+<p>Note that the verifier will now have what's called a <em>presentation exchange record</em> in state: request-sent. <em>Pending</em>
+presentation records can be viewed by calling <code>GET /v1/verifier/proofs</code>, and <em>completed</em> presentation exchange records
+are deleted by default, but can be preserved by adding an optional <code>save_exchange_record=True</code> field to the request.</p>
+</blockquote>
+<h2 id="holder-responds-to-proof-request"><a class="header" href="#holder-responds-to-proof-request">Holder responds to proof request</a></h2>
+<p>The holder would have received a webhook event on topic <code>proofs</code>, indicating they have received a request. Example webhook:</p>
+<pre><code class="language-json">{
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "topic": "proofs",
+  "origin": "multitenant",
+  "payload": {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v2-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+}
+</code></pre>
+<p>The Holder will now see a presentation exchange record when they call <code>GET</code> on the <code>/v1/verifier/proofs</code> endpoint:</p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/verifier/proofs' \
+  -H 'accept: application/json'
+  -H 'x-api-key: tenant.&lt;holder token&gt;' \
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">[
+  {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "presentation": null,
+    "presentation_request": {
+      "name": "Proof Request",
+      "non_revoked": null,
+      "nonce": "234234",
+      "requested_attributes": {
+        "holder_surname": {
+          "name": "surname",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder_name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder_age": {
+          "name": "age",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v2-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+]
+</code></pre>
+<p>Note that their role indicates <code>prover</code>, and the state is <code>request-received</code>. Prover is the term used for a holder in a
+proof exchange. Additionally, note that the prover and the verifier have different <code>proof_id</code> references for the same
+proof interaction.</p>
+<p>The Holder/Prover can now check which credentials match the fields that are requested in the proof request by using the
+<code>proof_id</code> and making a call to <code>/v1/verifier/proofs/{proof_id}/credentials</code>.</p>
+<blockquote>
+<p>NOTE: If the call is successful, but returns an empty list <code>[]</code>, it means that the credentials of the <code>Holder</code> do not
+match the requested fields in the proof request.</p>
+</blockquote>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/verifier/proofs/v2-93e29a31-5eab-4091-9d1d-f27220f445fd/credentials' \
+  -H 'accept: application/json'
+</code></pre>
+<p>Response:</p>
+<blockquote>
+<p>NOTE: This response is a list. Each object in this list corresponds to a credential, matching the requested attributes.
+In this case, the response has only one object, meaning all the requested attributes are found in one credential.</p>
+</blockquote>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "Age": "25",
+        "Surname": "Holder",
+        "Name": "Alice"
+      },
+      "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+      "cred_rev_id": null,
+      "referent": "10e6b03f-2b60-431a-9634-731594423120",
+      "rev_reg_id": null,
+      "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0"
+    },
+    "interval": null,
+    "presentation_referents": ["holder_name", "holder_age", "holder_surname"]
+  }
+]
+</code></pre>
+<p>We can now use the <code>referent</code> (the referent is the holder's reference to their credential id) from the response above to
+accept the proof request:</p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/verifier/accept-request' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "proof_id": "v2-614a1035-c855-417d-8a8e-0c824bb6ab0f",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "holder_surname": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      },
+      "holder_name": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      },
+      "holder_age": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {},
+    "self_attested_attributes": {},
+  },
+  "dif_presentation_spec": {}
+}'
+</code></pre>
+<details>
+<summary>Click to see Response</summary>
+<pre><code class="language-json">{
+  "connection_id": "43264326-57a7-4ef4-aa65-906dd9c15961",
+  "created_at": "2023-11-22T06:11:46.956062Z",
+  "error_msg": null,
+  "parent_thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+  "presentation": {
+    "identifiers": [
+      {
+        "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+        "rev_reg_id": null,
+        "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+        "timestamp": null
+      }
+    ],
+    "proof": {
+      "aggregated_proof": {
+        "c_hash": "3219322627487542487718476352817657516298296911958347169452423884069641575597",
+        "c_list": [
+          [2,221,130,248,96,145,3,19,86,111,75,202,101,190,166,101,222,83,181,133,88,134,...]
+        ]
+      },
+      "proofs": [
+        {
+          "non_revoc_proof": null,
+          "primary_proof": {
+            "eq_proof": {
+              "a_prime": "92597261364394573165798933206533873274818813554675314388834609214520451243506734698448...",
+              "e": "13957611453314484376536548594867291175484947973045451726862617289480834912062823268784462725...",
+              "m": {
+                "master_secret": "113138788366524810935384910670667169176189186849867816774981002913273272990310..."
+              },
+              "m2": "9527966448141582634179217567781606687146704440935821032302777460114542256740868407661366941...",
+              "revealed_attrs": {
+                "holder_age": "25",
+                "holder_name": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+                "holder_surname": "108415864455171922802944099373800995974825385451497756533671241088029831060565"
+              },
+              "v": "13310269669535827858183383537992882823597862340798892194315939604086055386082234517559247559..."
+            },
+            "ge_proofs": []
+          }
+        }
+      ]
+    },
+    "requested_proof": {
+      "predicates": {},
+      "revealed_attr_groups": null,
+      "revealed_attrs": {
+        "holder_surname": {
+          "encoded": "108415864455171922802944099373800995974825385451497756533671241088029831060565",
+          "raw": "Holder",
+          "sub_proof_index": 0
+        },
+        "holder_name": {
+          "encoded": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+          "raw": "Alice",
+          "sub_proof_index": 0
+        },
+        "holder_age": {
+          "encoded": "25",
+          "raw": "25",
+          "sub_proof_index": 0
+        }
+      },
+      "self_attested_attrs": {},
+      "unrevealed_attrs": {}
+    }
+  },
+  "presentation_request": {
+    "name": "Proof Request",
+    "non_revoked": null,
+    "nonce": "234234",
+    "requested_attributes": {
+      "holder_surname": {
+        "name": "surname",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder_name": {
+        "name": "name",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder_age": {
+        "name": "age",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {},
+    "version": "1.0"
+  },
+  "proof_id": "v2-614a1035-c855-417d-8a8e-0c824bb6ab0f",
+  "role": "prover",
+  "state": "presentation-sent",
+  "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+  "updated_at": "2023-11-22T06:28:01.553809Z",
+  "verified": null
+}
+</code></pre>
+</details>
+<p>If the proof request is valid, then the verification will complete automatically. Once again, we wait for the exchange
+to be completed by listening on SSE. Here is an example webhook event for the topic <code>proofs</code> in the <code>done</code> state.</p>
+<pre><code class="language-json">  {
+    "wallet_id": "92893658-fe2d-4f2d-8268-a60a601945a9",
+    "topic": "proofs",
+    "origin": "multitenant",
+    "payload": {
+      "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+      "created_at": "2023-11-22T06:11:46.897536Z",
+      "error_msg": null,
+      "parent_thread_id": null,
+      "presentation": null,
+      "presentation_request": null,
+      "proof_id": "v2-e83d3d75-9eb1-4d54-a321-7d0d5c5d286e",
+      "role": "verifier",
+      "state": "done",
+      "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+      "updated_at": "2023-11-22T06:28:01.704464Z",
+      "verified": true
+    }
+  }
+</code></pre>
+<p>Verifier can get the proof with all its data by making the following call:</p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://cloudapi.127.0.0.1.nip.io/tenant/v1/verifier/proofs' \
+  -H 'accept: application/json'
+</code></pre>
+<details>
+<summary> Click to see Response </summary>
+<pre><code class="language-json">[
+  {
+    "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+    "created_at": "2023-11-22T06:11:46.897536Z",
+    "error_msg": null,
+    "parent_thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+    "presentation": {
+      "identifiers": [
+        {
+          "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+          "rev_reg_id": null,
+          "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+          "timestamp": null
+        }
+      ],
+      "proof": {
+        "aggregated_proof": {
+          "c_hash": "3219322627487542487718476352817657516298296911958347169452423884069641575597",
+          "c_list": [
+            [2,221,130,248,96,145,3,19,86,111,75,202,101,190,166,101,222,83,181,133,88,134,152,205,154,157,...]
+          ]
+        },
+        "proofs": [
+          {
+            "non_revoc_proof": null,
+            "primary_proof": {
+              "eq_proof": {
+                "a_prime": "9259726136439457316579893320653387327481881355467531438883460921452045124350673469620...",
+                "e": "1395761145331448437653654859486729117548494797304545172686261728948083491206282326878446272...",
+                "m": {
+                  "master_secret": "11313878836652481093538491067066716917618918684986781677498100291327327294712..."
+                },
+                "m2": "952796644814158263417921756778160668714670444093582103230277746011454225674086840766136694...",
+                "revealed_attrs": {
+                  "holder_age": "25",
+                  "holder_name": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+                  "holder_surname": "108415864455171922802944099373800995974825385451497756533671241088029831060565"
+                },
+                "v": "1331026966953582785818338353799288282359786234079889219431593960408605538608223451755924755..."
+              },
+              "ge_proofs": []
+            }
+          }
+        ]
+      },
+      "requested_proof": {
+        "predicates": {},
+        "revealed_attr_groups": null,
+        "revealed_attrs": {
+          "holder_surname": {
+            "encoded": "108415864455171922802944099373800995974825385451497756533671241088029831060565",
+            "raw": "Holder",
+            "sub_proof_index": 0
+          },
+          "holder_name": {
+            "encoded": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+            "raw": "Alice",
+            "sub_proof_index": 0
+          },
+          "holder_age": {
+            "encoded": "25",
+            "raw": "25",
+            "sub_proof_index": 0
+          }
+        },
+        "self_attested_attrs": {},
+        "unrevealed_attrs": {}
+      }
+    },
+    "presentation_request": {
+      "name": "Proof Request",
+      "non_revoked": null,
+      "nonce": "234234",
+      "requested_attributes": {
+        "holder_surname": {
+          "name": "surname",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder_name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder_age": {
+          "name": "age",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v2-e83d3d75-9eb1-4d54-a321-7d0d5c5d286e",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+    "updated_at": "2023-11-22T06:28:01.704464Z",
+    "verified": true
+  }
+]
+</code></pre>
+</details>
+<p>Hooray! 🥳🎉 Well done, you now know how to issue and verify credentials!</p>
+<p>If you would like to learn about revoking credentials, please proceed to the next section:
+<a href="examples/8.%20Revoking%20Credentials.html">Revoking Credentials</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="8-revoking-credentials"><a class="header" href="#8-revoking-credentials">8: Revoking Credentials</a></h1>
+<p>Revoking a credential can take one of two routes depending on the issuer's use case.</p>
+<p>Depending on the frequency and volume of credential revocations, issuers may choose to batch publish
+their revocations or not.
+Since there is a cost associated with publishing revocations to the ledger,
+it is recommended that issuers batch revocations when possible.</p>
+<h2 id="automatic-publishing-of-revocations"><a class="header" href="#automatic-publishing-of-revocations">Automatic Publishing of Revocations</a></h2>
+<blockquote>
+<p>[!WARNING]
+This endpoint should not be used to revoke more than one credential in quick succession.
+For multiple revocations, follow the batching route.</p>
+</blockquote>
+<p>The fast and easy way to revoke a credential is to automatically publish the revocation to the ledger,
+as shown in the example below.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/revoke
+</code></pre>
+<pre><code class="language-json">{
+  "credential_exchange_id": "v2-af4bad3f-3fcc-47ab-85e6-24224dcb2779",
+  "credential_definition_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+  "auto_publish_on_ledger": true
+}
+</code></pre>
+<p>The endpoint will respond with:</p>
+<pre><code class="language-json">{
+  "cred_rev_ids_published": {
+    "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4": [2]
+  }
+}
+</code></pre>
+<p>The <code>"issuer_cred_rev"</code> event will fire again with the updated status <em>revoked</em>.</p>
+<pre><code class="language-json">{
+  "wallet_id": "5df42bab-6719-4c8a-a615-8086435d4de4",
+  "topic": "issuer_cred_rev",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "created_at": "2024-04-30T08:51:18.177543Z",
+    "cred_def_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+    "cred_ex_id": "af4bad3f-3fcc-47ab-85e6-24224dcb2779",
+    "cred_ex_version": "2",
+    "cred_rev_id": "2",
+    "record_id": "57bd9c72-fa29-4f65-bd89-4e241471073a",
+    "rev_reg_id": "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4",
+    "state": "revoked",
+    "updated_at": "2024-04-30T12:21:16.686124Z"
+  }
+}
+</code></pre>
+<p>The revocation status endpoint will also be updated to the new state.</p>
+<pre><code class="language-http">GET /v1/issuer/credentials/revocation/record?credential_exchange_id=v2-af4bad3f-3fcc-47ab-85e6-24224dcb2779
+</code></pre>
+<pre><code class="language-json">{
+  "created_at": "2024-04-30T08:51:18.177543Z",
+  "cred_def_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+  "cred_ex_id": "af4bad3f-3fcc-47ab-85e6-24224dcb2779",
+  "cred_ex_version": "2",
+  "cred_rev_id": "2",
+  "record_id": "57bd9c72-fa29-4f65-bd89-4e241471073a",
+  "rev_reg_id": "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4",
+  "state": "revoked",
+  "updated_at": "2024-04-30T12:21:16.686124Z"
+}
+</code></pre>
+<p>For emphasis: every credential revoked in this manner will trigger a ledger operation, which incurs a cost.
+If an issuer has multiple credentials to revoke, it is recommended not to auto-publish to the ledger.</p>
+<h2 id="manual-publishing-of-revocations-batching"><a class="header" href="#manual-publishing-of-revocations-batching">Manual Publishing of Revocations (Batching)</a></h2>
+<p>By setting <code>"auto_publish_on_ledger"</code> to <em>false</em>, an issuer can call
+revoke on all the <em>credential exchange ids</em> they would like to revoke without
+performing multiple ledger operations.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/revoke
+</code></pre>
+<pre><code class="language-json">{
+  "credential_exchange_id": "v2-6dbfbeeb-468f-4017-93f7-09c3602b15d4",
+  "credential_definition_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+  "auto_publish_on_ledger": false
+}
+</code></pre>
+<p>The endpoint will respond with:</p>
+<pre><code class="language-json">{
+  "cred_rev_ids_published": {}
+}
+</code></pre>
+<p>However, the <code>"issuer_cred_rev"</code> event won't fire after every call as it does with <code>"auto_publish_on_ledger": true</code>,
+because the credential's status will only update when the revocation has been published to the ledger.
+This is also reflected in the revocation record, as the state remains <em>issued</em>.</p>
+<pre><code class="language-http">GET /v1/issuer/credentials/revocation/record?credential_exchange_id=v2-6dbfbeeb-468f-4017-93f7-09c3602b15d4
+</code></pre>
+<pre><code class="language-json">{
+  "created_at": "2024-04-30T12:49:25.210664Z",
+  "cred_def_id": "QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic",
+  "cred_ex_id": "6dbfbeeb-468f-4017-93f7-09c3602b15d4",
+  "cred_ex_version": "2",
+  "cred_rev_id": "3",
+  "record_id": "287a40fe-a23e-4675-b21f-5b72835b25be",
+  "rev_reg_id": "QrMaE11MnC6zjKNY1pxbq8:4:QrMaE11MnC6zjKNY1pxbq8:3:CL:8:Epic:CL_ACCUM:53462552-d716-4b0b-8b5c-914a3574d2c4",
+  "state": "issued",
+  "updated_at": "2024-04-30T12:49:25.210664Z"
+}
+</code></pre>
+<p>Once revocation is called on all the <em>credential exchange ids</em> that need to be revoked, the revocations can
+then be published to the ledger.</p>
+<p>Revocations that were called with <code>"auto_publish_on_ledger": false"</code> are pending publication.
+An issuer can either publish these revocations or clear the revocation, i.e., not revoke the credential.</p>
+<h3 id="publishing-pending-revocations"><a class="header" href="#publishing-pending-revocations">Publishing Pending Revocations</a></h3>
+<p>The publish revocation endpoint can be used to publish revocations in bulk, or an issuer can be very specific
+about which revocations they want to publish.</p>
+<p>The body sent to the endpoint specifies what needs to be published.
+This body is a revocation registry to credential map/dictionary.</p>
+<p>Each key is a revocation registry ID (<code>rev_reg_id</code>), and its value is a list
+of credential revocation IDs (<code>cred_rev_id</code>) to be published.
+The payload below will publish 6 revocations across two registries.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/publish-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {
+    "WWzcvsHULP1Fkf9GUYRZg8:4:WWzcvsHULP1Fkf9GUYRZg8:3:CL:8:Epic:CL_ACCUM:cd2e0473-31f7-4cde-883d-6fceac1ce0d7": [
+      "1",
+      "2",
+      "3"
+    ],
+    "WWzcvsHULP1Fkf9GUYRZg8:4:WWzcvsHULP1Fkf9GUYRZg8:3:CL:8:Epic:CL_ACCUM:bf1219ca-75bf-4931-911b-1fe2ace39683": [
+      "1",
+      "2",
+      "4"
+    ]
+  }
+}
+</code></pre>
+<p>Providing an empty list for a registry ID instructs the system to publish all pending revocations for that ID.
+The payload below will publish all pending revocations for the given registry ID (<code>rev_reg_id</code>).</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/publish-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {
+    "WWzcvsHULP1Fkf9GUYRZg8:4:WWzcvsHULP1Fkf9GUYRZg8:3:CL:8:Epic:CL_ACCUM:cd2e0473-31f7-4cde-883d-6fceac1ce0d7": []
+  }
+}
+</code></pre>
+<p>An empty map/dictionary signifies that all pending revocations across all registry IDs (belonging to the issuer)
+should be published.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/publish-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {}
+}
+</code></pre>
+<p>This endpoint responds with:</p>
+<pre><code class="language-json">{
+  "cred_rev_ids_published": {
+    "rev_reg_id_1": [1, 2],
+    "rev_reg_id_2": [0, 3]
+  }
+}
+</code></pre>
+<p>The <code>issuer_cred_rev</code> event will also fire for every credential that was revoked after the revocations were published.</p>
+<h3 id="clearing-pending-revocations"><a class="header" href="#clearing-pending-revocations">Clearing Pending Revocations</a></h3>
+<p>The clear revocation endpoint functions in the same way as the publish revocation endpoint. Instead of publishing
+the revocations, it clears them, i.e., the credential is not revoked and is still considered valid.</p>
+<p>The response to the clearing endpoint is also different from the publish endpoint. The clear pending revocation
+endpoint responds with the <em>still</em> pending revocations.</p>
+<p>The payload below will clear the pending revocation on <code>cred_rev_id = 5</code>.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/clear-pending-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {
+    "CJnbcDL4vBkRzDSw5dS1Pa:4:CJnbcDL4vBkRzDSw5dS1Pa:3:CL:8:Epic:CL_ACCUM:55bd2b4c-672b-4749-b8d3-b1b8137d1012": ["5"]
+  }
+}
+</code></pre>
+<p>Response of still pending <code>cred_rev_ids</code> for the registry:</p>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {
+    "CJnbcDL4vBkRzDSw5dS1Pa:4:CJnbcDL4vBkRzDSw5dS1Pa:3:CL:8:Epic:CL_ACCUM:55bd2b4c-672b-4749-b8d3-b1b8137d1012": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ]
+  }
+}
+</code></pre>
+<p>This call will clear all pending revocations for the given registry ID.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/clear-pending-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {
+    "CJnbcDL4vBkRzDSw5dS1Pa:4:CJnbcDL4vBkRzDSw5dS1Pa:3:CL:8:Epic:CL_ACCUM:55bd2b4c-672b-4749-b8d3-b1b8137d1012": []
+  }
+}
+</code></pre>
+<p>Response (no more pending revocations):</p>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {}
+}
+</code></pre>
+<p>This call will clear all revocations for all registries.</p>
+<pre><code class="language-http">POST /v1/issuer/credentials/clear-pending-revocations
+</code></pre>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {}
+}
+</code></pre>
+<p>Response (no more pending revocations):</p>
+<pre><code class="language-json">{
+  "revocation_registry_credential_map": {}
+}
+</code></pre>
+<h3 id="getting-pending-revocations-per-revocation-registry"><a class="header" href="#getting-pending-revocations-per-revocation-registry">Getting Pending Revocations per Revocation Registry</a></h3>
+<p>An issuer can get the pending revocations per revocation registry.</p>
+<p>This is very easy to do; just call the following endpoint with the <code>rev_reg_id</code>:</p>
+<pre><code class="language-http">GET /v1/issuer/credentials/get-pending-revocations/{revocation_registry_id}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "pending_cred_rev_ids": [0, 1, 2, 3]
+}
+</code></pre>
+<p>The response contains the integers of the <code>cred_rev_ids</code> that are pending revocation for the <code>rev_reg_id</code> called.</p>
+<p>Next: <a href="examples/9.%20Verify%20Revoked%20Credentials.html">Verifying Revoked Credentials</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="verifying-revoked-credentials"><a class="header" href="#verifying-revoked-credentials">Verifying Revoked Credentials</a></h1>
+<p>In order to make sure a credential is not revoked, when making a proof request, it is important to include the
+<code>non_revoked</code> field. This field defines a time frame where a verifier wants a credential to be valid i.e. not revoked.</p>
+<p>To define this time frame, the <code>non_revoked</code> field has two subfields <code>from</code> (optional) and <code>to</code>, both accepting dates in
+seconds since the Unix epoch. In most cases, the current time should be used, as the verifier is typically interested in
+credentials that are valid at the time of sending the proof request. Unless, of course, the verifier's use case requires
+some specific time.</p>
+<blockquote>
+<p>NB: The <code>non-revoked</code> field can be passed as an empty object (<code>"non-revoked":{}</code>), then the application will use the
+current time when sending the proof request.</p>
+</blockquote>
+<p>The <code>non-revoked</code> field can be specified for all requested attributes (global):</p>
+<pre><code class="language-json">...
+"indy_proof_request": {
+    "non_revoked": {
+      "from": 0,
+      "to": 1714727880
+    },
+    "requested_attributes": {
+...
+</code></pre>
+<p>or it can be added to specific attributes individually:</p>
+<pre><code class="language-json">...
+"indy_proof_request": {
+  "requested_attributes": {
+    "surname": { "name": "Surname", "non_revoked":{"to":1714727880}},
+...
+</code></pre>
+<p>When both are specified simultaneously, the attribute-specific one will take priority:</p>
+<pre><code class="language-json">...
+"indy_proof_request": {
+  "non_revoked":{"to":1714727999},
+    "requested_attributes": {
+      "surname": { "name": "Surname", "non_revoked":{"to":1714727880}},
+      "name": {"name": "Name"}
+...
+</code></pre>
+<blockquote>
+<p>In the above snippet, <code>Surname</code> will be checked against the <code>"non_revoked": {"to": 1714727880}</code> value,
+while <code>Name</code> will be checked against the global value <code>"non_revoked": {"to": 1714727999}</code>.</p>
+</blockquote>
+<h2 id="verifying-non-revoked-before-the-revocation-date"><a class="header" href="#verifying-non-revoked-before-the-revocation-date">Verifying non-revoked before the revocation date</a></h2>
+<p>When specifying a <code>non_revoked</code> time frame that precedes the revocation time, the proof request will pass. This is by
+design as the credential was valid in that time frame.</p>
+<p>Let's demonstrate:</p>
+<p>Listing the holder's credentials:</p>
+<pre><code class="language-http">GET /wallet/credentials
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "attrs": {
+        "Surname": "Alice",
+        "Age": "25",
+        "Name": "Holder"
+      },
+      "cred_def_id": "BzDvB7StHDD1HQKczybHWC:3:CL:16:Demo_Person",
+      "cred_rev_id": "1",
+      "referent": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+      "rev_reg_id": "BzDvB7StHDD1HQKczybHWC:4:BzDvB7StHDD1HQKczybHWC:3:CL:16:Demo_Person:CL_ACCUM:73890f4d-42fd-42c5-9a2e-b39fe0358fc6",
+      "schema_id": "Pp7wcmoHgeMb3td99E5Yo8:2:Person:0.1.0"
+    }
+  ]
+}
+</code></pre>
+<p>The holder can check the revocation status of their credential:</p>
+<pre><code class="language-http">GET /wallet/credentials/47b18eb8-35f1-4d89-865e-d8355bec77fe/revocation-status
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  "revoked": true
+}
+</code></pre>
+<p>The holder can see that their credential is revoked. Let's try a verification flow with this credential.</p>
+<p>In this example, the verifier sends a request specifying a date/time (2024-05-07 9:00 AM) before the revocation:</p>
+<pre><code class="language-http">POST /verifier/send-request
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  "comment": "string",
+  "trace": true,
+  "type": "indy",
+  "indy_proof_request": {
+    "non_revoked": {
+      "from": 0,
+      "to": 1715065200
+    },
+    "requested_attributes": {
+      "surname": { "name": "Surname" },
+      "name": { "name": "Name" },
+      "age": { "name": "Age" }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "cf45f341-57ad-42bc-b727-6f35e311e7e7"
+}
+</code></pre>
+<p>The holder responds:</p>
+<pre><code class="language-http">POST /verifier/accept-request
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  "proof_id": "v2-142c6cd8-a84c-441f-b099-2b39ed6d2099",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "age": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      },
+      "name": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      },
+      "surname": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {},
+    "self_attested_attributes": {}
+  },
+  "save_exchange_record": true
+}
+</code></pre>
+<p>The verifier will receive the following webhook on the <code>proofs</code> topic:</p>
+<pre><code class="language-json">{
+  "wallet_id": "9a7adafe-3a09-499b-a171-6d39a426bf9e",
+  "topic": "proofs",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "connection_id": "cf45f341-57ad-42bc-b727-6f35e311e7e7",
+    "created_at": "2024-05-07T07:21:58.776430Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v2-635d106c-7777-4368-bc57-d24f7f878343",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "b8c70d2b-fe36-4216-9d0a-7c30a6fceb5e",
+    "updated_at": "2024-05-07T07:29:10.445048Z",
+    "verified": true
+  }
+}
+</code></pre>
+<p>As you can see, the holder's credential is valid (<code>"verified": true</code>), since the verifier requested a
+<code>non_revoked</code> timestamp before the revocation took place.</p>
+<h2 id="verifying-non-revoked-after-revocation-date"><a class="header" href="#verifying-non-revoked-after-revocation-date">Verifying non-revoked after revocation date</a></h2>
+<p>Now, the verifier specifies a date/time (2024-05-07 9:11 AM) after the revocation occurred</p>
+<pre><code class="language-http">POST /verifier/send-request
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  "comment": "string",
+  "trace": true,
+  "type": "indy",
+  "indy_proof_request": {
+    "non_revoked": {
+      "from": 0,
+      "to": 1715065860
+    },
+    "requested_attributes": {
+      "surname": { "name": "Surname" },
+      "name": { "name": "Name" },
+      "age": { "name": "Age" }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "cf45f341-57ad-42bc-b727-6f35e311e7e7"
+}
+</code></pre>
+<p>The holder responds:</p>
+<pre><code class="language-http">POST /verifier/accept-request
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  "proof_id": "v2-1894498a-579b-4dd9-9875-856c7f3f4381",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "age": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      },
+      "name": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      },
+      "surname": {
+        "cred_id": "47b18eb8-35f1-4d89-865e-d8355bec77fe",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {},
+    "self_attested_attributes": {}
+  },
+  "save_exchange_record": true
+}
+</code></pre>
+<p>The verifier will receive the following webhook:</p>
+<pre><code class="language-json">{
+  "wallet_id": "9a7adafe-3a09-499b-a171-6d39a426bf9e",
+  "topic": "proofs",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "connection_id": "cf45f341-57ad-42bc-b727-6f35e311e7e7",
+    "created_at": "2024-05-07T08:02:41.229378Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v2-6aaf1b87-45aa-49ee-8e2e-24fe79663fa6",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "53fe75f8-f4b8-4e22-ae1a-b3a13f2f41c9",
+    "updated_at": "2024-05-07T08:18:33.060039Z",
+    "verified": false
+  }
+}
+</code></pre>
+<p>As you can see, the verification has now failed (<code>"verified": false</code>).</p>
+<p>Congratulations! You now know how to verify if credentials are revoked or not. 🥳🎉</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="self-attested-attributes"><a class="header" href="#self-attested-attributes">Self-Attested Attributes</a></h1>
+<p>ACA-Py allows a holder/prover to respond to proof requests with self-attested values for requested attributes.
+This means the prover can provide values that are not represented by credentials in their wallet.</p>
+<h2 id="responding-with-self-attested-attributes"><a class="header" href="#responding-with-self-attested-attributes">Responding with self-attested attributes</a></h2>
+<p>If a prover receives a proof request they can respond with self-attested values.
+However if there are restrictions on these attributes and the prover responds with self-attested attributes,
+then the proof will fail.</p>
+<p>Let's take a look at how to respond with <code>self_attested_attributes</code>.</p>
+<p>Below a verifier will send a proof request, requesting the prover's <code>name</code> and <code>cell_number</code>.</p>
+<p>The verifier sends the proof request:</p>
+<pre><code class="language-http">POST  /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "comment": "Demo",
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "given_name": { "name": "name" },
+      "cellphone": { "name": "cell_number" }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "38f14bc4-4ec5-42bc-8f69-ffe8f792dfaf"
+}
+</code></pre>
+<p>Taking a look at the proof request above, the verifier requested two different attributes with attribute
+referents <code>given_name</code> and <code>cellphone</code>, each requesting attribute <code>name</code> and <code>cell_number</code> respectively.</p>
+<p>Take a look at how the prover responds to the proof below, specifically in regard to the attribute referent
+<code>cellphone</code>. By doing this, the prover is able to provide a value that they don't have in their credentials.</p>
+<pre><code class="language-http">POST /v1/verifier/accept-request
+</code></pre>
+<pre><code class="language-json">{
+  "proof_id": "v2-d0d0e554-ce14-492e-935e-64a7be72ec5b",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "given_name": {
+        "cred_id": "cb844509-c687-48aa-bbea-dbaecca28a11",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {},
+    "self_attested_attributes": {
+      "cellphone": "0123456789"
+    }
+  },
+  "dif_presentation_spec": {}
+}
+</code></pre>
+<p>In the verifier's proof record below, we can see the values the prover responded with can be found
+under <code>self_attested_attrs</code>.</p>
+<blockquote>
+<p>Note that some large payloads are obfuscated in the following response for readability.</p>
+</blockquote>
+<pre><code class="language-json">{
+    "connection_id": "38f14bc4-4ec5-42bc-8f69-ffe8f792dfaf",
+    "created_at": "2024-08-05T11:09:25.161719Z",
+    "error_msg": null,
+    "parent_thread_id": "839aae9d-29e7-4e7b-aad5-f157d62fe750",
+    "presentation": {
+      "identifiers": [
+        {
+          "cred_def_id": "Ph5VFe1yyiwoPKbJmn33d6:3:CL:16:Demo_cred_def",
+          "rev_reg_id": null,
+          "schema_id": "4vedijxB6SCddvXVYWaTwP:2:Demo:0.1.0",
+          "timestamp": null
+        }
+      ],
+      "proof": {
+        "aggregated_proof": {...},
+        "proofs": [...]
+      },
+      "requested_proof": {
+        "predicates": {},
+        "revealed_attr_groups": null,
+        "revealed_attrs": {
+          "given_name": {
+            "encoded": "...",
+            "raw": "Alice",
+            "sub_proof_index": 0
+          }
+        },
+        "self_attested_attrs": {
+          "cellphone": "0123456789"
+        },
+        "unrevealed_attrs": {}
+      }
+    },
+    "presentation_request": {
+      "name": "Proof",
+      "non_revoked": null,
+      "nonce": "1177112554048610547997440",
+      "requested_attributes": {
+        "given_name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": null
+        },
+        "self_attested": {
+          "name": "cell_number",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": null
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v2-9d2d22b0-7381-4070-8929-6578399c9ae9",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "839aae9d-29e7-4e7b-aad5-f157d62fe750",
+    "updated_at": "2024-08-05T11:10:55.867679Z",
+    "verified": true
+  }
+</code></pre>
+<p>Note that the proof is valid (<code>verified: true</code>), and that the prover's cellphone number is available in
+the <code>self_attested_attrs</code> section as <code>cell_number</code>, the name of the requested attribute.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="implementing-restrictions-on-proofs"><a class="header" href="#implementing-restrictions-on-proofs">Implementing Restrictions on Proofs</a></h1>
+<p>Both the <code>requested_attributes</code> and <code>requested_predicates</code> fields have a
+<code>restrictions</code> field.
+The <code>restrictions</code> field is crucial for specifying conditions on the credentials
+used to respond to proofs.</p>
+<p>Restrictions are applied the same way to <code>requested_attributes</code> and
+<code>requested_predicates</code>.</p>
+<h2 id="fields-to-restrict-on"><a class="header" href="#fields-to-restrict-on">Fields to Restrict On</a></h2>
+<p>The fields in the list below can be used to apply restrictions to proofs:</p>
+<ul>
+<li><code>schema_name</code></li>
+<li><code>schema_id</code></li>
+<li><code>schema_version</code></li>
+<li><code>schema_issuer_did</code> (DID of the entity that issued the schema)</li>
+<li><code>issuer_did</code> (DID of the issuer of the credential)</li>
+<li><code>cred_def_id</code> (ID of the credential definition)</li>
+<li><code>attr::attr-name::value</code> (where <code>attr-name</code> is the name of an attribute in a
+credential)</li>
+</ul>
+<h2 id="example-payload-of-restrictions-in-proofs"><a class="header" href="#example-payload-of-restrictions-in-proofs">Example Payload of Restrictions in Proofs</a></h2>
+<p>Below is an example body of a proof request with restrictions on the
+<code>requested_attributes</code>:</p>
+<pre><code class="language-json">{
+  "comment": "test",
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "g_name": {
+        "name": "name",
+        "restrictions": [
+          {
+            "schema_name": "demo",
+            "schema_id": "EoNkijxxJx3RSpnFPQvweP:2:demo:0.1.0",
+            "schema_version": "0.1.0",
+            "schema_issuer_did": "EoNkijxxJx3RSpnFPQvweP",
+            "issuer_did": "8c7aBwbxcN8y6mEKBavq54",
+            "cred_def_id": "8c7aBwbxcN8y6mEKBavq54:3:CL:16:cred_def_1",
+            "attr::surname::value": "Demo"
+          }
+        ]
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": false,
+  "connection_id": "8277590e-ffb5-4437-9226-3a06e1f22031"
+}
+</code></pre>
+<p>Applying all of the schema restrictions to a proof request can be overkill.
+In CloudAPI, the <code>schema_id</code> is made up of the schema name, version, and schema
+issuer DID.
+Therefore, if a restriction is applied to the <code>schema_id</code>, then effectively the
+<code>schema_name</code>, <code>schema_version</code>, and <code>schema_issuer_did</code> restrictions have also
+been applied.</p>
+<p>The last restriction in the list <code>"attr::surname::value":"Demo"</code> ensures that
+the credential has an attribute named <code>surname</code> with the value <code>Demo</code>.</p>
+<h2 id="example-proof-flow-with-restrictions"><a class="header" href="#example-proof-flow-with-restrictions">Example Proof Flow with Restrictions</a></h2>
+<p>Below is the result of listing the credentials in a holder's wallet.
+All of the credentials have the attributes <code>name</code> and <code>surname</code>, but all three of
+the credentials are based on unique schemas and credential definitions with
+extra/different attributes.</p>
+<pre><code class="language-http">GET /v1/wallet/credentials
+</code></pre>
+<pre><code class="language-json">{
+  "results": [
+    {
+      "attrs": {
+        "surname": "Demo",
+        "name": "Alice"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:16:cred_def_1",
+      "cred_rev_id": null,
+      "referent": "4225da38-975b-4efc-93a8-32577cc5ba46",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo1:0.0.1"
+    },
+    {
+      "attrs": {
+        "is_cool": "True",
+        "surname": "Demo",
+        "sa_citizen": "yes",
+        "name": "Alice"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:18:cred_def_3",
+      "cred_rev_id": null,
+      "referent": "76d3f7be-4367-48f4-86d9-05343ddd48d4",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo3:0.0.3"
+    },
+    {
+      "attrs": {
+        "sa_citizen": "yes",
+        "name": "Alice",
+        "surname": "Demo"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:17:cred_def_2",
+      "cred_rev_id": null,
+      "referent": "3a100d3e-13cb-457b-8248-ad61589514c3",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo2:0.0.2"
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="no-restrictions-on-proof-request"><a class="header" href="#no-restrictions-on-proof-request">No Restrictions on Proof Request</a></h3>
+<p>When sending a proof request for the attribute <code>surname</code>, with no restrictions, we
+see that the holder can respond with any one of the credentials:</p>
+<pre><code class="language-http">POST /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "get_surname": {
+        "name": "surname",
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "696f19ef-6cb9-4ca3-a729-9d02f0c47e1e"
+}
+</code></pre>
+<p>When the holder checks what credentials can respond to the proof by calling the
+route below with the <code>proof_id</code>, we see that the holder can respond with any of the credentials, as all of them
+can satisfy the <code>get_surname</code> property in the <code>requested_attributes</code>.</p>
+<pre><code class="language-http">GET /v1/verifier/proofs/{proof_id}/credentials
+</code></pre>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "name": "Alice",
+        "surname": "Demo"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:16:cred_def_1",
+      "cred_rev_id": null,
+      "referent": "4225da38-975b-4efc-93a8-32577cc5ba46",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo1:0.0.1"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  },
+  {
+    "cred_info": {
+      "attrs": {
+        "sa_citizen": "yes",
+        "surname": "Demo",
+        "name": "Alice",
+        "is_cool": "True"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:18:cred_def_3",
+      "cred_rev_id": null,
+      "referent": "76d3f7be-4367-48f4-86d9-05343ddd48d4",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo3:0.0.3"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  },
+  {
+    "cred_info": {
+      "attrs": {
+        "sa_citizen": "yes",
+        "surname": "Demo",
+        "name": "Alice"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:17:cred_def_2",
+      "cred_rev_id": null,
+      "referent": "3a100d3e-13cb-457b-8248-ad61589514c3",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo2:0.0.2"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="restriction-on-schema-id"><a class="header" href="#restriction-on-schema-id">Restriction on Schema ID</a></h3>
+<p>Below, the proof request has a restriction on <code>schema_id</code>:</p>
+<pre><code class="language-http">POST /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "get_surname": {
+        "name": "surname",
+        "restrictions": [
+          {
+            "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo1:0.0.1"
+          }
+        ]
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "696f19ef-6cb9-4ca3-a729-9d02f0c47e1e"
+}
+</code></pre>
+<p>When the holder checks which credential will satisfy the proof request, only the
+credential with the <code>schema_id</code> that matches the restriction is returned.</p>
+<pre><code class="language-http">GET /v1/verifier/proofs/{proof_id}/credentials
+</code></pre>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "name": "Alice",
+        "surname": "Demo"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:16:cred_def_1",
+      "cred_rev_id": null,
+      "referent": "4225da38-975b-4efc-93a8-32577cc5ba46",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo1:0.0.1"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="restriction-on-credential-definition-id"><a class="header" href="#restriction-on-credential-definition-id">Restriction on Credential Definition ID</a></h3>
+<p>When restricting to the credential definition ID (<code>cred_def_id</code>):</p>
+<pre><code class="language-http">POST /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "get_surname": {
+        "name": "surname",
+        "restrictions": [
+          {
+            "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:17:cred_def_2"
+          }
+        ]
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "696f19ef-6cb9-4ca3-a729-9d02f0c47e1e"
+}
+</code></pre>
+<p>When the holder checks which credential will satisfy the proof request, only the
+credential with the <code>cred_def_id</code> that matches the restriction is returned.</p>
+<pre><code class="language-http">GET /v1/verifier/proofs/{proof_id}/credentials
+</code></pre>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "sa_citizen": "yes",
+        "name": "Alice",
+        "surname": "Demo"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:17:cred_def_2",
+      "cred_rev_id": null,
+      "referent": "3a100d3e-13cb-457b-8248-ad61589514c3",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo2:0.0.2"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="restriction-on-value-of-attribute-in-credential"><a class="header" href="#restriction-on-value-of-attribute-in-credential">Restriction on Value of Attribute in Credential</a></h3>
+<p>When restricting to an attribute value that is in one of the credentials.
+In this case, we check that the holder has the attribute <code>is_cool</code> and the value
+is <code>True</code>.</p>
+<pre><code class="language-http">POST /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "get_surname": {
+        "name": "surname",
+        "restrictions": [
+          {
+            "attr::is_cool::value": "True"
+          }
+        ]
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "696f19ef-6cb9-4ca3-a729-9d02f0c47e1e"
+}
+</code></pre>
+<p>When the holder checks which credential will satisfy the proof, the credential
+with the <code>is_cool</code> attribute with value <code>True</code> is returned.</p>
+<pre><code class="language-http">GET /v1/verifier/proofs/{proof_id}/credentials
+</code></pre>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "is_cool": "True",
+        "surname": "Demo",
+        "sa_citizen": "yes",
+        "name": "Alice"
+      },
+      "cred_def_id": "3aMAZrkZkA7odBfZkEL15Y:3:CL:18:cred_def_3",
+      "cred_rev_id": null,
+      "referent": "76d3f7be-4367-48f4-86d9-05343ddd48d4",
+      "rev_reg_id": null,
+      "schema_id": "S73FJ6deq6fRhBEfiTckkA:2:Demo3:0.0.3"
+    },
+    "interval": null,
+    "presentation_referents": ["get_surname"]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="restriction-on-attribute-value-not-in-credentials"><a class="header" href="#restriction-on-attribute-value-not-in-credentials">Restriction on Attribute Value Not in Credentials</a></h3>
+<p>When restricting to an attribute value that is not in any of the credentials:</p>
+<pre><code class="language-http">POST /v1/verifier/send-request
+</code></pre>
+<pre><code class="language-json">{
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "get_surname": {
+        "name": "surname",
+        "restrictions": [
+          {
+            "attr::is_cool::value": "False"
+          }
+        ]
+      }
+    },
+    "requested_predicates": {}
+  },
+  "save_exchange_record": true,
+  "connection_id": "696f19ef-6cb9-4ca3-a729-9d02f0c47e1e"
+}
+</code></pre>
+<p>When the holder checks if they have a credential that satisfies the proof, no
+credential is returned.</p>
+<pre><code class="language-http">GET /v1/verifier/proofs/{proof_id}/credentials
+</code></pre>
+<pre><code class="language-json">[]
+</code></pre>
+<p>This indicates to the holder that they do not have any credentials that satisfy the restrictions in the proof request.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="proof-request-with-requested-predicates"><a class="header" href="#proof-request-with-requested-predicates">Proof Request with Requested Predicates</a></h1>
+<p>In ACA-Py, requested predicates are conditions used in proof requests to ensure that certain attributes
+meet specific criteria without revealing the actual attribute values.</p>
+<p>Predicates enable verifiers to request proofs that certain numeric attributes (like age, income, or date) satisfy
+conditions such as greater than (&gt;), less than (&lt;), greater than or equal to (&gt;=), or less than or equal to (&lt;=) a
+specified value.</p>
+<p>This allows for selective disclosure, enhancing privacy by only proving the required attribute conditions
+without disclosing the exact values.</p>
+<h2 id="the-credential"><a class="header" href="#the-credential">The Credential</a></h2>
+<p>In order to make a proof request with requested predicates, the credential will need to have an attribute with a
+value that is an integer. However, if a credential is issued as a string of integers, ACA-Py can convert that to
+an integer to perform the predicate check.</p>
+<p>Furthermore, it is important for the verifier to understand how a credential attribute was set by an issuer to
+accurately incorporate a predicate in the proof request.</p>
+<h2 id="the-proof-request"><a class="header" href="#the-proof-request">The Proof Request</a></h2>
+<p>Let's take a look at the <code>requested_predicates</code> object in the <code>indy_proof_request</code> object.</p>
+<pre><code class="language-json">    "requested_predicates":{
+        "name": string,
+        "p_type": string,
+        "p_value": int,
+        "restrictions": &lt;restrictions&gt;,
+        "non_revoked": &lt;non_revoc_interval&gt;,
+    }
+</code></pre>
+<ul>
+<li>The <code>name</code> field is the same as in the <code>requested_attributes</code>; it refers to the
+<code>attribute</code> of the credential that is being checked.</li>
+<li>The <code>p_type</code> can be one of the following strings:
+<ul>
+<li><code>&gt;=</code> greater or equal</li>
+<li><code>&lt;=</code> less or equal</li>
+<li><code>&gt;</code> greater as</li>
+<li><code>&lt;</code> less than</li>
+</ul>
+</li>
+<li>The <code>p_value</code> is the integer that the credential value is being checked against.</li>
+<li>The <code>restrictions</code> field is used to put restrictions on the credential
+attribute the prover can respond with. Please take a look at
+<a href="https://hyperledger.github.io/anoncreds-spec/#restrictions">this for more information on restrictions.</a></li>
+<li><code>non-revoked</code>: See the revocation section of the documentation for information on how to check
+if a credential is revoked.</li>
+</ul>
+<h2 id="example-proof-flow"><a class="header" href="#example-proof-flow">Example Proof Flow</a></h2>
+<p>Below is an example of a proof request with a <code>requested_predicates</code> on the attribute <code>dob</code> (date of birth). The
+goal of the predicate is to determine if the holder is over the age of 18, without sharing the holder's date of birth.</p>
+<p>It has been noted that the verifier needs to understand how a credential attribute has been set to accurately
+incorporate a predicate. Let's take a look at the credential that has been used here:</p>
+<pre><code class="language-json">{
+  "attrs": {
+    "dob": "19900101",
+    "surname": "Demo",
+    "name": "Alice"
+  },
+  "cred_def_id": "JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def",
+  "cred_rev_id": "1",
+  "referent": "484f7946-b897-4767-914f-9a9357d4c2db",
+  "rev_reg_id": "JQKddffbKAw46ERuwLK5cF:4:JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def:CL_ACCUM:5c7eb3ed-fbf3-4bf0-a711-ecd8a9365236",
+  "schema_id": "4dcSmgArjVgpnfjiy6yNAo:2:Demo_schema:0.1.0"
+}
+</code></pre>
+<p>We can see that the <code>dob</code> has the format <code>yyyymmdd</code>, so the verifier can check if a holder's birth date is before the
+date required to be 18 years old. So the verifier needs to check that: <code>{holder's_dob} &lt;= {date_18_years_ago}</code>.</p>
+<h3 id="issue-proof-request"><a class="header" href="#issue-proof-request">Issue proof request</a></h3>
+<pre><code class="language-http"> POST v1/verifier/send-request
+</code></pre>
+<p>with body:</p>
+<pre><code class="language-json">{
+  "comment": "Demo",
+  "trace": true,
+  "type": "indy",
+  "indy_proof_request": {
+    "requested_attributes": {},
+    "requested_predicates": {
+      "age_over_18": {
+        "name": "dob",
+        "p_type": "&lt;=",
+        "p_value": 20060530,
+        "restrictions": [
+          {
+            "cred_def_id": "JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def"
+          }
+        ]
+      }
+    }
+  },
+  "save_exchange_record": true,
+  "connection_id": "b993c5db-71bc-4733-a0d9-a72b106ce435"
+}
+</code></pre>
+<blockquote>
+<p>Note the restriction on the <code>cred_def_id</code> above. This ensures the credential comes from a specific issuer and
+credential definition where we know how the <code>dob</code> has been set.</p>
+</blockquote>
+<h3 id="the-holder-checks-if-they-have-a-credential-that-can-satisfy-the-proof-request"><a class="header" href="#the-holder-checks-if-they-have-a-credential-that-can-satisfy-the-proof-request">The holder checks if they have a credential that can satisfy the proof request</a></h3>
+<pre><code class="language-http">GET v1/verifier/proofs/v2-8797794c-cbc0-46be-9a63-2e5d1dc06f6c/credentials
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">[
+  {
+    "cred_info": {
+      "attrs": {
+        "dob": "19900101",
+        "surname": "Demo",
+        "name": "Alice"
+      },
+      "cred_def_id": "JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def",
+      "cred_rev_id": "1",
+      "referent": "484f7946-b897-4767-914f-9a9357d4c2db",
+      "rev_reg_id": "JQKddffbKAw46ERuwLK5cF:4:JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def:CL_ACCUM:5c7eb3ed-fbf3-4bf0-a711-ecd8a9365236",
+      "schema_id": "4dcSmgArjVgpnfjiy6yNAo:2:Demo_schema:0.1.0"
+    },
+    "interval": null,
+    "presentation_referents": ["age_over_18"]
+  }
+]
+</code></pre>
+<p>The response above shows that the credential returned can be used to respond to the requested predicate <code>age_over_18</code>.</p>
+<h3 id="the-holder-accepts-the-proof-request"><a class="header" href="#the-holder-accepts-the-proof-request">The holder accepts the proof request</a></h3>
+<pre><code class="language-http">POST v1/verifier/accept-request
+</code></pre>
+<p>with body:</p>
+<pre><code class="language-json">{
+  "proof_id": "v2-8797794c-cbc0-46be-9a63-2e5d1dc06f6c",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {},
+    "requested_predicates": {
+      "age_over_18": {
+        "cred_id": "484f7946-b897-4767-914f-9a9357d4c2db"
+      }
+    },
+    "self_attested_attributes": {}
+  },
+  "dif_presentation_spec": {},
+  "save_exchange_record": true
+}
+</code></pre>
+<h3 id="the-verifiers-proof-records"><a class="header" href="#the-verifiers-proof-records">The verifier's proof records</a></h3>
+<p>The verifier's webhook events will update on the topic <code>proofs</code>:</p>
+<pre><code class="language-json">{
+  "wallet_id": "c32d6406-c200-4b5f-a126-c301ef112477",
+  "topic": "proofs",
+  "origin": "tenant faber",
+  "group_id": "GroupA",
+  "payload": {
+    "connection_id": "b993c5db-71bc-4733-a0d9-a72b106ce435",
+    "created_at": "2024-05-30T09:24:07.325448Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v2-284e8535-fa1a-4aac-8121-d192747030a0",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "17e82614-1304-4c1c-8778-fc81ba18ee4c",
+    "updated_at": "2024-05-30T09:29:37.117900Z",
+    "verified": true
+  }
+}
+</code></pre>
+<p>We can see above that the proof request is complete (<code>state: done</code>) and the predicate is satisfied (<code>verified: true</code>).</p>
+<p>Let's take a look at the verifier's proof record of the above exchange. Take note of the fact that the <code>revealed_attrs</code>
+field is empty and the <code>dob</code> attribute has not been revealed.</p>
+<blockquote>
+<p>Note that some large payloads are obfuscated in the following response for readability.</p>
+</blockquote>
+<pre><code class="language-json">
+  {
+    "connection_id": "b993c5db-71bc-4733-a0d9-a72b106ce435",
+    "created_at": "2024-05-30T09:24:07.325448Z",
+    "error_msg": null,
+    "parent_thread_id": "17e82614-1304-4c1c-8778-fc81ba18ee4c",
+    "presentation": {
+      "identifiers": [
+        {
+          "cred_def_id": "JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def",
+          "rev_reg_id": "JQKddffbKAw46ERuwLK5cF:4:JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def:CL_ACCUM:5c7eb3ed-fbf3-4bf0-a711-ecd8a9365236",
+          "schema_id": "4dcSmgArjVgpnfjiy6yNAo:2:Demo_schema:0.1.0",
+          "timestamp": null
+        }
+      ],
+      "proof": {
+        "aggregated_proof": {
+          "c_hash": "68083911735211467518460000736130275255547049313413354347790350217175401850873",
+          "c_list": [
+            [...],
+            [...],
+            [...],
+            [...],
+            [...],
+            [...]
+          ]
+        },
+        "proofs": [
+          {
+            "non_revoc_proof": null,
+            "primary_proof": {
+              "eq_proof": {
+                "a_prime": ...,
+                "e": "119387358330875008402881076664442056750743658498957523102535902524764053894914591462886392266566631581734329790860931884982192173917395976",
+                "m": {
+                  "name": "7206276404206857526783008541561244555270605578873171016811937079648008986898196821392261775064255800859371904017451184715729911369974354710297447142369137945850835288326799057347",
+                  "dob": "7368174653071291467509243264983933988639387392718531361951217165284981758551875371467982169180823227163338243768448614046815815061385189049986863952228267732988077455166323300407",
+                  "surname": "9277859084159715510916067354455243694867960264025518355252696241577763324112627218858326603964984582107518819046740146145718105070048856832278651029469711744592187338261777919850",
+                  "master_secret": "15045190061493745649555708650672366392238186118529591984135989041588891839998311612694530842691834680254513558290039881402761553159200315443609127293501475087910035652196924119659"
+                },
+                "m2": ...,
+                "revealed_attrs": {},
+                "v": ...
+              },
+              "ge_proofs": [
+                {
+                  "alpha": ...,
+                  "mj": ...,
+                  "predicate": {
+                    "attr_name": "dob",
+                    "p_type": "LE",
+                    "value": 20060530
+                  },
+                  "r": {...},
+                  "t": {...},
+                  "u": {...}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "requested_proof": {
+        "predicates": {
+          "age_over_18": {
+            "sub_proof_index": 0
+          }
+        },
+        "revealed_attr_groups": null,
+        "revealed_attrs": {},
+        "self_attested_attrs": {},
+        "unrevealed_attrs": {}
+      }
+    },
+    "presentation_request": {
+      "name": "Proof",
+      "non_revoked": null,
+      "nonce": "824421356049834403305010",
+      "requested_attributes": {},
+      "requested_predicates": {
+        "age_over_18": {
+          "name": "dob",
+          "non_revoked": null,
+          "p_type": "&lt;=",
+          "p_value": 20060530,
+          "restrictions": [
+            {
+              "cred_def_id": "JQKddffbKAw46ERuwLK5cF:3:CL:16:Demo_cred_def"
+            }
+          ]
+        }
+      },
+      "version": "1.0"
+    },
+    "proof_id": "v2-284e8535-fa1a-4aac-8121-d192747030a0",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "17e82614-1304-4c1c-8778-fc81ba18ee4c",
+    "updated_at": "2024-05-30T09:29:37.117900Z",
+    "verified": true
+  }
+</code></pre>
+<p>Hooray! 🥳🎉 Well done, you now know how to send and respond to a predicate proof.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="common-steps"><a class="header" href="#common-steps">Common Steps</a></h1>
+<p>This document will guide you through some common steps and interactions. Please
+read it carefully, and feel free to open an issue if further questions arise or
+if you spot a mistake.</p>
+<blockquote>
+<p><strong>Note:</strong> It is always helpful to inspect the CloudAPI Swagger UI to understand
+the available endpoints, their expected inputs, and the corresponding outputs.
+If requests fail, check the Swagger UI to ensure you've called the correct
+endpoint with the correct data. The Swagger UI is accessible at:</p>
+<ul>
+<li>CloudAPI-Multitenant-Admin -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs</a></li>
+<li>CloudAPI-Governance -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">http://cloudapi.127.0.0.1.nip.io/governance/docs</a></li>
+<li>CloudAPI-Tenant -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">http://cloudapi.127.0.0.1.nip.io/tenant/docs</a></li>
+<li>CloudAPI-Public (trust registry) -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/public/docs">http://cloudapi.127.0.0.1.nip.io/public/docs</a></li>
+</ul>
+<p>under a vanilla setup. If you find any model to be unclear from the document
+below, try finding it in Swagger UI before opening an issue. This document
+describes only some basic steps; more detailed workflows can be found
+<a href="./Example%20Flows.html">here</a>.</p>
+</blockquote>
+<p>It is also recommended to set up a webhook listener (refer to our
+<a href="./Webhooks.html">Webhooks doc</a>). This will significantly aid in understanding the
+activities occurring in the ACA-Py instances in the background.</p>
+<h2 id="creating-wallets"><a class="header" href="#creating-wallets">Creating Wallets</a></h2>
+<p>The admin "wallet" is already configured as it is not a subwallet on a
+multi-tenant agent. To create subwallets for tenants, you have to use the tenant
+admin role. The permissions and routing to the correct ACA-Py instance are
+handled by the CloudAPI under the hood. You need to provide two things:</p>
+<ol>
+<li>
+<p>Authorization in the header: <code>{"x-api-key": "tenant-admin.APIKEY"}</code>, where
+<code>tenant-admin</code> is a fixed term representing the role, and <code>APIKEY</code> is the auth
+token you must know and provide.
+<em>Note: This auth string is separated by a dot, so keep that in there.</em></p>
+</li>
+<li>
+<p>The wallet payload (body) of the wallet you want to create, e.g.,</p>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": ["issuer"],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+</li>
+</ol>
+<p>Send this to the <code>/tenant-admin/v1/admin/tenants</code> endpoint. You can omit the
+roles field altogether or pass "issuer" and/or "verifier". All payloads are
+documented in Swagger, so if in doubt, consult the
+<a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a>.</p>
+<p>Creating a tenant with roles will update the trust registry by writing an entry
+for an <code>actor</code>, including wallet details and its associated roles.</p>
+<p>If you wish to later update entities roles, you will have to do that again via
+the tenants admin API, which will handle interacting with the trust registry
+(see also the Swagger for <code>update tenant</code>).</p>
+<h2 id="creating-schemas-1"><a class="header" href="#creating-schemas-1">Creating Schemas</a></h2>
+<p>To create schemas and effectively write them to the ledger as well as registering
+them on the trust registry, use the governance role:</p>
+<ol>
+<li>
+<p>Provide the following authentication header:</p>
+<pre><code class="language-json">{ "x-api-key": "governance.ADMIN_API_KEY" }
+</code></pre>
+<p>Replace the <code>ADMIN_API_KEY</code> with the actual API key. Keep the dot and recall
+]that <code>governance</code> is a keyword known to the CloudAPI as a role. It will
+resolve the correct endpoint and available actions based on the role and
+provided token.</p>
+</li>
+<li>
+<p>Provide the information about the schema, e.g.:</p>
+<pre><code class="language-json">{
+  "name": "yourAwesomeSchemaName",
+  "version": "1.3.7",
+  "attributes": ["skill", "age"]
+}
+</code></pre>
+<p>Note that you will need to have a public DID to do so (if your agent lacks
+one, you can use the governance role to create one: see
+<a href="./Bootstrap%20Trust%20Ecosystem.html">Bootstrapping the Trust Ecosystem</a>).
+Run the request with the header from 1. and the payload from 2. against the
+<a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance URL</a>
+and endpoint <code>/v1/definitions/schemas</code> (POST method). Upon success, the
+created schema will be returned.</p>
+</li>
+</ol>
+<h2 id="issuing-a-credential"><a class="header" href="#issuing-a-credential">Issuing a Credential</a></h2>
+<ol>
+<li>
+<p>Register a schema (see above)</p>
+</li>
+<li>
+<p>Register an issuer (create a wallet passing "issuer" as a role - see above)</p>
+</li>
+<li>
+<p>Issuer creates credential definition</p>
+</li>
+<li>
+<p>Create a connection between the issuer and prospect holder</p>
+<ol>
+<li>
+<p>Create an invitation using either the issuer or the holder using the
+<code>/v1/connections/create-invitation</code> endpoint of the
+<a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant URL</a>.
+Here, you will also need to authenticate via the header, e.g., using</p>
+<pre><code class="language-json">{ "x-api-key": "tenant.WALLET_TOKEN" }
+</code></pre>
+<p>where the <code>WALLET_TOKEN</code> is the bearer token you get from the create
+wallet response for a tenant wallet.</p>
+</li>
+<li>
+<p>Copy the content <code>invitation</code> field from the create invitation response
+and use it as the payload in the <code>accept-invitation</code> endpoint, and post to the
+CloudAPI using the other entity. To illustrate, if you used the issuer to
+create the invitation, use the holder for this call and vice versa. Again,
+register using the headers appropriately.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Issue a credential from issuer to prospect holder</p>
+<ol>
+<li>Create and send a credential authenticating with the issuer. The credential
+has the form:</li>
+</ol>
+<pre><code class="language-json">{
+  "connection_id": "string",
+  "schema_id": "string",
+  "attributes": {
+    "additionalProp1": "string",
+    "additionalProp2": "string",
+    "additionalProp3": "string"
+  }
+}
+</code></pre>
+<p>This should correspond to a schema you created previously, and the
+<code>connection_id</code> is the ID of the connection you created in the previous step.
+If you're unsure what that ID is, you can always run a GET request against
+the <code>connections</code> endpoint to find it.</p>
+</li>
+<li>
+<p>Accept and store the credential in the holder wallet</p>
+</li>
+<li>
+<p>Using the holder (authenticating with the holder auth header), issue a GET
+request against the <code>/v1/issuer/credentials</code> endpoint, providing the connection
+ID of the connection established above. <em>Note: The connection IDs are unique for
+each entity, so the connection between the issuer and the holder is one
+connection with two separate connection IDs - one for the issuer and one for the
+holder.</em> This will provide you with a credential record that should be in the
+state of being offered. Providing the connection ID again, you can now use the
+holder to store the credential by posting to
+<code>/v1/issuer/credentials/{credential_exchange_id}/store</code></p>
+</li>
+<li>
+<p>(Optional) Get yor credentials from your wallet (<code>wallet/credentials</code>) check
+whether the credential is actually stored. You can also check this via waypoint.</p>
+</li>
+</ol>
+<h2 id="verifying-a-credential"><a class="header" href="#verifying-a-credential">Verifying a Credential</a></h2>
+<ol>
+<li>
+<p>Ensure you followed <strong>Issuing a Credential</strong> steps to have a wallet with a
+credential (prover)</p>
+</li>
+<li>
+<p>Register an entity as a verifier (verifier)</p>
+<ol>
+<li>In other words, create or update a wallet, passing the role "verifier"</li>
+</ol>
+</li>
+<li>
+<p>Create a connection between 1. prover and 2. verifier the same way as in
+<strong>Issuing a Credential</strong></p>
+</li>
+<li>
+<p>Create a proof request (<code>/v1/verifier/create-request</code>) using the verifier and
+send it to the prover. Consult the Swagger <code>verifier</code> endpoints. POST to
+<code>/v1/verifier/send-request</code> with a payload of the following form, replacing the
+values accordingly (and ensuring they can be covered by the previously created
+schema and issued credential):</p>
+<pre><code class="language-json">{
+  "connection_id": "string",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "additionalProp1": {
+        "name": "string",
+        "names": ["string"],
+        "non_revoked": {},
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {
+      "additionalProp1": {
+        "name": "string",
+        "p_type": "&lt;",
+        "p_value": 0,
+        "non_revoked": {},
+        "restrictions": []
+      },
+      "name": "string",
+      "non_revoked": {},
+      "version": "string"
+    }
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Send the proof request.</p>
+<ol>
+<li>From the prover, get the proof records using <code>/v1/verifier/proofs</code> and
+create a proof request you want to send, just as above (same payload format
+and endpoint).</li>
+</ol>
+</li>
+<li>
+<p>Accept the proof request.</p>
+<ol>
+<li>From the verifier, you can now accept (or reject; see
+<code>/v1/verifier/reject-request</code> on Swagger for payload) by POSTing to
+<code>/v1/verifier/send-request</code>, adjusting the payload to:</li>
+</ol>
+<pre><code class="language-json">{
+  "proof_id": "string",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "additionalProp1": {
+        "cred_id": "string",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {
+      "additionalProp1": {
+        "cred_id": "string",
+        "timestamp": 0
+      }
+    },
+    "self_attested_attributes": {
+      "additionalProp1": "string",
+      "additionalProp2": "string",
+      "additionalProp3": "string"
+    }
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>(Optional) Wait for the prover and verifier's webhook, using waypoint, and see that the
+presentation is acknowledged. Alternatively, GET the proof records and check the
+<code>state</code> field.</p>
+</li>
+</ol>
+<p><em>Note: There are multiple flows to this "dance". For further details, you may want to refer to the <a href="https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof">official Aries-RFC</a>.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bootstrapping-a-trust-ecosystem-with-aries-cloudapi"><a class="header" href="#bootstrapping-a-trust-ecosystem-with-aries-cloudapi">Bootstrapping a Trust Ecosystem with Aries CloudAPI</a></h1>
+<h2 id="1-clone-the-github-repository"><a class="header" href="#1-clone-the-github-repository">1. Clone the Github Repository</a></h2>
+<ol>
+<li><code>git clone https://github.com/didx-xyz/aries-cloudapi-python.git</code></li>
+<li>OPTIONAL: Customise environment variables located <a href="https://github.com/didx-xyz/aries-cloudapi-python/tree/development/environments">here</a></li>
+<li>Start up docker instances by following the <a href="./Quick%20Start%20Guide.html">Quick Start Guide</a></li>
+</ol>
+<h2 id="2-generate-a-new-did"><a class="header" href="#2-generate-a-new-did">2. Generate a New DID</a></h2>
+<ol>
+<li>
+<p>Access the API through <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance</a></p>
+</li>
+<li>
+<p>Authenticate with <code>governance.</code>+<code>APIKEY</code> role</p>
+</li>
+<li>
+<p>Generate a new DID with a <code>POST</code> to the following API endpoint: <code>/v1/wallet/dids/</code></p>
+</li>
+<li>
+<p>An example successful response to generate a DID would look like this:</p>
+<pre><code class="language-json">{
+  "did": "LESjYcQUBF2o3kFy5EUqTL",
+  "key_type": null,
+  "method": null,
+  "posture": null,
+  "verkey": "BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg"
+}
+</code></pre>
+</li>
+<li>
+<p>Copy <code>DID</code> and <code>Verkey</code></p>
+</li>
+</ol>
+<h2 id="3-anchor-new-did-to-indy-ledger"><a class="header" href="#3-anchor-new-did-to-indy-ledger">3. Anchor new DID to Indy Ledger</a></h2>
+<ol>
+<li>Go to <a href="http://localhost:9000/">Ledger Web Interface</a></li>
+<li>Select <code>Register from DID</code></li>
+<li>Paste <code>DID</code> and <code>Verkey</code> and select Role <code>Endorser</code></li>
+<li>Click <code>Register DID</code></li>
+<li>DID should be successfully written to the Indy Ledger with a response as below</li>
+</ol>
+<pre><code class="language-text">Identity successfully registered:
+DID: LESjYcQUBF2o3kFy5EUqTL
+Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
+</code></pre>
+<h2 id="4-accept-transaction-author-agreement"><a class="header" href="#4-accept-transaction-author-agreement">4. Accept Transaction Author Agreement</a></h2>
+<ol>
+<li>
+<p>Connect to AcaPy <a href="http://governance-agent.cloudapi.127.0.0.1.nip.io/api/doc">Governance Agent API</a></p>
+</li>
+<li>
+<p>Authenticate by setting the <code>x-api-key</code> header with the API Key of the Governance Agent via Swagger/Postman/Insomnia</p>
+</li>
+<li>
+<p>Get the TAA from the following endpoint <code>/ledger/taa</code>. An example response would be like this:</p>
+<pre><code class="language-json">{
+  "result": {
+    "aml_record": {
+      "aml": {
+        "at_submission": "The agreement was reviewed by the user and accepted at the time of submission of this transaction.",
+        "for_session": "The agreement was reviewed by the user and accepted at some point in the user’s session prior to submission.",
+        "on_file": "An authorized person accepted the agreement, and such acceptance is on file with the user’s organization.",
+        "product_eula": "The agreement was included in the software product’s terms and conditions as part of a license to the end user.",
+        "service_agreement": "The agreement was included in the terms and conditions the user accepted as part of contracting a service.",
+        "wallet_agreement": "The agreement was reviewed by the user and this affirmation was persisted in the user’s wallet for use during submission."
+      },
+      "amlContext": "http://aml-context-descr",
+      "version": "1.0"
+    },
+    "taa_record": {
+      "digest": "0be4d87dec17a7901cb8ba8bb4239ee34d4f6e08906f3dad81d1d052dccc078f",
+      "ratification_ts": 1597654073,
+      "text": "This is a sample Transaction Authors Agreement **(TAA)**, for the VON test Network.\n\nOn public ledger systems this will typically contain legal constraints that must be accepted before any write operations will be permitted.",
+      "version": "1.1"
+    },
+    "taa_required": true,
+    "taa_accepted": null
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Copy the <code>text</code> and <code>version</code> from the API response.</p>
+</li>
+<li>
+<p>Accept the TAA by POSTING to the following API endpoint: <code>/ledger/taa/accept</code>.</p>
+<ol>
+<li>
+<p>Paste the <code>text</code> and <code>version</code> from the previous step into the POST body.</p>
+</li>
+<li>
+<p>Set the <code>mechanism</code> to <code>service_agreement</code>. A complete POST JSON body example is as follows:</p>
+<pre><code class="language-json">{
+  "mechanism": "service_agreement",
+  "text": "This is a sample Transaction Authors Agreement **(TAA)**, for the VON test Network.\n\nOn public ledger systems this will typically contain legal constraints that must be accepted before any write operations will be permitted.",
+  "version": "1.1"
+}
+</code></pre>
+<p>This should yield an empty JSON response with a <code>200</code> status code.</p>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="5-set-public-did"><a class="header" href="#5-set-public-did">5. Set Public DID</a></h2>
+<ol>
+<li>Go to the <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance</a></li>
+<li>Execute the PUT endpoint to set a Public DID: <code>/v1/wallet/dids/public?did=</code></li>
+<li>Use the DID that you anchored to the ledger in step 3</li>
+<li>A successful response should look like this. You can also query the Public DID Endpoint <code>/wallet/dids/public</code> of the
+Governance Agent to confirm that the public DID is now set:</li>
+</ol>
+<pre><code class="language-json">{
+  "did": "LESjYcQUBF2o3kFy5EUqTL",
+  "key_type": "ed25519",
+  "method": "sov",
+  "posture": "posted",
+  "verkey": "BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg"
+}
+</code></pre>
+<h2 id="6-congratulations"><a class="header" href="#6-congratulations">6. Congratulations</a></h2>
+<ol>
+<li>You have now successfully bootstrapped a Trust Ecosystem using the <code>Aries CloudAPI</code>.</li>
+<li>You are now able to write schemas, credential definitions, create new tenants, etc.</li>
+</ol>
+<p>Continue by establishing your <a href="./Governance%20as%20Code.html">Trust Ecosystem Governance</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="overview-of-aries-cloud-api-architecture"><a class="header" href="#overview-of-aries-cloud-api-architecture">Overview of Aries Cloud API Architecture</a></h1>
+<p>This document provides a brief overview of the Aries Cloud API Architecture, focusing on the two key components: the Admin Agent and the Multi-tenant Agent.</p>
+<h2 id="admin-agent"><a class="header" href="#admin-agent">Admin Agent</a></h2>
+<p>The Admin Agent and the Multi-tenant Agent are both exposed via the same Swagger UI under the same URL. They are differentiated based on the authorization method, which also specifies a role. For more information on this, refer to the workflows document.</p>
+<p>The Admin Agent represents GOVERNANCE, or in a broader sense, the administrative entity. This non-multitenant agent is used for various administrative functions such as creating schemas, managing actors against the trust registry, and managing wallets.</p>
+<h2 id="multi-tenant-agent"><a class="header" href="#multi-tenant-agent">Multi-tenant Agent</a></h2>
+<p>Like the Admin Agent, the Multi-tenant Agent is also exposed via the same Swagger UI under the same URL, with distinction made based on the authorization method and role.</p>
+<p>The Multi-tenant Agent is designed for sub-wallet and tenant management from the tenant's perspective.</p>
+<p>For a more comprehensive understanding of multi-tenancy, please refer to the <a href="https://github.com/openwallet-foundation/acapy/blob/main/docs/features/Multitenancy.md">ACA-Py docs</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid.min.js"></script>
+        <script src="mermaid-init.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>

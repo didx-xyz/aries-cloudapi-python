@@ -1,0 +1,478 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Common Steps - DIDx-Cloud</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">DIDx-Cloud</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="common-steps"><a class="header" href="#common-steps">Common Steps</a></h1>
+<p>This document will guide you through some common steps and interactions. Please
+read it carefully, and feel free to open an issue if further questions arise or
+if you spot a mistake.</p>
+<blockquote>
+<p><strong>Note:</strong> It is always helpful to inspect the CloudAPI Swagger UI to understand
+the available endpoints, their expected inputs, and the corresponding outputs.
+If requests fail, check the Swagger UI to ensure you've called the correct
+endpoint with the correct data. The Swagger UI is accessible at:</p>
+<ul>
+<li>CloudAPI-Multitenant-Admin -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs</a></li>
+<li>CloudAPI-Governance -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">http://cloudapi.127.0.0.1.nip.io/governance/docs</a></li>
+<li>CloudAPI-Tenant -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">http://cloudapi.127.0.0.1.nip.io/tenant/docs</a></li>
+<li>CloudAPI-Public (trust registry) -&gt; <a href="http://cloudapi.127.0.0.1.nip.io/public/docs">http://cloudapi.127.0.0.1.nip.io/public/docs</a></li>
+</ul>
+<p>under a vanilla setup. If you find any model to be unclear from the document
+below, try finding it in Swagger UI before opening an issue. This document
+describes only some basic steps; more detailed workflows can be found
+<a href="./Example%20Flows.html">here</a>.</p>
+</blockquote>
+<p>It is also recommended to set up a webhook listener (refer to our
+<a href="./Webhooks.html">Webhooks doc</a>). This will significantly aid in understanding the
+activities occurring in the ACA-Py instances in the background.</p>
+<h2 id="creating-wallets"><a class="header" href="#creating-wallets">Creating Wallets</a></h2>
+<p>The admin "wallet" is already configured as it is not a subwallet on a
+multi-tenant agent. To create subwallets for tenants, you have to use the tenant
+admin role. The permissions and routing to the correct ACA-Py instance are
+handled by the CloudAPI under the hood. You need to provide two things:</p>
+<ol>
+<li>
+<p>Authorization in the header: <code>{"x-api-key": "tenant-admin.APIKEY"}</code>, where
+<code>tenant-admin</code> is a fixed term representing the role, and <code>APIKEY</code> is the auth
+token you must know and provide.
+<em>Note: This auth string is separated by a dot, so keep that in there.</em></p>
+</li>
+<li>
+<p>The wallet payload (body) of the wallet you want to create, e.g.,</p>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": ["issuer"],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+</li>
+</ol>
+<p>Send this to the <code>/tenant-admin/v1/admin/tenants</code> endpoint. You can omit the
+roles field altogether or pass "issuer" and/or "verifier". All payloads are
+documented in Swagger, so if in doubt, consult the
+<a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a>.</p>
+<p>Creating a tenant with roles will update the trust registry by writing an entry
+for an <code>actor</code>, including wallet details and its associated roles.</p>
+<p>If you wish to later update entities roles, you will have to do that again via
+the tenants admin API, which will handle interacting with the trust registry
+(see also the Swagger for <code>update tenant</code>).</p>
+<h2 id="creating-schemas"><a class="header" href="#creating-schemas">Creating Schemas</a></h2>
+<p>To create schemas and effectively write them to the ledger as well as registering
+them on the trust registry, use the governance role:</p>
+<ol>
+<li>
+<p>Provide the following authentication header:</p>
+<pre><code class="language-json">{ "x-api-key": "governance.ADMIN_API_KEY" }
+</code></pre>
+<p>Replace the <code>ADMIN_API_KEY</code> with the actual API key. Keep the dot and recall
+]that <code>governance</code> is a keyword known to the CloudAPI as a role. It will
+resolve the correct endpoint and available actions based on the role and
+provided token.</p>
+</li>
+<li>
+<p>Provide the information about the schema, e.g.:</p>
+<pre><code class="language-json">{
+  "name": "yourAwesomeSchemaName",
+  "version": "1.3.7",
+  "attributes": ["skill", "age"]
+}
+</code></pre>
+<p>Note that you will need to have a public DID to do so (if your agent lacks
+one, you can use the governance role to create one: see
+<a href="./Bootstrap%20Trust%20Ecosystem.html">Bootstrapping the Trust Ecosystem</a>).
+Run the request with the header from 1. and the payload from 2. against the
+<a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance URL</a>
+and endpoint <code>/v1/definitions/schemas</code> (POST method). Upon success, the
+created schema will be returned.</p>
+</li>
+</ol>
+<h2 id="issuing-a-credential"><a class="header" href="#issuing-a-credential">Issuing a Credential</a></h2>
+<ol>
+<li>
+<p>Register a schema (see above)</p>
+</li>
+<li>
+<p>Register an issuer (create a wallet passing "issuer" as a role - see above)</p>
+</li>
+<li>
+<p>Issuer creates credential definition</p>
+</li>
+<li>
+<p>Create a connection between the issuer and prospect holder</p>
+<ol>
+<li>
+<p>Create an invitation using either the issuer or the holder using the
+<code>/v1/connections/create-invitation</code> endpoint of the
+<a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant URL</a>.
+Here, you will also need to authenticate via the header, e.g., using</p>
+<pre><code class="language-json">{ "x-api-key": "tenant.WALLET_TOKEN" }
+</code></pre>
+<p>where the <code>WALLET_TOKEN</code> is the bearer token you get from the create
+wallet response for a tenant wallet.</p>
+</li>
+<li>
+<p>Copy the content <code>invitation</code> field from the create invitation response
+and use it as the payload in the <code>accept-invitation</code> endpoint, and post to the
+CloudAPI using the other entity. To illustrate, if you used the issuer to
+create the invitation, use the holder for this call and vice versa. Again,
+register using the headers appropriately.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Issue a credential from issuer to prospect holder</p>
+<ol>
+<li>Create and send a credential authenticating with the issuer. The credential
+has the form:</li>
+</ol>
+<pre><code class="language-json">{
+  "connection_id": "string",
+  "schema_id": "string",
+  "attributes": {
+    "additionalProp1": "string",
+    "additionalProp2": "string",
+    "additionalProp3": "string"
+  }
+}
+</code></pre>
+<p>This should correspond to a schema you created previously, and the
+<code>connection_id</code> is the ID of the connection you created in the previous step.
+If you're unsure what that ID is, you can always run a GET request against
+the <code>connections</code> endpoint to find it.</p>
+</li>
+<li>
+<p>Accept and store the credential in the holder wallet</p>
+</li>
+<li>
+<p>Using the holder (authenticating with the holder auth header), issue a GET
+request against the <code>/v1/issuer/credentials</code> endpoint, providing the connection
+ID of the connection established above. <em>Note: The connection IDs are unique for
+each entity, so the connection between the issuer and the holder is one
+connection with two separate connection IDs - one for the issuer and one for the
+holder.</em> This will provide you with a credential record that should be in the
+state of being offered. Providing the connection ID again, you can now use the
+holder to store the credential by posting to
+<code>/v1/issuer/credentials/{credential_exchange_id}/store</code></p>
+</li>
+<li>
+<p>(Optional) Get yor credentials from your wallet (<code>wallet/credentials</code>) check
+whether the credential is actually stored. You can also check this via waypoint.</p>
+</li>
+</ol>
+<h2 id="verifying-a-credential"><a class="header" href="#verifying-a-credential">Verifying a Credential</a></h2>
+<ol>
+<li>
+<p>Ensure you followed <strong>Issuing a Credential</strong> steps to have a wallet with a
+credential (prover)</p>
+</li>
+<li>
+<p>Register an entity as a verifier (verifier)</p>
+<ol>
+<li>In other words, create or update a wallet, passing the role "verifier"</li>
+</ol>
+</li>
+<li>
+<p>Create a connection between 1. prover and 2. verifier the same way as in
+<strong>Issuing a Credential</strong></p>
+</li>
+<li>
+<p>Create a proof request (<code>/v1/verifier/create-request</code>) using the verifier and
+send it to the prover. Consult the Swagger <code>verifier</code> endpoints. POST to
+<code>/v1/verifier/send-request</code> with a payload of the following form, replacing the
+values accordingly (and ensuring they can be covered by the previously created
+schema and issued credential):</p>
+<pre><code class="language-json">{
+  "connection_id": "string",
+  "indy_proof_request": {
+    "requested_attributes": {
+      "additionalProp1": {
+        "name": "string",
+        "names": ["string"],
+        "non_revoked": {},
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {
+      "additionalProp1": {
+        "name": "string",
+        "p_type": "&lt;",
+        "p_value": 0,
+        "non_revoked": {},
+        "restrictions": []
+      },
+      "name": "string",
+      "non_revoked": {},
+      "version": "string"
+    }
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Send the proof request.</p>
+<ol>
+<li>From the prover, get the proof records using <code>/v1/verifier/proofs</code> and
+create a proof request you want to send, just as above (same payload format
+and endpoint).</li>
+</ol>
+</li>
+<li>
+<p>Accept the proof request.</p>
+<ol>
+<li>From the verifier, you can now accept (or reject; see
+<code>/v1/verifier/reject-request</code> on Swagger for payload) by POSTing to
+<code>/v1/verifier/send-request</code>, adjusting the payload to:</li>
+</ol>
+<pre><code class="language-json">{
+  "proof_id": "string",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "additionalProp1": {
+        "cred_id": "string",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {
+      "additionalProp1": {
+        "cred_id": "string",
+        "timestamp": 0
+      }
+    },
+    "self_attested_attributes": {
+      "additionalProp1": "string",
+      "additionalProp2": "string",
+      "additionalProp3": "string"
+    }
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>(Optional) Wait for the prover and verifier's webhook, using waypoint, and see that the
+presentation is acknowledged. Alternatively, GET the proof records and check the
+<code>state</code> field.</p>
+</li>
+</ol>
+<p><em>Note: There are multiple flows to this "dance". For further details, you may want to refer to the <a href="https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof">official Aries-RFC</a>.</em></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="examples/Requested Predicates/1. Requested Predicates.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="Bootstrap Trust Ecosystem.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="examples/Requested Predicates/1. Requested Predicates.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="Bootstrap Trust Ecosystem.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid.min.js"></script>
+        <script src="mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

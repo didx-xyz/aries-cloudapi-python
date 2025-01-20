@@ -1,0 +1,402 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction to Aries Cloud API - DIDx-Cloud</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">DIDx-Cloud</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction-to-aries-cloud-api"><a class="header" href="#introduction-to-aries-cloud-api">Introduction to Aries Cloud API</a></h1>
+<h2 id="trust-ecosystem-in-a-box"><a class="header" href="#trust-ecosystem-in-a-box">Trust Ecosystem in a Box</a></h2>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#first-steps">First Step and Overview</a></li>
+<li><a href="#cloudapi-roles">Cloud API Roles</a></li>
+<li><a href="#workflows-and-roles-overview">Workflows and Roles Overview</a></li>
+<li><a href="#further-reading">Further Reading</a></li>
+</ol>
+<h2 id="first-steps"><a class="header" href="#first-steps">First Steps</a></h2>
+<p>After spinning up the containers following the <a href="Quick%20Start%20Guide.html">Quick Start Guide</a>, you are ready to rumble. Navigating to the <strong>Swagger UI</strong> :</p>
+<ul>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">CloudAPI-Governance</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant</a></li>
+<li><a href="http://cloudapi.127.0.0.1.nip.io/public/docs">CloudAPI-Public</a></li>
+</ul>
+<p>provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.</p>
+<blockquote>
+<p>NOTE: Regardless of the multitude of containers and mechanisms running in <strong>CloudAPI</strong>, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.</p>
+</blockquote>
+<h3 id="using-the-swagger-ui"><a class="header" href="#using-the-swagger-ui">Using the Swagger UI</a></h3>
+<p>The Swagger UI is documented. It shows you endpoints, expected parameters, and what example requests and responses look like. At the bottom of the UI, you can also find a list of all request/response models used, with definitions and example values.</p>
+<h3 id="following-docker-container-logs"><a class="header" href="#following-docker-container-logs">Following Docker Container Logs</a></h3>
+<p>It can be handy to follow the logs of a specific container. A convenient way to do so is using:</p>
+<pre><code class="language-bash">kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
+</code></pre>
+<p>And replacing <code>YOUR_CONTAINER_NAME</code> with the name of the container you want to follow (e.g., governance-endorser-web). You can find the container name in the docker-compose.yaml.</p>
+<h3 id="authentication"><a class="header" href="#authentication">Authentication</a></h3>
+<p>Authentication is handled by the CloudAPI, and from a client perspective it's kept simple and convenient. Either, via the Swagger UI auth (padlock button in UI) or via the header data of your client specifying an <code>x-api-key</code>. Regardless of whether you use the UI or another client, the <code>x-api-key</code> value consists of two parts, separated by a dot:</p>
+<p><code>{role}.{key/token}</code></p>
+<p>This means the header has the format <code>'x-api-key: {role}.{key/token}</code>, which would look like, e.g., <code>'x-api-key: governance.adminApiKey'</code> or <code>'x-api-key: tenant.ey..'</code> (JWT token).</p>
+<p>The first part, <code>role</code>, specifies the role on the surface and targets the correct endpoints and authentication mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for the ACA-Py agent (<code>tenant</code> and <code>tenant-admin</code> target the multitenant agent, and <code>governance</code> targets the governance agent) with the correct headers expected by the agent.</p>
+<p>For admin roles, pass the agent API key as the second part of <code>{role}.{key}</code>:</p>
+<ul>
+<li>The <code>governance</code> role requires the Governance Agent API Key (which was used in starting up the governance agent) as the right-hand side token in the <code>x-api-key</code> header (in order to authenticate access to the governance agent).</li>
+<li>The <code>tenant-admin</code> role requires the Multitenant Agent API Key (which was used in starting up the multitenant agent) as the right-hand side token in the <code>x-api-key</code> header (in order to target the admin interface of the multitenant agent).</li>
+</ul>
+<p>Requests for the <code>tenant</code> role require the wallet JWT as the token in <code>{role}.{token}</code>. These requests will internally obtain a <code>Bearer {TOKEN}</code> header passed to the multitenant agent.</p>
+<p>The definitions and capabilities of the three roles are as follows:</p>
+<h3 id="cloudapi-roles"><a class="header" href="#cloudapi-roles">CloudAPI Roles</a></h3>
+<h4 id="governance-role"><a class="header" href="#governance-role">Governance Role</a></h4>
+<p>Authentication header: <code>'x-api-key: governance.&lt;GOVERNANCE AGENT API KEY&gt;'</code></p>
+<ul>
+<li>governance
+<ul>
+<li>is:
+<ul>
+<li>trust authority</li>
+<li>transaction endorser</li>
+</ul>
+</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>create schemas</li>
+<li>create credential definitions</li>
+<li>manage trust registry</li>
+<li>issue credential</li>
+<li>verify credential</li>
+<li>send basic messages</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="tenant-administration-role"><a class="header" href="#tenant-administration-role">Tenant Administration Role</a></h4>
+<p>Authentication header: <code>'x-api-key: tenant-admin.&lt;MULTITENANT AGENT API KEY&gt;'</code></p>
+<ul>
+<li>tenant-admin
+<ul>
+<li>is:
+<ul>
+<li>trust ecosystem admin</li>
+<li>is transaction author</li>
+</ul>
+</li>
+<li>can:
+<ul>
+<li>only create, update, and delete tenants (<em>wallets</em>) for trust ecosystem issuers, verifiers, and users</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="tenant-role-trust-ecosystem-issuers-verifiers-and-holders"><a class="header" href="#tenant-role-trust-ecosystem-issuers-verifiers-and-holders">Tenant Role (Trust Ecosystem Issuers, Verifiers, and Holders)</a></h4>
+<p>Authentication header: <code>'x-api-key: tenant.&lt;TENANT JWT&gt;'</code></p>
+<ul>
+<li>tenant
+<ul>
+<li>is:
+<ul>
+<li>holder</li>
+<li>issuer/verifier</li>
+</ul>
+</li>
+<li>if is issuer or verifier
+<ul>
+<li>issuers are transaction authors</li>
+<li>verifiers are not transaction authors</li>
+<li>automatically registered with the trust registry</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>create credential definitions</li>
+<li>issue credential</li>
+<li>create/manage wallets</li>
+<li>all transactions written to the ledger are counter-signed by the governance transaction endorser role</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>if is user (<em>holder</em>):
+<ul>
+<li>holder only</li>
+<li>can:
+<ul>
+<li>make connections</li>
+<li>manage own wallet (holder)</li>
+<li>receive and store credentials</li>
+<li>respond to/create proof request</li>
+<li>send basic messages</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="workflows-and-roles-overview"><a class="header" href="#workflows-and-roles-overview">Workflows and Roles Overview</a></h3>
+<h4 id="creating-schemas"><a class="header" href="#creating-schemas">Creating schemas</a></h4>
+<p>Using the admin role(s) you can create and register schemas. Successful schema creation will automatically write it to the ledger.</p>
+<p>The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way, because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.</p>
+<h4 id="credentials"><a class="header" href="#credentials">Credentials</a></h4>
+<p>The main feature revolves around issuing credentials, and verifying proofs based on these credentials.</p>
+<h4 id="creating-and-issuing-credentials"><a class="header" href="#creating-and-issuing-credentials">Creating and issuing credentials</a></h4>
+<p>In order to issue a credential one must first:</p>
+<ul>
+<li>Create a schema and</li>
+<li>Register the schema with the trust registry.</li>
+</ul>
+<p>via the governance agent.</p>
+<p>Then:</p>
+<ul>
+<li>Register an issuer (on the trust registry) with a tenant admin controller.</li>
+</ul>
+<p>The registered issuer can then issue a credential and related schema on the trust registry with the following steps:</p>
+<ul>
+<li>Create a connection between the issuer and some other entity that you want to hold a credential</li>
+<li>Once a connection is established, use the connection ID to create and issue a credential (have a look at the models in Swagger - it will tell you what data you need to provide and will receive back)</li>
+<li>Holder accepts credential issuance</li>
+<li>Holder stores credential in wallet</li>
+</ul>
+<p>In summary, we have:</p>
+<ul>
+<li>Created a schema (using the governance admin)</li>
+<li>Registered a schema on the ledger (via the governance admin)</li>
+<li>Created (a wallet for) an issuer and future holder using the tenant-admin</li>
+<li>Registered an issuer (for a schema)</li>
+<li>Created a connection between an issuer and a prospective holder (using connections API)</li>
+<li>Proposed a credential to a prospective holder from an issuer</li>
+<li>Accepted and stored an offered credential</li>
+</ul>
+<p>Please note that when creating/issuing a credential, endorsing, and verifying credentials, the CloudAPI checks whether the requested instructions are valid against the trust registry.</p>
+<h4 id="requesting-a-proofusing-a-credential"><a class="header" href="#requesting-a-proofusing-a-credential">Requesting a proof/using a credential</a></h4>
+<p>Now that we have an entity holding a credential (having a stored credential in their wallet), the next step is to use this credential. What we need to do:</p>
+<ul>
+<li>Register a verifier on the trust registry (using a tenant-admin controller).</li>
+<li>Establish a connection between a holder (of a credential) and a verifier (using connections/invitations API).</li>
+<li>Using the data models and the <a href="https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof">'dance' described in the ACA-Py docs</a>, you can now arrange for negotiating a proof exchange</li>
+</ul>
+<h4 id="user-managementcreating-wallets"><a class="header" href="#user-managementcreating-wallets">User management/Creating wallets</a></h4>
+<p>Using the admin role(s), you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation returns the wallet creation response, including the wallet id and JWT for authentication.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further Reading</a></h2>
+<ul>
+<li><a href="Aries%20Cloud%20API%20Architecture.html">Aries Cloud API Architecture Overview</a></li>
+<li><a href="Quick%20Start%20Guide.html">Quick Start Guide</a></li>
+<li><a href="./Bootstrap%20Trust%20Ecosystem.html">Bootstrap the Trust Ecosystem</a></li>
+<li><a href="./Common%20Steps.html">Common Steps</a></li>
+<li><a href="./Example%20Flows.html">Example Flows</a></li>
+<li><a href="./Governance%20as%20Code.html">Governance as Code</a></li>
+<li><a href="Trust%20Registry.html">Trust Registry</a></li>
+<li><a href="./Webhooks.html">Webhooks</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+                            <a rel="next prefetch" href="Quick Start Guide.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+                    <a rel="next prefetch" href="Quick Start Guide.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid.min.js"></script>
+        <script src="mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

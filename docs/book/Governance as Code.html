@@ -1,0 +1,493 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Governance as Code - DIDx-Cloud</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">DIDx-Cloud</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="define-your-trust-ecosystem-governance"><a class="header" href="#define-your-trust-ecosystem-governance">Define Your Trust Ecosystem Governance</a></h1>
+<h2 id="1-schemas"><a class="header" href="#1-schemas">1. Schemas</a></h2>
+<p>Schemas are used to define attributes related to credentials. To define schemas for your trust ecosystem, follow the
+steps below:</p>
+<ol>
+<li>Access the API through the <a href="http://cloudapi.127.0.0.1.nip.io/governance/docs">Governance Cloud API</a>.</li>
+<li>Authenticate with <code>governance.</code> + <code>APIKEY</code> role.</li>
+<li>Generate a new schema with a <code>POST</code> to the following API endpoint: <code>/v1/definitions/schemas</code>.</li>
+</ol>
+<p>An example of a successful response to generate a DID:</p>
+<pre><code class="language-json">{
+  "id": "PWmeoVrsLE2pu1idEwWFRW:2:test_schema:0.3.0",
+  "name": "test_schema",
+  "version": "0.3.0",
+  "attribute_names": ["speed"]
+}
+</code></pre>
+<h2 id="2-creating-tenants"><a class="header" href="#2-creating-tenants">2. Creating Tenants</a></h2>
+<p>Creating new tenants in the multi-tenant environment for the various tenant types in the Trust Ecosystem:</p>
+<h3 id="issuers"><a class="header" href="#issuers">Issuers</a></h3>
+<p>Tenants are custodial wallets created within the Trust Ecosystem's multitenant AcaPy agent. To create new tenants
+for your trust ecosystem, follow the steps below:</p>
+<ol>
+<li>Access the API through the <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a>.</li>
+<li>Authenticate with <code>tenant-admin.</code> + <code>APIKEY</code> role.</li>
+<li>Create a new tenant with a <code>POST</code> to the following API endpoint: <code>/tenant-admin/v1/admin/tenants/</code>, using the
+example request body below.</li>
+</ol>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": ["issuer"],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+<p>An example of a successful response to create a new Issuer Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIwNTYxODM2Mi1iMDI0LTQ2YzUtYjgzYy02YzZiOGM3NzkyZDgiLCJpYXQiOjE3MDAxMjgxNTN9.x_0xa9glFFW44PbfoBiEQY0Lt0dOBLVJgUkdavgusWU",
+  "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "created_at": "2023-11-16T09:49:13.067595Z",
+  "updated_at": "2023-11-16T09:49:13.111843Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+<h3 id="verifiers"><a class="header" href="#verifiers">Verifiers</a></h3>
+<p>Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant AcaPy agent.
+Follow the steps below to create new tenants for your trust ecosystem:</p>
+<ol>
+<li>
+<p>Access the API through <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></p>
+</li>
+<li>
+<p>Authenticate using the <code>tenant-admin.</code>+<code>APIKEY</code> role</p>
+</li>
+<li>
+<p>Generate a new tenant with a <code>POST</code> request to the API endpoint <code>/tenant-admin/v1/admin/tenants/</code> using the
+request body detailed in the example below</p>
+<pre><code class="language-json">{
+ "wallet_label": "Demo Verifier",
+ "wallet_name": "Acme",
+ "roles": [
+  "verifier"
+ ],
+ "group_id": "API demo",
+ "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+</code></pre>
+</li>
+<li>
+<p>Below is an example of a successful response to the creation of a new Verifier Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIwNTYxODM2Mi1iMDI0LTQ2YzUtYjgzYy02YzZiOGM3NzkyZDgiLCJpYXQiOjE3MDAxMjgxNTN9.x_0xa9glFFW44PbfoBiEQY0Lt0dOBLVJgUkdavgusWU",
+  "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "created_at": "2023-11-16T09:49:13.067595Z",
+  "updated_at": "2023-11-16T09:49:13.111843Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+</li>
+</ol>
+<h3 id="holders"><a class="header" href="#holders">Holders</a></h3>
+<p>Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant AcaPy agent.
+Follow these steps to create new Holders for your trust ecosystem:</p>
+<ol>
+<li>
+<p>Access the API through <a href="http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs">CloudAPI-Multitenant-Admin</a></p>
+</li>
+<li>
+<p>Authenticate using <code>tenant-admin.</code>+<code>APIKEY</code> role</p>
+</li>
+<li>
+<p>Generate a new tenant with a <code>POST</code> to the API endpoint <code>/tenant-admin/v1/admin/tenants/</code> using the request body</p>
+</li>
+<li>
+<p>in the example below</p>
+<pre><code class="language-json">{
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}
+</code></pre>
+</li>
+<li>
+<p>Here is an example of a successful response to creating a new Holder Tenant:</p>
+<pre><code class="language-json">{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiI0ZTBjNzBmYi1mMmFkLTRmNTktODFmMy05M2Q4ZGY5Yjk3N2EiLCJpYXQiOjE3MDAxMTkzMjJ9.lXrNVWN_bzRXkkBfOd1Yey6D0iqsHpOuXt6aZYwMLp4",
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "created_at": "2023-11-16T07:22:02.086605Z",
+  "updated_at": "2023-11-16T07:22:02.105980Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+</code></pre>
+</li>
+</ol>
+<h2 id="3-credential-definitions"><a class="header" href="#3-credential-definitions">3. Credential Definitions</a></h2>
+<p>Credential definitions are expected to be created by all <strong><em>Issuers</em></strong> within the trust ecosystem who wish to issue
+credentials to holders. The Trust Authority, which administers the trust ecosystem and enables tenants to write to
+the Indy Ledger, acts as the <code>Transaction Endorser</code> of the Trust Ecosystem. Meanwhile, Issuers serve as
+<code>Transaction Authors</code> within the Trust Ecosystem. For additional information on <code>Transaction Endorsers</code> and
+<code>Transaction Authors</code>, please refer to
+<a href="https://github.com/openwallet-foundation/acapy/blob/main/docs/features/Endorser.md">Aries Transaction Endorser Support</a>.</p>
+<p>To create credential definitions through the <code>Transaction Endorser Protocol</code> for trust ecosystem <em>issuers</em>,
+follow the steps below:</p>
+<ol>
+<li>
+<p>Access the <a href="http://cloudapi.127.0.0.1.nip.io/tenant/docs">CloudAPI-Tenant Swagger UI</a></p>
+</li>
+<li>
+<p>Authenticate as an Issuer using <code>tenant.</code>+<code>JWTKey</code> x-api-key</p>
+</li>
+<li>
+<p>Create a new schema with a <code>POST</code> to the API endpoint <code>/v1/definitions/credentials</code> using the request body</p>
+</li>
+<li>
+<p>illustrated in the example below.</p>
+<blockquote>
+<p>NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry</p>
+</blockquote>
+<pre><code class="language-json">{
+  "tag": "default",
+  "schema_id": "JPqFhPEM4UiR2ZNK9CM4NA:2:test_schema:0.3.0"
+}
+</code></pre>
+</li>
+<li>
+<p>Below is an example of a successful response to writing a credential definition:</p>
+<pre><code class="language-json">{
+  "id": "EfFA6wi7fcZNWzRuHeQqaj:3:CL:8:default",
+  "tag": "default",
+  "schema_id": "JPqFhPEM4UiR2ZNK9CM4NA:2:test_schema:0.3.0"
+}
+</code></pre>
+</li>
+</ol>
+<h2 id="4-trust-registry"><a class="header" href="#4-trust-registry">4. Trust Registry</a></h2>
+<p>To query entries in the Trust Registry, adhere to the following steps:</p>
+<ol>
+<li>
+<p>Access the <a href="http://cloudapi.127.0.0.1.nip.io/public/docs">CloudAPI-Public Swagger UI</a></p>
+</li>
+<li>
+<p>Authenticate as an Issuer using <code>tenant.</code>+<code>JWTKey</code> role</p>
+<blockquote>
+<p>NOTE: The Trust Registry is currently public and accessible to anyone on the internet</p>
+</blockquote>
+</li>
+<li>
+<p>The trust-registry has 5 GET endpoints:</p>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/schemas</code> will return all schemas on the trust registry</p>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">[
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Person",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Person:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Address",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Address:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Medical Aid",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Medical Aid:0.1.0"
+  },
+  {
+    "did": "GXK1Ubc58DvZDe48zPYdcf",
+    "name": "Proof of Bank Account",
+    "version": "0.1.0",
+    "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
+  }
+]
+</code></pre>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/schemas/{schema_id}</code> will return the schema based on id passed</p>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">{
+  "did": "GXK1Ubc58DvZDe48zPYdcf",
+  "name": "Proof of Bank Account",
+  "version": "0.1.0",
+  "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
+}
+</code></pre>
+<ul>
+<li>
+<p><code>GET</code> <code>/v1/trust-registry/actors</code> will return all actors on the trust registry</p>
+</li>
+<li>
+<p>Optionally one of the following query parameters can be passed to get a specific actor:</p>
+<ul>
+<li><code>actor_did</code></li>
+<li><code>actor_id</code></li>
+<li><code>actor_name</code></li>
+</ul>
+<p>Response:</p>
+</li>
+</ul>
+<pre><code class="language-json">[
+  {
+    "id": "9bdbc626-1499-48e2-a5db-878d347e290b",
+    "name": "didxissuer@didx.co.za",
+    "roles": ["issuer"],
+    "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1...Y29tbS5vcmcvZGlkZXhjaGFuZ2UvMS4wIl19"
+  },
+  {
+    "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
+    "name": "didxverifier@didx.co.za",
+    "roles": ["verifier"],
+    "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW...jb21tLm9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
+  },
+  {
+    "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
+    "name": "Bank Issuer &amp; Verifier",
+    "roles": ["issuer", "verifier"],
+    "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
+    "didcomm_invitation": "http://cloudapi.127.0.0.1.nip.io/tenant-admin?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3Jn...odHRovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+  }
+]
+</code></pre>
+<ul>
+<li><code>GET</code> <code>/v1/trust-registry/actors/issuers</code> will return all actors with <code>issuer</code> as a role</li>
+<li><code>GET</code> <code>/v1/trust-registry/actors/verifiers</code> will return all actors with <code>verifier</code> as a role</li>
+</ul>
+</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="NATS.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="Example Flows.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="NATS.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="Example Flows.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid.min.js"></script>
+        <script src="mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

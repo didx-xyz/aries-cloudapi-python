@@ -3,15 +3,15 @@
 "aqua:nats-io/natscli" = "0.1"
 "pipx:poetry" = "2.0"
 helm = "3"
-helmfile = "0.169"
-istioctl = "1.23"
-kind = "0.24"
-kubectl = "1.31"
+helmfile = "0.170"
+istioctl = "1.24"
+kind = "0.26"
+kubectl = "1.32"
 pre-commit = "4.0"
 python = "3.13"
 tilt = "0.33"
 usage = "latest"
-uv = "0.4"
+uv = "0.5"
 
 [settings]
 experimental = true

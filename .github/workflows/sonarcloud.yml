@@ -57,7 +57,7 @@ jobs:
           [tools]
           python = "3.13"
           "pipx:poetry" = "2.0"
-          uv = "0.4"
+          uv = "0.5"
 
           [settings]
           experimental = true

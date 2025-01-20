@@ -27,7 +27,7 @@ jobs:
           pipx_uvx = true
           EOF
 
-      - name: Install dependencies
+      - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
           cache: true

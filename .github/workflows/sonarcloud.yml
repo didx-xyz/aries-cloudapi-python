@@ -55,8 +55,8 @@ jobs:
         run: |
           cat <<EOF > .mise.toml
           [tools]
+          poetry = "2.0"
           python = "3.13"
-          "pipx:poetry" = "2.0"
           uv = "0.5"
 
           [settings]
@@ -76,7 +76,7 @@ jobs:
           depends = ["poetry:install:*"]
           EOF
 
-      - name: Install dependencies
+      - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
           cache: true

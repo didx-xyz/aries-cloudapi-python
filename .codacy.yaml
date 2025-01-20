@@ -9,6 +9,5 @@ engines:
       - MD043: false
 ---
 exclude_paths:
-  - "docs/book/**"
   - "docs/mermaid-init.js"
   - "docs/mermaid.min.js"

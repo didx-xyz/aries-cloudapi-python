@@ -7,7 +7,11 @@ load("ext://uibutton", "cmd_button", "location", "choice_input")
 
 config.define_bool("no-build", False, "Skip building Docker images")
 config.define_bool("destroy", False, "Destroy Kind cluster")
-config.define_bool("destroy-all", False, "Destroy Kind cluster and delete docker registry & cache")
+config.define_bool(
+    "destroy-all",
+    False,
+    "Destroy Kind cluster and delete docker registry & cache",
+)
 config.define_bool(
     "expose",
     False,

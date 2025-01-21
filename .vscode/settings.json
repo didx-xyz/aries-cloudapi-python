@@ -55,6 +55,7 @@
     "Mand",
     "markdownlint",
     "maxsplit",
+    "mdbook",
     "multitenancy",
     "multitenant",
     "nats",

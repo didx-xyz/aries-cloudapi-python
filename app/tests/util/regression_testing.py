@@ -29,10 +29,10 @@ class TestMode:
     )
 
 
-def assert_fail_on_recreating_fixtures():
+def assert_fail_on_recreating_fixtures(extra_context: str = ""):
     assert (
         RegressionTestConfig.fail_on_recreating_fixtures is False
-    ), "Fixture is being recreated (regression tests configured to fail on recreating)"
+    ), f"Fixture is being recreated. {extra_context}"
 
 
 async def get_or_create_tenant(

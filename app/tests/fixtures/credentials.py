@@ -271,9 +271,8 @@ async def get_or_issue_regression_cred_revoked(
     # Wallet Query to fetch credential with this attribute name
     wql = quote(f'{{"attr::name::value":"{revoked_attribute_name}"}}')
 
-    results = (await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")).json()[
-        "results"
-    ]
+    response = await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")
+    results = response.json()["results"]
     assert (
         len(results) < 2
     ), f"Should have 1 or 0 credentials with this attr name, got: {results}"
@@ -285,7 +284,10 @@ async def get_or_issue_regression_cred_revoked(
         ), f"WQL returned unexpected credential: {revoked_credential}"
 
     else:
-        assert_fail_on_recreating_fixtures()
+        all_creds = await alice_member_client.get(WALLET_BASE_PATH)
+        assert_fail_on_recreating_fixtures(
+            f"WQL response: {response.json()}\nAll creds: {all_creds.json()}"
+        )
         credential = {
             "connection_id": faber_and_alice_connection.faber_connection_id,
             "save_exchange_record": True,

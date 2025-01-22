@@ -19,6 +19,10 @@ async def test_get_credentials(alice_member_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't delete credentials in regression run",
+)
 async def test_get_and_delete_credential_record(
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument

@@ -1,6 +1,5 @@
 import asyncio
 from typing import List
-from urllib.parse import quote
 
 import pytest
 from pydantic import BaseModel
@@ -269,9 +268,10 @@ async def get_or_issue_regression_cred_revoked(
     revoked_attribute_name = "Alice-revoked"
 
     # Wallet Query to fetch credential with this attribute name
-    wql = quote(f'{{"attr::name::value":"{revoked_attribute_name}"}}')
+    wql = f'{{"attr::name::value":"{revoked_attribute_name}"}}'
+    params = {"wql": wql, "limit": 10000}
 
-    response = await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")
+    response = await alice_member_client.get(WALLET_BASE_PATH, params=params)
     results = response.json()["results"]
     assert (
         len(results) < 2
@@ -364,11 +364,12 @@ async def get_or_issue_regression_cred_valid(
     valid_credential_attribute_name = "Alice-valid"
 
     # Wallet Query to fetch credential with this attribute name
-    wql = quote(f'{{"attr::name::value":"{valid_credential_attribute_name}"}}')
+    wql = f'{{"attr::name::value":"{valid_credential_attribute_name}"}}'
+    params = {"wql": wql, "limit": 10000}
 
-    results = (await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")).json()[
-        "results"
-    ]
+    response = await alice_member_client.get(WALLET_BASE_PATH, params=params)
+
+    results = response.json()["results"]
     assert (
         len(results) < 2
     ), f"Should have 1 or 0 credentials with this attr name, got: {results}"

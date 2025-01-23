@@ -3,6 +3,7 @@
 - [Introduction to Aries Cloud API](./README.md)
 - [Quick Start Guide](./Quick%20Start%20Guide.md)
 - [Trust Registry](./Trust%20Registry.md)
+- [Webhooks/Event Consumption](./Webhooks.md)
 - [NATS](./NATS.md)
 - [Governance as Code](./Governance%20as%20Code.md)
 - [Example Flows](./Example%20Flows.md)

@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Optional
 
@@ -315,6 +316,9 @@ async def create_did_exchange(
     did_response = (await bob_member_client.get(f"{DID_BASE_PATH}/public")).json()
 
     bob_public_did = qualified_did_sov(did_response["did"])
+
+    # TODO: Remove this & fix didexchange in acapy not working with many simultaneous requests
+    await asyncio.sleep(1)
 
     # Alice create invitation
     alice_connection = (

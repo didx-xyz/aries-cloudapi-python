@@ -3,7 +3,7 @@ name: mdbook deploy
 on:
   push:
     branches:
-      - mdbook
+      - master
     paths:
       - 'docs/**'  # Only trigger the workflow on changes in the docs folder
 

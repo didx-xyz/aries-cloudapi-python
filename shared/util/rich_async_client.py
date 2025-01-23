@@ -4,7 +4,7 @@ import ssl
 from typing import List, Optional
 
 from fastapi import HTTPException
-from httpx import AsyncClient, HTTPStatusError, Response
+from httpx import AsyncClient, ConnectTimeout, HTTPStatusError, Response
 
 logger = logging.getLogger(__name__)
 
@@ -65,17 +65,22 @@ class RichAsyncClient(AsyncClient):
             try:
                 response = await getattr(super(), method)(url, **kwargs)
                 return await self._handle_response(response)
-            except HTTPStatusError as e:
-                code = e.response.status_code
-                if code in self.retry_on and attempt < self.retries - 1:
-                    log_message = (
-                        f"{self.name} {method} `{url}` failed with status code {code}. "
-                        f"Retrying attempt {attempt + 1}/{self.retries}."
-                    )
-                    logger.warning(log_message)
-                    await asyncio.sleep(self.retry_wait_seconds)  # Wait before retrying
-                    continue  # Retry the request
-                await self._handle_error(e, url, method)
+            except (HTTPStatusError, ConnectTimeout) as e:
+                if isinstance(e, HTTPStatusError):
+                    code = e.response.status_code
+                    if code not in self.retry_on or attempt >= self.retries - 1:
+                        await self._handle_error(e, url, method)
+                    error_msg = f"failed with status code {code}"
+                else:
+                    error_msg = "failed with httpx.ConnectTimeout"
+
+                log_message = (
+                    f"{self.name} {method} `{url}` {error_msg}. "
+                    f"Retrying attempt {attempt + 1}/{self.retries}."
+                )
+                logger.warning(log_message)
+                await asyncio.sleep(self.retry_wait_seconds)  # Wait before retrying
+                continue  # Retry the request
 
     async def post(self, url: str, **kwargs) -> Response:
         return await self._request_with_retries("post", url, **kwargs)

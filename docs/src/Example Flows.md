@@ -13,3 +13,6 @@ This document will provide you with more detail through the end-to-end flows:
 7. [The Verifier doing a proof request against the Holder's Credential](./examples/7.%20Verify%20Credential.md)
 8. [Revoking Credentials](./examples/8.%20Revoking%20Credentials.md)
 9. [Verifying Revoked Credentials](./examples/9.%20Verify%20Revoked%20Credentials.md)
+10. [Self-Attested Attributes](./examples/Self-Attested%20Attributes/1.%20Self-Attested%20Attributes.md)
+11. [Restrictions on Proofs](./examples/Restrictions%20on%20Proofs/1.%20Restrictions%20on%20Proofs.md)
+12. [Requested Predicates](./examples/Requested%20Predicates/1.%20Requested%20Predicates.md)

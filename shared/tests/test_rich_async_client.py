@@ -5,22 +5,23 @@ from httpx import AsyncClient, ConnectTimeout, HTTPStatusError, Request, Respons
 from shared.util.rich_async_client import RichAsyncClient
 
 test_url = "https://test.com"
+retry_duration = 0.05
 
 
 @pytest.mark.anyio
 async def test_rich_async_client_initialization():
     client = RichAsyncClient(
-        name="TestClient", retries=2, retry_on=[502], retry_wait_seconds=0.1
+        name="TestClient", retries=2, retry_on=[502], retry_wait_seconds=retry_duration
     )
     assert client.name == "TestClient - HTTP"
     assert client.retries == 2
     assert client.retry_on == [502]
-    assert client.retry_wait_seconds == 0.1
+    assert client.retry_wait_seconds == retry_duration
 
 
 @pytest.mark.anyio
 async def test_rich_async_client_get_success(
-    mock_response,  # pylint: disable=redefined-outer-name
+    mock_response,  # pylint: disable=redefined-outer-name,unused-argument
 ):
     async with RichAsyncClient() as client:
         response = await client.get(test_url)
@@ -30,7 +31,7 @@ async def test_rich_async_client_get_success(
 
 @pytest.mark.anyio
 async def test_rich_async_client_post_success(
-    mock_response,  # pylint: disable=redefined-outer-name
+    mock_response,  # pylint: disable=redefined-outer-name,unused-argument
 ):
     async with RichAsyncClient() as client:
         response = await client.post(test_url, json={"key": "value"})
@@ -40,7 +41,7 @@ async def test_rich_async_client_post_success(
 
 @pytest.mark.anyio
 async def test_rich_async_client_put_success(
-    mock_response,  # pylint: disable=redefined-outer-name
+    mock_response,  # pylint: disable=redefined-outer-name,unused-argument
 ):
     async with RichAsyncClient() as client:
         response = await client.put(test_url, json={"key": "value"})
@@ -50,7 +51,7 @@ async def test_rich_async_client_put_success(
 
 @pytest.mark.anyio
 async def test_rich_async_client_delete_success(
-    mock_response,  # pylint: disable=redefined-outer-name
+    mock_response,  # pylint: disable=redefined-outer-name,unused-argument
 ):
     async with RichAsyncClient() as client:
         response = await client.delete(test_url)
@@ -78,7 +79,7 @@ async def test_rich_async_client_retry_on_502(monkeypatch):
     monkeypatch.setattr(AsyncClient, "get", mock_get)
 
     async with RichAsyncClient(
-        retries=2, retry_on=[502], retry_wait_seconds=0.1
+        retries=2, retry_on=[502], retry_wait_seconds=retry_duration
     ) as client:
         response = await client.get(test_url)
         assert response.status_code == 200
@@ -95,7 +96,7 @@ async def test_rich_async_client_no_retry_on_404(monkeypatch):
     monkeypatch.setattr(AsyncClient, "get", mock_get)
 
     async with RichAsyncClient(
-        retries=2, retry_on=[502], retry_wait_seconds=0.1
+        retries=2, retry_on=[502], retry_wait_seconds=retry_duration
     ) as client:
         with pytest.raises(HTTPException) as exc_info:
             await client.get(test_url)
@@ -116,7 +117,7 @@ async def test_rich_async_client_retry_on_connect_timeout(monkeypatch):
     monkeypatch.setattr(AsyncClient, "get", mock_get)
 
     async with RichAsyncClient(
-        retries=2, retry_on=[502], retry_wait_seconds=0.1
+        retries=2, retry_on=[502], retry_wait_seconds=retry_duration
     ) as client:
         response = await client.get(test_url)
         assert response.status_code == 200

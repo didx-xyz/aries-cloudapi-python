@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 schema_cache = {}
 schema_cache_expiry = {}
 
+
 async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
     """
     Obtains the TAA from the ledger
@@ -183,8 +184,10 @@ async def schema_id_from_credential_definition_id(
     bound_logger.debug("Getting schema id from credential definition id")
 
     current_time = asyncio.get_event_loop().time()
-    if (credential_definition_id in schema_cache and
-        current_time < schema_cache_expiry[credential_definition_id]):
+    if (
+        credential_definition_id in schema_cache
+        and current_time < schema_cache_expiry[credential_definition_id]
+    ):
         bound_logger.debug("Returning cached schema id")
         return schema_cache[credential_definition_id]
 
@@ -194,7 +197,9 @@ async def schema_id_from_credential_definition_id(
         schema_id = ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
         bound_logger.debug("Constructed schema id from credential definition.")
         schema_cache[credential_definition_id] = schema_id
-        schema_cache_expiry[credential_definition_id] = current_time + 60  # Cache for 60 seconds
+        schema_cache_expiry[credential_definition_id] = (
+            current_time + 60
+        )  # Cache for 60 seconds
         return schema_id
 
     # get txn by sequence number, retrieve schema identifier components
@@ -212,5 +217,7 @@ async def schema_id_from_credential_definition_id(
     schema_id = schema.var_schema.id
     bound_logger.debug("Successfully obtained schema id from credential definition.")
     schema_cache[credential_definition_id] = schema_id
-    schema_cache_expiry[credential_definition_id] = current_time + 60  # Cache for 60 seconds
+    schema_cache_expiry[credential_definition_id] = (
+        current_time + 60
+    )  # Cache for 60 seconds
     return schema_id

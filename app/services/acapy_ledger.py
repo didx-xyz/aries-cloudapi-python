@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
@@ -15,6 +16,8 @@ from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
+schema_cache = {}
+schema_cache_expiry = {}
 
 async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
     """
@@ -173,16 +176,26 @@ async def schema_id_from_credential_definition_id(
     -------
     schema_id : string
     """
+    global schema_cache, schema_cache_expiry
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
     )
     bound_logger.debug("Getting schema id from credential definition id")
 
+    current_time = asyncio.get_event_loop().time()
+    if (credential_definition_id in schema_cache and
+        current_time < schema_cache_expiry[credential_definition_id]):
+        bound_logger.debug("Returning cached schema id")
+        return schema_cache[credential_definition_id]
+
     # scrape schema id or sequence number from cred def id
     tokens = credential_definition_id.split(":")
     if len(tokens) == 8:  # node protocol >= 1.4: cred def id has 5 or 8 tokens
+        schema_id = ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
         bound_logger.debug("Constructed schema id from credential definition.")
-        return ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
+        schema_cache[credential_definition_id] = schema_id
+        schema_cache_expiry[credential_definition_id] = current_time + 60  # Cache for 60 seconds
+        return schema_id
 
     # get txn by sequence number, retrieve schema identifier components
     seq_no = tokens[3]
@@ -196,5 +209,8 @@ async def schema_id_from_credential_definition_id(
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
         raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
+    schema_id = schema.var_schema.id
     bound_logger.debug("Successfully obtained schema id from credential definition.")
-    return schema.var_schema.id
+    schema_cache[credential_definition_id] = schema_id
+    schema_cache_expiry[credential_definition_id] = current_time + 60  # Cache for 60 seconds
+    return schema_id

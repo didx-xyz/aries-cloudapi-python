@@ -15,7 +15,7 @@ httpx = "~0.28.0"
 nats-py = { extras = ["nkeys"], version = "^2.9.0" }
 loguru = "~0.7.2"
 orjson = "~3.10.7"
-pydantic = "~2.10.1"
+pydantic = "~2.10.6"
 uvicorn = "~0.34.0"
 ddtrace = "^2.19.0"
 scalar-fastapi = "^1.0.3"

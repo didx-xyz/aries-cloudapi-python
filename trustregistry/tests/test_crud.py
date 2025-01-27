@@ -183,8 +183,6 @@ def test_delete_actor(db_session_mock: Session, actor, actor_id):
 
 @pytest.mark.parametrize("new_actor, old_actor ", [(actor1, db_actor1), (actor1, None)])
 def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.Actor):
-    # actor = db.Actor(**new_actor.model_dump())
-
     db_session_mock.scalars.return_value.one_or_none.return_value = old_actor
 
     if not old_actor:
@@ -283,7 +281,6 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
     ],
 )
 def test_update_schema(db_session_mock: Session, new_schema, old_schema):
-    # schema = db.Schema(**new_schema.model_dump())
     db_session_mock.scalars.return_value.one_or_none.return_value = old_schema
     if not old_schema:
         with pytest.raises(SchemaDoesNotExistException):

@@ -54,8 +54,7 @@ async def test_clear_pending_revokes(
     revocation_registry_credential_map = clear_revoke_response.json()[
         "revocation_registry_credential_map"
     ]
-
-    # assert revocation_registry_credential_map == {} #todo: aca-py now provides response
+    # todo: aca-py now provides response. Make assertions based on response
 
     for cred in revoke_alice_creds:
         rev_record = (
@@ -93,7 +92,7 @@ async def test_clear_pending_revokes_no_map(
     )
     # ).json()["revocation_registry_credential_map"]
 
-    # assert clear_revoke_response == {} #todo: aca-py now provides response
+    # todo: aca-py now provides response. Make assertions based on response
 
     for cred in revoke_alice_creds:
         rev_record = (

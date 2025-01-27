@@ -428,7 +428,7 @@ async def test_validate_rev_reg_ids_cred_rev_id_not_pending(
 async def test_get_pending_revocations_success(
     mock_agent_controller: AcaPyClient,
 ):
-    rev_reg_id = ("mocked_rev_reg_id",)
+    rev_reg_id = "mocked_rev_reg_id"
     # Mock successful response from ACA-Py
     when(mock_agent_controller.revocation).get_registry(
         rev_reg_id=rev_reg_id

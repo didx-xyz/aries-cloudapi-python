@@ -38,7 +38,6 @@ async def test_get_schemas_by_id_success():
             )
         ),
     ]
-    # mock_aries_controller.schema.get_schema = AsyncMock(return_value=mock_schema_results)
 
     with patch(
         "app.services.definitions.schemas.handle_acapy_call",

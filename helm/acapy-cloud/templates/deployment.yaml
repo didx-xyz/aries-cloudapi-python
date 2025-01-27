@@ -195,9 +195,46 @@ spec:
       nodeSelector:
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
       affinity:
-        {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+      {{- if .Values.affinity }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      {{- if eq .Values.podAntiAffinityPreset "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/instance
+                      operator: In
+                      values:
+                        - '{{ include "acapy-cloud.fullname" . }}'
+                topologyKey: kubernetes.io/hostname
+      {{- else if eq .Values.podAntiAffinityPreset "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - '{{ include "acapy-cloud.fullname" . }}'
+              topologyKey: kubernetes.io/hostname
+      {{- end }}
+      {{- with .Values.nodeAffinityPreset }}
+      {{- if eq .type "soft" }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: {{ tpl .key $ }}
+                    operator: In
+                    values:
+                      {{- toYaml .values | nindent 22 }}
+      {{- end }}
+      {{- end }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:

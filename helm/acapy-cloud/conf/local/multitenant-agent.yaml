@@ -194,35 +194,12 @@ env:
 
   # ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
 
-affinity:
-  nodeAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-            - key: node.kubernetes.io/lifecycle
-              operator: In
-              values:
-                - spot
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                  - '{{ include "acapy-cloud.fullname" . }}'
-          topologyKey: kubernetes.io/hostname
-    # requiredDuringSchedulingIgnoredDuringExecution:
-    #   - labelSelector:
-    #       matchExpressions:
-    #         - key: app.kubernetes.io/instance
-    #           operator: In
-    #           values:
-    #             - '{{ include "acapy-cloud.fullname" . }}'
-    #     topologyKey: kubernetes.io/hostname
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: soft
+  key: node.kubernetes.io/lifecycle
+  values:
+    - spot
 
 configFiles:
   logging_config.yml:

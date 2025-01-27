@@ -1,6 +1,6 @@
-from aiocache import cached, SimpleMemoryCache
 from typing import Optional, Tuple
 
+from aiocache import SimpleMemoryCache, cached
 from aries_cloudcontroller import (
     AcaPyClient,
     GetDIDEndpointResponse,

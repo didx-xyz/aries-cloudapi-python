@@ -1,7 +1,7 @@
 import os
 
 host = "localhost"
-url = f"http://{host}"
+url = f"https://{host}"
 adminApiKey = "adminApiKey"
 
 # pylint: disable=invalid-name

@@ -24,7 +24,7 @@ create_invitation_body = CreateInvitation(
 )
 create_invitation_response = InvitationResult(
     connection_id="some_connection_id",
-    invitation_url="http://example.com/invitation",
+    invitation_url="https://example.com/invitation",
     invitation=ConnectionInvitation(),
 )
 

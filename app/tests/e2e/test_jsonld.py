@@ -13,10 +13,10 @@ JSONLD_BASE_PATH = router.prefix
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
-    "@id": "http://dbpedia.org/resource/John_Lennon",
+    "@id": "https://dbpedia.org/resource/John_Lennon",
     "name": "John Lennon",
     "born": "1940-10-09",
-    "spouse": "http://dbpedia.org/resource/Cynthia_Lennon",
+    "spouse": "https://dbpedia.org/resource/Cynthia_Lennon",
 }
 
 signed_doc = {
@@ -25,7 +25,7 @@ signed_doc = {
             "https://www.w3.org/2018/credentials/v1",
             "https://www.w3.org/2018/credentials/examples/v1",
         ],
-        "id": "http://example.edu/credentials/1872",
+        "id": "https://example.edu/credentials/1872",
         "type": ["VerifiableCredential", "AlumniCredential"],
         "issuanceDate": "2010-01-01T19:23:24Z",
         "credentialSubject": {

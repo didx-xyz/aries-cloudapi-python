@@ -1,0 +1,289 @@
+# Default values for the chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+
+fullnameOverride: ""
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate: {}
+    # maxSurge: 25%
+    # maxUnavailable: 25%
+pdb:
+  enabled: true
+  # maxUnavailable: 50%
+
+image:
+  name: alpine
+  registry: ghcr.io/didx-xyz
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+ingress:
+  internal:
+    enabled: false
+    className: nginx-internal
+    rules:
+      - host: example.local
+        paths:
+          - path: /
+            port: 80
+  external:
+    enabled: false
+    className: nginx-external
+    rules:
+      - host: example.local
+        paths:
+          - path: /
+            port: 80
+
+deploymentLabels:
+  # tags.datadoghq.com/env: <env>
+  tags.datadoghq.com/service: '{{ include "acapy-cloud.fullname" . }}'
+  tags.datadoghq.com/version: '{{ .Values.image.tag }}'
+deploymentAnnotations: {}
+podLabels:
+  tags.datadoghq.com/service: '{{ include "acapy-cloud.fullname" . }}'
+  tags.datadoghq.com/version: '{{ .Values.image.tag }}'
+  admission.datadoghq.com/enabled: "false" # disabled by default (for now)
+podAnnotations:
+  # gcr.io/datadoghq/dd-lib-python-init
+  admission.datadoghq.com/python-lib.version: v2.20.0
+  ad.datadoghq.com/istio-proxy.logs: '[{ "source": "envoy", "service": "{{ include "acapy-cloud.fullname" . }}" }]'
+  ad.datadoghq.com/istio-init.logs: '[{ "source": "envoy", "service": "{{ include "acapy-cloud.fullname" . }}" }]'
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# The list of arguments to pass to the Pods entrypoint
+args: []
+# args: ["--verbose"]
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 80
+  containerPort: 80
+
+# A list of additional Ports (TCP by default) to expose over Service
+addPorts: []
+  # - port: 8080
+  #   containerPort: 8080
+  # - port: 8070
+  #   containerPort: 8070
+  #   protocol: UDP
+
+# A list of additional range of Ports (TCP by default) to expose over Service.
+# TODO: Be careful with overlapping Port numbers under different protocols as any changes in such ranges might result in Helm sorting failure on upgrade action
+addPortsRange: []
+  # - minPort: 49152
+  #   maxPort: 49452
+  #   protocol: TCP
+  # - minPort: 49152
+  #   maxPort: 49452
+  #   protocol: UDP
+
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes
+livenessProbe: {}
+  # httpGet:
+  #   path: /healthz
+  #   port: "{{ trunc 15 .Release.Name }}"
+  # failureThreshold: 1
+  # periodSeconds: 10
+readinessProbe: {}
+  # httpGet:
+  #   path: /healthz
+  #   port: "{{ trunc 15 .Release.Name }}"
+  # failureThreshold: 1
+  # periodSeconds: 10
+startupProbe: {}
+  # httpGet:
+  #   path: /healthz
+  #   port: "{{ trunc 15 .Release.Name }}"
+  # failureThreshold: 30
+  # periodSeconds: 10
+
+# https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command:
+  #       - /bin/sh
+  #       - -c
+  #       - echo Hello from the postStart handler > /usr/share/message
+  # preStop:
+  #   exec:
+  #     command:
+  #     - /bin/sh
+  #     - -c
+  #     - nginx -s quit; while killall -0 nginx; do sleep 1; done
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+persistence:
+  enabled: false
+  # mountPath: /opt
+  # capacity: 25Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# allow the app to drain connections within two minutes
+# terminationGracePeriodSeconds: 120
+
+# Specify as many extra containers to run as necessary
+extraContainers: {}
+# - name: container
+#   image: {} # same as the main container unless explicitly defined
+
+# If you have sensitive data to pass as environment variables to app instance,
+# you can specify the secrets containing them here
+extraSecretNamesForEnvFrom: []
+env:
+  DD_LOGS_INJECTION: true
+  DD_PROFILING_ENABLED: false
+  DD_RUNTIME_METRICS_ENABLED: true
+  # DD_TRACE_SAMPLE_RATE: "1"
+
+# ConfigMaps to create. Will be mounted to Pods on specified path. Path must be unique for each mount
+configFiles: {}
+  # myconf.json:
+  #   path: /etc/foo
+  #   content: |-
+  #     {
+  #       "foo": "bar"
+  #     }
+  # anotherconf.json:
+  #   path: /etc/bar
+  #   content: |-
+  #     {
+  #       "bar": "foo"
+  #     }
+
+# Creates a secret named {{ include "acapy-cloud.fullname" . }}-env
+# and automatically passes as environment variables
+secretData: {}
+
+### Istio
+istio:
+  peerAuth:
+    enabled: false
+    labels: {}
+    annotations: {}
+    conf:
+      mtls:
+        mode: PERMISSIVE
+
+  sidecar:
+    enabled: false
+    labels: {}
+    annotations: {}
+    conf:
+      egress:
+        - hosts:
+          - "./*"
+          - "istio-system/*"
+      ingress: []
+      outboundTrafficPolicy:
+        mode: ALLOW_ANY
+
+  virtualService:
+    enabled: false
+    labels: {}
+    annotations: {}
+    conf:
+      gateways: []
+        # - mesh
+        # - istio-system/istio-internal
+        # - istio-system/istio-external
+      hosts:
+        - example.local
+      http:
+        - name: '{{ include "acapy-cloud.fullname" $ }}'
+          route:
+            - destination:
+                host: '{{ include "acapy-cloud.fullname" $ }}'
+                port:
+                  number: 80
+
+  auth:
+    authn:
+      enabled: false
+      labels: {}
+      annotations: {}
+      conf:
+        jwtRules:
+          ## https://istio.io/latest/docs/reference/config/security/jwt/
+          - issuer: https://keycloak.org/realms/example
+            ## Where to fetch the JWKS from (optional)
+            # jwksUri: https://keycloak.org/realms/example/protocol/openid-connect/certs
+            ## Pass the JWT Payload (Base64 Encoded) to the backend via this header
+            # outputPayloadToHeader: x-jwt-payload
+            ## Copy parts of the JWT Payload into HTTP headers
+            # outputClaimToHeaders:
+            #   - header: x-jwt-iss
+            #     claim: iss
+    authz:
+      enabled: false
+      labels: {}
+      annotations: {}
+      conf:
+        action: ALLOW
+        rules:
+          ## https://istio.io/latest/docs/reference/config/security/authorization-policy/#Rule
+          - when:
+              - key: request.auth.claims[iss]
+                values:
+                  - https://keycloak.org/realms/example
+          # - from:
+          #     - source:
+          #         remoteIpBlocks:
+          #           - 1.2.3.4/32
+          # - from:
+          #     - source:
+          #         namespaces:
+          #           - '{{ .Release.Namespace }}'
+
+  envoyFilter:
+    enabled: false
+    labels: {}
+    annotations: {}
+    patches: []

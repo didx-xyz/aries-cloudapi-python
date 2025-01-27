@@ -1,0 +1,37 @@
+apiVersion: v2
+name: acapy-cloud
+description: |
+  A generic Helm Chart to deploy the DIDx Acapy Cloud stack.
+  Due to the similarity between the components, and to reduce duplication, this
+  chart can be used to deploy any of the following components:
+    - endorser
+    - governance-agent
+    - governance-web
+    - ledger-browser
+    - ledger-nodes
+    - multitenant-agent
+    - multitenant-web
+    - public-web
+    - tails-server
+    - tenant-web
+    - trust-registry
+    - waypoint
+  By simply modifying the values file accordingly.
+type: application
+
+version: 0.2.0
+
+home: https://github.com/didx-xyz/aries-cloudapi-python
+sources:
+  - https://github.com/didx-xyz/aries-cloudapi-python
+  - https://github.com/didx-xyz/aries-cloudcontroller-python
+  - https://github.com/bcgov/indy-tails-server
+  - https://github.com/bcgov/von-network
+
+keywords:
+  - identity
+  - hyperledger
+  - aries
+  - didx
+  - ssi
+  - self-sovereign

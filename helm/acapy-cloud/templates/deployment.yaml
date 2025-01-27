@@ -1,0 +1,205 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "acapy-cloud.fullname" . }}
+  labels:
+    {{- include "acapy-cloud.labels" . | nindent 4 }}
+    {{- if .Values.deploymentLabels }}
+      {{- tpl (toYaml .Values.deploymentLabels) . | nindent 4 }}
+    {{- end }}
+  {{- if .Values.deploymentAnnotations }}
+  annotations:
+    {{- tpl (toYaml .Values.deploymentAnnotations) . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ default "RollingUpdate" .Values.strategy.type }}
+    {{- if not (eq .Values.strategy.type "Recreate") }}
+    rollingUpdate:
+      maxSurge: {{ default "25%" .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ default "25%" .Values.strategy.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "acapy-cloud.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "acapy-cloud.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+          {{- tpl (toYaml .Values.podLabels) . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- if .Values.podAnnotations }}
+        {{- tpl (toYaml .Values.podAnnotations) . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.initContainers }}
+      initContainers:
+        {{- tpl (toYaml .Values.initContainers) . | nindent 6 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+      {{- if .Values.persistence.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "acapy-cloud.fullname" . }}
+      {{- end }}
+      {{- range $configName, $configContent := .Values.configFiles }}
+      - name: "{{ $.Release.Name }}-{{ $configName | replace "." "-" | replace "_" "-" | lower }}"
+        configMap:
+          name: "{{ include "acapy-cloud.fullname" $ }}-{{ $configName | replace "_" "" | lower }}"
+          defaultMode: 0777
+      {{- end }}
+      serviceAccountName: {{ include "acapy-cloud.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      # allow old pods to stay up up to specified interval
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- if .Values.service.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      containers:
+      - name: {{ include "acapy-cloud.fullname" . }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.args }}
+        args:
+        {{- range .Values.args }}
+        - {{ . | quote }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.command }}
+        command:
+        {{- range .Values.command }}
+        - {{ tpl ( toString . ) $ | quote }}
+        {{- end }}
+        {{- end }}
+        ports:
+          {{- if .Values.service.name }}
+        - name: {{ tpl .Values.service.name $ }}
+          {{- else }}
+        - name: "{{ trunc 15 .Release.Name }}"
+          {{- end }}
+          containerPort: {{ .Values.service.containerPort }}
+          protocol: TCP
+          {{- range .Values.addPorts }}
+          {{- if .name }}
+        - name: {{ tpl .name $ }}
+          {{- else }}
+        - name: {{ .port }}-{{ .protocol | lower | default "tcp" }}
+          {{- end }}
+          containerPort: {{ .containerPort }}
+          protocol: {{ .protocol | default "TCP" }}
+          {{- end }}
+        {{- range $index, $range := .Values.addPortsRange }}
+        {{- range untilStep ( .minPort | int ) ( add1 .maxPort | int ) 1 }}
+        - name: "{{ . }}-{{ lower $range.protocol | default "tcp" }}"
+          containerPort: {{ . }}
+          protocol: {{ $range.protocol | default "TCP" }}
+        {{- end }}
+        {{- end }}
+        env:
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        {{- range $k,$v := .Values.env }}
+        - name: {{ $k }}
+          {{- $type := printf "%s" (typeOf $v) }}
+          {{- if or (eq $type "string") (eq $type "float64") (eq $type "bool") }}
+          value: {{ tpl (toString $v) $ | quote }}
+          {{- else }}
+          {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.livenessProbe }}
+        livenessProbe:
+          {{- include "common.tplvalues.render" (dict "value" .Values.livenessProbe "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.readinessProbe }}
+        readinessProbe:
+          {{- include "common.tplvalues.render" (dict "value" .Values.readinessProbe "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.startupProbe }}
+        startupProbe:
+          {{- include "common.tplvalues.render" (dict "value" .Values.startupProbe "context" $) | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        envFrom:
+        {{- if .Values.secretData }}
+          - secretRef:
+              name: {{ include "acapy-cloud.fullname" . }}-env
+        {{- end }}
+        {{- range .Values.extraSecretNamesForEnvFrom }}
+          - secretRef:
+              name: {{ . }}
+        {{- end }}
+        {{- range $.Values.extraConfigmapNamesForEnvFrom }}
+          - configMapRef:
+              name: {{ . }}
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.extraVolumeMounts }}
+        {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          mountPath: {{ .Values.persistence.mountPath }}
+        {{- end }}
+        {{- if .Values.configFiles }}
+        {{- range $configName, $configContent := .Values.configFiles }}
+        - name: "{{ $.Release.Name }}-{{ $configName | replace "." "-" | replace "_" "-" | lower }}"
+          mountPath: {{ $configContent.path }}
+          subPath: {{ $configName }}
+        {{- end }}
+        {{- end }}
+        {{- with .Values.lifecycle }}
+        lifecycle:
+          {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 10 }}
+        {{- end }}
+      {{- range .Values.extraContainers }}
+      - name: "{{ .name }}"
+        securityContext:
+          {{- toYaml .securityContext | nindent 12 }}
+        image: "{{ .image.repository | default $.Values.image.repository }}:{{ .image.tag | default $.Values.image.tag }}"
+        imagePullPolicy: {{ .image.pullPolicy | default $.Values.image.pullPolicy }}
+        ports:
+        - name: "{{ trunc 15 .name }}"
+          containerPort: {{ .port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .resources | nindent 12 }}
+        command:
+        {{- range .command }}
+        - {{ tpl ( toString . ) $ | quote }}
+        {{- end }}
+        envFrom:
+          - configMapRef:
+              name: {{ include "acapy-cloud.fullname" $ }}-env
+        {{- range $.Values.extraSecretNamesForEnvFrom }}
+          - secretRef:
+              name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+      {{- end }}

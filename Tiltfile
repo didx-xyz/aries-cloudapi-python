@@ -1,4 +1,4 @@
-load("./tilt/cloudapi/Tiltfile", "setup_cloudapi")
+load("./tilt/acapy-cloud/Tiltfile", "setup_cloudapi")
 load("./tilt/metrics/Tiltfile", "setup_metrics_server")
 load("./tilt/utils/Tiltfile", "run_command")
 load("ext://color", "color")
@@ -44,6 +44,7 @@ if config.tilt_subcommand in ("up", "ci"):
         cmd="mise run kind:install:nginx",
         allow_parallel=True,
         labels=["99-networking"],
+        deps=["./tilt/ingress_nginx/values.yaml"],
     )
 
 # Setup Metrics Server

@@ -75,3 +75,5 @@ NATS_STATE_STREAM = os.getenv("NATS_STATE_STREAM", "cloudapi_aries_state_monitor
 NATS_STATE_SUBJECT = os.getenv("NATS_STATE_SUBJECT", "cloudapi.aries.state_monitoring")
 NATS_CREDS_FILE = os.getenv("NATS_CREDS_FILE", "")
 ENDORSER_DURABLE_CONSUMER = os.getenv("ENDORSER_DURABLE_CONSUMER", "endorser")
+
+CACHE_TTL = int(os.getenv("CACHE_TTL", "60"))

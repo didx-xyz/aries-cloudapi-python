@@ -1,6 +1,7 @@
 import asyncio
 from typing import Any, Dict, Optional
 
+import pytest
 from httpx import HTTPError
 
 from app.tests.util.sse_listener import SseListener, SseListenerTimeout
@@ -64,7 +65,7 @@ async def check_webhook_state(
                     look_back=look_back,
                 )
             else:
-                raise Exception(  # pylint: disable=W0719
+                pytest.fail(
                     "No longer implemented: cannot wait for event without filter_map"
                 )
         except SseListenerTimeout:
@@ -94,9 +95,7 @@ async def check_webhook_state(
     if event:
         return event
     else:
-        raise Exception(  # pylint: disable=W0719
-            f"Could not satisfy webhook filter: `{filter_map}`."
-        )
+        pytest.fail(f"Could not satisfy webhook filter: `{filter_map}`.")
 
 
 # mapping of topics to their relevant field names

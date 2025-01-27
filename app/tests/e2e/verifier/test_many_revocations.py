@@ -182,7 +182,7 @@ async def issue_many_creds(
         num_tries += 1
 
     if num_credentials_returned != num_to_issue:
-        raise Exception(  # pylint: disable=W0719
+        pytest.fail(
             f"Expected num_to_issue credentials to be issued; only got {num_credentials_returned}"
         )
 

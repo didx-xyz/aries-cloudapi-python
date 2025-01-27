@@ -259,7 +259,7 @@ async def test_get_cred_exchange_records(
         num_tries += 1
 
     if num_credentials_returned != 2:
-        raise Exception(  # pylint: disable=W0719
+        pytest.fail(
             f"Expected 2 credentials to be issued; got {num_credentials_returned}"
         )
 

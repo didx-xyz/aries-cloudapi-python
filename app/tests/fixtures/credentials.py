@@ -288,6 +288,7 @@ async def get_or_issue_regression_cred_revoked(
         assert_fail_on_recreating_fixtures(
             f"WQL response: {response.json()}\nAll creds: {all_creds.json()}"
         )
+        # Cred doesn't yet exist; issue credential for regression testing
         credential = {
             "connection_id": faber_and_alice_connection.faber_connection_id,
             "save_exchange_record": True,
@@ -381,9 +382,11 @@ async def get_or_issue_regression_cred_valid(
         ), f"WQL returned unexpected credential: {valid_credential}"
 
     else:
+        all_creds = await alice_member_client.get(WALLET_BASE_PATH)
+        assert_fail_on_recreating_fixtures(
+            f"WQL response: {response.json()}\nAll creds: {all_creds.json()}"
+        )
         # Cred doesn't yet exist; issue credential for regression testing
-        assert_fail_on_recreating_fixtures()
-
         credential = {
             "connection_id": faber_and_alice_connection.faber_connection_id,
             "save_exchange_record": True,

@@ -57,10 +57,6 @@ async def test_get_schemas_success(params, response, role):
     mock_aries_controller = AsyncMock()
     mock_auth = AcaPyAuth(token="mocked_token", role=role)
 
-    mock_get_schemas_as_tenant = AsyncMock()
-
-    mock_get_schemas_as_governance = AsyncMock()
-
     with patch("app.routes.definitions.client_from_auth") as mock_acapy_auth, patch(
         "app.routes.definitions.schemas_service.get_schemas_as_tenant"
     ) as mock_get_schemas_as_tenant, patch(
@@ -104,9 +100,6 @@ async def test_get_schemas_failure(error_code, detail, role):
     mock_aries_controller = AsyncMock()
     mock_auth = AcaPyAuth(token="mocked_token", role=role)
 
-    mock_get_schemas_as_tenant = AsyncMock()
-
-    mock_get_schemas_as_governance = AsyncMock()
     with patch("app.routes.definitions.client_from_auth") as mock_acapy_auth, patch(
         "app.routes.definitions.schemas_service.get_schemas_as_tenant"
     ) as mock_get_schemas_as_tenant, patch(

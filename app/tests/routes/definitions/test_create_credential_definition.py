@@ -22,11 +22,6 @@ cred_def_response = CredentialDefinition(
 async def test_create_credential_definition_success():
     mock_aries_controller = AsyncMock()
 
-    mock_create_credential_definition = AsyncMock()
-    mock_create_credential_definition.return_value = "mock_credential_definition_id"
-
-    mock_coroutine_with_retry = AsyncMock()
-
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_get_client_controller, patch(

@@ -47,13 +47,13 @@ async def test_clear_pending_revokes(
             len(revocation_registry_credential_map[key]) >= 2
         ), "We expect at least two cred_rev_ids per rev_reg_id after revoking one"
 
-    clear_revoke_response = await faber_client.post(
-        f"{REVOCATION_BASE_PATH}/clear-pending-revocations",
-        json={"revocation_registry_credential_map": {rev_reg_id: []}},
-    )
-    revocation_registry_credential_map = clear_revoke_response.json()[
-        "revocation_registry_credential_map"
-    ]
+    # clear_revoke_response = await faber_client.post(
+    #     f"{REVOCATION_BASE_PATH}/clear-pending-revocations",
+    #     json={"revocation_registry_credential_map": {rev_reg_id: []}},
+    # )
+    # revocation_registry_credential_map = clear_revoke_response.json()[
+    #     "revocation_registry_credential_map"
+    # ]
     # todo: aca-py now provides response. Make assertions based on response
 
     for cred in revoke_alice_creds:

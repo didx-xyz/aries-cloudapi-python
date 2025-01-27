@@ -141,7 +141,7 @@ async def test_actor_by_did(
         return_value=Response(500, json=actor.model_dump())
     )
     with pytest.raises(TrustRegistryException):
-        fetched_actor = await fetch_actor_by_did("did:test")
+        await fetch_actor_by_did("did:test")
 
     mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
     fetched_actor = await fetch_actor_by_did("did:test")

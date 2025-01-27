@@ -28,7 +28,7 @@ async def test_assert_public_did(mock_agent_controller: AcaPyClient):
             to_async(DIDResult(result=None))
         )
 
-        did = await acapy_wallet.assert_public_did(mock_agent_controller)
+        await acapy_wallet.assert_public_did(mock_agent_controller)
 
 
 @pytest.mark.anyio

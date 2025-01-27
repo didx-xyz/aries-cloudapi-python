@@ -39,7 +39,6 @@ async def test_get_credential_definition_by_id_success():
     mock_aries_controller.credential_definition.get_cred_def = AsyncMock(
         return_value=cred_def_acapy_result
     )
-    mock_get_schema = AsyncMock()
     with patch(
         "app.routes.definitions.client_from_auth"
     ) as mock_client_from_auth, patch(

@@ -214,7 +214,7 @@ async def test_reject_proof_request(
 
     # assert that alice has webhook for "deleted" state change
     if delete_proof_record:
-        alice_exchange = await check_webhook_state(
+        await check_webhook_state(
             client=alice_member_client,
             topic="proofs",
             state="deleted",

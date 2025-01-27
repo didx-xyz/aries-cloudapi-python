@@ -72,7 +72,7 @@ def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
             assert actor == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                actor = crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
+                crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -92,7 +92,7 @@ def test_get_actor_by_name(db_session_mock: Session, expected, actor_name):
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                result = crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
+                crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -110,7 +110,7 @@ def test_get_actor_by_id(db_session_mock: Session, expected, actor_id):
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                result = crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
+                crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -238,7 +238,7 @@ def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
             assert schema == expected
         else:
             with pytest.raises(SchemaDoesNotExistException):
-                schema = crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
+                crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
 
         select_mock.assert_called_once_with(db.Schema)
         select_mock(db.Schema).where.assert_called_once()

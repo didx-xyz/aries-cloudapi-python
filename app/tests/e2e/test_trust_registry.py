@@ -39,7 +39,7 @@ async def test_get_schema_by_id(
     assert_that(schema).contains("did", "name", "version", "id")
 
     with pytest.raises(HTTPException) as exc:
-        schema_response = await trust_registry_client.get(
+        await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/schemas/bad_schema_id"
         )
 

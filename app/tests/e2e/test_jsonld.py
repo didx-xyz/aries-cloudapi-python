@@ -60,7 +60,7 @@ async def test_sign_jsonld(
 ):
     # First assert 422 error for providing both pub_did and verkey:
     with pytest.raises(CloudApiValueError) as exc:
-        json_ld_req = JsonLdSignRequest(
+        JsonLdSignRequest(
             verkey="abcde",
             pub_did="abcde",
             credential_id=issue_credential_to_alice["credential_exchange_id"][3:],
@@ -138,7 +138,7 @@ async def test_verify_jsonld(
     )
     # Error wrong args
     with pytest.raises(HTTPException) as exc:
-        response = await alice_member_client.post(
+        await alice_member_client.post(
             JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
         )
     assert_that(exc.value.detail).contains(

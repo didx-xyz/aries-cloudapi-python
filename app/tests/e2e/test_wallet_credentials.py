@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 import pytest
@@ -11,8 +10,6 @@ from shared.models.credential_exchange import CredentialExchange
 
 WALLET_CREDENTIALS_PATH = router.prefix
 
-logger = logging.getLogger(__name__)
-
 
 @pytest.mark.anyio
 async def test_get_credentials(alice_member_client: RichAsyncClient):
@@ -22,6 +19,10 @@ async def test_get_credentials(alice_member_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't delete credentials in regression run",
+)
 async def test_get_and_delete_credential_record(
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
@@ -41,7 +42,6 @@ async def test_get_and_delete_credential_record(
     )
     assert fetch_response.status_code == 200
     fetch_response = fetch_response.json()
-    logger.info("fetch_response: %s", fetch_response)
 
     # Assert we can delete this credential
     delete_response = await alice_member_client.delete(

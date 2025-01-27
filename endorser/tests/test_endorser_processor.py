@@ -421,7 +421,7 @@ async def test_check_jetstream_exception(endorsement_processor_mock):
 
 
 class MockFuture:
-    """A mock class to simulate the behavior of a Future object."""
+    """A mock class to simulate the behaviour of a Future object."""
 
     def __init__(self, exception=None):
         self._exception = exception

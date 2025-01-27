@@ -288,7 +288,7 @@ async def wait_transactions_endorsed(
                 return
             else:
                 logger.debug(
-                    "Waiting for transaction acknowledgements. Current states: %s",
+                    "Waiting for transaction acknowledgements. Current states: {}",
                     ", ".join(f"{t.transaction_id}: {t.state}" for t in transactions),
                 )
 

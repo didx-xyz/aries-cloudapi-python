@@ -75,7 +75,7 @@ class EndorsementProcessor:
         Returns:
             True if all background tasks are running, False if any task has stopped.
         """
-        logger.debug("Checking if all tasks are running")
+        logger.trace("Checking if all tasks are running")
 
         tasks_running = self._tasks and all(not task.done() for task in self._tasks)
 
@@ -86,18 +86,22 @@ class EndorsementProcessor:
 
         all_running = tasks_running
 
-        logger.debug("All tasks running: {}", all_running)
+        logger.trace("All tasks running: {}", all_running)
         return all_running
 
     async def _process_endorsement_requests(self) -> NoReturn:
         subscription = await self._subscribe()
         while True:
             try:
+                logger.trace(
+                    "Fetching messages from NATS subject: {}",
+                    self.endorser_nats_subject,
+                )
                 messages = await subscription.fetch(batch=1, timeout=0.5, heartbeat=0.2)
                 for message in messages:
                     message_subject = message.subject
                     message_data = message.data.decode()
-                    logger.trace(
+                    logger.debug(
                         "Received message: {}, with subject {}",
                         message_data,
                         message_subject,
@@ -155,7 +159,7 @@ class EndorsementProcessor:
                 return
 
             logger.info(
-                "Endorsement request is applicable for endorsement, accepting transaction: {}",
+                "Endorsement request is applicable for endorsement: {}",
                 transaction.model_dump(exclude={"messages_attach"}),
             )
             await accept_endorsement(client, transaction_id)

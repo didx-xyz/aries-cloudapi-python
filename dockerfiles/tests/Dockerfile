@@ -2,17 +2,12 @@ FROM python:3.12-slim
 
 WORKDIR /cloudapi-tests
 
-# Copy the pyproject.toml for each submodule
-COPY app/pyproject.toml app/
-COPY endorser/pyproject.toml endorser/
-COPY trustregistry/pyproject.toml trustregistry/
-COPY waypoint/pyproject.toml waypoint/
-
-# Copy the lock files for each submodule
-COPY app/poetry.lock app/
-COPY endorser/poetry.lock endorser/
-COPY trustregistry/poetry.lock trustregistry/
-COPY waypoint/poetry.lock waypoint/
+# Copy source code for each module
+COPY app app
+COPY endorser endorser
+COPY trustregistry trustregistry
+COPY waypoint waypoint
+COPY shared shared
 
 # Install all dependencies
 ARG POETRY_VERSION=2.0.1
@@ -24,7 +19,7 @@ RUN for module in ${MODULES}; do \
   cd "/cloudapi-tests/$module" && poetry install; \
   done
 
-COPY . .
+USER nobody
 
 # docker compose overwrites this
 CMD ["pytest", "--junitxml=test_output.xml"]

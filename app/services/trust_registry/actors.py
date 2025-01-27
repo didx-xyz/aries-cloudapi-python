@@ -132,7 +132,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
         )
 
     if actor_response.status_code == 404:
-        bound_logger.info("Bad request: Actor with did {} not found.", did)
+        bound_logger.info("Bad request: Actor with did not found.")
         return None
     elif actor_response.is_error:
         bound_logger.error(
@@ -169,7 +169,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
         )
 
     if actor_response.status_code == 404:
-        bound_logger.info("Bad request: actor with id {} not found.", actor_id)
+        bound_logger.info("Bad request: actor with id not found.")
         return None
     elif actor_response.is_error:
         bound_logger.error(

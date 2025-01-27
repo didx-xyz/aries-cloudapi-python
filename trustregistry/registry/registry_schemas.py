@@ -83,7 +83,7 @@ async def update_schema(
             schema_id=schema_id,
         )
     except crud.SchemaDoesNotExistException as e:
-        bound_logger.info("Bad request: Schema with id {} not found.", schema_id)
+        bound_logger.info("Bad request: Schema with id not found.")
         raise HTTPException(
             status_code=405,
             detail="Schema not found.",
@@ -99,7 +99,7 @@ async def get_schema(schema_id: str, db_session: Session = Depends(get_db)) -> S
     try:
         schema = crud.get_schema_by_id(db_session, schema_id=schema_id)
     except crud.SchemaDoesNotExistException as e:
-        bound_logger.info("Bad request: Schema with id {} not found.", schema_id)
+        bound_logger.info("Bad request: Schema with id not found.")
         raise HTTPException(
             status_code=404,
             detail=f"Schema with id {schema_id} not found.",
@@ -115,7 +115,7 @@ async def remove_schema(schema_id: str, db_session: Session = Depends(get_db)) -
     try:
         crud.delete_schema(db_session, schema_id=schema_id)
     except crud.SchemaDoesNotExistException as e:
-        bound_logger.info("Bad request: Schema with id {} not found.", schema_id)
+        bound_logger.info("Bad request: Schema with id not found.")
         raise HTTPException(
             status_code=404,
             detail="Schema not found.",

@@ -111,14 +111,29 @@ export default function (data) {
     maxDuration: 10,
     sseTag: "proof_request_received",
   });
-  check(waitForSSEEventReceivedResponse, {
-    "SSE Event received successfully: request-recevied": (r) => {
-      if (!r) {
-        throw new Error("SSE event was not received successfully");
-      }
-      return true;
-    },
+
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE Event received successfully: request-recevied";
+
+  waitForSSEEventReceivedResponse.then(result => {
+      check(result, {
+          [sseCheckMessage]: (r) => {
+              if (!r) {
+                  throw new Error(sseEventError);
+              }
+              return true;
+          },
+      });
   });
+
+  // check(waitForSSEEventReceivedResponse, {
+  //   "SSE Event received successfully: request-recevied": (r) => {
+  //     if (!r) {
+  //       throw new Error("SSE event was not received successfully");
+  //     }
+  //     return true;
+  //   },
+  // });
 
   // sleep(2);
 
@@ -156,14 +171,28 @@ export default function (data) {
     sseTag: "proof_done",
   });
 
-  check(waitForSSEProofDoneRequest, {
-    "SSE Proof Request state: done": (r) => {
-      if (!r) {
-        throw new Error("SSE proof done was not successful");
-      }
-      return true;
-    },
+  const sseEventErrorProofDone = "SSE event was not received successfully";
+  const sseCheckMessageProofDone = "SSE Event received successfully: request-recevied";
+
+  waitForSSEProofDoneRequest.then(result => {
+      check(result, {
+          [sseCheckMessageProofDone]: (r) => {
+              if (!r) {
+                  throw new Error(sseEventErrorProofDone);
+              }
+              return true;
+          },
+      });
   });
+
+  // check(waitForSSEProofDoneRequest, {
+  //   "SSE Proof Request state: done": (r) => {
+  //     if (!r) {
+  //       throw new Error("SSE proof done was not successful");
+  //     }
+  //     return true;
+  //   },
+  // });
 
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;

@@ -143,7 +143,7 @@ export default function (data) {
     acceptInvitationResponse.body
   );
 
-  const waitForSSEEventConnectionResponse = genericWaitForSSEEvent({
+  const waitForSSEEventResponse = genericWaitForSSEEvent({
     accessToken: wallet.access_token,
     walletId: wallet.wallet_id,
     threadId: holderInvitationConnectionId,
@@ -151,17 +151,25 @@ export default function (data) {
     sseUrlPath: "connections/connection_id",
     topic: "connections",
     expectedState: "completed",
-    maxDuration: 10,
+    // maxDuration: 60,
+    // maxRetries: 30,
+    // retryDelay: 2,
+    // lookBack: 20,
     sseTag: "connection_ready",
   });
 
-  check(waitForSSEEventConnectionResponse, {
-    "SSE Event received successfully: connection-ready": (r) => {
-      if (!r) {
-        throw new Error("SSE connection event was not received successfully");
-      }
-      return true;
-    },
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE Event received successfully: connection-ready";
+
+  waitForSSEEventResponse.then(result => {
+      check(result, {
+          [sseCheckMessage]: (r) => {
+              if (!r) {
+                  throw new Error(sseEventError);
+              }
+              return true;
+          },
+      });
   });
 
   testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });

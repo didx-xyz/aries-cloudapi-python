@@ -126,14 +126,28 @@ export default function (data) {
     sseTag: "credential_offer_received",
   });
 
-  check(waitForSSEEventResponse, {
-    "SSE request received successfully: offer-received": (r) => {
-      if (!r) {
-        throw new Error("SSE event was not received successfully");
-      }
-      return true;
-    },
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE request received successfully: offer-received";
+
+  waitForSSEEventResponse.then(result => {
+      check(result, {
+          [sseCheckMessage]: (r) => {
+              if (!r) {
+                  throw new Error(sseEventError);
+              }
+              return true;
+          },
+      });
   });
+
+  // check(waitForSSEEventResponse, {
+  //   "SSE request received successfully: offer-received": (r) => {
+  //     if (!r) {
+  //       throw new Error("SSE event was not received successfully");
+  //     }
+  //     return true;
+  //   },
+  // });
 
   // sleep(1);
 

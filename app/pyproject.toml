@@ -9,6 +9,7 @@ package-mode = false
 python = "~3.12.8"
 
 aiohttp = "~3.11.7"
+aiocache = "~0.12.0"
 aries-cloudcontroller = "==1.2.0.post20241205"
 base58 = "~2.1.1"
 fastapi = "~0.115.0"

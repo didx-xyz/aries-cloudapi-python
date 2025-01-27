@@ -57,7 +57,7 @@ async def update_actor(
     try:
         update_actor_result = crud.update_actor(db_session, actor=actor)
     except crud.ActorDoesNotExistException as e:
-        bound_logger.info("Bad request: Actor not found.")
+        bound_logger.info("Bad request: Actor with id {} not found.", actor_id)
         raise HTTPException(
             status_code=404, detail=f"Actor with id {actor_id} not found."
         ) from e
@@ -74,7 +74,7 @@ async def get_actor_by_did(
     try:
         actor = crud.get_actor_by_did(db_session, actor_did=actor_did)
     except crud.ActorDoesNotExistException as e:
-        bound_logger.info("Bad request: Actor not found.")
+        bound_logger.info("Bad request: Actor with did {} not found.", actor_did)
         raise HTTPException(
             status_code=404, detail=f"Actor with did {actor_did} not found."
         ) from e
@@ -91,7 +91,7 @@ async def get_actor_by_id(
     try:
         actor = crud.get_actor_by_id(db_session, actor_id=actor_id)
     except crud.ActorDoesNotExistException as e:
-        bound_logger.info("Bad request: Actor not found.")
+        bound_logger.info("Bad request: Actor with id {} not found.", actor_id)
         raise HTTPException(
             status_code=404, detail=f"Actor with id {actor_id} not found."
         ) from e
@@ -123,7 +123,7 @@ async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)) -> 
     try:
         crud.delete_actor(db_session, actor_id=actor_id)
     except crud.ActorDoesNotExistException as e:
-        bound_logger.info("Bad request: Actor not found.")
+        bound_logger.info("Bad request: Actor with id {} not found.", actor_id)
         raise HTTPException(
             status_code=404, detail=f"Actor with id {actor_id} not found."
         ) from e

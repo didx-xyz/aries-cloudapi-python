@@ -129,6 +129,8 @@ def obfuscate_primary_data_in_payload(
     # This value is deeply nested in the payload, as part of the `json` string
     # within `messages_attach: [{`data`:{...}}]`, or in `signature_response: [{signature: {"<did>: {...}}]`
 
+    mask = "[REDACTED]"  # string to replace with
+
     payload_copy = payload.copy()
 
     # Iterate over each 'messages_attach' item, if it exists
@@ -142,11 +144,11 @@ def obfuscate_primary_data_in_payload(
                 # Check if the 'primary' field exists in the parsed JSON and obfuscate it
                 if "operation" in data_json and "data" in data_json["operation"]:
                     if "primary" in data_json["operation"]["data"]:
-                        data_json["operation"]["data"]["primary"] = "[REDACTED]"
+                        data_json["operation"]["data"]["primary"] = mask
 
                     # While we are here, let's obfuscate the revocation field too. Big payload with many irrelevant keys
                     if "revocation" in data_json["operation"]["data"]:
-                        data_json["operation"]["data"]["revocation"] = "[REDACTED]"
+                        data_json["operation"]["data"]["revocation"] = mask
 
                 # Replace the original JSON string with the modified version
                 message_attach["data"]["json"] = orjson.dumps(data_json).decode()
@@ -166,7 +168,7 @@ def obfuscate_primary_data_in_payload(
                         and "data" in signature_json["operation"]
                         and "primary" in signature_json["operation"]["data"]
                     ):
-                        signature_json["operation"]["data"]["primary"] = "[REDACTED]"
+                        signature_json["operation"]["data"]["primary"] = mask
 
                     # Replace the original JSON string with the modified version
                     signature_response["signature"][did] = orjson.dumps(

@@ -7,6 +7,11 @@ from app.exceptions import CloudApiException
 from app.models.definitions import CreateSchema, CredentialSchema
 from app.services.definitions.schemas import create_schema
 
+sample_schema_id = "CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0"
+sample_schema_name = "test_schema"
+sample_schema_version = "0.3.0"
+sample_attribute_names = ["attr1", "attr2"]
+
 
 @pytest.mark.anyio
 async def test_create_schema_success():
@@ -16,15 +21,17 @@ async def test_create_schema_success():
 
     mock_schema_publisher = AsyncMock()
     mock_schema_publisher.publish_schema.return_value = CredentialSchema(
-        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0",
-        name="test_schema",
-        version="0.3.0",
-        attribute_names=["attr1", "attr2"],
+        id=sample_schema_id,
+        name=sample_schema_name,
+        version=sample_schema_version,
+        attribute_names=sample_attribute_names,
     )
 
     # Create a sample CreateSchema object
     create_schema_payload = CreateSchema(
-        name="test_schema", version="0.3.0", attribute_names=["attr1", "attr2"]
+        name=sample_schema_name,
+        version=sample_schema_version,
+        attribute_names=sample_attribute_names,
     )
 
     # Patch the necessary functions and classes
@@ -40,9 +47,9 @@ async def test_create_schema_success():
 
         # Set up the mock for handle_model_with_validation
         mock_handle_model.return_value = SchemaSendRequest(
-            schema_name="test_schema",
-            schema_version="1.0",
-            attributes=["attr1", "attr2"],
+            schema_name=sample_schema_name,
+            schema_version=sample_schema_version,
+            attributes=sample_attribute_names,
         )
 
         # Call the function
@@ -50,10 +57,10 @@ async def test_create_schema_success():
 
         # Assertions
         assert isinstance(result, CredentialSchema)
-        assert result.id == "CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3.0"
-        assert result.name == "test_schema"
-        assert result.version == "0.3.0"
-        assert result.attribute_names == ["attr1", "attr2"]
+        assert result.id == sample_schema_id
+        assert result.name == sample_schema_name
+        assert result.version == sample_schema_version
+        assert result.attribute_names == sample_attribute_names
 
         mock_schema_publisher.publish_schema.assert_called_once()
         mock_handle_model.assert_called_once()
@@ -65,7 +72,9 @@ async def test_create_schema_non_governance_agent():
     mock_aries_controller.configuration.host = "https://non-governance-agent-url"
 
     create_schema_payload = CreateSchema(
-        name="test_schema", version="1.0", attribute_names=["attr1", "attr2"]
+        name=sample_schema_name,
+        version=sample_schema_version,
+        attribute_names=sample_attribute_names,
     )
 
     with patch(

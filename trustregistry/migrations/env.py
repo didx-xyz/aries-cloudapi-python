@@ -14,8 +14,10 @@ config = context.config
 # Get db url from environment variable
 db_url = os.environ.get("POSTGRES_DATABASE_URL")
 
+sqlalchemy_url_option_string = "sqlalchemy.url"
+
 if db_url:
-    config.set_main_option("sqlalchemy.url", db_url)
+    config.set_main_option(sqlalchemy_url_option_string, db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -30,12 +32,12 @@ db_url = os.environ.get("POSTGRES_DATABASE_URL")
 
 if db_url:
     logger.debug("Using database URL from environment")
-    config.set_main_option("sqlalchemy.url", db_url)
+    config.set_main_option(sqlalchemy_url_option_string, db_url)
 else:
     logger.warning(
         "POSTGRES_DATABASE_URL not set in environment. Using default URL from alembic.ini"
     )
-    db_url = config.get_main_option("sqlalchemy.url")
+    db_url = config.get_main_option(sqlalchemy_url_option_string)
 
 # Verify that we have a valid database URL
 if not db_url:
@@ -68,7 +70,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option(sqlalchemy_url_option_string)
     context.configure(
         url=url,
         target_metadata=target_metadata,

@@ -34,33 +34,40 @@ def publisher(mock_controller, mock_logger):
     return SchemaPublisher(mock_controller, mock_logger)
 
 
+sample_schema_id = "CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0"
+sample_schema_name = "test_schema"
+sample_schema_version = "1.0"
+sample_attribute_names = ["attr1", "attr2"]
+
 schemas_send_request = SchemaSendRequest(
-    schema_name="test_schema", schema_version="1.0", attributes=["attr1", "attr2"]
+    schema_name=sample_schema_name,
+    schema_version=sample_schema_version,
+    attributes=sample_attribute_names,
 )
 schema_send_result = TxnOrSchemaSendResult(
     sent=SchemaSendResult(
-        schema_id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        schema_id=sample_schema_id,
         var_schema=ModelSchema(
-            id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-            name="test_schema",
-            version="1.0",
-            attr_names=["attr1", "attr2"],
+            id=sample_schema_id,
+            name=sample_schema_name,
+            version=sample_schema_version,
+            attr_names=sample_attribute_names,
         ),
     )
 )
 schema_get_result = SchemaGetResult(
     var_schema=ModelSchema(
-        id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-        name="test_schema",
-        version="1.0",
-        attr_names=["attr1", "attr2"],
+        id=sample_schema_id,
+        name=sample_schema_name,
+        version=sample_schema_version,
+        attr_names=sample_attribute_names,
     )
 )
 credential_schema = CredentialSchema(
-    id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-    name="test_schema",
-    version="1.0",
-    attribute_names=["attr1", "attr2"],
+    id=sample_schema_id,
+    name=sample_schema_name,
+    version=sample_schema_version,
+    attribute_names=sample_attribute_names,
 )
 
 
@@ -161,9 +168,9 @@ async def test_handle_existing_schema_different_attributes(publisher):
     mock_schema = SchemaGetResult(
         var_schema=ModelSchema(
             attr_names=["attr1", "attr3"],
-            id="CXQseFxV34pcb8sss2XhEa:2:test_schema:1.0",
-            name="test_schema",
-            version="1.0",
+            id=sample_schema_id,
+            name=sample_schema_name,
+            version=sample_schema_version,
         )
     )
     with patch(
@@ -242,23 +249,23 @@ async def test_handle_existing_schema_multiple_schemas_found(publisher):
 
     mock_schemas_created_ids = MagicMock()
     mock_schemas_created_ids.schema_ids = [
-        "CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
+        sample_schema_id,
         "aeXh23fv8bp43VxFesQXC:2:test_schema:1.0",
     ]
     mock_schemas = [
         SchemaGetResult(
             var_schema=ModelSchema(
-                id="CXQseFxV34pcb8vf32XhEa:2:test_schema:1.0",
-                name="test_schema",
-                version="1.0",
-                attr_names=["attr1", "attr2"],
+                id=sample_schema_id,
+                name=sample_schema_name,
+                version=sample_schema_version,
+                attr_names=sample_attribute_names,
             )
         ),
         SchemaGetResult(
             var_schema=ModelSchema(
                 id="aeXh23fv8bp43VxFesQXC:2:test_schema:1.0",
-                name="test_schema",
-                version="1.0",
+                name=sample_schema_name,
+                version=sample_schema_version,
                 attr_names=["attr3", "attr4"],
             )
         ),

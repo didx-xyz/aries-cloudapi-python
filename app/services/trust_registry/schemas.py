@@ -88,9 +88,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
             )
         except HTTPException as e:
             if e.status_code == 404:
-                bound_logger.info(
-                    "Bad request: Schema with id not found."
-                )
+                bound_logger.info("Bad request: Schema with id not found.")
                 return None
             else:
                 bound_logger.error(

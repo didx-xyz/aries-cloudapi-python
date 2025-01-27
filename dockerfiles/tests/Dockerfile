@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 ENV POETRY_VIRTUALENVS_CREATE=false
 ARG MODULES="app endorser trustregistry waypoint"
 RUN for module in ${MODULES}; do \
-  cd /cloudapi-tests/$module && poetry install; \
+  cd "/cloudapi-tests/$module" && poetry install; \
   done
 
 COPY . .

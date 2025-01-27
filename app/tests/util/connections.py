@@ -317,9 +317,6 @@ async def create_did_exchange(
 
     bob_public_did = qualified_did_sov(did_response["did"])
 
-    # TODO: Remove this & fix didexchange in acapy not working with many simultaneous requests
-    await asyncio.sleep(3)
-
     # Alice create invitation
     alice_connection = (
         await alice_member_client.post(

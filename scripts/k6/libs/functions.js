@@ -782,6 +782,8 @@ export function checkRevoked(issuerAccessToken, credentialExchangeId) {
   }
 }
 
+// TODO: refactor the maxDuration logic. It's not being used properly. Actually relies on server-side timeout.
+
 export function genericWaitForSSEEvent(config) {
   const {
       accessToken,
@@ -791,10 +793,10 @@ export function genericWaitForSSEEvent(config) {
       sseUrlPath,
       topic,
       expectedState,
-      lookBack,
-      maxDuration,
-      maxRetries,
-      retryDelay,
+      lookBack = 5,
+      maxDuration, // this does nothing...
+      maxRetries = 3,
+      retryDelay = 1,
   } = config;
 
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}?look_back=${lookBack}`;
@@ -847,6 +849,7 @@ export function genericWaitForSSEEvent(config) {
                               check(eventData, {
                                   "Event received": (e) => e.payload.state === expectedState,
                               });
+                              // console.log(`VU ${__VU}: Iteration ${__ITER}: Received expected event: ${JSON.stringify(eventData)}`);
                               client.close();
                               clearTimeout(timeoutId);
                               sseResolve(true);
@@ -900,7 +903,7 @@ export function genericWaitForSSEEvent(config) {
       while (retryCount <= maxRetries) {
           try {
               if (retryCount > 0) {
-                  console.log(`Attempting SSE reconnection (attempt ${retryCount}/${maxRetries})`);
+                  console.warn(`VU ${__VU}: Iteration ${__ITER}: Attempting SSE reconnection (attempt ${retryCount}/${maxRetries})`);
               }
               const result = await connectSSE();
               if (!result) {

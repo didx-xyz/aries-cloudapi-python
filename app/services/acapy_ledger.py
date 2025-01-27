@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
@@ -153,6 +154,8 @@ async def accept_taa_if_required(aries_controller: AcaPyClient) -> None:
         )
 
 
+# Cache up to 6 schema ids, will drop least recently used when cache is full
+@lru_cache(maxsize=6)
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
 ) -> str:

@@ -4,34 +4,42 @@ on:
   workflow_dispatch:
     inputs:
       run-reset-deployments:
-        description: "Reset deployment: Clean start"
+        description: Reset deployment - Clean start
         required: false
         default: false
         type: boolean
       run-tests:
-        description: "Run tests step"
+        description: Run tests step
         required: false
         default: true
         type: boolean
       run-regression-tests:
-        description: "Run regression tests step"
+        description: Run regression tests step
         required: false
         default: true
         type: boolean
 
   push:
     branches:
-      - "master"
+      - master
     tags:
       - "v*"
+    paths:
+      - "**"
+      - "!docs/**" # Ignore changes in the docs folder
+      - "!**.md" # Ignore changes to any markdown file
   pull_request:
     branches:
-      - "master"
+      - master
     types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
+    paths:
+      - "**"
+      - "!docs/**" # Ignore changes in the docs folder
+      - "!**.md" # Ignore changes to any markdown file
 
 concurrency:
   group: cicd
@@ -39,16 +47,15 @@ concurrency:
 
 env:
   TAILSCALE_VERSION: 1.78.1
-  HELMFILE_VERSION: v0.170.0
+  HELMFILE_VERSION: v0.170.1
   HELM_VERSION: v3.17.0
-  MISE_VERSION: 2025.1.9
+  MISE_VERSION: 2025.1.15
 
 jobs:
   build:
     if: github.event.pull_request.draft == false
     name: Build
     permissions:
-      id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
 
@@ -72,13 +79,13 @@ jobs:
             d-cloud/multitenant-agent,
             d-cloud/endorser,
             d-cloud/pytest,
-            d-cloud/waypoint
+            d-cloud/waypoint,
           ]
         include:
           - image: d-cloud/governance-agent
             context: .
             file: dockerfiles/agents/Dockerfile.agent
-            platforms: linux/amd64 # Pending BBS linux/arm64
+            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: d-cloud/trust-registry
             context: .
             file: dockerfiles/trustregistry/Dockerfile
@@ -102,7 +109,7 @@ jobs:
           - image: d-cloud/multitenant-agent
             context: .
             file: dockerfiles/agents/Dockerfile.author.agent
-            platforms: linux/amd64 # Pending BBS linux/arm64
+            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: d-cloud/ledger-browser
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile

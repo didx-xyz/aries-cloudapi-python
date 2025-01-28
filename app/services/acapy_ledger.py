@@ -155,7 +155,8 @@ async def accept_taa_if_required(aries_controller: AcaPyClient) -> None:
 
 
 # Grab cred_def_id from args to use as cache-key
-@cached(cache=SimpleMemoryCache, key_builder=lambda *args: args[1])
+# Looks like function itself is at args[0] hence args[2] for cred_def_id
+@cached(cache=SimpleMemoryCache, key_builder=lambda *args: args[2])
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
 ) -> str:

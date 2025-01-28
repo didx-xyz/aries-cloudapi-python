@@ -17,3 +17,5 @@ Email DIDx at: [info at didx dot co.za](mailto:info@didx.co.za).
 
 *Note. It is not necessary to include the type of bug if you are not sure how to classify it.*
 *A detailed description will be adequate.*
+
+This is a change to a `.md` file

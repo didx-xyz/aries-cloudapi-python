@@ -1,0 +1,219 @@
+fullnameOverride: mediator
+
+replicaCount: 1
+
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+  ad.datadoghq.com/mediator.logs: '[{"source": "python", "service": "mediator", "auto_multi_line_detection": true}]'
+
+image:
+  registry: ghcr.io/openwallet-foundation
+  name: acapy-agent
+  pullPolicy: Always
+  tag: py3.12-1.2.1
+
+podLabels:
+  admission.datadoghq.com/enabled: "false"
+
+command:
+  - aca-py
+  - start
+  - --inbound-transport
+  - http
+  - 0.0.0.0
+  - 3000
+  - --inbound-transport
+  - ws
+  - 0.0.0.0
+  - 3001
+  - --outbound-transport
+  - ws
+  - --outbound-transport
+  - http
+  - --admin
+  - 0.0.0.0
+  - 3002
+  - --endpoint
+  - http://mediator.{{ .Values.ingressDomain }}
+  - ws://mediator.{{ .Values.ingressDomain }}
+
+ingressDomain: cloudapi.127.0.0.1.nip.io
+ingress:
+  internal:
+    enabled: true
+    className: nginx
+    annotations:
+      # Websockets config
+      # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
+      # 1 hour proxy read/write timeout
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        if ($http_connection ~* "upgrade") {
+          proxy_pass http://mediator.{{ .Release.Namespace }}.svc.cluster.local:3001;
+          break;
+        }
+    rules:
+      - host: mediator.{{ .Values.ingressDomain }}
+        paths:
+          - path: /
+            port: 3000
+  internal-admin:
+    enabled: false
+    className: nginx
+    rules:
+      - host: mediator-admin.{{ .Values.ingressDomain }}
+        paths:
+          - path: /
+            port: 3002
+
+service:
+  port: 3000
+  containerPort: 3000
+  appProtocol: http
+
+addPorts:
+  - name: websocket
+    port: 3001
+    containerPort: 3001
+    protocol: TCP
+    appProtocol: http
+  - name: admin
+    port: 3002
+    containerPort: 3002
+    protocol: TCP
+    appProtocol: http
+
+livenessProbe:
+  httpGet:
+    path: /status/live
+    port: admin
+  initialDelaySeconds: 300
+  timeoutSeconds: 30
+readinessProbe:
+  httpGet:
+    path: /status/ready
+    port: admin
+  initialDelaySeconds: 5
+  timeoutSeconds: 30
+
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 256Mi
+#   limits:
+#     cpu: 250m
+#     memory: 384Mi
+
+initContainers:
+  - name: wait-governance-agent
+    image: curlimages/curl
+    command:
+      - sh
+      - -c
+      - |
+        until curl -s http://governance-agent:3020 -o /dev/null; do
+          echo "waiting for governance-agent to be healthy"
+          sleep 2
+        done
+  - name: wait-multitenant-agent
+    image: curlimages/curl
+    command:
+      - sh
+      - -c
+      - |
+        until curl -s http://multitenant-agent:3020; do
+          echo "waiting for multitenant-agent to be healthy"
+          sleep 2
+        done
+
+persistence:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+# Sensitive environment variables are sourced from k8s secrets:
+# - generated with secretData, or
+# - pre-populated with external tooling
+# TODO: Helm secret logic to create new secret if not exist
+secretData:
+  ACAPY_ADMIN_API_KEY: adminApiKey
+  ACAPY_WALLET_KEY: verySecureMediatorWalletKey
+
+  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_idle_count":10, "url":"cloudapi-postgresql:5432" }'
+  ACAPY_WALLET_STORAGE_CREDS: '{ "account":"mediator", "admin_account":"mediator", "admin_password":"mediator", "password":"mediator" }'
+  WALLET_DB_ADMIN_PASS: mediator
+  WALLET_DB_ADMIN_USER: mediator
+  WALLET_DB_HOST: cloudapi-postgresql
+  WALLET_DB_PASS: mediator
+  WALLET_DB_PORT: 5432
+  WALLET_DB_USER: mediator
+
+env:
+  ACAPY_LABEL: Aca-Py Mediator
+  ACAPY_WALLET_NAME: mediator
+  # Mediator does not use a ledger
+  ACAPY_NO_LEDGER: true
+  # Wallet
+  ACAPY_WALLET_TYPE: askar
+  ACAPY_AUTO_PROVISION: true
+  # Mediation
+  ACAPY_MEDIATION_OPEN: true
+  ACAPY_ENABLE_UNDELIVERED_QUEUE: true
+  # Connections
+  ACAPY_DEBUG_CONNECTIONS: true
+  ACAPY_AUTO_ACCEPT_INVITES: true
+  ACAPY_AUTO_ACCEPT_REQUESTS: true
+  ACAPY_AUTO_PING_CONNECTION: true
+  # Print admin invite
+  # ACAPY_MEDIATION_CONNECTIONS_INVITE: true
+  ACAPY_INVITE_LABEL: Aca-Py Mediator
+  ACAPY_INVITE_MULTI_USE: true
+  ACAPY_CONNECTIONS_INVITE: true
+
+  ACAPY_WALLET_STORAGE_TYPE: postgres_storage
+  ACAPY_LOG_LEVEL: info
+
+  ACAPY_EMIT_NEW_DIDCOMM_PREFIX: true
+  ACAPY_EMIT_NEW_DIDCOMM_MIME_TYPE: true
+
+  # ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
+
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: soft
+  key: node.kubernetes.io/lifecycle
+  values:
+    - spot
+
+configFiles:
+  logging_config.yml:
+    path: /home/aries/logging_config.yaml
+    content: |-
+      version: 1
+      disable_existing_loggers: False
+      formatters:
+        json_formatter:
+          (): pythonjsonlogger.jsonlogger.JsonFormatter
+          format: '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d %(message)s'
+      handlers:
+        stream_handler:
+          class: logging.StreamHandler
+          level: DEBUG
+          formatter: json_formatter
+          stream: ext://sys.stderr
+        timed_file_handler:
+          class: logging.handlers.TimedRotatingFileHandler
+          level: DEBUG
+          formatter: json_formatter
+          filename: '/home/aries/log/acapy-agent.log'
+          when: 'd'
+          interval: 7
+          backupCount: 1
+      loggers:
+        '':
+          level: ERROR
+          handlers:
+            - stream_handler
+            - timed_file_handler

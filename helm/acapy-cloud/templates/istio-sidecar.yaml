@@ -1,0 +1,36 @@
+{{- with .Values.istio.sidecar }}
+{{- if .enabled }}
+# https://istio.io/latest/docs/reference/config/networking/sidecar/
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ include "acapy-cloud.fullname" $ }}
+  labels:
+    {{- include "acapy-cloud.labels" $ | nindent 4 }}
+    {{- if .labels }}
+    {{- tpl (toYaml .labels) $ | nindent 4 }}
+    {{- end }}
+  {{- if .annotations }}
+  annotations:
+    {{- tpl (toYaml .annotations) $ | nindent 4 }}
+  {{- end }}
+spec:
+  workloadSelector:
+    labels:
+      {{- include "acapy-cloud.selectorLabels" $ | nindent 6 }}
+  {{- if .conf.ingress }}
+  ingress:
+    {{- tpl (toYaml .conf.ingress) $ | nindent 4 }}
+  {{- end }}
+  egress:
+  {{- if .conf.egress }}
+    {{- tpl (toYaml .conf.egress) $ | nindent 4 }}
+  {{- else }}
+    - hosts:
+        - "./*"
+        - "istio-system/*"
+  {{- end }}
+  outboundTrafficPolicy:
+    mode: {{ default "ALLOW_ANY" .conf.outboundTrafficPolicy.mode }}
+{{- end }}
+{{- end }}

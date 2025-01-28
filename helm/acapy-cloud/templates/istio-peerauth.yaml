@@ -1,0 +1,24 @@
+{{- with .Values.istio.peerAuth }}
+{{- if .enabled }}
+# https://istio.io/latest/docs/reference/config/security/peer_authentication/
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: {{ include "acapy-cloud.fullname" $ }}
+  labels:
+    {{- include "acapy-cloud.labels" $ | nindent 4 }}
+    {{- if .labels }}
+    {{- tpl (toYaml .labels) $ | nindent 4 }}
+    {{- end }}
+  {{- if .annotations }}
+  annotations:
+    {{- tpl (toYaml .annotations) $ | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "acapy-cloud.selectorLabels" $ | nindent 6 }}
+  mtls:
+    mode: {{ default "PERMISSIVE" .conf.mtls.mode }}
+{{- end }}
+{{- end }}

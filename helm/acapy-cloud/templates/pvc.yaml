@@ -1,0 +1,15 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "acapy-cloud.fullname" . }}
+  labels:
+    {{- include "acapy-cloud.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.persistence.storageClassName }}
+  accessModes:
+    - {{ default "ReadWriteOnce" .Values.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.capacity }}
+{{- end }}

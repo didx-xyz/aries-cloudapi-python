@@ -159,5 +159,9 @@
     "zrangebyscore",
     "zrevrangebyscore"
   ],
-  "makefile.configureOnOpen": false
+  "makefile.configureOnOpen": false,
+  "files.associations": {
+    "*.gotmpl": "helm",
+    "*.yaml": "helm"
+  }
 }

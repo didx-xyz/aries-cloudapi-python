@@ -12,14 +12,14 @@ aries-cloudcontroller = "==1.2.0.post20241205"
 dependency-injector = "~=4.45.0"
 fastapi = "~0.115.0"
 httpx = "~0.28.0"
-nats-py = { extras = ["nkeys"], version = "^2.9.0" }
 loguru = "~0.7.2"
+nats-py = { extras = ["nkeys"], version = "^2.9.0" }
 orjson = "~3.10.7"
 pydantic = "~2.10.1"
-uvicorn = "~0.34.0"
 scalar-fastapi = "^1.0.3"
-tenacity = "^9.0.0"
 six = "^1.17.0"                                      # Just to force using same version as app
+tenacity = "^9.0.0"
+uvicorn = "~0.34.0"
 
 [tool.poetry.group.dev.dependencies]
 anyio = "~4.8.0"

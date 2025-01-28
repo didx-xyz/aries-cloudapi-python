@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict
 
-from httpx import Timeout
+from httpx import HTTPError, Timeout
 
 from shared import WAYPOINT_URL
 from shared.log_config import get_logger
@@ -52,6 +52,9 @@ class SseListener:
                         return data["payload"]
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
+                    elif "upstream connect error" in line:
+                        logger.warning("Connection error detected: {}", line)
+                        raise HTTPError(f"SSE connection error: {line}")
                     else:
                         logger.warning("Unexpected SSE line: {}", line)
 

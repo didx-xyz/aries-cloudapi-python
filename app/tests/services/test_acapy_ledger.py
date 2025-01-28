@@ -181,4 +181,3 @@ async def test_schema_id_from_credential_definition_id_caching(
     # Assert both API calls were made
     verify(mock_agent_controller.schema).get_schema(schema_id="456")
     verify(mock_agent_controller.schema).get_schema(schema_id="789")
-    assert False

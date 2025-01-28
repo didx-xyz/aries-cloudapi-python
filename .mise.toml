@@ -52,7 +52,11 @@ run = "tilt up"
 [tasks."tilt:up:podman"]
 description = "Start Tilt with Podman"
 depends = ["kind:create"]
-run = "DOCKER_HOST=$DOCKER_HOST_OVERRIDE tilt up"
+run = """
+#!/bin/bash
+mise set DOCKER_HOST=${DOCKER_HOST_OVERRIDE}
+tilt up
+"""
 
 [tasks."tilt:up:expose"]
 description = "Start Tilt with `--expose` flag"
@@ -80,7 +84,7 @@ run = "tilt ci -- --no-build"
 description = "Destroy Kind and delete Docker Registry & Cache"
 run = """
 #!/bin/bash
-mise run kind:destroy --destroy-registry-containers"
+mise run kind:destroy --destroy-registry-containers
 rm -rf tilt/docker
 """
 
@@ -114,8 +118,8 @@ poetry run pytest --dist loadfile app/tests/e2e $@
 description = "Format files"
 run = """
 #!/bin/bash
-isort . --profile black --diff
-black . --diff
+isort . --profile black
+black .
 find . -type f -name "Tiltfile" | while read -r file; do
     black "$file"
   done
@@ -131,3 +135,10 @@ find . -type f -name "Tiltfile" | while read -r file; do
     black --check --diff "$file"
   done
 """
+
+[tasks."bootstrap:kubeconfig"]
+description = "Set KUBECONFIG"
+run = "mise set KUBECONFIG=$(pwd)/.mise/kubeconfig.yaml"
+
+[hooks]
+enter = [ "mise bootstrap:kubeconfig" ]

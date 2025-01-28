@@ -20,7 +20,6 @@ pyjwt = "~2.10.0"
 PyYAML = "~6.0.2"
 typing-extensions = "~4.12.0"
 uvicorn = "~0.34.0"
-ddtrace = "^2.20.0"
 scalar-fastapi = "^1.0.3"
 uuid_utils = "^0.10.0"
 

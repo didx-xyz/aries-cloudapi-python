@@ -255,39 +255,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
-      - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.CHARTS_PAT }}" | gh auth login --with-token
-      - name: Set branch name
-        id: set_branch_name
-        run: |
-          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
-            echo "BRANCH_NAME=${HEAD_REF}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
-          fi
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          HEAD_REF: ${{ github.head_ref }}
-      - name: Check if branch exists
-        id: check_branch
-        run: |
-          DEFAULT_BRANCH=master
-          SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//%2F/g')
-          if gh api "repos/didx-xyz/charts/git/ref/heads/$SANITIZED_BRANCH_NAME" &> /dev/null; then
-            echo "branch_exists=true" >> $GITHUB_ENV
-            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-          else
-            echo "branch_exists=false" >> $GITHUB_ENV
-            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
-          fi
-      - name: Checkout Charts
-        uses: actions/checkout@v4
-        with:
-          repository: didx-xyz/charts
-          token: ${{ secrets.CHARTS_PAT }}
-          path: tilt/.charts
-          ref: ${{ env.branch_name }}
-          persist-credentials: false
       - name: Start Test Harness
         run: mise run tilt:ci
         shell: bash

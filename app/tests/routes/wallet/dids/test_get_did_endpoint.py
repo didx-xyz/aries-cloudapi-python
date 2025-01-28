@@ -16,7 +16,7 @@ did = "did:sov:2cpBmR3FqGKWi5EyUbpRY8"
 
 @pytest.mark.anyio
 async def test_get_did_endpoint_success():
-    expected_response = DIDEndpoint(did=did, endpoint="http://example.com")
+    expected_response = DIDEndpoint(did=did, endpoint="https://example.com")
     mock_aries_controller = AsyncMock()
     mock_aries_controller.wallet.get_did_endpoint = AsyncMock(
         return_value=expected_response

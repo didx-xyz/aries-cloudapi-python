@@ -6,33 +6,38 @@ from aries_cloudcontroller import AcaPyClient, ModelSchema, SchemaGetResult
 from app.models.definitions import CredentialSchema
 from app.services.definitions.schemas import get_schemas_by_id
 
+schema_id_1 = "CXQseFxV34pcb8vf32XhEa:2:Test_Schema_1:1.0"
+schema_id_2 = "CXQseFxV34pcb8vf32XhEa:2:Test_Schema_2:2.0"
+schema_name_1 = "Test_Schema_1"
+schema_name_2 = "Test_Schema_2"
+schema_version_1 = "1.0"
+schema_version_2 = "2.0"
+attribute_names_1 = ["attr1"]
+attribute_names_2 = ["attr2"]
+
 
 @pytest.mark.anyio
 async def test_get_schemas_by_id_success():
     mock_aries_controller = AsyncMock()
-    mock_schema_ids = [
-        "CXQseFxV34pcb8vf32XhEa:2:Test_Schema_1:1.0",
-        "CXQseFxV34pcb8vf32XhEa:2:Test_Schema_2:2.0",
-    ]
+    mock_schema_ids = [schema_id_1, schema_id_2]
     mock_schema_results = [
         SchemaGetResult(
             var_schema=ModelSchema(
-                id="CXQseFxV34pcb8vf32XhEa:2:Test_Schema_1:1.0",
-                name="Test_Schema_1",
-                version="1.0",
-                attr_names=["attr1"],
+                id=schema_id_1,
+                name=schema_name_1,
+                version=schema_version_1,
+                attr_names=attribute_names_1,
             )
         ),
         SchemaGetResult(
             var_schema=ModelSchema(
-                id="CXQseFxV34pcb8vf32XhEa:2:Test_Schema_2:2.0",
-                name="Test_Schema_2",
-                version="2.0",
-                attr_names=["attr2"],
+                id=schema_id_2,
+                name=schema_name_2,
+                version=schema_version_2,
+                attr_names=attribute_names_2,
             )
         ),
     ]
-    # mock_aries_controller.schema.get_schema = AsyncMock(return_value=mock_schema_results)
 
     with patch(
         "app.services.definitions.schemas.handle_acapy_call",
@@ -49,9 +54,15 @@ async def test_get_schemas_by_id_success():
         assert len(result) == 2
         assert all(isinstance(schema, CredentialSchema) for schema in result)
         assert [schema.id for schema in result] == mock_schema_ids
-        assert [schema.name for schema in result] == ["Test_Schema_1", "Test_Schema_2"]
-        assert [schema.version for schema in result] == ["1.0", "2.0"]
-        assert [schema.attribute_names for schema in result] == [["attr1"], ["attr2"]]
+        assert [schema.name for schema in result] == [schema_name_1, schema_name_2]
+        assert [schema.version for schema in result] == [
+            schema_version_1,
+            schema_version_2,
+        ]
+        assert [schema.attribute_names for schema in result] == [
+            attribute_names_1,
+            attribute_names_2,
+        ]
 
 
 @pytest.mark.anyio
@@ -67,7 +78,7 @@ async def test_get_schemas_by_id_empty_list():
 async def test_get_schemas_by_id_error_handling():
     mock_aries_controller = AsyncMock()
 
-    mock_schema_ids = ["schema1", "schema2"]
+    mock_schema_ids = [schema_id_1, schema_id_2]
 
     with patch(
         "app.services.definitions.schemas.handle_acapy_call",

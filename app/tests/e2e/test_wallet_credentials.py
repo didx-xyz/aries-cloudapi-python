@@ -58,9 +58,7 @@ async def test_get_and_delete_credential_record(
 
     # Assert fetching deleted credential yields 404
     with pytest.raises(HTTPException) as exc:
-        credentials_response = await alice_member_client.get(
-            f"{WALLET_CREDENTIALS_PATH}/{credential_id}"
-        )
+        await alice_member_client.get(f"{WALLET_CREDENTIALS_PATH}/{credential_id}")
     assert exc.value.status_code == 404
 
 

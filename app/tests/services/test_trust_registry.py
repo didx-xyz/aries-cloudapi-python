@@ -141,7 +141,7 @@ async def test_actor_by_did(
         return_value=Response(500, json=actor.model_dump())
     )
     with pytest.raises(TrustRegistryException):
-        fetched_actor = await fetch_actor_by_did("did:test")
+        await fetch_actor_by_did("did:test")
 
     mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
     fetched_actor = await fetch_actor_by_did("did:test")
@@ -479,7 +479,7 @@ async def test_get_actor(
         name=actor_name,
         roles=["issuer"],
         did=actor_did,
-        didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+        didcomm_invitation="https://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
     ).model_dump()
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=[actor]))
@@ -533,7 +533,7 @@ async def test_get_issuers(
             name="faber_GWNKQ",
             roles=["issuer"],
             did="did:sov:2kzVyyTsHmt4WrJLXXRqQU",
-            didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+            didcomm_invitation="https://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
         ).model_dump()
     ]
 
@@ -558,7 +558,7 @@ async def test_get_verifiers(
             name="faber_GWNKQ",
             roles=["verifier"],
             did="did:sov:2kzVyyTsHmt4WrJLXXRqQU",
-            didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+            didcomm_invitation="https://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
         ).model_dump()
     ]
 

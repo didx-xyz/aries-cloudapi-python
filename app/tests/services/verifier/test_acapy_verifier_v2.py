@@ -63,7 +63,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient, proof_ty
             CloudApiException, match="Unsupported credential type: jwt"
         ) as exc:
 
-            created_proof_request = await VerifierV2.create_proof_request(
+            await VerifierV2.create_proof_request(
                 controller=mock_agent_controller,
                 create_proof_request=CreateProofRequest(
                     indy_proof_request=sample_indy_proof_request(),

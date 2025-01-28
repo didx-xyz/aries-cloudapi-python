@@ -11,4 +11,6 @@ FROM docker.io/alpine:3
 
 COPY --from=builder /app/xk6 /usr/local/bin/xk6
 
+USER nobody
+
 ENTRYPOINT ["/usr/local/bin/xk6"]

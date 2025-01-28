@@ -259,7 +259,7 @@ async def test_get_cred_exchange_records(
         num_tries += 1
 
     if num_credentials_returned != 2:
-        raise Exception(  # pylint: disable=W0719
+        pytest.fail(
             f"Expected 2 credentials to be issued; got {num_credentials_returned}"
         )
 
@@ -310,7 +310,7 @@ async def test_get_cred_exchange_records(
     assert len(faber_cred_ex_response) == 1
 
     with pytest.raises(HTTPException) as exc:
-        faber_cred_ex_response = await faber_client.get(
+        await faber_client.get(
             f"{CREDENTIALS_BASE_PATH}?connection_id=123&thread_id=123&role=asf&state=asd"
         )
     assert exc.value.status_code == 422

@@ -136,7 +136,6 @@ class IssuerV2(Issuer):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
-        bound_logger.debug("Get credential id without version")
         credential_exchange_id = cred_ex_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Sending v2 credential request")
@@ -158,7 +157,6 @@ class IssuerV2(Issuer):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
-        bound_logger.debug("Get credential id without version")
         credential_exchange_id = cred_ex_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Storing v2 credential record")
@@ -185,7 +183,6 @@ class IssuerV2(Issuer):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
-        bound_logger.debug("Get credential id without version")
         credential_exchange_id = cred_ex_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Deleting v2 credential record")
@@ -242,7 +239,6 @@ class IssuerV2(Issuer):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
-        bound_logger.debug("Get credential id without version")
         credential_exchange_id = cred_ex_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Getting v2 credential record")

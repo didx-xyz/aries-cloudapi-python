@@ -10,7 +10,7 @@ from app.services.definitions.schemas import get_schemas_as_governance
 @pytest.mark.anyio
 async def test_get_schemas_as_governance_success():
     mock_aries_controller = AsyncMock()
-    mock_aries_controller.configuration.host = "http://governance-agent-url"
+    mock_aries_controller.configuration.host = "https://governance-agent-url"
 
     mock_schema_ids = ["schema1", "schema2"]
     mock_schemas = [
@@ -27,7 +27,7 @@ async def test_get_schemas_as_governance_success():
 
     with patch(
         "app.services.definitions.schemas.GOVERNANCE_AGENT_URL",
-        "http://governance-agent-url",
+        "https://governance-agent-url",
     ), patch(
         "app.services.definitions.schemas.handle_acapy_call", return_value=mock_response
     ), patch(
@@ -44,11 +44,11 @@ async def test_get_schemas_as_governance_success():
 @pytest.mark.anyio
 async def test_get_schemas_as_governance_non_governance_agent():
     mock_aries_controller = AsyncMock()
-    mock_aries_controller.configuration.host = "http://non-governance-agent-url"
+    mock_aries_controller.configuration.host = "https://non-governance-agent-url"
 
     with patch(
         "app.services.definitions.schemas.GOVERNANCE_AGENT_URL",
-        "http://governance-agent-url",
+        "https://governance-agent-url",
     ):
         with pytest.raises(CloudApiException) as exc_info:
             await get_schemas_as_governance(mock_aries_controller)
@@ -62,7 +62,7 @@ async def test_get_schemas_as_governance_non_governance_agent():
 @pytest.mark.anyio
 async def test_get_schemas_as_governance_with_filters():
     mock_aries_controller = AsyncMock()
-    mock_aries_controller.configuration.host = "http://governance-agent-url"
+    mock_aries_controller.configuration.host = "https://governance-agent-url"
 
     mock_schema_ids = ["schema1"]
     mock_schemas = [
@@ -76,7 +76,7 @@ async def test_get_schemas_as_governance_with_filters():
 
     with patch(
         "app.services.definitions.schemas.GOVERNANCE_AGENT_URL",
-        "http://governance-agent-url",
+        "https://governance-agent-url",
     ), patch(
         "app.services.definitions.schemas.handle_acapy_call", return_value=mock_response
     ), patch(
@@ -100,14 +100,14 @@ async def test_get_schemas_as_governance_with_filters():
 @pytest.mark.anyio
 async def test_get_schemas_as_governance_no_schemas():
     mock_aries_controller = AsyncMock()
-    mock_aries_controller.configuration.host = "http://governance-agent-url"
+    mock_aries_controller.configuration.host = "https://governance-agent-url"
 
     mock_response = MagicMock()
     mock_response.schema_ids = None
 
     with patch(
         "app.services.definitions.schemas.GOVERNANCE_AGENT_URL",
-        "http://governance-agent-url",
+        "https://governance-agent-url",
     ), patch(
         "app.services.definitions.schemas.handle_acapy_call", return_value=mock_response
     ), patch(

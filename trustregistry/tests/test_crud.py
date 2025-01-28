@@ -72,7 +72,7 @@ def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
             assert actor == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                actor = crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
+                crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -92,7 +92,7 @@ def test_get_actor_by_name(db_session_mock: Session, expected, actor_name):
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                result = crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
+                crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -110,7 +110,7 @@ def test_get_actor_by_id(db_session_mock: Session, expected, actor_id):
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
-                result = crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
+                crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
 
         select_mock.assert_called_once_with(db.Actor)
         select_mock(db.Actor).where.assert_called_once()
@@ -183,8 +183,6 @@ def test_delete_actor(db_session_mock: Session, actor, actor_id):
 
 @pytest.mark.parametrize("new_actor, old_actor ", [(actor1, db_actor1), (actor1, None)])
 def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.Actor):
-    # actor = db.Actor(**new_actor.model_dump())
-
     db_session_mock.scalars.return_value.one_or_none.return_value = old_actor
 
     if not old_actor:
@@ -240,7 +238,7 @@ def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
             assert schema == expected
         else:
             with pytest.raises(SchemaDoesNotExistException):
-                schema = crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
+                crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
 
         select_mock.assert_called_once_with(db.Schema)
         select_mock(db.Schema).where.assert_called_once()
@@ -283,7 +281,6 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
     ],
 )
 def test_update_schema(db_session_mock: Session, new_schema, old_schema):
-    # schema = db.Schema(**new_schema.model_dump())
     db_session_mock.scalars.return_value.one_or_none.return_value = old_schema
     if not old_schema:
         with pytest.raises(SchemaDoesNotExistException):

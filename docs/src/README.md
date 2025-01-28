@@ -11,20 +11,29 @@
 
 ## First Steps
 
-After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the **Swagger UI** :
+After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble.
+Navigating to the **Swagger UI** :
 
 - [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 - [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 - [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 - [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
 
- provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.
+provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions,
+wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.
 
->NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+> NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned
+> Swagger UI's are the main interaction points intended between clients and the stack. This should be the only
+> endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly
+> interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing
+> deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed
+> to the outside world.
 
 ### Using the Swagger UI
 
-The Swagger UI is documented. It shows you endpoints, expected parameters, and what example requests and responses look like. At the bottom of the UI, you can also find a list of all request/response models used, with definitions and example values.
+The Swagger UI is documented. It shows you endpoints, expected parameters, and what example requests and responses
+look like. At the bottom of the UI, you can also find a list of all request/response models used, with definitions
+and example values.
 
 ### Following Docker Container Logs
 
@@ -34,24 +43,36 @@ It can be handy to follow the logs of a specific container. A convenient way to 
 kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
 ```
 
-And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-endorser-web). You can find the container name in the docker-compose.yaml.
+And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-endorser-web).
+You can find the container name in the docker-compose.yaml.
 
 ### Authentication
 
-Authentication is handled by the CloudAPI, and from a client perspective it's kept simple and convenient. Either, via the Swagger UI auth (padlock button in UI) or via the header data of your client specifying an `x-api-key`. Regardless of whether you use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
+Authentication is handled by the CloudAPI, and from a client perspective it's kept simple and convenient. Either, via
+the Swagger UI auth (padlock button in UI) or via the header data of your client specifying an `x-api-key`. Regardless
+of whether you use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
 
 `{role}.{key/token}`
 
-This means the header has the format `'x-api-key: {role}.{key/token}`, which would look like, e.g., `'x-api-key: governance.adminApiKey'` or `'x-api-key: tenant.ey..'` (JWT token).
+This means the header has the format `'x-api-key: {role}.{key/token}`, which would look like,
+e.g., `'x-api-key: governance.adminApiKey'` or `'x-api-key: tenant.ey..'` (JWT token).
 
-The first part, `role`, specifies the role on the surface and targets the correct endpoints and authentication mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for the ACA-Py agent (`tenant` and `tenant-admin` target the multitenant agent, and `governance` targets the governance agent) with the correct headers expected by the agent.
+The first part, `role`, specifies the role on the surface and targets the correct endpoints and authentication
+mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for
+the ACA-Py agent (`tenant` and `tenant-admin` target the multitenant agent, and `governance` targets the governance
+agent) with the correct headers expected by the agent.
 
 For admin roles, pass the agent API key as the second part of `{role}.{key}`:
 
-- The `governance` role requires the Governance Agent API Key (which was used in starting up the governance agent) as the right-hand side token in the `x-api-key` header (in order to authenticate access to the governance agent).
-- The `tenant-admin` role requires the Multitenant Agent API Key (which was used in starting up the multitenant agent) as the right-hand side token in the `x-api-key` header (in order to target the admin interface of the multitenant agent).
+- The `governance` role requires the Governance Agent API Key (which was used in starting up
+  the governance agent) as the right-hand side token in the `x-api-key` header (in order to authenticate access
+  to the governance agent).
+- The `tenant-admin` role requires the Multitenant Agent API Key (which was used in starting
+  up the multitenant agent) as the right-hand side token in the `x-api-key` header (in order to target the
+  admin interface of the multitenant agent).
 
-Requests for the `tenant` role require the wallet JWT as the token in `{role}.{token}`. These requests will internally obtain a `Bearer {TOKEN}` header passed to the multitenant agent.
+Requests for the `tenant` role require the wallet JWT as the token in `{role}.{token}`. These requests will internally
+obtain a `Bearer {TOKEN}` header passed to the multitenant agent.
 
 The definitions and capabilities of the three roles are as follows:
 
@@ -116,9 +137,12 @@ Authentication header: `'x-api-key: tenant.<TENANT JWT>'`
 
 #### Creating schemas
 
-Using the admin role(s) you can create and register schemas. Successful schema creation will automatically write it to the ledger.
+Using the admin role(s) you can create and register schemas. Successful schema creation will automatically
+write it to the ledger.
 
-The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way, because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.
+The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be
+the preferred way, because schemas can exist on the ledger but have been invalidated on the trust registry.
+This will be checked by the CloudAPI and only valid schemas are allowed for use.
 
 #### Credentials
 
@@ -140,7 +164,8 @@ Then:
 The registered issuer can then issue a credential and related schema on the trust registry with the following steps:
 
 - Create a connection between the issuer and some other entity that you want to hold a credential
-- Once a connection is established, use the connection ID to create and issue a credential (have a look at the models in Swagger - it will tell you what data you need to provide and will receive back)
+- Once a connection is established, use the connection ID to create and issue a credential (have a look at the models
+  in Swagger - it will tell you what data you need to provide and will receive back)
 - Holder accepts credential issuance
 - Holder stores credential in wallet
 
@@ -154,19 +179,24 @@ In summary, we have:
 - Proposed a credential to a prospective holder from an issuer
 - Accepted and stored an offered credential
 
-Please note that when creating/issuing a credential, endorsing, and verifying credentials, the CloudAPI checks whether the requested instructions are valid against the trust registry.
+Please note that when creating/issuing a credential, endorsing, and verifying credentials, the CloudAPI checks whether
+the requested instructions are valid against the trust registry.
 
 #### Requesting a proof/using a credential
 
-Now that we have an entity holding a credential (having a stored credential in their wallet), the next step is to use this credential. What we need to do:
+Now that we have an entity holding a credential (having a stored credential in their wallet), the next step is to use
+this credential. What we need to do:
 
 - Register a verifier on the trust registry (using a tenant-admin controller).
 - Establish a connection between a holder (of a credential) and a verifier (using connections/invitations API).
-- Using the data models and the ['dance' described in the ACA-Py docs](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof), you can now arrange for negotiating a proof exchange
+- Using the data models and the ['dance' described in the ACA-Py
+  docs](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof), you can now arrange for
+  negotiating a proof exchange
 
 #### User management/Creating wallets
 
-Using the admin role(s), you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation returns the wallet creation response, including the wallet id and JWT for authentication.
+Using the admin role(s), you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful
+creation returns the wallet creation response, including the wallet id and JWT for authentication.
 
 ## Further Reading
 

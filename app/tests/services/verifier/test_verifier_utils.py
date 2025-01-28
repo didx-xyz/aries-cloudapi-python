@@ -520,7 +520,7 @@ async def test_assert_valid_prover_x_no_connection_id(
     with pytest.raises(
         CloudApiException, match="No connection id associated with proof request."
     ):
-        assert await assert_valid_prover(
+        await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
                 proof_id=test_pres_exchange.proof_id,
@@ -548,7 +548,7 @@ async def test_assert_valid_prover_x_no_connection_id2(
     ).thenReturn(to_async(ConnRecord(connection_id="")))
 
     with pytest.raises(CloudApiException, match="Cannot proceed. No connection id."):
-        assert await assert_valid_prover(
+        await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
                 proof_id=test_pres_exchange.proof_id,

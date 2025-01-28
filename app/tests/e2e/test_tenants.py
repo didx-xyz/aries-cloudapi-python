@@ -199,7 +199,7 @@ async def test_create_tenant_issuer(
     try:
         actor = await trust_registry.fetch_actor_by_id(wallet_id)
         if not actor:
-            raise Exception("Missing actor")  # pylint: disable=W0719
+            pytest.fail("Missing actor")
 
         endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
@@ -283,7 +283,7 @@ async def test_create_tenant_verifier(
         actor = await trust_registry.fetch_actor_by_id(wallet_id)
 
         if not actor:
-            raise Exception("Missing actor")  # pylint: disable=W0719
+            pytest.fail("Missing actor")
 
         acapy_token: str = tenant["access_token"].split(".", 1)[1]
 

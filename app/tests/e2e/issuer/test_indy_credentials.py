@@ -276,7 +276,7 @@ async def test_revoke_credential(
     alice_credential_exchange_id = payload["credential_exchange_id"]
 
     # send credential request: holder
-    response = await alice_member_client.post(
+    await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request", json={}
     )
 

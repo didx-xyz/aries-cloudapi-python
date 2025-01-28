@@ -49,7 +49,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
         bound_logger.debug("Successfully fetched schema by id.")
         return schema
     else:
-        bound_logger.info("Bad request: schema not found.")
+        bound_logger.info("Bad request: schema with id not found.")
         raise HTTPException(404, f"Schema with id: {schema_id} not found")
 
 

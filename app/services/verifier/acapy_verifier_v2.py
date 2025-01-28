@@ -114,7 +114,7 @@ class VerifierV2(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        bound_logger.debug("Successfully created v2 presentation request.")
+        bound_logger.debug("Successfully sent v2 presentation request.")
         return result
 
     @classmethod
@@ -156,7 +156,7 @@ class VerifierV2(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        bound_logger.debug("Successfully created v2 presentation request.")
+        bound_logger.debug("Successfully accepted v2 presentation request.")
         return result
 
     @classmethod

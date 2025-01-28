@@ -132,7 +132,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
         )
 
     if actor_response.status_code == 404:
-        bound_logger.info("Bad request: Actor not found.")
+        bound_logger.info("Bad request: Actor with did not found.")
         return None
     elif actor_response.is_error:
         bound_logger.error(
@@ -145,7 +145,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.debug("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor by did from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -169,7 +169,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
         )
 
     if actor_response.status_code == 404:
-        bound_logger.info("Bad request: actor not found.")
+        bound_logger.info("Bad request: actor with id not found.")
         return None
     elif actor_response.is_error:
         bound_logger.error(
@@ -182,7 +182,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.debug("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor by id from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 
@@ -219,7 +219,7 @@ async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
             actor_response.status_code,
         )
 
-    bound_logger.debug("Successfully fetched actor from trust registry.")
+    bound_logger.debug("Successfully fetched actor by name from trust registry.")
     return Actor.model_validate(actor_response.json())
 
 

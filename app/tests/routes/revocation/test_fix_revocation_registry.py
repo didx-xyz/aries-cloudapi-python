@@ -116,7 +116,6 @@ async def test_fix_revocation_registry_entry_state_success(
     rev_reg_id, apply_ledger_update, response
 ):
     mock_aries_controller = AsyncMock()
-    mock_handle_acapy_call = AsyncMock()
 
     with patch(
         "app.routes.revocation.client_from_auth"

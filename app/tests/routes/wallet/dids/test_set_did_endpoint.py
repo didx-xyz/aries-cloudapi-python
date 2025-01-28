@@ -20,7 +20,7 @@ async def test_set_did_endpoint_success():
     mock_aries_controller = AsyncMock()
     mock_aries_controller.wallet.set_did_endpoint = AsyncMock()
 
-    request_body = SetDidEndpointRequest(endpoint="http://example.com")
+    request_body = SetDidEndpointRequest(endpoint="https://example.com")
     endpoint_type = "Endpoint"
 
     with patch(
@@ -70,7 +70,7 @@ async def test_set_did_endpoint_fail_acapy_error(
             mock_aries_controller
         )
 
-        request_body = SetDidEndpointRequest(endpoint="http://example.com")
+        request_body = SetDidEndpointRequest(endpoint="https://example.com")
 
         await set_did_endpoint(did=did, body=request_body, auth="mocked_auth")
 

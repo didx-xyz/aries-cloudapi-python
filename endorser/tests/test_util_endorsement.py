@@ -426,11 +426,17 @@ async def test_retry_is_valid_issuer_fails_after_max_retries(mocker):
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_bad_state(mock_acapy_client):
-    invalid_endorsement = Endorsement(
-        state="transaction-created", transaction_id="test-transaction"
+    # Mock the get_transaction method to return a transaction with an incorrect state
+    transaction_mock = MagicMock()
+    transaction_mock.state = "transaction-created"  # Incorrect state
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
     )
 
-    result = await should_accept_endorsement(mock_acapy_client, invalid_endorsement)
+    # Pass the transaction ID directly
+    transaction_id = "test-transaction"
+
+    result = await should_accept_endorsement(mock_acapy_client, transaction_id)
 
     assert result is None
 

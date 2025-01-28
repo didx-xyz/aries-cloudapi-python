@@ -12,7 +12,6 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions import CloudApiException, handle_acapy_call
-from shared.constants import CACHE_TTL
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -156,7 +155,7 @@ async def accept_taa_if_required(aries_controller: AcaPyClient) -> None:
 
 
 # Grab cred_def_id from args to use as cache-key
-@cached(ttl=CACHE_TTL, cache=SimpleMemoryCache, key_builder=lambda *args: args[1])
+@cached(cache=SimpleMemoryCache, key_builder=lambda *args: args[1])
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
 ) -> str:

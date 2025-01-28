@@ -1,0 +1,201 @@
+input:
+  label: "acapy_events"
+  nats_jetstream:
+    urls:
+      - ${NATS_URL:nats://nats:4222}
+    subject: ${CLOUD_EVENTS_CREATE_NATS_INPUT_SUBJECT_PREFIX:acapy.record-with-state}.${CLOUD_EVENTS_CREATE_NATS_INPUT_TOPIC:*}
+    stream: ${CLOUD_EVENTS_CREATE_NATS_INPUT_STREAM:"acapy_events"}
+    durable: ${CLOUD_EVENTS_CREATE_NATS_INPUT_CONSUMER_NAME:acapy-events-processor}
+    queue: ${CLOUD_EVENTS_CREATE_NATS_INPUT_QUEUE_GROUP:""}
+    bind: ${CLOUD_EVENTS_CREATE_NATS_INPUT_BIND:false}
+    deliver: ${CLOUD_EVENTS_CREATE_NATS_INPUT_DELIVER:"all"}
+    auth:
+      user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
+
+pipeline:
+  threads:  ${CLOUD_EVENTS_CREATE_PIPELINE_THREADS:-1}
+  processors:
+    - log:
+        level: DEBUG
+        message: 'Received event from NATS JetStream subject: ${!@nats_subject}'
+
+    # Step 1: Map ACA-Py topics to Cloud API topics
+    - label: map_acapy_topics_to_cloudapi_topics
+      mapping: |
+        #!blobl
+        root = this
+        let payload = this.payload.payload
+        root.payload = $payload
+
+        let topic_mapping = {
+            "basicmessages": "basic-messages",
+            "connections": "connections",
+            "endorse_transaction": "endorsements",
+            "credential": "deleted_credential",
+            "issue_credential": "credentials",
+            "issue_credential_v2_0": "credentials",
+            "issue_credential_v2_0_indy": "credentials_indy",
+            "issue_credential_v2_0_ld_proof": "credentials_ld",
+            "revocation_registry": "revocation",
+            "issuer_cred_rev": "issuer_cred_rev",
+            "out_of_band": "oob",
+            "present_proof": "proofs",
+            "present_proof_v2_0": "proofs",
+            "problem_report": "problem_report"
+        }
+        let category = this.payload.category
+        let acapy_topic = this.payload.topic
+        let topic = $category.or($acapy_topic)
+
+        let cloudapi_topic = $topic_mapping.get($topic).or("undefined")
+        root.cloudapi_topic = $cloudapi_topic
+
+        # Topic-specific transformations
+        if $cloudapi_topic == "connections" {
+            root.payload.state = $payload.rfc23_state.or($payload.state) # "deleted" only occurs in state, not rfc23_state
+        }
+        if $cloudapi_topic == "endorsements" {
+            root.payload.state = $payload.state.replace_all("_", "-")
+        }
+        if $category == "issue_credential_v2_0" {
+            root.payload.credential_exchange_id = "v2-" + $payload.cred_ex_id
+            root.payload.credential_id = root.payload.credential_exchange_id
+            root.payload.state = $payload.state.replace_all("_", "-")
+
+            let indy = if $payload.exists("by_format.cred_offer.indy") {
+                $payload.by_format.cred_offer.indy
+            } else if $payload.by_format.exists("by_format.cred_proposal.indy") {
+                $payload.by_format.cred_proposal.indy
+            } else {
+                {}
+            }
+            root.payload.schema_id = $indy.schema_id
+            root.payload.credential_definition_id = $indy.cred_def_id
+
+            root.payload.type = if $payload.exists("by_format.cred_offer") {
+                $payload.by_format.cred_offer.keys().index(0)
+            } else {
+                "indy"
+            }
+
+            # Optional:
+            root.payload.did = $payload.by_format.cred_offer.ld_proof.credential.issuer
+        }
+        if $category == "present_proof_v2_0" {
+            root.payload.verified = $payload.verified.or("false").bool()
+            root.payload.proof_id = "v2-" + $payload.pres_ex_id
+
+            # Optional fields (sometimes null):
+            root.payload.parent_thread_id = $payload.pres_request.id
+            root.payload.presentation = $payload.by_format.pres.indy
+            root.payload.presentation_request = $payload.by_format.pres_request.indy
+        }
+
+    # Step 2: Transform to Cloud API event
+    - label: transform_acapy_event_to_cloudapi_event
+      mapping: |
+        #!blobl
+        root = {
+            "topic": this.cloudapi_topic,
+            "wallet_id": this.metadata.get("x-wallet-id").or(this.metadata.origin).or("unknown"),
+            "origin": this.metadata.origin.or("unknown"),
+            "group_id": this.metadata.group_id.or("no_group"),
+            "payload": this.payload
+        }
+
+    - log:
+        level: TRACE
+        message: 'After step 2 for subject ${!@nats_subject}'
+        fields_mapping: |
+          #!blob
+          root.connect.message = this
+
+    # Step 3: Handle endorsement events and set NATS subjects
+    - label: handle_endorsement_events_and_set_nats_subjects
+      mapping: |
+        #!blobl
+        root = this
+
+        let is_endorsement_applicable = this.wallet_id == env("GOVERNANCE_ACAPY_LABEL").or("DIDx") &&
+            this.topic == "endorsements" &&
+            this.payload.state == "request-received"
+        meta is_endorsement_applicable = $is_endorsement_applicable
+
+        if $is_endorsement_applicable == true {
+            meta nats_endorsement_subject = "cloudapi.aries.events.endorser." + this.payload.transaction_id
+        }
+
+        # Set the regular NATS subject for all events
+        meta nats_publish_subject = "cloudapi.aries.events." + (this.group_id) + "." + this.wallet_id
+
+    # Step 4: Set up headers and compute event hash
+    - label: set_up_headers_and_compute_event_hash
+      mapping: |
+        #!blobl
+        # Compute event hash and set metadata
+        meta event_hash = this.string().hash("xxhash64")
+        meta event_processed_at = timestamp_unix_nano()
+        meta event_origin = this.origin
+        meta event_topic = this.topic
+        meta event_payload_state = this.payload.state.or("deleted?")
+        meta event_payload_connection_id = this.payload.connection_id.or("None")
+        meta event_payload_created_at = if event.payload.created_at != null {
+          event.payload.created_at.ts_unix_nano()
+        }
+        meta event_payload_updated_at = if event.payload.updated_at != null {
+          event.payload.updated_at.ts_unix_nano()
+        }
+
+        root = this
+
+output:
+  broker:
+    pattern: fan_out_sequential
+    # First case: Send all messages to nats_publish_subject
+    outputs:
+      - label: publish_to_nats_publish_subject
+        nats_jetstream:
+          urls:
+            - ${NATS_URL:nats://nats:4222}
+          auth:
+            user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
+          subject: "${!@nats_publish_subject}"
+          max_in_flight: ${CLOUD_EVENTS_CREATE_NATS_OUTPUT_MAX_IN_FLIGHT:100}
+          headers:
+            "Content-Type": "application/json"
+            "Nats-Msg-Id": "${!@event_hash}"
+            "event_processed_at": "${!@event_processed_at}"
+            "event_origin": "${!@event_origin}"
+            "event_topic": "${!@event_topic}"
+            "event_payload_state": "${!@event_payload_state}"
+            "event_payload_connection_id": "${!@event_payload_connection_id}"
+            "event_payload_created_at": "${!@event_payload_created_at}"
+            "event_payload_updated_at": "${!@event_payload_updated_at}"
+
+      # Second case: Send messages to nats_endorsement_subject if applicable
+      - label: publish_to_nats_endorsement_subject_if_applicable
+        switch:
+          cases:
+            - check: '@is_endorsement_applicable'
+              output:
+                label: publish_to_nats_endorsement_subject
+                nats_jetstream:
+                  urls:
+                    - ${NATS_URL:nats://nats:4222}
+                  auth:
+                    user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
+                  subject: "${!@nats_endorsement_subject}"
+                  max_in_flight: ${CLOUD_EVENTS_CREATE_NATS_OUTPUT_MAX_IN_FLIGHT:100}
+                  headers:
+                    "Content-Type": "application/json"
+                    "Nats-Msg-Id": "endorser.${!@event_hash}"
+                    "event_processed_at": "${!@event_processed_at}"
+                    "event_origin": "${!@event_origin}"
+                    "event_topic": "${!@event_topic}"
+                    "event_payload_state": "${!@event_payload_state}"
+                    "event_payload_connection_id": "${!@event_payload_connection_id}"
+                    "event_payload_created_at": "${!@event_payload_created_at}"
+                    "event_payload_updated_at": "${!@event_payload_updated_at}"
+            - output:
+                label: publish_to_nats_publish_subject_drop_if_not_applicable
+                drop: {}

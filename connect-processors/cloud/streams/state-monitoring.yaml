@@ -1,0 +1,67 @@
+input:
+  label: "cloud_events_acapy"
+  nats_jetstream:
+    urls:
+      - ${NATS_URL:nats://nats:4222}
+    subject: ${STATE_MONITORING_NATS_SUBJECT_PREFIX:cloudapi.aries.events}.${STATE_MONITORING_NATS_INPUT_GROUP_ID:*}.${STATE_MONITORING_NATS_INPUT_WALLET_ID:*}
+    stream: ${STATE_MONITORING_NATS_INPUT_STREAM:"cloudapi_aries_events"}
+    durable: ${STATE_MONITORING_NATS_INPUT_CONSUMER_NAME:cloudapi-state-monitoring-events-processor}
+    queue: ${STATE_MONITORING_NATS_INPUT_QUEUE_GROUP:""}
+    bind: ${STATE_MONITORING_NATS_INPUT_BIND:false}
+    deliver: ${STATE_MONITORING_NATS_INPUT_DELIVER:"all"}
+    auth:
+      user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
+
+pipeline:
+  threads: ${STATE_MONITORING_PIPELINE_THREADS:-1}
+  processors:
+    - log:
+        level: DEBUG
+        message: 'Received event from subject: ${!@nats_subject}'
+
+    - label: map_cloud_events_to_state_monitoring_events
+      mapping: |
+        #!blobl
+        root = this
+        # Delete message if no event_payload_state header, otherwise continue with mapping
+        if @event_payload_state == null || @event_payload_state == "" {
+          root = deleted()
+          # return
+        } else {
+          let base_subject = @nats_subject + "." + @event_topic + "." + @event_payload_state
+          meta state_subject = $base_subject.replace(".events.", ".state_monitoring.")
+
+          # Capture headers from input as metadata for output use
+          meta event_hash = this.string().hash("xxhash64")
+          meta event_origin = @event_origin
+          meta event_topic = @event_topic
+          meta event_payload_state = @event_payload_state
+          meta event_payload_connection_id = @event_payload_connection_id
+          meta event_payload_created_at = @event_payload_created_at
+          meta event_payload_updated_at = @event_payload_updated_at
+          meta event_processed_at = @event_processed_at
+        }
+
+    - log:
+        level: DEBUG
+        message: 'Sending event to subject: ${!@target_subject}'
+
+output:
+  label: publish_state_monitoring_event
+  nats_jetstream:
+    urls:
+      - ${NATS_URL:nats://nats:4222}
+    auth:
+      user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
+    subject: ${!@state_subject}
+    max_in_flight: ${STATE_MONITORING_NATS_OUTPUT_MAX_IN_FLIGHT:1024}
+    headers:
+      "Content-Type": "application/json"
+      "Nats-Msg-Id": "state_monitoring.${!@event_hash}"
+      "event_processed_at": "${!@event_processed_at}"
+      "event_origin": "${!@event_origin}"
+      "event_topic": "${!@event_topic}"
+      "event_payload_state": "${!@event_payload_state}"
+      "event_payload_connection_id": "${!@event_payload_connection_id}"
+      "event_payload_created_at": "${!@event_payload_created_at}"
+      "event_payload_updated_at": "${!@event_payload_updated_at}"

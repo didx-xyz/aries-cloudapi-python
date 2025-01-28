@@ -136,52 +136,72 @@ def setup_nats(namespace):
     )
 
 
-def setup_benthos(namespace):
-    print(color.green("Installing Benthos..."))
+def setup_redpanda_connect_cloud(namespace):
+    print(color.green("Installing Redpanda Connect Cloud Processor..."))
 
-    base_dir = "./tilt/.charts/charts"
-    chart_dir = base_dir + "/benthos"
-    values_file = base_dir + "/aries-cloudapi-python/conf/local/benthos-events.yaml"
+    resource_name = "connect-cloud"
+    project_root = os.getcwd()
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    values_file = current_dir + "/connect-cloud.yaml"
 
-    ## Setup Benthos
-    # https://github.com/redpanda-data/redpanda-connect-helm-chart
     helm_repo(
-        name="benthos",
-        url="https://benthosdev.github.io/charts",
-        resource_name="benthos-repo",
+        name="redpanda",
+        url="https://charts.redpanda.com",
+        resource_name="redpanda-repo-cloud",
         labels=["10-helm-repos"],
     )
+
+    stream_config_dir = project_root + "/connect-processors/cloud/streams"
+    stream_config_files = [
+        stream_config_dir + "/cloud-events.yaml",
+        stream_config_dir + "/state-monitoring.yaml",
+    ]
+    from_file_args = " ".join(["--from-file=" + f for f in stream_config_files])
+    # Create ConfigMap using kubectl but output only the YAML
+    k8s_context = os.environ.get("KIND_K8S_CONTEXT")
     local_resource(
-        name="build-benthos",
-        cmd="helm dep build --skip-refresh " + chart_dir,
-        labels=["10-helm-repos"],
-        resource_deps=["benthos-repo"],
+        name=resource_name + "-streams",
+        cmd="kubectl --context=" + k8s_context + " create configmap " + resource_name + "-streams"
+        + " " + from_file_args
+        + " --dry-run=client -o yaml" + " -n " + namespace
+        + " | kubectl --context=" + k8s_context + " apply -f - && "
+        + "kubectl --context=" + k8s_context + " delete pod -n " + namespace
+        + " -l 'app.kubernetes.io/instance=" + resource_name + "' --ignore-not-found=true",
+        deps=stream_config_files,
+        labels=["03-streaming"],
         allow_parallel=True,
     )
+
+    # Create helm release
     helm_resource(
-        name="benthos",
-        chart=chart_dir,
-        release_name="benthos",
+        name=resource_name,
+        chart="redpanda/connect",
+        release_name=resource_name,
         namespace=namespace,
         flags=[
+            "--set",
+            "fullnameOverride=" + resource_name,
             "--values",
             values_file,
-            "--wait",
+            "--set",
+            "logger.static_fields.@service=" + resource_name,
+            "--set",
+            "streams.enabled=true",
+            "--set",
+            "streams.streamsConfigMap=" + resource_name + "-streams",
         ],
         labels=["03-streaming"],
         resource_deps=[
             "cloudapi-ns",
-            "build-benthos",
+            "redpanda-repo-cloud",
             "nats",
             "istio",
+            resource_name + "-streams",
         ],
         deps=[
             values_file,
-            chart_dir + "/Chart.yaml",
-            chart_dir + "/Chart.lock",
         ],
     )
-
 
 def build_cloudapi_service(service, image={}):
     cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).lower().strip()
@@ -369,7 +389,7 @@ def setup_cloudapi(build_enabled, expose):
     setup_postgres(namespace)
     setup_pgadmin(namespace, ingress_domain)
     setup_nats(namespace)
-    setup_benthos(namespace)
+    setup_redpanda_connect_cloud(namespace)
 
     ledger_enabled = setup_ledger(namespace, build_enabled, ingress_domain)
 

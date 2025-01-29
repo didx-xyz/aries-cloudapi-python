@@ -4,6 +4,8 @@ data/
 
 # Mise Kind Kubeconfig
 .mise/kubeconfig.yaml
+# Mise local env
+mise.local.toml
 
 # Docker Cache
 tilt/docker

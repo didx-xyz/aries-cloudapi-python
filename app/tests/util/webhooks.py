@@ -68,10 +68,8 @@ async def check_webhook_state(
                 pytest.fail(
                     "No longer implemented: cannot wait for event without filter_map"
                 )
-        except SseListenerTimeout:
-            bound_logger.error(
-                "Encountered SSE Timeout (server didn't return expected event in time)."
-            )
+        except SseListenerTimeout as e:
+            bound_logger.error("Encountered SSE Timeout: {}.", e)
             raise
         except HTTPError as e:
             if attempt + 1 >= max_tries:

@@ -59,8 +59,8 @@ class SseListener:
                         logger.warning("Unexpected SSE line: {}", line)
 
         raise SseListenerTimeout(
-            "Requested filtered event was not returned by server. "
-            f"Field: {field}, ID: {field_id}, Desired State: {desired_state}"
+            f"Timed out after {timeout} seconds waiting for event from {url}. "
+            f"Look back: {look_back}"
         )
 
 

@@ -151,7 +151,7 @@ def setup_redpanda_connect_cloud(namespace):
         labels=["10-helm-repos"],
     )
 
-    stream_config_dir = project_root + "/connect-processors/cloud/streams"
+    stream_config_dir = project_root + "/resources/connect-processors/cloud/streams"
     stream_config_files = [
         stream_config_dir + "/cloud-events.yaml",
         stream_config_dir + "/state-monitoring.yaml",

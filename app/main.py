@@ -72,7 +72,7 @@ tenant_routes = [
 ]
 
 
-def routes_for_role(role: str) -> list:
+def routes_for_role(role: str) -> list | set:
     if role in ("governance", "tenant"):
         return tenant_routes
     elif role == "tenant-admin":

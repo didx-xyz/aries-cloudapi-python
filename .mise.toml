@@ -138,7 +138,7 @@ find . -type f -name "Tiltfile" | while read -r file; do
 
 [tasks."bootstrap:kubeconfig"]
 description = "Set KUBECONFIG"
-run = "mise set KUBECONFIG=$(pwd)/.mise/kubeconfig.yaml"
+run = "mise set --env local --file mise.local.toml KUBECONFIG=$(pwd)/.mise/kubeconfig.yaml"
 
 [hooks]
-enter = [ "mise bootstrap:kubeconfig" ]
+enter = ["mise bootstrap:kubeconfig"]

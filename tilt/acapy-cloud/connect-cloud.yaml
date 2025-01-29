@@ -13,3 +13,11 @@ http:
 
 streams:
   enabled: true
+
+deployment:
+  podLabels:
+    sidecar.istio.io/inject: "false"
+
+env:
+  - name: GOVERNANCE_ACAPY_LABEL
+    value: Governance

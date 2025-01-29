@@ -184,6 +184,7 @@ def setup_redpanda_connect_cloud(namespace):
         deps=stream_config_files,
         labels=["03-streaming"],
         allow_parallel=True,
+        resource_deps=["cloudapi-ns"],
     )
 
     # Create helm release

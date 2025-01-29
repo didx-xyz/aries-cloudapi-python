@@ -129,9 +129,6 @@ async def test_sse_subscribe_event_with_field_and_state_exception(
         "shared.util.rich_async_client.RichAsyncClient.stream",
         return_value=exception_async_context_manager_mock,
     ):
-        mock_request = AsyncMock(spec=Request)
-        mock_request.is_disconnected.return_value = False
-
         # Execute the function and handle the exception
         with pytest.raises(HTTPError) as e:
             async for _ in sse_subscribe_event_with_field_and_state(

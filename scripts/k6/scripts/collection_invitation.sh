@@ -6,10 +6,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
   export VUS=10
-  export ITERATIONS=5
-  export HOLDER_PREFIX="k6_holder_invitation"
-  export ISSUER_PREFIX="k6_issuer_invitation"
-  export NUM_ISSUERS=2
+  export ITERATIONS=10
+  export HOLDER_PREFIX="k6_holder_invitation1"
+  export ISSUER_PREFIX="k6_issuer_invitation1"
+  export NUM_ISSUERS=1
 }
 
 init() {

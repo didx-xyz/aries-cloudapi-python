@@ -5,23 +5,23 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-  export VUS=10
-  export ITERATIONS=25
-  export ISSUER_PREFIX="k6_issuer_credential_ops"
-  export HOLDER_PREFIX="k6_holder_credential_ops"
+  export VUS=40
+  export ITERATIONS=250
+  export ISSUER_PREFIX="k6_issuer_tmodelg"
+  export HOLDER_PREFIX="k6_holder_tmodelg"
   export NUM_ISSUERS=2
 }
 
 init() {
-  xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
+  xk6 run --out statsd ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
 }
 
 scenario_create_holders() {
-  export SLEEP_DURATION=0.01
+  export SLEEP_DURATION=0.02
   # local iterations=$((ITERATIONS * VUS))
   # local vus=1
   # xk6 run ./scenarios/create-holders.js -e ITERATIONS=${iterations} -e VUS=${vus}
-  xk6 run ./scenarios/create-holders.js
+  xk6 run --out statsd ./scenarios/create-holders.js
 }
 
 senario_create_invitations() {
@@ -39,7 +39,7 @@ scenario_create_proof_verified() {
 scenario_revoke_credentials() {
   local iterations=$((ITERATIONS * VUS))
   local vus=1
-  xk6 run ./scenarios/revoke-credentials.js -e ITERATIONS=${iterations} -e VUS=${vus}
+  xk6 run --out statsd ./scenarios/revoke-credentials.js -e ITERATIONS=${iterations} -e VUS=${vus}
 }
 
 scenario_create_proof_unverified() {
@@ -49,22 +49,23 @@ scenario_create_proof_unverified() {
 
 cleanup() {
   log "Cleaning up..."
-  xk6 run ./scenarios/delete-holders.js
-  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
+  xk6 run --out statsd ./scenarios/delete-holders.js
+  # xk6 run --out statsd ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {
   local deployments="$1"
 
   config
-  init
-  scenario_create_holders
-  # run_ha_iterations "${deployments}" scenario_create_holders
-  run_ha_iterations "${deployments}" senario_create_invitations
-  run_ha_iterations "${deployments}" scemario_create_credentials
+  # init
+  # scenario_create_holders
+  # run_ha_iterations "${deployments}" senario_create_invitations
+  # export VUS=25
+  # export ITERATIONS=400
+  # run_ha_iterations "${deployments}" scemario_create_credentials
+  export VUS=40
+  export ITERATIONS=250
   run_ha_iterations "${deployments}" scenario_create_proof_verified
-  run_ha_iterations "${deployments}" scenario_revoke_credentials
-  run_ha_iterations "${deployments}" scenario_create_proof_unverified
 
-  cleanup
+  # cleanup
 }

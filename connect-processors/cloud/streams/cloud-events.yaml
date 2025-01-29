@@ -116,7 +116,7 @@ pipeline:
         #!blobl
         root = this
 
-        let is_endorsement_applicable = this.wallet_id == env("GOVERNANCE_ACAPY_LABEL").or("DIDx") &&
+        let is_endorsement_applicable = this.wallet_id == env("GOVERNANCE_ACAPY_LABEL").or("Governance") &&
             this.topic == "endorsements" &&
             this.payload.state == "request-received"
         meta is_endorsement_applicable = $is_endorsement_applicable

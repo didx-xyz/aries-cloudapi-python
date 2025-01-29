@@ -34,20 +34,19 @@ class Schema(BaseModel):
     did: str = Field(default=None)
     name: str = Field(default=None)
     version: str = Field(default=None)
-    id: str = Field(default=None)
+    schema_id: str = Field(default=None, alias="id")
 
     @model_validator(mode="before")
     @classmethod
     def validate_and_set_values(cls, values: Union[dict, "Schema"]):
-        # pydantic v2 removed safe way to get key, because `values` can be a dict or this type
         if not isinstance(values, dict):
             values = values.__dict__
 
         try:
-            for v in ["did", "name", "version"]:
-                if ":" in values[v]:
+            for field in ["did", "name", "version"]:
+                if ":" in values[field]:
                     raise CloudApiValueError(
-                        f"Schema field `{v}` must not contain colon."
+                        f"Schema field `{field}` must not contain colon."
                     )
             did = values["did"]
             name = values["name"]
@@ -57,37 +56,34 @@ class Schema(BaseModel):
             name = None
             version = None
 
-        try:
-            id = values["id"]
-        except KeyError:
-            id = None
+        schema_id = values.get("id")
 
-        if id is None:
+        if schema_id is None:
             if None in (did, name, version):
                 raise CloudApiValueError(
                     "Either `id` or all of (`did`, `name`, `version`) must be specified."
                 )
-            id = calc_schema_id(did, name, version)
+            schema_id = calc_schema_id(did, name, version)
         else:
             if None not in (did, name, version):
                 expected_id = calc_schema_id(did, name, version)
-                if id != expected_id:
+                if schema_id != expected_id:
                     raise CloudApiValueError(
                         f"Schema's `id` field does not match expected format: `{expected_id}`."
                     )
             else:
                 # Extract did, name, and version from id if not specified
                 try:
-                    did, _, name, version = id.split(":")
-                except ValueError as e:
+                    did, _, name, version = schema_id.split(":")
+                except ValueError as exc:
                     raise CloudApiValueError(
                         "Invalid `id` field. It does not match the expected format."
-                    ) from e
+                    ) from exc
 
         values["did"] = did
         values["name"] = name
         values["version"] = version
-        values["id"] = id
+        values["id"] = schema_id
         return values
 
     model_config = ConfigDict(validate_assignment=True, from_attributes=True)

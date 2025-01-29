@@ -50,33 +50,6 @@ if config.tilt_subcommand in ("up", "ci"):
 # Setup Metrics Server
 setup_metrics_server()
 
-# Validate `didx-xyz/charts` repo has been cloned
-charts_dir = "tilt/.charts"
-if not os.path.exists(charts_dir):
-    print(color.yellow("Charts not found, cloning charts repo"))
-
-    ssh_result = run_command(
-        "git clone git@github.com:didx-xyz/charts.git " + charts_dir,
-        dir=os.path.dirname(__file__),
-    )
-
-    if "fatal" in ssh_result:
-        print(color.red("Failed to clone charts repo via SSH, retrying with HTTPS"))
-
-        https_result = run_command(
-            "git clone https://github.com/didx-xyz/charts.git "
-            + charts_dir
-            + " 2>&1 | tee /dev/stdout",
-            dir=os.path.dirname(__file__),
-        )
-
-        if "fatal" in https_result:
-            fail(color.red("Failed to clone charts repo"))
-
-    print(color.green("Charts repo cloned"))
-else:
-    print(color.green("Charts repo already cloned"))
-
 cmd_button(
     name="expose",
     icon_name="public",  # https://fonts.google.com/icons

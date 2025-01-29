@@ -8,13 +8,18 @@ set -o errexit
 scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 
 ## Create Kind Cluster
+KUBECONFIG=$(pwd)/.mise/kubeconfig.yaml
 # If cluster already exists, `exit 0`
-kind get clusters | grep -q ${KIND_CLUSTER_NAME} && exit 0
+kind get clusters | grep -q ${KIND_CLUSTER_NAME} && {
+    # If cluster exists, ensure kubeconfig is written
+    kind get kubeconfig --name ${KIND_CLUSTER_NAME} > ${KUBECONFIG}
+    chmod 600 ${KUBECONFIG}
+    exit 0
+}
 
 kind create cluster --config ${scriptDir}/kind.yaml --name ${KIND_CLUSTER_NAME}
-kind get kubeconfig --name ${KIND_CLUSTER_NAME} > .mise/kubeconfig.yaml
-chmod 600 .mise/kubeconfig.yaml
-KUBECONFIG=.mise/kubeconfig.yaml
+kind get kubeconfig --name ${KIND_CLUSTER_NAME} > ${KUBECONFIG}
+chmod 600 ${KUBECONFIG}
 
 # Switch to the new cluster
 kubectl config use-context ${KIND_K8S_CONTEXT}

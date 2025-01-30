@@ -90,8 +90,8 @@ Check the values.yaml file for the complete list of available environment variab
 
 The chart includes special configuration for regression testing through `regression.yaml`. Key features include:
 
-- Support for running regression tests with `RUN_REGRESSION_TESTS=true`
-- Control over fixture recreation with `FAIL_ON_RECREATING_FIXTURES`
+- Support for running regression tests with `env.RUN_REGRESSION_TESTS=true`
+- Fail when attempting to create fixtures (`env.FAIL_ON_RECREATING_FIXTURES`) that are expected to already exist
 - JUnit XML report generation
 - Coverage reporting
 

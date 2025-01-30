@@ -1,13 +1,13 @@
 ARG BBS_SUFFIX="-bbs"
-FROM ghcr.io/didx-xyz/acapy-agent${BBS_SUFFIX}:py3.12-1.2.0-20250127
+FROM ghcr.io/didx-xyz/acapy-agent${BBS_SUFFIX}:py3.12-1.2.1-20250130
 
 USER root
 
 # Install Google Protobuf
 ARG PROTOBUF_VERSION=5.29.3
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION} \
-  acapy-wallet-groups-plugin==1.2.0.post20250127 \
-  git+https://github.com/didx-xyz/acapy-plugins@1.2.0-20250127#subdirectory=nats_events
+  git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@release-1.2.1-20250130 \
+  git+https://github.com/didx-xyz/acapy-plugins@release-1.2.1-20250130#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

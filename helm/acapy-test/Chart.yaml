@@ -3,8 +3,3 @@ name: acapy-test
 description: A Helm chart to deploy AcaPy Cloud containerized tests
 type: application
 version: 0.1.0
-
-dependencies:
-  - name: common
-    version: 2.x.x
-    repository: oci://registry-1.docker.io/bitnamicharts

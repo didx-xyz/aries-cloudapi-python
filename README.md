@@ -214,9 +214,6 @@ mise run tilt:up
 In another terminal:
 
 ```bash
-# Build AcaPy Test helm dependencies
-helm dep build --skip-refresh ./helm/acapy-test
-
 # Run e2e tests
 helm upgrade --install acapy-test \
   -f ./helm/acapy-test/conf/local/values.yaml \

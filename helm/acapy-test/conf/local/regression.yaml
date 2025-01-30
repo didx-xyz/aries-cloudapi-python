@@ -11,8 +11,8 @@ command:
 
 env:
   RUN_REGRESSION_TESTS: true
-  # Set to `false` on a clean stack (first time running regression tests)
-  # Set to `true` on a "dirty" stack (re-running regression tests)
-  # - This will cause it to fail on creating new tenants, credentials, or connections
-  #   as these should already exist
+  # `env.FAIL_ON_RECREATING_FIXTURES` -- Fail tests if they try to create new tenants, credentials, or connections
+  # - Set to `false` on a clean stack (first time running regression tests)
+  # - Set to `true` on a "dirty" stack (re-running regression tests)
+  #   - This will cause tests to fail on creating new tenants, credentials, or connections as these should already exist
   FAIL_ON_RECREATING_FIXTURES: false

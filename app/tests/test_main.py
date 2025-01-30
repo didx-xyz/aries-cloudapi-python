@@ -8,6 +8,7 @@ from fastapi.responses import ORJSONResponse
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import (
+    OPENAPI_NAME,
     app,
     cloud_api_description,
     cloud_api_docs_description,
@@ -27,7 +28,7 @@ def test_create_app():
     with patch("os.getenv") as mock_getenv:
         mock_getenv.return_value = "False"  # Mock the 'prod' environment variable
         created_app = create_app()
-        assert created_app.title == "OpenAPI"
+        assert created_app.title == OPENAPI_NAME
 
         # Verifying that all routes are included
         routes = [route.path for route in created_app.routes]

@@ -39,7 +39,7 @@ git clone https://github.com/didx-xyz/aries-cloudapi-python.git
 cd aries-cloudapi-python/helm/acapy-cloud
 
 # Install a specific component
-helm install my-release . -f values-<component>.yaml
+helm install my-release . -f ./conf/local/<component>.yaml
 ```
 
 Replace `<component>` with one of the available components (e.g., `endorser`, `governance-agent`, etc.)

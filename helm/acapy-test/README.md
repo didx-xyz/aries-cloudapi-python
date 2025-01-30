@@ -9,7 +9,7 @@ It supports both standard test runs and regression testing scenarios.
 
 ## Prerequisites
 
-- Kubernetes 1.18+
+- Kubernetes 1.19+
 - Helm 3.0+
 - PV provisioner support in the underlying infrastructure (if persistence is enabled)
 

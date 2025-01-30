@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "acapy-test.fullname" . }}
+  labels:
+    {{- include "acapy-test.labels" . | nindent 4 }}
+    {{- with .Values.labels }}
+    {{- tpl (toYaml .) $ | nindent 4 }}
+    {{- end }}
+spec:
+  completions: {{ .Values.completions }}
+  backoffLimit: {{ default 0 .Values.backoffLimit }}
+  template:
+    metadata:
+      name: {{ include "acapy-test.fullname" . }}
+      labels:
+        {{- include "acapy-test.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- tpl (toYaml .Values.podLabels) . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- if .Values.podAnnotations }}
+        {{- tpl (toYaml .Values.podAnnotations) . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "acapy-test.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      restartPolicy: {{ default "Never" .Values.restartPolicy }}
+      volumes:
+      {{- if .Values.persistence.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "acapy-test.fullname" . }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.command }}
+        command:
+          {{- toYaml .Values.command | nindent 10 }}
+        {{- end }}
+        {{- if .Values.args }}
+        args:
+          {{- toYaml .Values.args | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        envFrom:
+        - secretRef:
+            name: {{ include "acapy-test.fullname" . }}
+        {{- if .Values.env }}
+        env:
+        {{- range $k,$v := .Values.env }}
+        - name: {{ $k }}
+          {{- $type := printf "%s" (typeOf $v) }}
+          {{- if or (eq $type "string") (eq $type "float64") (eq $type "bool") }}
+          value: {{ tpl (toString $v) $ | quote }}
+          {{- else }}
+          {{- tpl (toYaml .) $ | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.extraSecretNamesForEnvFrom }}
+        envFrom:
+        {{- range .Values.extraSecretNamesForEnvFrom }}
+          - secretRef:
+              name: {{ . }}
+        {{- end }}
+        {{- end }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          mountPath: {{ .Values.persistence.mountPath }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

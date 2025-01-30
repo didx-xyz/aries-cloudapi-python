@@ -1,4 +1,4 @@
-# didx-cloud
+# acapy-cloud
 
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 [![Toolset: Mise](https://img.shields.io/badge/toolset-Mise-orange.svg?style=flat)](https://mise.jdx.dev/)
@@ -14,7 +14,7 @@ this in production, please [contact us](mailto:info@didx.co.za) first to discuss
 ## Overview
 
 This project comprises a [FastAPI](https://fastapi.tiangolo.com/) application built
-around [ACA-Py](https://github.com/openwallet-foundation/aries-cloudagent-python),
+around [ACA-Py](https://github.com/openwallet-foundation/acapy),
 primarily tailored for [Yoma](https://yoma.world)-specific use cases.
 
 The main [app](app) provides an API interface

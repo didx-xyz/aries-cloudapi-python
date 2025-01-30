@@ -23,6 +23,8 @@ spec:
         {{- tpl (toYaml .Values.podAnnotations) . | nindent 8 }}
       {{- end }}
     spec:
+      serviceAccountName: {{ include "acapy-test.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       restartPolicy: {{ default "Never" .Values.restartPolicy }}
@@ -44,6 +46,8 @@ spec:
         args:
           {{- toYaml .Values.args | nindent 10 }}
         {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
         envFrom:
         - secretRef:
             name: {{ include "acapy-test.fullname" . }}

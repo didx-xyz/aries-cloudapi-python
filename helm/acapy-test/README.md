@@ -18,6 +18,10 @@ It supports both standard test runs and regression testing scenarios.
 To install the chart with the release name `my-release`:
 
 ```bash
+# Clone the repository
+git clone https://github.com/didx-xyz/aries-cloudapi-python.git
+cd aries-cloudapi-python/helm/acapy-test
+
 helm install my-release .
 ```
 

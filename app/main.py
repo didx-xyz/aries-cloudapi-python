@@ -36,19 +36,19 @@ from shared.util.set_event_loop_policy import set_event_loop_policy
 
 set_event_loop_policy()
 
-OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
+OPENAPI_NAME = os.getenv("OPENAPI_NAME", "acapy-cloud")
 ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
-cloud_api_docs_description = """
-Welcome to the Aries CloudAPI Python project!
+cloud_api_docs_description = f"""
+Welcome to the {OPENAPI_NAME} project!
 
 For detailed guidance on using the API, please visit our official documentation:
 https://www.didx.co.za/ssi-dev-portal/docs/Welcome.
 """
 
-default_docs_description = """
-Welcome to the Aries CloudAPI Python project.
+default_docs_description = f"""
+Welcome to the {OPENAPI_NAME} project.
 """
 
 logger = get_logger(__name__)

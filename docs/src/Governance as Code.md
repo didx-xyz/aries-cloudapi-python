@@ -1,4 +1,14 @@
-# Define Your Trust Ecosystem Governance
+# Governance as Code: Building Your Trust Ecosystem
+
+This guide introduces key concepts and demonstrates how to programmatically define and manage your trust ecosystem
+using acapy-cloud's APIs. You'll learn how to:
+
+- Define schemas for credentials
+- Create and manage different types of tenants (issuers, verifiers, holders)
+- Create credential definitions
+- Query and manage the trust registry
+
+The examples use the provided Swagger UI interfaces but can also be automated through direct API calls.
 
 ## 1. Schemas
 
@@ -260,3 +270,6 @@ To query entries in the Trust Registry, adhere to the following steps:
 
    - `GET` `/v1/trust-registry/actors/issuers` will return all actors with `issuer` as a role
    - `GET` `/v1/trust-registry/actors/verifiers` will return all actors with `verifier` as a role
+
+For how to establish connections, issue credentials, and verify proofs, please refer to the
+[Example Flows](./Example%20Flows.md) guide.

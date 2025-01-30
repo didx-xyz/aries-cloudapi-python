@@ -1,33 +1,151 @@
 # Quick Start Guide
 
-This guide provides a simple walkthrough for starting, managing, and stopping a
-Docker-based project. Please ensure you have the necessary system requirements
-and a basic understanding of Docker and Docker Compose.
+This guide will walk you through the essential steps to get your project up and running smoothly.
+Ensure you meet the system requirements and have the necessary prerequisites installed.
 
-1. Ensure you have Docker, Docker Compose, Bash, and Mise installed on your
-   machine. The project will require about 25GB of free disk space, 16GB of RAM, and
-   an average CPU like an modern Intel i5 (min 4 cores).
+- [Quick Start Guide](#quick-start-guide)
+  - [System Requirements \& Prerequisites](#system-requirements--prerequisites)
+    - [Requirements](#requirements)
+    - [Prerequisites](#prerequisites)
+    - [Installing Docker](#installing-docker)
+    - [Installing Docker Compose](#installing-docker-compose)
+    - [Setting up Mise](#setting-up-mise)
+  - [Project Setup](#project-setup)
+  - [Accessing Services](#accessing-services)
+  - [Customization](#customization)
+  - [Next Steps](#next-steps)
 
-2. In the root directory of the project, you can start the entire project:
+## System Requirements & Prerequisites
+
+To successfully set up and run the project, your system should meet the following requirements and have the necessary
+prerequisites installed:
+
+### Requirements
+
+- **Memory:** 16GB of RAM
+- **CPU:** Intel i5 (minimum 4 cores) or equivalent
+- **Disk Space:** Approximately 25GB of free space for Docker images and data
+
+### Prerequisites
+
+- **Operating System:** Linux or macOS (Windows users should use WSL as outlined below)
+- **Tools:**
+  - Bash
+  - Docker
+  - Docker Compose
+  - Mise
+
+> [!NOTE]
+> As of now, **Mise does not support Windows**. Windows users are recommended to use
+> [WSL](https://mise.jdx.dev/faq.html#windows-support). If using WSL, additional steps are required for Kind to work
+> properly. Refer to the [Kind WSL2 Guide](https://kind.sigs.k8s.io/docs/user/using-wsl2/) for more details.
+
+### Installing Docker
+
+Follow the official Docker installation instructions for your operating system:
+
+- [Docker Engine Installation](https://docs.docker.com/engine/install/)
+
+### Installing Docker Compose
+
+Refer to the official Docker Compose installation guide:
+
+- [Docker Compose Installation](https://docs.docker.com/compose/install/)
+
+### Setting up Mise
+
+[Mise](https://mise.jdx.dev) is used to install and manage development tooling for this project. Choose one of the
+following installation methods. We strongly recommend using your system's package manager to install Mise.
+
+```sh
+# Homebrew
+brew install mise
+
+# Build from source (requires Rust)
+cargo install mise
+
+# Arch Linux User Repository
+yay -S mise-bin
+
+# Debian/Ubuntu APT (amd64)
+sudo apt-get update && sudo apt-get install -y gpg wget curl
+sudo install -dm 755 /etc/apt/keyrings
+wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
+sudo apt-get update
+sudo apt-get install -y mise
+
+# Debian/Ubuntu APT (arm64)
+sudo apt-get update && sudo apt-get install -y gpg wget curl
+sudo install -dm 755 /etc/apt/keyrings
+wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=arm64] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
+sudo apt-get update
+sudo apt-get install -y mise
+```
+
+For alternative installation methods, visit the [Mise Installation Documentation](https://mise.jdx.dev/getting-started.html#alternate-installation-methods).
+
+#### Activating Mise in Your Shell
+
+After installation, activate Mise by adding the following to your shell configuration:
+
+```sh
+# Bash
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc && source ~/.bashrc
+
+# Zsh
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc && source ~/.zshrc
+
+# Fish
+echo 'mise activate fish | source' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish
+```
+
+Once activated, run the following commands to trust and install all required tools:
+
+```sh
+mise trust
+mise install
+```
+
+For support with other shells, refer to the [Mise Shell Support Documentation](https://mise.jdx.dev/getting-started.html#shells).
+
+## Project Setup
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/didx-xyz/acapy-cloud
+   cd acapy-cloud
+   ```
+
+2. **Start the Project:**
+
+   In the root directory of the project, execute:
 
    ```bash
    mise run tilt:up
    ```
 
-3. When you're done, you can stop the project by running:
+3. **Stop the Project:**
+
+   When you're done, stop the project by running:
 
    ```bash
    mise run tilt:down
    ```
 
-4. If you want to destroy the Kind cluster too:
+4. **Destroy the Kind Cluster:**
+
+   To remove the Kind cluster as well:
 
    ```bash
    mise run tilt:down:destroy
    ```
 
-5. If you want to remove absolutely everything, including the docker cache, for
-   a clean slate:
+5. **Clean Slate (Optional):**
+
+   To remove everything, including the Docker cache, execute:
 
    ```bash
    mise run tilt:down:destroy:all
@@ -35,32 +153,30 @@ and a basic understanding of Docker and Docker Compose.
 
 ## Accessing Services
 
-Once the project is running, you'll have access to several services via Swagger
-interfaces. These can be found at the following URLs:
+Once the project is running, access various services via their Swagger interfaces at the following URLs:
 
-- [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-- [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-- [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
-- [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
-- [ACA-Py Governance Agent Admin](http://governance-agent.cloudapi.127.0.0.1.nip.io)
-- [ACA-Py Multitenant Agent Admin](http://multitenant-agent.cloudapi.127.0.0.1.nip.io)
-- [Waypoint](http://waypoint.cloudapi.127.0.0.1.nip.io/docs)
-- [Trust Registry](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs)
+- **ACA-Py Governance Agent:** [http://governance-agent.cloudapi.127.0.0.1.nip.io](http://governance-agent.cloudapi.127.0.0.1.nip.io)
+- **ACA-Py Multitenant Agent:** [http://multitenant-agent.cloudapi.127.0.0.1.nip.io](http://multitenant-agent.cloudapi.127.0.0.1.nip.io)
+- **CloudAPI-Governance:** [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- **CloudAPI-Multitenant-Admin:** [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- **CloudAPI-Public:** [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+- **CloudAPI-Tenant:** [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- **Trust Registry:** [http://trust-registry.cloudapi.127.0.0.1.nip.io/docs](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs)
+- **Waypoint:** [http://waypoint.cloudapi.127.0.0.1.nip.io/docs](http://waypoint.cloudapi.127.0.0.1.nip.io/docs)
 
 ## Customization
 
-Each Docker container's environment parameters can be adjusted via its respective
-`.env` file, located in a correspondingly named sub-folder within the
-`environments` directory. For example, if you want to change the
-`auto-provision` setting for the ACA-Py multitenant instance from `true` to
-`false`, adjust the `ACAPY_AUTO_PROVISION` value in
+Customize each Docker container's environment parameters by editing its corresponding `.env` file
+located within the `environments` directory. For example, to change the `auto-provision` setting for
+the ACA-Py multitenant instance from `true` to `false`, modify the `ACAPY_AUTO_PROVISION` value in
 `environments/governance-multitenant/aca-py-agent.default.env`.
 
-Remember to stop and restart the affected containers after making changes.However, be careful when
-changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml`
-file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or
-`ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the
-values within the `docker-compose.yaml` to reflect these changes.
+## Next Steps
 
-The [Common Steps](Common%20Steps.md) document can help you understand how to use the project's infrastructure
-once it's up and running.
+1. **[Bootstrap Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md):** First, set up your trust ecosystem by
+    bootstrapping the governance agent. This is a required step to enable writing to the local ledger.
+
+After bootstrapping, you can explore:
+
+- **[Common Steps](./Common%20Steps.md):** Understand the general capabilities of the project once it's up and running.
+- **[Example Flows](./Example%20Flows.md):** Learn how to perform specific SSI flows.

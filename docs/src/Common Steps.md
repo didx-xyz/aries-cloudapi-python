@@ -1,26 +1,24 @@
 # Common Steps
 
-This document will guide you through some common steps and interactions. Please
-read it carefully, and feel free to open an issue if further questions arise or
-if you spot a mistake.
+This document provides a quick overview of the most common steps: creating wallets, issuing credentials,
+and verifying credentials. More detailed descriptions of the different steps can be found in the
+[Example Flows](./Example%20Flows.md) document.
 
 > **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand
 the available endpoints, their expected inputs, and the corresponding outputs.
 If requests fail, check the Swagger UI to ensure you've called the correct
-endpoint with the correct data. The Swagger UI is accessible at:
+endpoint with the correct data. The Swagger UI is accessible, under a vanilla steup,  at:
 >
-> - CloudAPI-Multitenant-Admin -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-> - CloudAPI-Governance -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-> - CloudAPI-Tenant -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
-> - CloudAPI-Public (trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+> - **CloudAPI-Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+> - **CloudAPI-Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+> - **CloudAPI-Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+> - **CloudAPI-Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
 >
-> under a vanilla setup. If you find any model to be unclear from the document
-below, try finding it in Swagger UI before opening an issue. This document
-describes only some basic steps; more detailed workflows can be found
-[here](./Example%20Flows.md).
+> If you find any model descriptions unclear in the document below, try checking the Swagger UI documentation
+> before opening an issue.
 
-It is also recommended to set up a webhook listener (refer to our
-[Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the
+It is also recommended to understand and perhaps set up a webhook listener (refer to our
+[Webhooks doc](./Webhooks.md)). This will significantly aid in observing the
 activities occurring in the ACA-Py instances in the background.
 
 ## Creating Wallets
@@ -28,7 +26,7 @@ activities occurring in the ACA-Py instances in the background.
 The admin "wallet" is already configured as it is not a subwallet on a
 multi-tenant agent. To create subwallets for tenants, you have to use the tenant
 admin role. The permissions and routing to the correct ACA-Py instance are
-handled by the CloudAPI under the hood. You need to provide two things:
+handled by acapy-cloud under the hood. You need to provide two things:
 
 1. Authorization in the header: `{"x-api-key": "tenant-admin.APIKEY"}`, where
 `tenant-admin` is a fixed term representing the role, and `APIKEY` is the auth
@@ -71,7 +69,7 @@ them on the trust registry, use the governance role:
    ```
 
    Replace the `ADMIN_API_KEY` with the actual API key. Keep the dot and recall
-   ]that `governance` is a keyword known to the CloudAPI as a role. It will
+   that `governance` is a keyword known to the CloudAPI as a role. It will
    resolve the correct endpoint and available actions based on the role and
    provided token.
 
@@ -236,4 +234,8 @@ schema and issued credential):
 presentation is acknowledged. Alternatively, GET the proof records and check the
 `state` field.
 
-_Note: There are multiple flows to this "dance". For further details, you may want to refer to the [official Aries-RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)._
+_Note: There are multiple flows to this "dance". For further details, you may want to refer
+to the [official Aries-RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)._
+
+If you'd like to delve deeper into more of acapy-cloud's capabilities,
+please see the [Example Flows](./Example%20Flows.md) document.

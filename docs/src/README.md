@@ -11,16 +11,18 @@
 
 ## First Steps
 
-After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble.
-Navigating to the **Swagger UI** :
+After spinning up the containers following the [Quick Start Guide](./Quick%20Start%20Guide.md) and
+[Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md), you are ready to rumble.
 
-- [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-- [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-- [CloudAPI-Tenant](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
-- [CloudAPI-Public](http://cloudapi.127.0.0.1.nip.io/public/docs)
+Navigating to the **Swagger UI** endpoints:
 
-provides a good overview of the intended functionalities. You'll see that there are endpoints for common actions,
-wallet specific actions, and admin actions. On top of that, you'll find trust registry and waypoint endpoints.
+- **CloudAPI-Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- **CloudAPI-Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- **CloudAPI-Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- **CloudAPI-Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+
+provides a good overview of the intended functionalities. You'll find endpoints for admin actions (managing wallets)
+and for tenant actions, for holders, issuers and verifiers. Additionally, there are [trust registry](./Trust%20Registry.md) and [webhooks](./Webhooks.md) endpoints.
 
 > NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned
 > Swagger UI's are the main interaction points intended between clients and the stack. This should be the only
@@ -200,11 +202,11 @@ creation returns the wallet creation response, including the wallet id and JWT f
 
 ## Further Reading
 
-- [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
-- [Quick Start Guide](Quick%20Start%20Guide.md)
+- [Aries Cloud API Architecture Overview](./Aries%20Cloud%20API%20Architecture.md)
+- [Quick Start Guide](./Quick%20Start%20Guide.md)
 - [Bootstrap the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
 - [Common Steps](./Common%20Steps.md)
 - [Example Flows](./Example%20Flows.md)
 - [Governance as Code](./Governance%20as%20Code.md)
-- [Trust Registry](Trust%20Registry.md)
+- [Trust Registry](./Trust%20Registry.md)
 - [Webhooks](./Webhooks.md)

@@ -1,12 +1,11 @@
-# Bootstrapping a Trust Ecosystem with Aries CloudAPI
+# Bootstrapping a Trust Ecosystem with acapy-cloud
 
-## 1. Clone the Github Repository
+## 1. Prerequisites
 
-1. `git clone https://github.com/didx-xyz/acapy-cloud.git`
-2. OPTIONAL: Customise environment variables located [here](https://github.com/didx-xyz/acapy-cloud/tree/development/environments)
-3. Start up docker instances by following the [Quick Start Guide](./Quick%20Start%20Guide.md)
+Before starting, ensure you have completed the steps in the
+[Quick Start Guide](./Quick%20Start%20Guide.md) and have all services running.
 
-## 2. Generate a New DID
+## 2. Generate a DID for the Endorser
 
 1. Access the API through [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 2. Authenticate with `governance.`+`APIKEY` role
@@ -23,13 +22,13 @@
    }
    ```
 
-5. Copy `DID` and `Verkey`
+5. Copy the `DID` and `Verkey`
 
-## 3. Anchor new DID to Indy Ledger
+## 3. Anchor New DID to Indy Ledger
 
 1. Go to [Ledger Web Interface](http://localhost:9000/)
 2. Select `Register from DID`
-3. Paste `DID` and `Verkey` and select Role `Endorser`
+3. Paste the `DID` and `Verkey` and select Role `Endorser`
 4. Click `Register DID`
 5. DID should be successfully written to the Indy Ledger with a response as below
 
@@ -73,7 +72,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
    ```
 
 4. Copy the `text` and `version` from the API response.
-5. Accept the TAA by POSTING to the following API endpoint: `/ledger/taa/accept`.
+5. Accept the TAA by POSTing to the following API endpoint: `/ledger/taa/accept`.
 
    1. Paste the `text` and `version` from the previous step into the POST body.
    2. Set the `mechanism` to `service_agreement`. A complete POST JSON body example is as follows:
@@ -93,7 +92,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 1. Go to the [CloudAPI-Governance](http://cloudapi.127.0.0.1.nip.io/governance/docs)
 2. Execute the PUT endpoint to set a Public DID: `/v1/wallet/dids/public?did=`
 3. Use the DID that you anchored to the ledger in step 3
-4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the
+4. A successful response should look like this. You can also query the Public DID endpoint `/wallet/dids/public` of the
    Governance Agent to confirm that the public DID is now set:
 
 ```json
@@ -108,7 +107,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 ## 6. Congratulations
 
-1. You have now successfully bootstrapped a Trust Ecosystem using the `Aries CloudAPI`.
-2. You are now able to write schemas, credential definitions, create new tenants, etc.
+1. You have now successfully bootstrapped a Trust Ecosystem with acapy-cloud!
+2. You can now write schemas, create credential definitions, manage tenants, and more.
 
-Continue by establishing your [Trust Ecosystem Governance](./Governance%20as%20Code.md)
+Continue by reading about [Governance as Code](./Governance%20as%20Code.md).

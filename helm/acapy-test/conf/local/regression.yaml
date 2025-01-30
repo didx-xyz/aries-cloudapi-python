@@ -1,0 +1,18 @@
+fullnameOverride: acapy-regression-test
+
+command:
+  - sh
+  - -c
+  - |
+    poetry run pytest \
+      --junitxml="/mnt/test_output.xml" \
+      --cov-report=term-missing:skip-covered \
+      --cov | tee /mnt/test_coverage.txt
+
+env:
+  RUN_REGRESSION_TESTS: true
+  # Set to `false` on a clean stack (first time running regression tests)
+  # Set to `true` on a "dirty" stack (re-running regression tests)
+  # - This will cause it to fail on creating new tenants, credentials, or connections
+  #   as these should already exist
+  FAIL_ON_RECREATING_FIXTURES: false

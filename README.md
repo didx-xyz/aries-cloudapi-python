@@ -214,10 +214,32 @@ mise run tilt:up
 In another terminal:
 
 ```bash
-helmfile apply \
-  --environment local \
-  -f ./tilt/.charts/helmfiles/aries-capi-test.yaml
+# Build AcaPy Test helm dependencies
+helm dep build --skip-refresh ./helm/acapy-test
+
+# Run e2e tests
+helm upgrade --install acapy-test \
+  -f ./helm/acapy-test/conf/local/values.yaml \
+  ./helm/acapy-test
+
+# Bootstrap regression tests
+helm upgrade --install acapy-regression-test \
+  -f ./helm/acapy-test/conf/local/values.yaml \
+  -f ./helm/acapy-test/conf/local/regression.yaml \
+  --set env.FAIL_ON_RECREATING_FIXTURES=false \
+  ./helm/acapy-test
+
+# Run regression tests
+helm upgrade --install acapy-regression-test \
+  -f ./helm/acapy-test/conf/local/values.yaml \
+  -f ./helm/acapy-test/conf/local/regression.yaml \
+  --set env.FAIL_ON_RECREATING_FIXTURES=true \
+  ./helm/acapy-test
 ```
+
+> [!NOTE]
+> At the time of writing, if you are running tests on an ARM based machine, it is
+> expected that `bbs` tests will fail as `bbs` is not currently supported on ARM.
 
 ## CI/CD
 

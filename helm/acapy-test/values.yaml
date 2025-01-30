@@ -1,0 +1,70 @@
+nameOverride: ""
+fullnameOverride: acapy-test
+
+replicaCount: 1
+
+image:
+  name: d-cloud/pytest
+  registry: ghcr.io/didx-xyz
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+imagePullSecrets: []
+
+labels: {}
+podLabels:
+  sidecar.istio.io/inject: "false"
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+env: {}
+  # ACAPY_GOVERNANCE_AGENT_URL: http://governance-agent:3021
+  # ACAPY_TAILS_SERVER_BASE_URL: http://tails-server:6543
+  # ACAPY_TENANT_AGENT_URL: http://multitenant-agent:3021
+  # CLOUDAPI_URL: http://tenant-web:8000/tenant
+  # GOVERNANCE_ACAPY_LABEL: Governance
+  # GOVERNANCE_FASTAPI_ENDPOINT: http://governance-web:8000/governance
+  # LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
+  # REGISTRY_CREATION_TIMEOUT: 120
+  # SKIP_SET_PUBLIC_DID: true # skip set_public_did test to avoid conflict with two public dids, different seed
+  # TENANT_ADMIN_FASTAPI_ENDPOINT: http://multitenant-web:8000/tenant-admin
+  # TENANT_FASTAPI_ENDPOINT: http://tenant-web:8000/tenant
+  # TRUST_REGISTRY_FASTAPI_ENDPOINT: http://public-web:8000/public
+  # TRUST_REGISTRY_URL: http://trust-registry:8000
+  # WAYPOINT_URL: http://waypoint:3010
+
+secretConfig: {}
+  # ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
+  # ACAPY_MULTITENANT_JWT_SECRET: verySecretMultitenantJwtSecret
+  # ACAPY_TENANT_AGENT_API_KEY: adminApiKey
+  # GOVERNANCE_ACAPY_API_KEY: adminApiKey
+  # TENANT_ACAPY_API_KEY: adminApiKey
+
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+completions: 1
+
+persistence:
+  enabled: false
+  mountPath: /mnt
+  capacity: 1Gi
+  storageClassName: ""

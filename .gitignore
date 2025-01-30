@@ -10,8 +10,8 @@ mise.local.toml
 # Docker Cache
 tilt/docker
 
-# Helm Charts
-tilt/.charts
+# Helm chart dependencies
+helm/**/charts
 
 # VON Network
 tilt/.von-network

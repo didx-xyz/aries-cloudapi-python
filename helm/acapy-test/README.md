@@ -75,7 +75,7 @@ The following table lists the configurable parameters of the chart and their def
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `completions` | Number of test completions required | `1` |
-| `command` | Test command to execute | See [values.yaml](conf/local/values.yaml) |
+| `command` | Test command to execute | See [values.yaml](./conf/local/values.yaml) |
 
 ### Environment Variables
 

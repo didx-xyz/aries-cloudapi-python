@@ -24,6 +24,7 @@ from app.models.definitions import (
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
+    schema_from_acapy
 )
 from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger
@@ -133,7 +134,7 @@ async def get_schemas(
         if not is_governance:  # regular tenant is calling endpoint
             schemas = await schemas_service.get_schemas_as_tenant(
                 aries_controller=aries_controller,
-                schema_issuer_id=schema_issuer_did,
+                schema_issuer_did=schema_issuer_did,
                 schema_name=schema_name,
                 schema_version=schema_version,
             )
@@ -191,14 +192,14 @@ async def get_schema(
     async with client_from_auth(auth) as aries_controller:
         schema = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.schema.get_schema,
+            acapy_call=aries_controller.anoncreds_schemas.get_schema,
             schema_id=schema_id,
         )
 
     if not schema.var_schema:
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
-    result = credential_schema_from_acapy(schema.var_schema)
+    result = schema_from_acapy(schema)
     bound_logger.debug("Successfully fetched schema by id.")
     return result
 

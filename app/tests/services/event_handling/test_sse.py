@@ -42,7 +42,7 @@ def async_lines() -> AsyncGenerator[str, Any]:
 # Fixture for the mock response
 @pytest.fixture
 def response_mock(
-    async_lines: AsyncGenerator[str, Any]  # pylint: disable=redefined-outer-name
+    async_lines: AsyncGenerator[str, Any],  # pylint: disable=redefined-outer-name
 ) -> AsyncMock:
     response = AsyncMock(spec=Response)
     response.aiter_lines.return_value = async_lines()

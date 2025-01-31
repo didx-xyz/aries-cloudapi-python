@@ -334,7 +334,7 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
         ledger_enabled = False
         print(
             color.yellow(
-                "Skipping deploying Ledger Nodes to Kind , CPU Architecture not supported: "
+                "Skipping deploying Ledger Nodes to Kind, CPU Architecture not supported: "
                 + cpu_arch
             )
         )

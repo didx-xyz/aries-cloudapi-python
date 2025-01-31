@@ -48,10 +48,10 @@ concurrency:
 permissions: {}
 
 env:
-  TAILSCALE_VERSION: 1.78.1
+  TAILSCALE_VERSION: 1.80.0
   HELMFILE_VERSION: v0.170.1
   HELM_VERSION: v3.17.0
-  MISE_VERSION: 2025.1.15
+  MISE_VERSION: 2025.1.16
 
 jobs:
   build:

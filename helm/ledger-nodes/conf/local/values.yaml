@@ -18,7 +18,6 @@ persistence:
   capacity: 2Gi
   storageClassName: ""
 
-podManagementPolicy: OrderedReady # Parallel
 updateStrategy:
   type: OnDelete
 

@@ -309,8 +309,7 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
 
     # Setup Ledger Nodes
     ledger_enabled = True
-    # Until we have more stable Ledger Browser/Nodes deployment for K8s
-    if "unstable" in cpu_arch:
+    if "x86_64" in cpu_arch:
         values_file = "./helm/ledger-nodes/conf/local/values.yaml"
         helm_resource(
             name="ledger-nodes",
@@ -332,10 +331,8 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
     else:
         # Incompatible CPU Architecture
         # Deploy Ledger Nodes and Browser via Docker Compose instead of Kind/Helm
-        # print(color.yellow('Skipping Ledger Nodes, CPU Architecture not supported: '+cpu_arch))
-        print(
-            color.yellow("Skipping deploying Ledger Nodes to Kind due to instability.")
-        )
+        ledger_enabled = False
+        print(color.yellow('Skipping deploying Ledger Nodes to Kind , CPU Architecture not supported: '+cpu_arch))
         print(color.yellow("Using docker compose for ledger nodes..."))
 
         von_dir = "tilt/.von-network"
@@ -372,8 +369,6 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
         docker_compose("./docker-compose-ledger.yaml", wait=True, **env_file_args)
         dc_resource("ledger-nodes", labels=["02-indy-ledger"])
         dc_resource("ledger-browser", labels=["02-indy-ledger"])
-
-        ledger_enabled = False
 
     return ledger_enabled
 

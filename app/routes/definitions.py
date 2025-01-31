@@ -24,7 +24,7 @@ from app.models.definitions import (
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
-    schema_from_acapy
+    schema_from_acapy,
 )
 from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger

@@ -332,7 +332,12 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
         # Incompatible CPU Architecture
         # Deploy Ledger Nodes and Browser via Docker Compose instead of Kind/Helm
         ledger_enabled = False
-        print(color.yellow('Skipping deploying Ledger Nodes to Kind , CPU Architecture not supported: '+cpu_arch))
+        print(
+            color.yellow(
+                "Skipping deploying Ledger Nodes to Kind , CPU Architecture not supported: "
+                + cpu_arch
+            )
+        )
         print(color.yellow("Using docker compose for ledger nodes..."))
 
         von_dir = "tilt/.von-network"

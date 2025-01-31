@@ -9,6 +9,9 @@ pgadmin_version = "1.34.0"
 
 registry = "localhost:5001"
 
+# Detect CPU Architecture
+cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).lower().strip()
+
 
 def setup_postgres(namespace):
     print(color.green("Installing Postgres..."))
@@ -220,7 +223,6 @@ def setup_redpanda_connect_cloud(namespace):
 
 
 def build_cloudapi_service(service, image={}):
-    cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).lower().strip()
     BBS_SUFFIX = "-bbs"
     if cpu_arch == "arm64":
         BBS_SUFFIX = ""
@@ -307,13 +309,12 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
 
     # Setup Ledger Nodes
     ledger_enabled = True
-    cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).strip()
     # Until we have more stable Ledger Browser/Nodes deployment for K8s
     if "unstable" in cpu_arch:
-        values_file = "./tilt/.charts/charts/ledger-nodes/conf/local/values.yaml"
+        values_file = "./helm/ledger-nodes/conf/local/values.yaml"
         helm_resource(
             name="ledger-nodes",
-            chart="./tilt/.charts/charts/ledger-nodes",
+            chart="./helm/ledger-nodes",
             release_name="ledger-nodes",
             namespace=namespace,
             flags=[

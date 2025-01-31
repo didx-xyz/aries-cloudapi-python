@@ -575,9 +575,7 @@ def setup_cloudapi(build_enabled, expose):
             "depends": ["ledger-nodes"],
             "enabled": ledger_enabled,
             "labels": ["02-indy-ledger"],
-            "port_forwards": [
-              port_forward(9000, 8000, "Ledger Browser PF")
-            ],
+            "port_forwards": [port_forward(9000, 8000, "Ledger Browser PF")],
             "links": [
                 link(
                     "http://ledger-browser.cloudapi." + ingress_domain, "Ledger Browser"

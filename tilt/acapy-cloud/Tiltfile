@@ -298,6 +298,7 @@ def setup_cloudapi_service(
             ]
             + release_config.get("depends", []),
             deps=[values_file],
+            port_forwards=release_config.get("port_forwards", []),
         )
         k8s_resource(workload=release, links=release_config.get("links", []))
     else:
@@ -574,6 +575,9 @@ def setup_cloudapi(build_enabled, expose):
             "depends": ["ledger-nodes"],
             "enabled": ledger_enabled,
             "labels": ["02-indy-ledger"],
+            "port_forwards": [
+              port_forward(9000, 8000, "Ledger Browser PF")
+            ],
             "links": [
                 link(
                     "http://ledger-browser.cloudapi." + ingress_domain, "Ledger Browser"

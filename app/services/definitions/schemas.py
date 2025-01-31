@@ -1,7 +1,13 @@
 import asyncio
 from typing import List, Optional
 
-from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest, SchemaPostRequest, AnonCredsSchema
+from aries_cloudcontroller import (
+    AcaPyClient,
+    AnonCredsSchema,
+    SchemaGetResult,
+    SchemaPostRequest,
+    SchemaSendRequest,
+)
 
 from app.exceptions import (
     CloudApiException,
@@ -47,9 +53,7 @@ async def create_schema(
         issuer_id="2WkBvUzBd1iFSHXhJNBwXi",
     )
     schema_request_2 = handle_model_with_validation(
-        logger=bound_logger,
-        model_class=SchemaPostRequest,
-        var_schema=schema_request
+        logger=bound_logger, model_class=SchemaPostRequest, var_schema=schema_request
     )
     logger.info(schema_request_2)
     result = await publisher.publish_schema(schema_request_2)

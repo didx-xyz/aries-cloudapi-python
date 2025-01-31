@@ -1,5 +1,6 @@
+from aries_cloudcontroller import AnonCredsSchema
 from aries_cloudcontroller import CredentialDefinition as AcaPyCredentialDefinition
-from aries_cloudcontroller import ModelSchema, AnonCredsSchema, SchemaState
+from aries_cloudcontroller import ModelSchema, SchemaState
 
 from app.models.definitions import CredentialDefinition, CredentialSchema
 

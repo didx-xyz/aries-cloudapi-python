@@ -1,7 +1,12 @@
 from logging import Logger
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest, AnonCredsSchema
+from aries_cloudcontroller import (
+    AcaPyClient,
+    AnonCredsSchema,
+    SchemaGetResult,
+    SchemaSendRequest,
+)
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CredentialSchema
@@ -14,9 +19,7 @@ class SchemaPublisher:
         self._logger = logger
         self._controller = controller
 
-    async def publish_schema(
-        self, schema_request: AnonCredsSchema
-    ) -> CredentialSchema:
+    async def publish_schema(self, schema_request: AnonCredsSchema) -> CredentialSchema:
         try:
             result = await handle_acapy_call(
                 logger=self._logger,

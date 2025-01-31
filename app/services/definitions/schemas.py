@@ -7,6 +7,7 @@ from aries_cloudcontroller import (
     SchemaGetResult,
     SchemaPostRequest,
     SchemaSendRequest,
+    GetSchemaResult,
 )
 
 from app.exceptions import (
@@ -20,7 +21,7 @@ from app.routes.trust_registry import (
 )
 from app.routes.trust_registry import get_schemas as get_trust_registry_schemas
 from app.services.definitions.schema_publisher import SchemaPublisher
-from app.util.definitions import credential_schema_from_acapy
+from app.util.definitions import credential_schema_from_acapy, schema_from_acapy
 from shared.constants import GOVERNANCE_AGENT_URL
 from shared.log_config import get_logger
 
@@ -137,13 +138,12 @@ async def get_schemas_as_governance(
     bound_logger.debug("Fetching created schemas")
     response = await handle_acapy_call(
         logger=bound_logger,
-        acapy_call=aries_controller.schema.get_created_schemas,
-        schema_id=schema_id,
-        schema_issuer_did=schema_issuer_did,
+        acapy_call=aries_controller.anoncreds_schemas.get_schemas,
+        schema_issuer_id=schema_issuer_did,
         schema_name=schema_name,
         schema_version=schema_version,
     )
-
+    logger.info(response)
     # Initiate retrieving all schemas
     schema_ids = response.schema_ids or []
 
@@ -170,7 +170,7 @@ async def get_schemas_by_id(
     get_schema_futures = [
         handle_acapy_call(
             logger=logger,
-            acapy_call=aries_controller.schema.get_schema,
+            acapy_call=aries_controller.anoncreds_schemas.get_schema,
             schema_id=schema_id,
         )
         for schema_id in schema_ids
@@ -179,16 +179,16 @@ async def get_schemas_by_id(
     # Wait for completion of futures
     if get_schema_futures:
         logger.debug("Fetching each of the created schemas")
-        schema_results: List[SchemaGetResult] = await asyncio.gather(
+        schema_results: List[GetSchemaResult] = await asyncio.gather(
             *get_schema_futures
         )
     else:
         logger.debug("No created schema ids returned")
         schema_results = []
-
+    logger.info(schema_results)
     # transform all schemas into response model (if schemas returned)
     schemas = [
-        credential_schema_from_acapy(schema.var_schema)
+        schema_from_acapy(schema)
         for schema in schema_results
         if schema.var_schema
     ]

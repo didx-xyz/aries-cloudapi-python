@@ -133,8 +133,7 @@ async def get_schemas(
         if not is_governance:  # regular tenant is calling endpoint
             schemas = await schemas_service.get_schemas_as_tenant(
                 aries_controller=aries_controller,
-                schema_id=schema_id,
-                schema_issuer_did=schema_issuer_did,
+                schema_issuer_id=schema_issuer_did,
                 schema_name=schema_name,
                 schema_version=schema_version,
             )
@@ -143,7 +142,6 @@ async def get_schemas(
             try:
                 schemas = await schemas_service.get_schemas_as_governance(
                     aries_controller=aries_controller,
-                    schema_id=schema_id,
                     schema_issuer_did=schema_issuer_did,
                     schema_name=schema_name,
                     schema_version=schema_version,

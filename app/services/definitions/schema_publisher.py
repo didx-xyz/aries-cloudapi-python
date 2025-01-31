@@ -1,7 +1,7 @@
 from logging import Logger
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest
+from aries_cloudcontroller import AcaPyClient, SchemaGetResult, SchemaSendRequest, AnonCredsSchema
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.definitions import CredentialSchema
@@ -15,16 +15,18 @@ class SchemaPublisher:
         self._controller = controller
 
     async def publish_schema(
-        self, schema_request: SchemaSendRequest
+        self, schema_request: AnonCredsSchema
     ) -> CredentialSchema:
         try:
             result = await handle_acapy_call(
                 logger=self._logger,
-                acapy_call=self._controller.schema.publish_schema,
+                acapy_call=self._controller.anoncreds_schemas.create_schema,
                 body=schema_request,
-                create_transaction_for_endorser=False,
+                # create_transaction_for_endorser=False,
             )
+            self._logger.info(result)
         except CloudApiException as e:
+            # TODO fix for anoncreds_schemas
             if "already exist" in e.detail and e.status_code == 400:
                 result = await self._handle_existing_schema(schema_request)
                 return result
@@ -35,15 +37,15 @@ class SchemaPublisher:
                 )
                 raise CloudApiException("Error while creating schema.") from e
 
-        if result.sent and result.sent.schema_id:
-            await register_schema(schema_id=result.sent.schema_id)
+        if result.schema_state.state == "finished" and result.schema_state.schema_id:
+            await register_schema(schema_id=result.schema_state.schema_id)
         else:
             self._logger.error("No SchemaSendResult in `publish_schema` response.")
             raise CloudApiException(
                 "An unexpected error occurred: could not publish schema."
             )
 
-        result = credential_schema_from_acapy(result.sent.var_schema)
+        result = credential_schema_from_acapy(result.schema_state)
         return result
 
     async def _handle_existing_schema(

@@ -4,10 +4,10 @@ from typing import List, Optional
 from aries_cloudcontroller import (
     AcaPyClient,
     AnonCredsSchema,
+    GetSchemaResult,
     SchemaGetResult,
     SchemaPostRequest,
     SchemaSendRequest,
-    GetSchemaResult,
 )
 
 from app.exceptions import (
@@ -188,9 +188,7 @@ async def get_schemas_by_id(
     logger.info(schema_results)
     # transform all schemas into response model (if schemas returned)
     schemas = [
-        schema_from_acapy(schema)
-        for schema in schema_results
-        if schema.var_schema
+        schema_from_acapy(schema) for schema in schema_results if schema.var_schema
     ]
 
     return schemas

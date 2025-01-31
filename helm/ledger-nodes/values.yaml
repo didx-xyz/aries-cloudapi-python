@@ -52,10 +52,41 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-# livenessProbe:
-#   httpGet:
-#     path: /
-#     port: http
+livenessProbe:
+  exec:
+    command:
+    - /bin/sh
+    - -c
+    - >-
+      if ! test -r /home/indy/ledger/sandbox/node*_info.json; then
+        echo "Error: Node info file not readable"
+        exit 1
+      fi &&
+      if ! test $(( $(date +%s) - $(date -r /home/indy/ledger/sandbox/node*_info.json +%s) )) -lt 30; then
+        echo "Error: Node info file not updated in last 30 seconds"
+        exit 1
+      fi &&
+      if ! grep -q '"Mode": "participating"' /home/indy/ledger/sandbox/node*_info.json; then
+        echo "Error: Node not in participating mode"
+        exit 1
+      fi &&
+      if ! grep -q '"Reachable_nodes_count": [1-9]' /home/indy/ledger/sandbox/node*_info.json; then
+        echo "Error: No reachable nodes found"
+        exit 1
+      fi &&
+      if grep -q '"synced": false' /home/indy/ledger/sandbox/node*_info.json; then
+        echo "Error: Some ledgers not synced"
+        exit 1
+      fi &&
+      if ! grep -q '"Has_write_consensus": true' /home/indy/ledger/sandbox/node*_info.json; then
+        echo "Error: No write consensus"
+        exit 1
+      fi
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
 
 readinessProbe:
   tcpSocket:

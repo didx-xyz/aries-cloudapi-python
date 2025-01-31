@@ -323,10 +323,10 @@ jobs:
       - name: Get Pods
         if: always()
         run: kubectl get pods --all-namespaces
-      # Benthos generates a lot of logs...
-      - name: Benthos Logs
+      # Connect Cloud generates a lot of logs...
+      - name: Connect Cloud Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=benthos --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=connect-cloud --tail 10000
       - name: Docker Cache Logs
         if: always()
         run: docker logs docker-cache

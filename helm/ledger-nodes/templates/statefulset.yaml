@@ -65,7 +65,7 @@ spec:
             - name: IPS
               valueFrom:
                 configMapKeyRef:
-                  name: ips-configmap
+                  name: {{ include "ledger-nodes.fullname" . }}-ips
                   key: IPS
           ports:
             {{- range $.Values.service.ports }}

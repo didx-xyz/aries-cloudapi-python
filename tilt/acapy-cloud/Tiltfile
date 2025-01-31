@@ -290,7 +290,7 @@ def setup_cloudapi_service(
                 "--wait",
             ]
             + flags,
-            labels=["01-cloudapi"],
+            labels=release_config.get("labels", ["01-cloudapi"]),
             resource_deps=[
                 "cloudapi-ns",
                 "ingress-nginx",
@@ -304,7 +304,7 @@ def setup_cloudapi_service(
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, ingress_domain, build_enabled):
+def setup_ledger(namespace, build_enabled, ingress_domain):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
@@ -320,8 +320,6 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
             flags=[
                 "--values",
                 values_file,
-                "--set",
-                "ingressDomain=cloudapi." + ingress_domain,
                 "--wait",
             ],
             labels=["02-indy-ledger"],
@@ -575,6 +573,7 @@ def setup_cloudapi(build_enabled, expose):
         "ledger-browser": {
             "depends": ["ledger-nodes"],
             "enabled": ledger_enabled,
+            "labels": ["02-indy-ledger"],
             "links": [
                 link(
                     "http://ledger-browser.cloudapi." + ingress_domain, "Ledger Browser"

@@ -83,4 +83,4 @@ env:
   LOG_LEVEL: info
 
 extraConfigmapNamesForEnvFrom:
-  - ips-configmap
+  - ledger-nodes-ips

@@ -21,8 +21,9 @@ Navigating to the **Swagger UI** endpoints:
 - **CloudAPI-Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 - **CloudAPI-Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
 
-provides a good overview of the intended functionalities. You'll find endpoints for admin actions (managing wallets)
-and for tenant actions, for holders, issuers and verifiers. Additionally, there are [trust registry](./Trust%20Registry.md) and [webhooks](./Webhooks.md) endpoints.
+provides a good overview of the intended functionalities.
+You'll find endpoints for admin actions (managing wallets) and tenant actions (for holders, issuers and verifiers).
+Additionally, there are [trust registry](./Trust%20Registry.md) and [webhooks](./Webhooks.md) endpoints.
 
 > NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned
 > Swagger UI's are the main interaction points intended between clients and the stack. This should be the only

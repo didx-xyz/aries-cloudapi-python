@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ledger-nodes.fullname" . }}
+  labels:
+    {{- include "ledger-nodes.labels" . | nindent 4 }}
+spec:
+  podManagementPolicy: {{ default "OrderedReady" .Values.podManagementPolicy }}
+  serviceName: {{ include "ledger-nodes.fullname" . }}-headless
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "ledger-nodes.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ledger-nodes.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ledger-nodes.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ledger-node
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              HOST=0.0.0.0
+              NODE_ID=$(echo $HOSTNAME | rev | cut -d'-' -f1 | rev)
+              export NODE_NUM=$(($NODE_ID + 1))
+
+              cp ./config/sample_aml.json ./config/aml.json
+              cp ./config/sample_taa.json ./config/taa.json
+
+              if [ ! -d "/home/indy/ledger/sandbox/keys" ]; then
+                  echo "Ledger does not exist - Creating..."
+                  bash ./scripts/init_genesis.sh
+              fi
+
+              # Remap ports
+              sed -i \
+                's/"client_port":[0-9]\+/"client_port":9702/g; s/"node_port":[0-9]\+/"node_port":9701/g' \
+                /home/indy/ledger/sandbox/pool_transactions_genesis
+
+              start_indy_node "Node""${NODE_NUM}" 0.0.0.0 9701 0.0.0.0 9702
+          env:
+            - name: IPS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ledger-nodes.fullname" . }}-ips
+                  key: IPS
+          ports:
+            {{- range $.Values.service.ports }}
+            - containerPort: {{ .targetPort }}
+              protocol: TCP
+              name: {{ .name }}
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- tpl (toYaml .Values.extraVolumeMounts) $ | nindent 12 }}
+            {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- with .Values.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - {{ default "ReadWriteOnce" .Values.persistence.accessMode }}
+        storageClassName: {{ .Values.persistence.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.capacity }}

@@ -48,10 +48,10 @@ concurrency:
 permissions: {}
 
 env:
-  TAILSCALE_VERSION: 1.78.1
+  TAILSCALE_VERSION: 1.80.0
   HELMFILE_VERSION: v0.170.1
   HELM_VERSION: v3.17.0
-  MISE_VERSION: 2025.1.15
+  MISE_VERSION: 2025.2.0
 
 jobs:
   build:
@@ -271,6 +271,9 @@ jobs:
           cp .env.example .env
           source .env
 
+          # Any portforwards will not be active after `tilt ci` has exited.
+          kubectl port-forward svc/ledger-browser 9000:8000 -n cloudapi &
+
           poetry run pytest --durations=0 ${{ matrix.module.test }} --cov | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
@@ -323,10 +326,10 @@ jobs:
       - name: Get Pods
         if: always()
         run: kubectl get pods --all-namespaces
-      # Benthos generates a lot of logs...
-      - name: Benthos Logs
+      # Connect Cloud generates a lot of logs...
+      - name: Connect Cloud Logs
         if: always()
-        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=benthos --tail 10000
+        run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=connect-cloud --tail 10000
       - name: Docker Cache Logs
         if: always()
         run: docker logs docker-cache
@@ -342,18 +345,12 @@ jobs:
       - name: Ingress Nginx Logs
         if: always()
         run: kubectl logs -n ingress-system -l app.kubernetes.io/instance=ingress-nginx --tail 10000
-      - name: Ledger Browser Logs (kind)
+      - name: Ledger Browser Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=ledger-browser --tail 10000
-      - name: Ledger Browser Logs (docker)
-        if: always()
-        run: docker logs ledger-browser
-      - name: Ledger Nodes Logs (kind)
+      - name: Ledger Nodes Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=ledger-nodes --tail 10000
-      - name: Ledger Nodes Logs (docker)
-        if: always()
-        run: docker logs ledger-nodes
       - name: Mediator Logs
         if: always()
         run: kubectl logs -n cloudapi -l app.kubernetes.io/instance=mediator --tail 10000

@@ -9,6 +9,9 @@ pgadmin_version = "1.34.0"
 
 registry = "localhost:5001"
 
+# Detect CPU Architecture
+cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).lower().strip()
+
 
 def setup_postgres(namespace):
     print(color.green("Installing Postgres..."))
@@ -220,7 +223,6 @@ def setup_redpanda_connect_cloud(namespace):
 
 
 def build_cloudapi_service(service, image={}):
-    cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).lower().strip()
     BBS_SUFFIX = "-bbs"
     if cpu_arch == "arm64":
         BBS_SUFFIX = ""
@@ -288,7 +290,7 @@ def setup_cloudapi_service(
                 "--wait",
             ]
             + flags,
-            labels=["01-cloudapi"],
+            labels=release_config.get("labels", ["01-cloudapi"]),
             resource_deps=[
                 "cloudapi-ns",
                 "ingress-nginx",
@@ -296,31 +298,28 @@ def setup_cloudapi_service(
             ]
             + release_config.get("depends", []),
             deps=[values_file],
+            port_forwards=release_config.get("port_forwards", []),
         )
         k8s_resource(workload=release, links=release_config.get("links", []))
     else:
         print(color.yellow("Skipping " + release + ", not enabled"))
 
 
-def setup_ledger(namespace, ingress_domain, build_enabled):
+def setup_ledger(namespace, build_enabled, ingress_domain):
     print(color.green("Installing Ledger..."))
 
     # Setup Ledger Nodes
     ledger_enabled = True
-    cpu_arch = str(local("uname -m", echo_off=True, quiet=True)).strip()
-    # Until we have more stable Ledger Browser/Nodes deployment for K8s
-    if "unstable" in cpu_arch:
-        values_file = "./tilt/.charts/charts/ledger-nodes/conf/local/values.yaml"
+    if "x86_64" in cpu_arch:
+        values_file = "./helm/ledger-nodes/conf/local/values.yaml"
         helm_resource(
             name="ledger-nodes",
-            chart="./tilt/.charts/charts/ledger-nodes",
+            chart="./helm/ledger-nodes",
             release_name="ledger-nodes",
             namespace=namespace,
             flags=[
                 "--values",
                 values_file,
-                "--set",
-                "ingressDomain=cloudapi." + ingress_domain,
                 "--wait",
             ],
             labels=["02-indy-ledger"],
@@ -333,9 +332,12 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
     else:
         # Incompatible CPU Architecture
         # Deploy Ledger Nodes and Browser via Docker Compose instead of Kind/Helm
-        # print(color.yellow('Skipping Ledger Nodes, CPU Architecture not supported: '+cpu_arch))
+        ledger_enabled = False
         print(
-            color.yellow("Skipping deploying Ledger Nodes to Kind due to instability.")
+            color.yellow(
+                "Skipping deploying Ledger Nodes to Kind, CPU Architecture not supported: "
+                + cpu_arch
+            )
         )
         print(color.yellow("Using docker compose for ledger nodes..."))
 
@@ -373,8 +375,6 @@ def setup_ledger(namespace, ingress_domain, build_enabled):
         docker_compose("./docker-compose-ledger.yaml", wait=True, **env_file_args)
         dc_resource("ledger-nodes", labels=["02-indy-ledger"])
         dc_resource("ledger-browser", labels=["02-indy-ledger"])
-
-        ledger_enabled = False
 
     return ledger_enabled
 
@@ -574,6 +574,8 @@ def setup_cloudapi(build_enabled, expose):
         "ledger-browser": {
             "depends": ["ledger-nodes"],
             "enabled": ledger_enabled,
+            "labels": ["02-indy-ledger"],
+            "port_forwards": [port_forward(9000, 8000, "Ledger Browser PF")],
             "links": [
                 link(
                     "http://ledger-browser.cloudapi." + ingress_domain, "Ledger Browser"

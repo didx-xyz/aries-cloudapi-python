@@ -10,12 +10,13 @@ podAnnotations:
   ad.datadoghq.com/ledger-browser.logs: '[{"source": "grok.ledger-browser", "service": "ledger-browser", "auto_multi_line_detection": true}]'
 
 podLabels:
-  admission.datadoghq.com/enabled: "true"
+  admission.datadoghq.com/enabled: "false"
+  sidecar.istio.io/inject: "false"
 
 image:
   name: ledger-browser
   pullPolicy: Always
-  tag: master
+  tag: latest
 
 ingressDomain: cloudapi.127.0.0.1.nip.io
 ingress:
@@ -35,9 +36,23 @@ service:
   appProtocol: tcp
 
 command:
-  - "bash"
-  - "-c"
-  - "cp ./config/sample_aml.json ./config/aml.json; cp ./config/sample_taa.json ./config/taa.json; ./scripts/start_webserver.sh"
+  - bash
+  - -c
+  - |
+    cp ./config/sample_aml.json ./config/aml.json
+    cp ./config/sample_taa.json ./config/taa.json
+
+    if [ ! -f "/home/indy/ledger/sandbox/pool_transactions_genesis" ] && [ -z "${GENESIS_URL}" ] && [ -z "${GENESIS_FILE}" ]; then
+      echo "Ledger does not exist - Creating genesis data..."
+      bash ./scripts/init_genesis.sh
+    fi
+
+    # Remap ports
+    sed -i \
+      's/"client_port":[0-9]\+/"client_port":9702/g; s/"node_port":[0-9]\+/"node_port":9701/g' \
+      /home/indy/ledger/sandbox/pool_transactions_genesis
+
+    python -m server.server
 
 livenessProbe:
   httpGet:
@@ -61,11 +76,11 @@ secretData:
   LEDGER_SEED: 000000000000000000000000Trustee1
 
 env:
-  MAX_FETCH: "50000"
-  RESYNC_TIME: "120"
-  REGISTER_NEW_DIDS: "True"
+  MAX_FETCH: 50000
+  RESYNC_TIME: 120
+  REGISTER_NEW_DIDS: True
   LEDGER_INSTANCE_NAME: Indy Ledger Browser
   LOG_LEVEL: info
 
 extraConfigmapNamesForEnvFrom:
-  - ips-configmap
+  - ledger-nodes-ips

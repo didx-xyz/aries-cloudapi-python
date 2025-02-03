@@ -1,0 +1,107 @@
+# Default values for ledger-nodes.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 4
+
+image:
+  name: d-cloud/ledger-nodes
+  registry: ghcr.io/didx-xyz
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ledger-nodes
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  annotations: {}
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+livenessProbe:
+  exec:
+    command:
+    - /bin/sh
+    - -c
+    - >-
+      INFO_FILE=$(find /home/indy/ledger/sandbox/ -name "node*_info.json" ! -name "*additional*" ! -name "*version*") &&
+      if ! test -r "$INFO_FILE"; then
+        echo "Error: Node info file not readable"
+        exit 1
+      fi &&
+      if ! grep -q '"Mode": "participating"' "$INFO_FILE"; then
+        echo "Error: Node not in participating mode"
+        exit 1
+      fi &&
+      if ! grep -q '"Reachable_nodes_count": [1-9]' "$INFO_FILE"; then
+        echo "Error: No reachable nodes found"
+        exit 1
+      fi &&
+      if grep -q '"synced": false' "$INFO_FILE"; then
+        echo "Error: Some ledgers not synced"
+        exit 1
+      fi &&
+      if ! grep -q '"Has_write_consensus": true' "$INFO_FILE"; then
+        echo "Error: No write consensus"
+        exit 1
+      fi
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  tcpSocket:
+    port: 9701
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+persistence:
+  enabled: true
+  mountPath: /home/indy/ledger
+  capacity: 2Gi
+  storageClassName: ""
+
+podManagementPolicy: Parallel
+updateStrategy:
+  type: OnDelete
+
+persistentVolumeClaimRetentionPolicy:
+  whenDeleted: Delete
+  whenScaled: Retain

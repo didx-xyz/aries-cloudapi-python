@@ -1,0 +1,26 @@
+fullnameOverride: ledger-nodes
+
+podAnnotations: {}
+podLabels:
+  sidecar.istio.io/inject: "false"
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+persistence:
+  enabled: true
+  mountPath: /home/indy/ledger
+  capacity: 2Gi
+  storageClassName: ""
+
+updateStrategy:
+  type: OnDelete
+
+persistentVolumeClaimRetentionPolicy:
+  whenDeleted: Delete
+  whenScaled: Retain

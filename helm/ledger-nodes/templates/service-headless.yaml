@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ledger-nodes.fullname" . }}-headless
+  labels:
+    {{- include "ledger-nodes.labels" . | nindent 4 }}
+  annotations:
+    {{- tpl (toYaml .Values.service.annotations) . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - port: 9701
+      targetPort: 9701
+      name: node
+    - port: 9702
+      targetPort: 9702
+      name: client
+  selector:
+    {{- include "ledger-nodes.selectorLabels" $ | nindent 4 }}

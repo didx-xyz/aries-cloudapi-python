@@ -32,6 +32,9 @@ from app.util.extract_validation_error import extract_validation_error_msg
 from shared.constants import PROJECT_VERSION
 from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
+from shared.util.set_event_loop_policy import set_event_loop_policy
+
+set_event_loop_policy()
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 ROLE = os.getenv("ROLE", "*")
@@ -51,7 +54,6 @@ Welcome to the Aries CloudAPI Python project.
 logger = get_logger(__name__)
 prod = os.environ.get("prod", "true").upper() == "TRUE"
 debug = not prod
-
 
 trust_registry_routes = [trust_registry]
 tenant_admin_routes = [tenants, sse]

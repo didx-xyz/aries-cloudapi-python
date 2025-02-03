@@ -18,6 +18,7 @@ pydantic = "~2.10.1"
 scalar-fastapi = "^1.0.3"
 sqlalchemy = "~=2.0.19"
 uvicorn = "~0.34.0"
+uvloop = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 anyio = "~4.8.0"

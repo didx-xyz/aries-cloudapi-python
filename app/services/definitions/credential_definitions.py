@@ -78,7 +78,9 @@ async def create_credential_definition(
 
     result = await publisher.publish_credential_definition(request_body)
     logger.info(result)
-    credential_definition_id = result.credential_definition_state.credential_definition_id
+    credential_definition_id = (
+        result.credential_definition_state.credential_definition_id
+    )
 
     if result.txn and result.txn.transaction_id:
         await wait_for_transaction_ack(

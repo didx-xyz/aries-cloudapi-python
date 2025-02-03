@@ -148,9 +148,9 @@ export function deleteTenant(bearerToken, walletId) {
     const response = http.del(url, null, params);
     const responseBody = response.body;
 
-    if (response.status === 200) {
+    if (response.status === 204) {
       // Request was successful
-      if (responseBody === "null") {
+      if (responseBody === null) {
         // console.log(`Wallet ${walletId} deleted successfully.`);
       } else {
         console.error(
@@ -525,7 +525,7 @@ export function getProofIdCredentials(holderAccessToken, proofId) {
       return referent;
     }
     // Throw an error if no match is found
-    console.log(`Log of the request made: ${JSON.stringify(response.request)}`);
+    // console.log(`Log of the request made: ${JSON.stringify(response.request)}`);
     throw new Error(
       `No match found for proofId: ${proofId}\nResponse body: ${JSON.stringify(
         responseData,

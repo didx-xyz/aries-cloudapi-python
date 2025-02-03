@@ -145,7 +145,7 @@ def setup_redpanda_connect_cloud(namespace):
     resource_name = "connect-cloud"
     project_root = os.getcwd()
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    values_file = current_dir + "/connect-cloud.yaml"
+    values_file = project_root + "helm/acapy-cloud/conf/local/connect-cloud.yaml"
 
     helm_repo(
         name="redpanda",
@@ -201,10 +201,6 @@ def setup_redpanda_connect_cloud(namespace):
             "fullnameOverride=" + resource_name,
             "--values",
             values_file,
-            "--set",
-            "logger.static_fields.@service=" + resource_name,
-            "--set",
-            "streams.enabled=true",
             "--set",
             "streams.streamsConfigMap=" + resource_name + "-streams",
         ],

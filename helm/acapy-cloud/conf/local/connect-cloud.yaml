@@ -7,6 +7,8 @@ logger:
   level: info
   # format: json
   add_timestamp: true
+  static_fields:
+    "@service": connect-cloud
 
 http:
   debug_endpoints: true

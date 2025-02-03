@@ -56,27 +56,30 @@ const testFunctionReqs = new Counter("test_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
 const inputFilepath = `../output/${outputPrefix}-create-holders.json`;
+const inputFilepathIssuer = `../output/${issuerPrefix}-create-issuers.json`;
 const data = open(inputFilepath, "r");
+const dataIssuer = open(inputFilepathIssuer, "r");
 const outputFilepath = `output/${outputPrefix}-create-invitation.json`;
 
 export function setup() {
   const bearerToken = getBearerToken();
   const holders = data.trim().split("\n").map(JSON.parse);
+  const issuers = dataIssuer.trim().split("\n").map(JSON.parse);
   file.writeString(outputFilepath, "");
 
   const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(
-    numIssuers,
-    walletName,
-    credDefTag,
-    schemaName,
-    schemaVersion
-  );
+  // const credDefTag = walletName;
+  // const issuers = bootstrapIssuer(
+  //   numIssuers,
+  //   walletName,
+  //   credDefTag,
+  //   schemaName,
+  //   schemaVersion
+  // );
 
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
+  // if (!issuers || issuers.length === 0) {
+  //   console.error("Failed to bootstrap issuers.");
+  // }
 
   return { bearerToken, issuers, holders };
 }
@@ -86,13 +89,12 @@ function getIssuerIndex(vu, iter) {
   return (vu + iter - 2) % numIssuers;
 }
 
-const vuStartTimes = {};
-const vuEndTimes = {};
+// const vuStartTimes = {};
 
 export default function (data) {
-  if (__ITER === 0) {
-    vuStartTimes[__VU] = Date.now();
-  }
+  // if (__ITER === 0) {
+  //   vuStartTimes[__VU] = Date.now();
+  // }
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;

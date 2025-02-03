@@ -11,7 +11,9 @@ import { createTenant } from "../libs/functions.js";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
+const issuerPrefix = __ENV.ISSUER_PREFIX;
 const sleepDuration = Number.parseInt(__ENV.SLEEP_DURATION, 0);
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -60,7 +62,7 @@ const wallets = new SharedArray("wallets", () => {
   return walletsArray;
 });
 
-const filepath = "output/create-holders.json";
+const filepath = `output/${outputPrefix}-create-holders.json`;
 export function setup() {
   file.writeString(filepath, "");
   const bearerToken = getBearerToken();

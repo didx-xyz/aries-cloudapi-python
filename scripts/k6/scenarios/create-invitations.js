@@ -17,9 +17,11 @@ import { bootstrapIssuer } from "../libs/setup.js";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+const holderPrefix = __ENV.HOLDER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
 const numIssuers = __ENV.NUM_ISSUERS;
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -53,9 +55,9 @@ export const options = {
 const testFunctionReqs = new Counter("test_function_reqs");
 const mainIterationDuration = new Trend("main_iteration_duration");
 
-const inputFilepath = "../output/create-holders.json";
+const inputFilepath = `../output/${outputPrefix}-create-holders.json`;
 const data = open(inputFilepath, "r");
-const outputFilepath = "output/create-invitation.json";
+const outputFilepath = `output/${outputPrefix}-create-invitation.json`;
 
 export function setup() {
   const bearerToken = getBearerToken();

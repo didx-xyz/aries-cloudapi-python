@@ -16,6 +16,9 @@ import {
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
+const holderPrefix = __ENV.HOLDER_PREFIX;
+const issuerPrefix = __ENV.ISSUER_PREFIX;
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -44,7 +47,7 @@ export const options = {
   },
 };
 
-const inputFilepath = "../output/create-invitation.json";
+const inputFilepath = `../output/${outputPrefix}-create-invitation.json`;
 const data = open(inputFilepath, "r");
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');

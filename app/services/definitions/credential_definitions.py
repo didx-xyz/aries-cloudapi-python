@@ -1,7 +1,13 @@
 import asyncio
 from typing import List, Optional
 
-from aries_cloudcontroller import AcaPyClient, CredentialDefinitionSendRequest
+from aries_cloudcontroller import (
+    AcaPyClient,
+    CredDefPostOptions,
+    CredDefPostRequest,
+    CredentialDefinitionSendRequest,
+    InnerCredDef,
+)
 
 from app.exceptions import handle_acapy_call, handle_model_with_validation
 from app.models.definitions import CreateCredentialDefinition, CredentialDefinition
@@ -43,18 +49,36 @@ async def create_credential_definition(
 
     if support_revocation:
         await publisher.check_endorser_connection()
-
-    request_body = handle_model_with_validation(
+    # schema_id=credential_definition.schema_id,
+    # support_revocation=support_revocation,
+    # tag=credential_definition.tag,
+    # revocation_registry_size=REGISTRY_SIZE,
+    credential_definition = handle_model_with_validation(
         logger=logger,
-        model_class=CredentialDefinitionSendRequest,
+        model_class=InnerCredDef,
+        issuer_id=public_did[8:],
         schema_id=credential_definition.schema_id,
-        support_revocation=support_revocation,
         tag=credential_definition.tag,
+    )
+
+    options = handle_model_with_validation(
+        logger=logger,
+        model_class=CredDefPostOptions,
+        create_transaction_for_endorser=True,
+        support_revocation=support_revocation,
         revocation_registry_size=REGISTRY_SIZE,
     )
 
+    request_body = handle_model_with_validation(
+        logger=logger,
+        model_class=CredDefPostRequest,
+        credential_definition=credential_definition,
+        options=options,
+    )
+
     result = await publisher.publish_credential_definition(request_body)
-    credential_definition_id = result.sent.credential_definition_id
+    logger.info(result)
+    credential_definition_id = result.credential_definition_state.credential_definition_id
 
     if result.txn and result.txn.transaction_id:
         await wait_for_transaction_ack(

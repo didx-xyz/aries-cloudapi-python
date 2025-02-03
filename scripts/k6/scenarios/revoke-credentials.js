@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -87,5 +87,6 @@ export default function (data) {
       return true;
     },
   });
+  sleep(2);
   testFunctionReqs.add(1);
 }

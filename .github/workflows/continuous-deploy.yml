@@ -55,7 +55,6 @@ env:
 
 jobs:
   build:
-    if: github.event.pull_request.draft == false
     name: Build
     permissions:
       packages: write # To push to GHCR.io
@@ -181,13 +180,13 @@ jobs:
           platforms: ${{ matrix.platforms }}
 
   test:
-    if: github.event.pull_request.draft == false
     name: Test
     needs:
       - build
     runs-on: ubuntu-latest
     outputs:
       test_success: ${{ steps.test.outputs.test_success }}
+
     strategy:
       fail-fast: true
       matrix:
@@ -207,6 +206,7 @@ jobs:
                 --ignore=app/tests/e2e/verifier/ \
                 --ignore=app/tests/e2e/test_definitions.py \
                 --ignore=app/tests/e2e/test_revocation.py
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -244,7 +244,6 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
       - name: Test with pytest
         id: test
-
         run: |
           source .venv/bin/activate
           set +e
@@ -378,6 +377,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: always()
+
     steps:
       - name: Check if any test failed
         run: exit 1
@@ -388,6 +388,7 @@ jobs:
     name: Coverage
     runs-on: ubuntu-latest
     needs: status-check
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -420,20 +421,20 @@ jobs:
   deploy:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: Deploy to EKS
+    runs-on: ubuntu-latest
+
     environment:
       name: dev
+
     needs:
       - build
+
     permissions:
       id-token: write # Required to authenticate with AWS
       checks: write # Required for action-junit-report
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
-    runs-on: ubuntu-latest
 
     timeout-minutes: 30
-
-    outputs:
-      output: ${{ steps.updated_deployments.outputs.success }}
 
     steps:
       - name: Checkout code
@@ -631,29 +632,28 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
   test-eks:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: Run Pytest on EKS
+    runs-on: ubuntu-latest
+
     environment:
       name: dev
+
     needs:
       - build
       - deploy
+
     permissions:
       id-token: write # Required to authenticate with AWS
       checks: write # Required for action-junit-report
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
-    runs-on: ubuntu-latest
 
     timeout-minutes: 20
 
     env:
-      OUTPUT_FILE: test_output.xml
-      COVERAGE_FILE: test_coverage.txt
       PYTEST_COMPLETIONS: 1
-
-    outputs:
-      output: ${{ steps.updated_deployments.outputs.success }}
 
     steps:
       - name: Checkout code
@@ -822,7 +822,6 @@ jobs:
         env:
           JOB_NAME: cloudapi-pytest
           NAMESPACE: dev-cloudapi
-          PYTEST_COMPLETIONS: ${{ env.PYTEST_COMPLETIONS }}
 
       - name: Wait for pytest regression and print logs
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'

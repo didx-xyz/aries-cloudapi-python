@@ -10,6 +10,9 @@ from endorser.services.dependency_injection.container import Container
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
+from shared.util.set_event_loop_policy import set_event_loop_policy
+
+set_event_loop_policy()
 
 logger = get_logger(__name__)
 

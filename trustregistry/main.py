@@ -13,10 +13,13 @@ from sqlalchemy.orm import Session
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
+from shared.util.set_event_loop_policy import set_event_loop_policy
 from trustregistry import crud
 from trustregistry.database import engine
 from trustregistry.db import get_db
 from trustregistry.registry import registry_actors, registry_schemas
+
+set_event_loop_policy()
 
 logger = get_logger(__name__)
 

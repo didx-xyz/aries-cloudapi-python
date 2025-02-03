@@ -8,9 +8,12 @@ from scalar_fastapi import get_scalar_api_reference
 
 from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
+from shared.util.set_event_loop_policy import set_event_loop_policy
 from waypoint.routers import sse
 from waypoint.services.dependency_injection.container import Container
 from waypoint.services.nats_service import NatsEventsProcessor
+
+set_event_loop_policy()
 
 logger = get_logger(__name__)
 

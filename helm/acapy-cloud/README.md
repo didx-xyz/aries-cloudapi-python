@@ -110,9 +110,9 @@ Each component has its own set of specific parameters defined in their respectiv
 
 The chart deploys several interconnected components:
 
-- **Governance Agent**: Manages the overall governance of the system
-- **Multitenant Agent**: Handles multiple tenant operations
-- **Endorser**: Manages transaction endorsements
+- **Governance Agent**: Manages the overall governance of the system (endorsing transactions and creating credential schemas)
+- **Multitenant Agent**: Manages all tenant operations
+- **Endorser**: Manages endorsement of ledger operations
 - **Ledger Browser**: Provides a web interface for ledger exploration
 - **Trust Registry**: Maintains the trust framework
 - **Tails Server**: Manages revocation tails files

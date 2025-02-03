@@ -93,7 +93,7 @@ def setup_pgadmin(namespace, ingress_domain):
 def setup_nats(namespace):
     print(color.green("Installing NATS..."))
 
-    chart_dir = "./tilt/acapy-cloud/nats"
+    chart_dir = "./helm/nats"
     values_file = chart_dir + "/values.yaml"
 
     ## Setup NATS

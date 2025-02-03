@@ -16,7 +16,11 @@ from app.services.onboarding.util.set_endorser_metadata import (
     set_endorser_info,
     set_endorser_role,
 )
-from shared import ACAPY_ENDORSER_ALIAS, ISSUER_DID_ENDORSE_TIMEOUT
+from shared import (
+    ACAPY_ENDORSER_ALIAS,
+    ISSUER_DID_ENDORSE_TIMEOUT,
+    ISSUER_WAIT_RETRY_DELAY,
+)
 
 
 async def create_connection_with_endorser(
@@ -209,7 +213,7 @@ async def wait_endorser_connection_completed(
     invitation_msg_id: str,
     logger: Logger,
     max_attempts: int = 30,
-    retry_delay: float = 0.5,
+    retry_delay: float = ISSUER_WAIT_RETRY_DELAY,
 ) -> ConnRecord:
     attempt = 0
 
@@ -256,7 +260,7 @@ async def wait_transactions_endorsed(
     issuer_connection_id: str,
     logger: Logger,
     max_attempts: int = ISSUER_DID_ENDORSE_TIMEOUT,
-    retry_delay: float = 1.0,
+    retry_delay: float = ISSUER_WAIT_RETRY_DELAY,
 ) -> None:
     attempt = 0
 

@@ -68,50 +68,32 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          [
-            d-cloud/ledger-nodes,
-            d-cloud/ledger-browser,
-            d-cloud/tails-server,
-            d-cloud/governance-agent,
-            d-cloud/trust-registry,
-            d-cloud/multitenant-web,
-            d-cloud/governance-web,
-            d-cloud/tenant-web,
-            d-cloud/public-web,
-            d-cloud/multitenant-agent,
-            d-cloud/endorser,
-            d-cloud/pytest,
-            d-cloud/waypoint,
-          ]
+          - d-cloud/endorser
+          - d-cloud/governance-agent
+          - d-cloud/governance-web # Can be deduplicated (merge with all `-web` images)
+          - d-cloud/ledger-browser # Can be deduplicated (merge with ledger-nodes)
+          - d-cloud/ledger-nodes # Can be deduplicated (merge with ledger-browser)
+          - d-cloud/multitenant-agent
+          - d-cloud/multitenant-web # Can be deduplicated (merge with all `-web` images)
+          - d-cloud/public-web # Can be deduplicated (merge with all `-web` images)
+          - d-cloud/pytest
+          - d-cloud/tails-server
+          - d-cloud/tenant-web # Can be deduplicated (merge with all `-web` images)
+          - d-cloud/trust-registry
+          - d-cloud/waypoint
         include:
+          - image: d-cloud/endorser
+            context: .
+            file: dockerfiles/endorser/Dockerfile
+            platforms: linux/amd64,linux/arm64
           - image: d-cloud/governance-agent
             context: .
             file: dockerfiles/agents/Dockerfile.agent
             platforms: linux/amd64 # Pending BBS - linux/arm64
-          - image: d-cloud/trust-registry
-            context: .
-            file: dockerfiles/trustregistry/Dockerfile
-            platforms: linux/amd64,linux/arm64
-          - image: d-cloud/multitenant-web
-            context: .
-            file: dockerfiles/fastapi/Dockerfile
-            platforms: linux/amd64,linux/arm64
           - image: d-cloud/governance-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: d-cloud/tenant-web
-            context: .
-            file: dockerfiles/fastapi/Dockerfile
-            platforms: linux/amd64,linux/arm64
-          - image: d-cloud/public-web
-            context: .
-            file: dockerfiles/fastapi/Dockerfile
-            platforms: linux/amd64,linux/arm64
-          - image: d-cloud/multitenant-agent
-            context: .
-            file: dockerfiles/agents/Dockerfile.author.agent
-            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: d-cloud/ledger-browser
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
@@ -120,17 +102,33 @@ jobs:
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
             platforms: linux/amd64
-          - image: d-cloud/endorser
+          - image: d-cloud/multitenant-agent
             context: .
-            file: dockerfiles/endorser/Dockerfile
+            file: dockerfiles/agents/Dockerfile.author.agent
+            platforms: linux/amd64 # Pending BBS - linux/arm64
+          - image: d-cloud/multitenant-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+            platforms: linux/amd64,linux/arm64
+          - image: d-cloud/public-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+            platforms: linux/amd64,linux/arm64
+          - image: d-cloud/pytest
+            context: .
+            file: dockerfiles/tests/Dockerfile
             platforms: linux/amd64,linux/arm64
           - image: d-cloud/tails-server
             context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
             file: docker/Dockerfile.tails-server
             platforms: linux/amd64,linux/arm64
-          - image: d-cloud/pytest
+          - image: d-cloud/tenant-web
             context: .
-            file: dockerfiles/tests/Dockerfile
+            file: dockerfiles/fastapi/Dockerfile
+            platforms: linux/amd64,linux/arm64
+          - image: d-cloud/trust-registry
+            context: .
+            file: dockerfiles/trustregistry/Dockerfile
             platforms: linux/amd64,linux/arm64
           - image: d-cloud/waypoint
             context: .

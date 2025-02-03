@@ -60,7 +60,6 @@ jobs:
 
           [settings]
           experimental = true
-          jobs = 1
           pipx_uvx = true
           python_compile = false
 
@@ -85,6 +84,8 @@ jobs:
       # Install dependencies
       - name: Install dependencies with Poetry
         run: mise run poetry:install
+        env:
+          MISE_JOBS: 1
 
       # Run tests and generate coverage report
       - name: Run Tests with Coverage

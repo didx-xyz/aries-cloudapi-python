@@ -1,5 +1,5 @@
 input:
-  label: "acapy_events"
+  label: acapy_events
   nats_jetstream:
     urls:
       - ${NATS_URL:nats://nats:4222}
@@ -13,7 +13,7 @@ input:
       user_credentials_file: ${NATS_AUTH_CREDENTIALS_FILE:""}
 
 pipeline:
-  threads:  ${CLOUD_EVENTS_CREATE_PIPELINE_THREADS:-1}
+  threads: ${CLOUD_EVENTS_CREATE_PIPELINE_THREADS:-1}
   processors:
     - log:
         level: DEBUG

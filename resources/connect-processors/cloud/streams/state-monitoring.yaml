@@ -1,5 +1,5 @@
 input:
-  label: "cloud_events_acapy"
+  label: cloud_events_acapy
   nats_jetstream:
     urls:
       - ${NATS_URL:nats://nats:4222}

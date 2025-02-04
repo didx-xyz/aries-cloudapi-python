@@ -1,0 +1,25 @@
+image:
+  tag: 4
+updateStrategy:
+  type: Recreate
+
+logger:
+  level: info
+  format: json
+  add_timestamp: true
+  static_fields:
+    "@service": connect-cloud
+
+http:
+  debug_endpoints: true
+
+streams:
+  enabled: true
+
+deployment:
+  podLabels:
+    sidecar.istio.io/inject: "false"
+
+env:
+  - name: GOVERNANCE_ACAPY_LABEL
+    value: Governance

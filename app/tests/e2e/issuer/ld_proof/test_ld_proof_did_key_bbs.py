@@ -75,6 +75,7 @@ credential_ = SendCredential(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_key_bbs(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
@@ -136,6 +137,7 @@ async def test_send_jsonld_key_bbs(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_bbs_oob(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
@@ -215,6 +217,7 @@ async def test_send_jsonld_bbs_oob(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -291,6 +294,7 @@ async def test_send_jsonld_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_issue_jsonld_bbs(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -359,6 +363,7 @@ async def test_issue_jsonld_bbs(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_mismatch_sov_bbs(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -385,6 +390,7 @@ async def test_send_jsonld_mismatch_sov_bbs(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_mismatch_bbs_ed(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,

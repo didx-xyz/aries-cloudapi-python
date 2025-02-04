@@ -10,6 +10,7 @@ CONNECTIONS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_use_public_did(
     faber_client: RichAsyncClient,  # issuer has public did
     meld_co_client: RichAsyncClient,  # also has public did
@@ -54,6 +55,7 @@ async def test_accept_use_public_did(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did

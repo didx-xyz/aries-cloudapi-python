@@ -55,6 +55,7 @@ async def test_rotate_did(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_hangup_did_rotation(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,

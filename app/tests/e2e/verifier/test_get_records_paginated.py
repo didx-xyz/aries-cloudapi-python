@@ -18,6 +18,7 @@ VERIFIER_BASE_PATH = router.prefix
     TestMode.regression_run in TestMode.fixture_params,
     reason="Temporarily skip; existing tests on dev don't clean up old records yet",
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_presentation_exchange_records_paginated(
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,

@@ -24,6 +24,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
         (None, None),
     ],
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_proof_model_failures(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_acapy_client: AcaPyClient,

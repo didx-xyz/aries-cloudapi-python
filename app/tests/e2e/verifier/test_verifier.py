@@ -68,6 +68,7 @@ async def test_send_proof_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_proof_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
@@ -225,6 +226,7 @@ async def test_reject_proof_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_proof_and_get_proofs(
     acme_and_alice_connection: AcmeAliceConnect,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
@@ -409,6 +411,7 @@ async def test_delete_proof(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,
@@ -465,6 +468,7 @@ async def test_get_credentials_for_request(
 @pytest.mark.parametrize(
     "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_proof_request_verifier_has_issuer_role(
     meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     meld_co_credential_definition_id: str,
@@ -539,6 +543,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 @pytest.mark.anyio
 @pytest.mark.parametrize("acme_save_exchange_record", [None, False, True])
 @pytest.mark.parametrize("alice_save_exchange_record", [None, False, True])
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_saving_of_presentation_exchange_records(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     credential_definition_id: str,
@@ -645,6 +650,7 @@ async def test_saving_of_presentation_exchange_records(
     TestMode.clean_run in TestMode.fixture_params,
     reason="Run only in regression mode",
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_regression_proof_valid_credential(
     get_or_issue_regression_cred_valid: ReferentCredDef,
     acme_client: RichAsyncClient,

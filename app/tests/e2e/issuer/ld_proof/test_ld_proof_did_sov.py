@@ -73,6 +73,7 @@ credential_ = SendCredential(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_credential_sov(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -138,6 +139,7 @@ async def test_send_jsonld_credential_sov(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_oob_sov(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -208,6 +210,7 @@ async def test_send_jsonld_oob_sov(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_request_sov(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -285,6 +288,7 @@ async def test_send_jsonld_request_sov(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_issue_jsonld_sov(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,

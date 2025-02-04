@@ -91,6 +91,7 @@ runs:
       if: steps.pytest.outcome == 'success'
       shell: bash
       run: |
+        sleep 10
         while true; do
           # Check if the job is complete or failed
           COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')

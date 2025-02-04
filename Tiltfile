@@ -80,7 +80,7 @@ cmd_button(
     ],
 )
 
-# Setup CloudAPI
+# Setup acapy-cloud
 build_enabled = not cfg.get("no-build")
 expose = cfg.get("expose")
 setup_cloudapi(build_enabled, expose)

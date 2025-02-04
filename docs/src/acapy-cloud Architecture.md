@@ -1,6 +1,6 @@
-# Overview of Aries Cloud API Architecture
+# Overview of acapy-cloud Architecture
 
-This document provides a brief overview of the Aries Cloud API Architecture, focusing on the two key components:
+This document provides a brief overview of the acapy-cloud Architecture, focusing on the two key components:
 the Admin Agent and the Multi-tenant Agent.
 
 ## Admin Agent

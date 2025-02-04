@@ -76,11 +76,11 @@ secretData:
   LEDGER_SEED: 000000000000000000000000Trustee1
 
 env:
+  LOG_LEVEL: info
   MAX_FETCH: 50000
   RESYNC_TIME: 120
   REGISTER_NEW_DIDS: True
   LEDGER_INSTANCE_NAME: Indy Ledger Browser
-  LOG_LEVEL: info
 
 extraConfigmapNamesForEnvFrom:
   - ledger-nodes-ips

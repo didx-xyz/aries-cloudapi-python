@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "cloudapi"
+name = "acapy-cloud"
 version = "4.2.0"
-description = "Main project configuration for cloudapi"
-authors = ["Mourits de Beer <ff137@proton.me>"]
+description = "Main project configuration for acapy-cloud"
+authors = [
+  "Mourits de Beer <mourits.debeer@didx.co.za>",
+  "Cloete du Preez <cloete.dupreez@didx.co.za>",
+]
 package-mode = false
 
 [tool.coverage.run]

@@ -36,19 +36,19 @@ from shared.util.set_event_loop_policy import set_event_loop_policy
 
 set_event_loop_policy()
 
-OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
+OPENAPI_NAME = os.getenv("OPENAPI_NAME", "acapy-cloud")
 ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
-cloud_api_docs_description = """
-Welcome to the Aries CloudAPI Python project!
+acapy_cloud_docs_description = f"""
+Welcome to {OPENAPI_NAME}!
 
 For detailed guidance on using the API, please visit our official documentation:
-https://www.didx.co.za/ssi-dev-portal/docs/Welcome.
+https://www.didx.co.za/acapy-cloud/index.html
 """
 
-default_docs_description = """
-Welcome to the Aries CloudAPI Python project.
+default_docs_description = f"""
+Welcome to {OPENAPI_NAME}!
 """
 
 logger = get_logger(__name__)
@@ -87,9 +87,9 @@ def routes_for_role(role: str) -> list:
         return []
 
 
-def cloud_api_description(role: str) -> str:
+def acapy_cloud_description(role: str) -> str:
     if role in ("governance", "tenant", "tenant-admin", "*"):
-        return cloud_api_docs_description
+        return acapy_cloud_docs_description
     else:
         return default_docs_description
 
@@ -99,7 +99,7 @@ def create_app() -> FastAPI:
         root_path=ROOT_PATH,
         title=OPENAPI_NAME,
         version=PROJECT_VERSION,
-        description=cloud_api_description(ROLE),
+        description=acapy_cloud_description(ROLE),
         debug=debug,
         redoc_url=None,
         docs_url=None,

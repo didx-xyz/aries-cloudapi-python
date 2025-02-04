@@ -105,6 +105,7 @@ secretData:
   ACAPY_TENANT_AGENT_API_KEY: adminApiKey
 
 env:
+  LOG_LEVEL: info
   ACAPY_GOVERNANCE_AGENT_URL: http://governance-agent:3021
   ACAPY_TENANT_AGENT_URL: http://multitenant-agent:3021
   TRUST_REGISTRY_URL: http://trust-registry:8000

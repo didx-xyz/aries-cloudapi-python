@@ -4,7 +4,7 @@
 
 The recommended and most efficient way to consume events is through our NATS implementation. NATS provides a robust,
 scalable solution for event streaming and processing. For detailed information about consuming events from our NATS implementation,
-please refer to this document: [NATS](NATS.md).
+please refer to this document: [NATS](./NATS.md).
 
 ## Alternative: Waypoint Service
 

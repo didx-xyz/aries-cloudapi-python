@@ -8,9 +8,10 @@ from fastapi.responses import ORJSONResponse
 
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import (
+    OPENAPI_NAME,
+    acapy_cloud_description,
+    acapy_cloud_docs_description,
     app,
-    cloud_api_description,
-    cloud_api_docs_description,
     create_app,
     default_docs_description,
     read_openapi_yaml,
@@ -27,7 +28,7 @@ def test_create_app():
     with patch("os.getenv") as mock_getenv:
         mock_getenv.return_value = "False"  # Mock the 'prod' environment variable
         created_app = create_app()
-        assert created_app.title == "OpenAPI"
+        assert created_app.title == OPENAPI_NAME
 
         # Verifying that all routes are included
         routes = [route.path for route in created_app.routes]
@@ -54,16 +55,16 @@ def test_routes_for_role(role, expected):
 @pytest.mark.parametrize(
     "role, expected",
     [
-        ("governance", cloud_api_docs_description),
-        ("tenant", cloud_api_docs_description),
-        ("tenant-admin", cloud_api_docs_description),
-        ("*", cloud_api_docs_description),
+        ("governance", acapy_cloud_docs_description),
+        ("tenant", acapy_cloud_docs_description),
+        ("tenant-admin", acapy_cloud_docs_description),
+        ("*", acapy_cloud_docs_description),
         ("public", default_docs_description),
         ("unknown", default_docs_description),
     ],
 )
 def test_description_for_roles(role, expected):
-    assert cloud_api_description(role) == expected
+    assert acapy_cloud_description(role) == expected
 
 
 def test_read_openapi_yaml():

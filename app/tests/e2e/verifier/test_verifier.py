@@ -226,7 +226,7 @@ async def test_reject_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group_3")
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_proof_and_get_proofs(
     acme_and_alice_connection: AcmeAliceConnect,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
@@ -468,7 +468,7 @@ async def test_get_credentials_for_request(
 @pytest.mark.parametrize(
     "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
-@pytest.mark.xdist_group(name="issuer_test_group_4")
+@pytest.mark.xdist_group(name="issuer_test_group_3")
 async def test_accept_proof_request_verifier_has_issuer_role(
     meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     meld_co_credential_definition_id: str,
@@ -543,7 +543,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 @pytest.mark.anyio
 @pytest.mark.parametrize("acme_save_exchange_record", [None, False, True])
 @pytest.mark.parametrize("alice_save_exchange_record", [None, False, True])
-@pytest.mark.xdist_group(name="issuer_test_group_3")
+@pytest.mark.xdist_group(name="issuer_test_group_4")
 async def test_saving_of_presentation_exchange_records(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     credential_definition_id: str,

@@ -18,7 +18,7 @@ VERIFIER_BASE_PATH = router.prefix
     TestMode.regression_run in TestMode.fixture_params,
     reason="Temporarily skip; existing tests on dev don't clean up old records yet",
 )
-@pytest.mark.xdist_group(name="issuer_test_group_4")
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_limit_and_offset(
     issue_alice_creds: List[CredentialExchange],  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,

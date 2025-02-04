@@ -14,9 +14,6 @@ from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
-# Apply the marker to all tests in this module
-pytestmark = pytest.mark.xdist_group(name="issuer_test_group_4")
-
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
@@ -29,6 +26,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
     TestMode.regression_run in TestMode.fixture_params,
     reason="Proving revoked credentials is currently non-deterministic",
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_proof_revoked_credential(
     revoke_alice_creds_and_publish: List[  # pylint: disable=unused-argument
         CredentialExchange
@@ -122,6 +120,7 @@ async def test_proof_revoked_credential(
     TestMode.clean_run in TestMode.fixture_params,
     reason="Run only in regression mode",
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_regression_proof_revoked_credential(
     get_or_issue_regression_cred_revoked: ReferentCredDef,
     acme_client: RichAsyncClient,

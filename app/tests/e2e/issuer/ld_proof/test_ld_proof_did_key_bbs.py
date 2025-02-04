@@ -20,7 +20,7 @@ from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook
 from shared import RichAsyncClient
 
 # Apply the marker to all tests in this module
-pytestmark = pytest.mark.xdist_group(name="issuer_test_group_2")
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group_3")
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix

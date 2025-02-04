@@ -821,7 +821,7 @@ jobs:
   k6:
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     # Temporarily disable k6
-    if: !always()
+    if: false
     name: K6
     environment:
       name: dev

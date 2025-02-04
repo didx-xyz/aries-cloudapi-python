@@ -91,7 +91,7 @@ runs:
             -f ./helm/acapy-cloud.yaml.gotmpl \
             --state-values-set image.tag=${{ inputs.image-tag }} \
             --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
-            --state-values-set pgProxyEnabled=${{ inputs.clean-start }}
+            --state-values-set pgProxyEnabled=${{ inputs.clean-start == 'false' }}
         helm-plugins: ${{ inputs.helmfile-plugins }}
         helmfile-version: ${{ inputs.helmfile-version }}
         helm-version: ${{ inputs.helm-version }}

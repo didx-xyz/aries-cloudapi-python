@@ -119,6 +119,7 @@ runs:
       env:
         JOB_NAME: acapy-test
         NAMESPACE: ${{ inputs.namespace }}
+        PYTEST_COMPLETIONS: ${{ inputs.pytest-completions }}
 
     - name: Wait for pytest regression and print logs
       if: steps.pytest-regression.outcome == 'success'

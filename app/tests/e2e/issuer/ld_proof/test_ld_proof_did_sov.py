@@ -99,13 +99,12 @@ async def test_send_jsonld_credential_sov(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
 
     try:
         thread_id = data["thread_id"]
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
         assert await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
@@ -164,13 +163,12 @@ async def test_send_jsonld_oob_sov(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
-    thread_id = data["thread_id"]
 
     try:
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
+        thread_id = data["thread_id"]
         invitation_response = await faber_client.post(
             OOB_BASE_PATH + "/create-invitation",
             json={

@@ -97,13 +97,12 @@ async def test_send_jsonld_key_bbs(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
 
     try:
         thread_id = data["thread_id"]
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
         assert await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
@@ -196,12 +195,11 @@ async def test_send_jsonld_bbs_oob(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
 
     try:
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
         assert await check_webhook_state(
             client=alice_member_client,
             topic="credentials",

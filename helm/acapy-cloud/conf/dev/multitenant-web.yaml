@@ -114,7 +114,7 @@ env:
   ACAPY_ENDORSER_ALIAS: endorser
   ROLE: tenant-admin
   ROOT_PATH: /tenant-admin
-  ENABLE_SERIALIZE_LOGS: "FALSE"
+  ENABLE_SERIALIZE_LOGS: "TRUE"
   GOVERNANCE_ACAPY_LABEL: Governance
 
 podSecurityContext:

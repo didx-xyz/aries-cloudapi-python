@@ -77,7 +77,7 @@ env:
   LOG_LEVEL: info
   OPENAPI_NAME: waypoint
   PYTHONPATH: "/"
-  ENABLE_SERIALIZE_LOGS: "FALSE"
+  ENABLE_SERIALIZE_LOGS: "TRUE"
   NATS_CREDS_FILE: "" # NATS in Local dev has no auth
   NATS_SERVER: nats://nats:4222
   NATS_STATE_SUBJECT: cloudapi.aries.state_monitoring

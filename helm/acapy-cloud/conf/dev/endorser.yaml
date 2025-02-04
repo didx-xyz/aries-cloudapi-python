@@ -67,7 +67,7 @@ env:
   TRUST_REGISTRY_URL: http://trust-registry:8000
 
   GOVERNANCE_ACAPY_LABEL: Governance
-  ENABLE_SERIALIZE_LOGS: "FALSE"
+  ENABLE_SERIALIZE_LOGS: "TRUE"
 
 podSecurityContext:
   fsGroup: 65534

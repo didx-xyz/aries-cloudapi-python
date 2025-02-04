@@ -114,7 +114,7 @@ env:
   # ACAPY_ENDORSER_ALIAS: endorser
   ROLE: public
   ROOT_PATH: /public
-  ENABLE_SERIALIZE_LOGS: "FALSE"
+  ENABLE_SERIALIZE_LOGS: "TRUE"
 
 podSecurityContext:
   fsGroup: 65534

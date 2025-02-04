@@ -1,4 +1,7 @@
-# Bootstrapping a Trust Ecosystem with acapy-cloud
+# Bootstrapping the Trust Ecosystem with acapy-cloud
+
+> [!NOTE]
+> ⚡ The steps described here are now automated during startup. You can skip this guide under a vanilla setup.
 
 ## 1. Prerequisites
 

@@ -52,7 +52,6 @@ To enable this, the project includes essential supporting services:
 For detailed documentation, please refer to the [docs folder](docs/src/README.md). We recommend:
 
 - [Quick Start Guide](docs/src/Quick%20Start%20Guide.md) - Get up and running quickly
-- [Bootstrap Trust Ecosystem](docs/src/Bootstrap%20Trust%20Ecosystem.md) - Enable writing to the local ledger
 - [Governance as Code](docs/src/Governance%20as%20Code.md) - Understand the governance and trust registry model
 - [Common Steps](docs/src/Common%20Steps.md) - Quick steps for creating tenants, issuing credentials, and requesting proofs
 - [Example Flows](docs/src/Example%20Flows.md) - More involved, step-by-step examples

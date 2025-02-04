@@ -11,8 +11,7 @@
 
 ## First Steps
 
-After spinning up the containers following the [Quick Start Guide](./Quick%20Start%20Guide.md) and
-[Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md), you are ready to rumble.
+After spinning up the containers following the [Quick Start Guide](./Quick%20Start%20Guide.md), you are ready to rumble.
 
 Navigating to the **Swagger UI** endpoints:
 
@@ -205,7 +204,6 @@ creation returns the wallet creation response, including the wallet id and JWT f
 
 - [acapy-cloud Architecture Overview](./acapy-cloud%20Architecture.md)
 - [Quick Start Guide](./Quick%20Start%20Guide.md)
-- [Bootstrap the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
 - [Common Steps](./Common%20Steps.md)
 - [Example Flows](./Example%20Flows.md)
 - [Governance as Code](./Governance%20as%20Code.md)

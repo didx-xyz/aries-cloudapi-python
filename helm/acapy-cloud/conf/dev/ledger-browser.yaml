@@ -14,7 +14,7 @@ podLabels:
   sidecar.istio.io/inject: "false"
 
 image:
-  name: d-cloud/ledger-browser
+  name: d-cloud/ledger-nodes
   pullPolicy: Always
   tag: latest
 

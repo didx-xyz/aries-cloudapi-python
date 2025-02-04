@@ -70,8 +70,7 @@ jobs:
           - d-cloud/endorser
           - d-cloud/governance-agent
           - d-cloud/governance-web # Can be deduplicated (merge with all `-web` images)
-          - d-cloud/ledger-browser # Can be deduplicated (merge with ledger-nodes)
-          - d-cloud/ledger-nodes # Can be deduplicated (merge with ledger-browser)
+          - d-cloud/ledger-nodes
           - d-cloud/multitenant-agent
           - d-cloud/multitenant-web # Can be deduplicated (merge with all `-web` images)
           - d-cloud/public-web # Can be deduplicated (merge with all `-web` images)
@@ -94,10 +93,6 @@ jobs:
             context: .
             file: dockerfiles/fastapi/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: d-cloud/ledger-browser
-            context: https://github.com/bcgov/von-network.git#v1.8.0
-            file: Dockerfile
-            platforms: linux/amd64
           - image: d-cloud/ledger-nodes
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile

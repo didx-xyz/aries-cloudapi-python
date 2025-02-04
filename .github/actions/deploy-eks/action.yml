@@ -57,7 +57,7 @@ runs:
       run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
 
     - name: Helmfile Destroy
-      if: ${{ inputs.clean-start }} == 'true'
+      if: inputs.clean-start == 'true'
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
       with:
@@ -82,7 +82,6 @@ runs:
         kubectl -n ${{ inputs.namespace }} rollout restart deploy/connect-cloud || true
 
     - name: Helmfile Apply
-      if: ${{ inputs.clean-start }} == 'true'
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
       with:

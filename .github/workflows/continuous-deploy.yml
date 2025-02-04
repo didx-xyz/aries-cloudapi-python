@@ -506,8 +506,8 @@ jobs:
           image-tag: ${{ needs.build.outputs.image_version }}
           namespace: acapy-cloud-dev
           pytest-completions: 1
-          run-regression-tests: ${{ github.event.inputs.run-regression-tests || false }}
-          run-tests: ${{ github.event.inputs.run-tests || false }}
+          run-regression-tests: ${{ github.event.inputs.run-regression-tests || true }}
+          run-tests: ${{ github.event.inputs.run-tests || true }}
   k6:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: K6

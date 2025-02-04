@@ -13,7 +13,7 @@ from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
 # Apply the marker to all tests in this module
-pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group_4")
 
 CREDENTIALS_BASE_PATH = router.prefix
 

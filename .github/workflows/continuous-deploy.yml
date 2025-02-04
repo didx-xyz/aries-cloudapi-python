@@ -41,10 +41,6 @@ on:
       - "!docs/**" # Ignore changes in the docs folder
       - "!**.md" # Ignore changes to any markdown file
 
-concurrency:
-  group: cicd
-  cancel-in-progress: false
-
 permissions: {}
 
 env:
@@ -59,6 +55,10 @@ jobs:
     permissions:
       packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: docker-build-${{ github.ref_name }}
+      cancel-in-progress: true
 
     outputs:
       image_version: ${{ steps.meta.outputs.version }}
@@ -80,6 +80,7 @@ jobs:
           - d-cloud/tenant-web # Can be deduplicated (merge with all `-web` images)
           - d-cloud/trust-registry
           - d-cloud/waypoint
+          - xk6
         include:
           - image: d-cloud/endorser
             context: .
@@ -133,6 +134,10 @@ jobs:
             context: .
             file: dockerfiles/waypoint/Dockerfile
             platforms: linux/amd64,linux/arm64
+          - image: xk6
+            context: .
+            file: ./scripts/k6/Dockerfile
+            platforms: linux/amd64
 
     steps:
       - name: Check out code
@@ -184,6 +189,11 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: local-test-${{ github.ref_name }}
+      cancel-in-progress: true
+
     outputs:
       test_success: ${{ steps.test.outputs.test_success }}
 
@@ -434,6 +444,10 @@ jobs:
       checks: write # Required for action-junit-report
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
 
+    concurrency:
+      group: deploy-test-eks-${{ github.ref_name }}
+      cancel-in-progress: false
+
     timeout-minutes: 30
 
     steps:
@@ -458,42 +472,6 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
 
-      - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.CHARTS_PAT }}" | gh auth login --with-token
-
-      - name: Set branch name
-        id: set_branch_name
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "BRANCH_NAME=${HEAD_REF}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
-          fi
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-
-      - name: Check if branch exists
-        id: check_branch
-        run: |
-          DEFAULT_BRANCH=master
-          SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//%2F/g')
-          if gh api "repos/didx-xyz/charts/git/ref/heads/$SANITIZED_BRANCH_NAME" &> /dev/null; then
-            echo "branch_exists=true" >> $GITHUB_ENV
-            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-          else
-            echo "branch_exists=false" >> $GITHUB_ENV
-            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
-          fi
-
-      - name: Checkout Charts
-        uses: actions/checkout@v4
-        with:
-          repository: didx-xyz/charts
-          token: ${{ secrets.CHARTS_PAT }}
-          path: charts
-          ref: ${{ env.branch_name }}
-          persist-credentials: false
-
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client
 
@@ -504,134 +482,25 @@ jobs:
           role-to-assume: arn:aws:iam::402177810328:role/cicd
           role-session-name: github-cicd
 
-      - name: Update Kubeconfig
-        run: aws eks update-kubeconfig --name cloudapi-dev
-
       - uses: tailscale/github-action@main
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: ${{ env.TAILSCALE_VERSION }}
 
-      - name: Helmfile Destroy
-        id: destroy_deployments
-        if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v2.0.2
+      - name: Deploy to EKS
+        uses: ./.github/actions/deploy-eks
         with:
-          helmfile-args: |
-            destroy \
-              --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl
-          helm-plugins: |
-            https://github.com/databus23/helm-diff
-          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          aws-region: af-south-1
+          aws-role-arn: arn:aws:iam::402177810328:role/cicd
+          aws-role-session-name: github-cicd
+          clean-start: ${{ github.event.inputs.run-reset-deployments }}
+          cluster-name: cloudapi-dev
+          environment: ${{ vars.ENVIRONMENT }}
           helm-version: ${{ env.HELM_VERSION }}
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      - name: Drop DBs
-        id: drop_dbs
-        if: github.event.inputs.run-reset-deployments == 'true'
-        env:
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER}}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_EXCLUDE: ${{ secrets.DB_EXCLUDE }}
-          GA_ACAPY_WALLET_NAME: ${{ secrets.GA_ACAPY_WALLET_NAME }}
-          MT_ACAPY_WALLET_NAME: ${{ secrets.MT_ACAPY_WALLET_NAME }}
-          TRUST_REGISTRY_DB_OWNER: ${{ secrets.TRUST_REGISTRY_DB_OWNER }}
-        run: |
-          bash ./scripts/aurora-delete.sh -o $GA_ACAPY_WALLET_NAME -d
-          bash ./scripts/aurora-delete.sh -o $MT_ACAPY_WALLET_NAME -d
-          bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -d
-          bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
-
-      - name: Reset NATS
-        if: github.event.inputs.run-reset-deployments == 'true'
-        env:
-          NAMESPACE: dev-cloudapi
-        run: |
-          kubectl get secret \
-            -n ${NAMESPACE} \
-            ${{ secrets.NATS_SECRET_NAME }} \
-            -o jsonpath='{.data.cloudapi-nats-admin\.creds}' \
-                | base64 -d > nats.creds
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              stream rm cloudapi_aries_events -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              stream rm acapy_events -f
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-              stream rm cloudapi_aries_state_monitoring -f
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            stream add cloudapi_aries_events --subjects "cloudapi.aries.events.*.*" \
-            --defaults \
-            --storage file \
-            --replicas 3 \
-            --compression s2
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            stream add acapy_events --subjects "acapy.>" \
-            --defaults \
-            --storage file \
-            --replicas 3 \
-            --compression s2
-
-          nats --creds ./nats.creds \
-            --server ${{ secrets.NATS_URL }} \
-            stream add cloudapi_aries_state_monitoring --subjects "cloudapi.aries.state_monitoring.*.*.>" \
-            --defaults \
-            --storage file \
-            --replicas 3 \
-            --compression s2 \
-            --retention limits \
-            --discard old \
-            --max-age 1m \
-            --dupe-window 1m \
-            --max-msgs-per-subject 1000
-
-          rm -f ./nats.creds
-
-      - name: Helmfile Apply # Apply default Helmfile (without RDS proxy) when resetting deployments.
-        if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v2.0.2
-        with:
-          helmfile-args: |
-            apply \
-              --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl \
-              --state-values-set image.tag=${{ env.IMAGE_TAG }} \
-              --state-values-set image.registry=ghcr.io/${{ github.repository_owner }}
-          helm-plugins: |
-            https://github.com/databus23/helm-diff
+          helmfile-plugins: https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
-          helm-version: ${{ env.HELM_VERSION }}
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      - name: Helmfile Apply (RDS Proxy)
-        if: github.event.inputs.run-reset-deployments != 'true'
-        uses: helmfile/helmfile-action@v2.0.2
-        with:
-          helmfile-args: |
-            apply \
-              --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml.gotmpl \
-              --state-values-set image.tag=${{ env.IMAGE_TAG }} \
-              --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --state-values-set rdsProxyEnabled=true
-          helm-plugins: |
-            https://github.com/databus23/helm-diff
-          helmfile-version: ${{ env.HELMFILE_VERSION }}
-          helm-version: ${{ env.HELM_VERSION }}
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+          image-tag: ${{ needs.build.outputs.image_version }}
+          namespace: acapy-cloud-${{ vars.ENVIRONMENT }}
 
   test-eks:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
@@ -671,44 +540,6 @@ jobs:
         env:
           MISE_JOBS: 4
 
-      - name: Authenticate GitHub CLI
-        run: echo "${PAT}" | gh auth login --with-token
-        env:
-          PAT: ${{ secrets.CHARTS_PAT }}
-
-      - name: Set branch name
-        id: set_branch_name
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "BRANCH_NAME=${HEAD_REF}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
-          fi
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-
-      - name: Check if branch exists
-        id: check_branch
-        run: |
-          DEFAULT_BRANCH=master
-
-          if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
-            echo "branch_exists=true" >> $GITHUB_ENV
-            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-          else
-            echo "branch_exists=false" >> $GITHUB_ENV
-            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
-          fi
-
-      - name: Checkout Charts
-        uses: actions/checkout@v4
-        with:
-          repository: didx-xyz/charts
-          token: ${{ secrets.CHARTS_PAT }}
-          path: charts
-          ref: ${{ env.branch_name }}
-          persist-credentials: false
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -732,12 +563,12 @@ jobs:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-capi-test.yaml \
+              -f ./helm/acapy-test.yaml.gotmpl \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --set completions=${{ env.PYTEST_COMPLETIONS }} \
-              --state-values-set release=cloudapi-pytest-regression \
-              --set fullnameOverride=cloudapi-pytest-regression \
+              --state-values-set release=acapy-test-regression \
+              --set fullnameOverride=acapy-test-regression \
               --set env.RUN_REGRESSION_TESTS="true" \
               --state-values-set regressionEnabled=true
           helm-plugins: |
@@ -755,12 +586,12 @@ jobs:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-capi-test.yaml \
+              -f ./helm/acapy-test.yaml.gotmpl \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --set completions=${{ env.PYTEST_COMPLETIONS }} \
-              --state-values-set release=cloudapi-pytest-regression \
-              --set fullnameOverride=cloudapi-pytest-regression \
+              --state-values-set release=acapy-test-regression \
+              --set fullnameOverride=acapy-test-regression \
               --set env.RUN_REGRESSION_TESTS="true" \
               --set env.FAIL_ON_RECREATING_FIXTURES="true" \
               --state-values-set regressionEnabled=true
@@ -779,12 +610,12 @@ jobs:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-capi-test.yaml \
+              -f ./helm/acapy-test.yaml.gotmpl \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --set completions=${{ env.PYTEST_COMPLETIONS }} \
-              --state-values-set release=cloudapi-pytest \
-              --set fullnameOverride=cloudapi-pytest
+              --state-values-set release=acapy-test \
+              --set fullnameOverride=acapy-test
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
@@ -820,8 +651,8 @@ jobs:
           done
 
         env:
-          JOB_NAME: cloudapi-pytest
-          NAMESPACE: dev-cloudapi
+          JOB_NAME: acapy-test
+          NAMESPACE: acapy-cloud-dev
 
       - name: Wait for pytest regression and print logs
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
@@ -851,8 +682,8 @@ jobs:
           done
 
         env:
-          JOB_NAME: cloudapi-pytest-regression
-          NAMESPACE: dev-cloudapi
+          JOB_NAME: acapy-test-regression
+          NAMESPACE: acapy-cloud-dev
           PYTEST_COMPLETIONS: ${{ env.PYTEST_COMPLETIONS }}
 
       - name: Copy k8s pytest results
@@ -904,14 +735,14 @@ jobs:
 
           echo "Done!"
         env:
-          PVC_NAME: cloudapi-pytest
-          PVC_NAME_REGRESSION: cloudapi-pytest-regression
+          PVC_NAME: acapy-test
+          PVC_NAME_REGRESSION: acapy-test-regression
           POD_NAME: pytest-results-pod
           CONTAINER_IMAGE: busybox
           MOUNT_PATH: /mnt
           LOCAL_PATH: ./pytest
           LOCAL_PATH_REGRESSION: ./pytest-regression
-          NAMESPACE: dev-cloudapi
+          NAMESPACE: acapy-cloud-dev
           OUTPUT_FILE: test_output.xml
           COVERAGE_FILE: test_coverage.txt
 
@@ -966,8 +797,8 @@ jobs:
           helmfile-args: |
             destroy \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-capi-test.yaml \
-              --state-values-set release=cloudapi-pytest
+              -f ./helm/acapy-test.yaml.gotmpl \
+              --state-values-set release=acapy-test
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
@@ -982,8 +813,8 @@ jobs:
           helmfile-args: |
             destroy \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-capi-test.yaml \
-              --state-values-set release=cloudapi-pytest-regression
+              -f ./helm/acapy-test.yaml.gotmpl \
+              --state-values-set release=acapy-test-regression
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
@@ -998,60 +829,15 @@ jobs:
     needs:
       - build
       - deploy
-    permissions:
-      id-token: write
-      packages: write
     runs-on: ubuntu-latest
 
     timeout-minutes: 10
-
-    outputs:
-      image_version: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          cache-binary: false
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
-
-      - name: Docker Metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/xk6
-          tags: |
-            type=raw,value=latest,enable=${{ github.event.repository.default_branch == github.ref_name }}
-            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
-            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
-            type=ref,event=branch,priority=600
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-
-      - name: Build and push Docker images
-        id: build_image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./scripts/k6/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            type=gha,scope=build-xk6
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/xk6:latest
-          cache-to: type=gha,mode=max,scope=build-xk6
 
       - name: Prepare output directory
         run: mkdir -p ${{ github.workspace }}/scripts/k6/output && chmod 777 ${{ github.workspace }}/scripts/k6/output
@@ -1073,4 +859,4 @@ jobs:
             /scripts/run_tests.sh
         shell: bash
         env:
-          VERSION: ${{ steps.meta.outputs.version }}
+          VERSION: ${{ needs.build.outputs.image_version }}

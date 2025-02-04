@@ -82,10 +82,10 @@ async def create_credential_definition(
         result.credential_definition_state.credential_definition_id
     )
 
-    if result.txn and result.txn.transaction_id:
+    if result.registration_metadata["txn"]:
         await wait_for_transaction_ack(
             aries_controller=aries_controller,
-            transaction_id=result.txn.transaction_id,
+            transaction_id=result.registration_metadata["txn"]["transaction_id"],
             max_attempts=CRED_DEF_ACK_TIMEOUT,
             retry_delay=1,
         )
@@ -122,9 +122,9 @@ async def get_credential_definitions(
 
     response = await handle_acapy_call(
         logger=bound_logger,
-        acapy_call=aries_controller.credential_definition.get_created_cred_defs,
+        acapy_call=aries_controller.anoncreds_credential_definitions.get_credential_definitions,
         issuer_did=issuer_did,
-        cred_def_id=credential_definition_id,
+        # cred_def_id=credential_definition_id,
         schema_id=schema_id,
         schema_issuer_did=schema_issuer_did,
         schema_name=schema_name,
@@ -136,7 +136,7 @@ async def get_credential_definitions(
     get_credential_definition_futures = [
         handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.credential_definition.get_cred_def,
+            acapy_call=aries_controller.anoncreds_credential_definitions.get_credential_definition,
             cred_def_id=credential_definition_id,
         )
         for credential_definition_id in credential_definition_ids

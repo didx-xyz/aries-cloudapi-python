@@ -378,7 +378,7 @@ async def get_credential_definition_by_id(
         bound_logger.debug("Getting credential definition")
         credential_definition = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.credential_definition.get_cred_def,
+            acapy_call=aries_controller.anoncreds_credential_definitions.get_credential_definition,
             cred_def_id=credential_definition_id,
         )
 
@@ -390,7 +390,7 @@ async def get_credential_definition_by_id(
 
         bound_logger.debug("Cast credential definition response to model")
         cloudapi_credential_definition = credential_definition_from_acapy(
-            credential_definition.credential_definition
+            credential_definition
         )
 
         # We need to update the schema_id on the returned credential definition as

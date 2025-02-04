@@ -45,7 +45,7 @@ runs:
 
   steps:
     - name: Helmfile run regression tests
-      if: github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && inputs.run-regression-tests == 'true')
+      if: inputs.run-regression-tests == 'true'
       id: pytest-regression
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
@@ -68,7 +68,7 @@ runs:
         helm-version: ${{ inputs.helm-version }}
 
     - name: Helmfile run pytest
-      if: github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && inputs.run-tests != 'false')
+      if: inputs.run-tests != 'false'
       id: pytest
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2

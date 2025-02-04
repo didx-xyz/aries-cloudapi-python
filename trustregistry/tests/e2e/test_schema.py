@@ -4,8 +4,8 @@ from shared import TRUST_REGISTRY_URL
 from shared.util.rich_async_client import RichAsyncClient
 from trustregistry.registry.registry_schemas import SchemaID, _get_schema_attrs
 
-# Apply the marker to all tests in this module
-pytestmark = pytest.mark.xdist_group(name="schema_test_group")
+# Apply the marker to all tests in this module. Tests must run sequentially in same xdist group.
+pytestmark = pytest.mark.xdist_group(name="trust_registry_test_group")
 
 schema_id = "string:2:string:string"
 updated_schema_id = "string_updated:2:string_updated:string_updated"

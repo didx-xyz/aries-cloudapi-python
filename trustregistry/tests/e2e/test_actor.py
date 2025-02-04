@@ -6,6 +6,9 @@ from app.util.string import random_string
 from shared import TRUST_REGISTRY_URL
 from shared.util.rich_async_client import RichAsyncClient
 
+# Apply the marker to all tests in this module. Tests must run sequentially in same xdist group.
+pytestmark = pytest.mark.xdist_group(name="trust_registry_test_group")
+
 new_actor = {
     "id": "darth-vader",
     "name": "Darth Vader",
@@ -145,23 +148,22 @@ async def test_get_actor():
 
 @pytest.mark.anyio
 async def test_update_actor():
-    test_actor = generate_actor()
     async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.put(
-            f"{TRUST_REGISTRY_URL}/registry/actors/{test_actor['id']}",
-            json=test_actor,
+            f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}",
+            json=new_actor,
         )
         assert response.status_code == 200
-        assert response.json() == test_actor
+        assert response.json() == new_actor
 
         new_actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
         assert new_actors_response.status_code == 200
         new_actors_list = new_actors_response.json()
-        assert test_actor in new_actors_list
+        assert new_actor in new_actors_list
 
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/bad",
-            json=test_actor,
+            json=new_actor,
         )
         assert response.status_code == 400
 

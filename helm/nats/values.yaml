@@ -163,7 +163,7 @@ nats:
     ## If undefined (the default) or set to null, no storageClassName spec is
     ##   set, choosing the default provisioner
     ##
-    storageClass: standard
+    storageClass: ""
     ## @param persistence.size PVC Storage Request for NATS data volume
     ##
     size: 10Gi

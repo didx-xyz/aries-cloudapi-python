@@ -167,4 +167,4 @@ Contributions are welcome! Please read the contributing guidelines in the reposi
 
 ## License
 
-This chart is part of the Aries Cloud API Python project. See the LICENSE file for details.
+This chart is part of the acapy-cloud project. See the LICENSE file for details.

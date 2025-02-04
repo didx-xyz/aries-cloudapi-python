@@ -4,15 +4,15 @@ This document provides a quick overview of the most common steps: creating walle
 and verifying credentials. More detailed descriptions of the different steps can be found in the
 [Example Flows](./Example%20Flows.md) document.
 
-> **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand
+> **Note:** It is always helpful to inspect the Swagger UIs to understand
 the available endpoints, their expected inputs, and the corresponding outputs.
 If requests fail, check the Swagger UI to ensure you've called the correct
-endpoint with the correct data. The Swagger UI is accessible, under a vanilla steup,  at:
+endpoint with the correct data. The Swagger UIs are accessible, under a vanilla setup, at:
 >
-> - **CloudAPI-Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-> - **CloudAPI-Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-> - **CloudAPI-Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
-> - **CloudAPI-Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+> - **Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+> - **Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+> - **Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+> - **Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
 >
 > If you find any model descriptions unclear in the document below, try checking the Swagger UI documentation
 > before opening an issue.
@@ -48,7 +48,7 @@ _Note: This auth string is separated by a dot, so keep that in there._
 Send this to the `/tenant-admin/v1/admin/tenants` endpoint. You can omit the
 roles field altogether or pass "issuer" and/or "verifier". All payloads are
 documented in Swagger, so if in doubt, consult the
-[CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs).
+[Multitenant-Admin docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs).
 
 Creating a tenant with roles will update the trust registry by writing an entry
 for an `actor`, including wallet details and its associated roles.
@@ -69,7 +69,7 @@ them on the trust registry, use the governance role:
    ```
 
    Replace the `ADMIN_API_KEY` with the actual API key. Keep the dot and recall
-   that `governance` is a keyword known to the CloudAPI as a role. It will
+   that `governance` is a keyword known to acapy-cloud as a role. It will
    resolve the correct endpoint and available actions based on the role and
    provided token.
 
@@ -87,7 +87,7 @@ them on the trust registry, use the governance role:
    one, you can use the governance role to create one: see
    [Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)).
    Run the request with the header from 1. and the payload from 2. against the
-   [CloudAPI-Governance URL](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+   [Governance URL](http://cloudapi.127.0.0.1.nip.io/governance/docs)
    and endpoint `/v1/definitions/schemas` (POST method). Upon success, the
    created schema will be returned.
 
@@ -100,7 +100,7 @@ them on the trust registry, use the governance role:
 
    1. Create an invitation using either the issuer or the holder using the
    `/v1/connections/create-invitation` endpoint of the
-   [CloudAPI-Tenant URL](http://cloudapi.127.0.0.1.nip.io/tenant/docs).
+   [Tenant URL](http://cloudapi.127.0.0.1.nip.io/tenant/docs).
    Here, you will also need to authenticate via the header, e.g., using
 
       ```json
@@ -110,11 +110,11 @@ them on the trust registry, use the governance role:
       where the `WALLET_TOKEN` is the bearer token you get from the create
       wallet response for a tenant wallet.
 
-   2. Copy the content `invitation` field from the create invitation response
-   and use it as the payload in the `accept-invitation` endpoint, and post to the
-   CloudAPI using the other entity. To illustrate, if you used the issuer to
-   create the invitation, use the holder for this call and vice versa. Again,
-   register using the headers appropriately.
+   2. Copy the content of the `invitation` field from the create invitation response
+   and use it as the payload in the `/v1/connections/accept-invitation` endpoint.
+   Post to the tenant URL using the other entity. To illustrate, if you used the issuer
+   to create the invitation, use the holder for this call and vice versa. Again,
+   authenticate using the appropriate headers.
 
 5. Issue a credential from issuer to prospect holder
 

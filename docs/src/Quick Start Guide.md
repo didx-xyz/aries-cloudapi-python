@@ -157,10 +157,10 @@ Once the project is running, access various services via their Swagger interface
 
 - **ACA-Py Governance Agent:** [http://governance-agent.cloudapi.127.0.0.1.nip.io](http://governance-agent.cloudapi.127.0.0.1.nip.io)
 - **ACA-Py Multitenant Agent:** [http://multitenant-agent.cloudapi.127.0.0.1.nip.io](http://multitenant-agent.cloudapi.127.0.0.1.nip.io)
-- **CloudAPI-Governance:** [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-- **CloudAPI-Multitenant-Admin:** [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-- **CloudAPI-Public:** [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
-- **CloudAPI-Tenant:** [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- **Governance:** [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- **Multitenant-Admin:** [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- **Public:** [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+- **Tenant:** [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 - **Trust Registry:** [http://trust-registry.cloudapi.127.0.0.1.nip.io/docs](http://trust-registry.cloudapi.127.0.0.1.nip.io/docs)
 - **Waypoint:** [http://waypoint.cloudapi.127.0.0.1.nip.io/docs](http://waypoint.cloudapi.127.0.0.1.nip.io/docs)
 

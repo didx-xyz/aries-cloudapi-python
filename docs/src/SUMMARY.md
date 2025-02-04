@@ -1,6 +1,6 @@
 # Summary
 
-- [Introduction to Aries Cloud API](./README.md)
+- [Introduction to acapy-cloud](./README.md)
 - [Quick Start Guide](./Quick%20Start%20Guide.md)
 - [Trust Registry](./Trust%20Registry.md)
 - [Webhooks/Event Consumption](./Webhooks.md)
@@ -21,4 +21,4 @@
   - [Requested Predicates](./examples/Requested%20Predicates/1.%20Requested%20Predicates.md)
 - [Common Steps](./Common%20Steps.md)
 - [Bootstrap Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
-- [Aries Cloud API Architecture](./Aries%20Cloud%20API%20Architecture.md)
+- [acapy-cloud Architecture](./acapy-cloud%20Architecture.md)

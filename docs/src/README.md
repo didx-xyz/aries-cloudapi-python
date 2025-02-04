@@ -1,11 +1,11 @@
-# Introduction to Aries Cloud API
+# Introduction to acapy-cloud
 
 ## Trust Ecosystem in a Box
 
 ## Table of Contents
 
 1. [First Step and Overview](#first-steps)
-2. [Cloud API Roles](#cloudapi-roles)
+2. [acapy-cloud Roles](#acapy-cloud-roles)
 3. [Workflows and Roles Overview](#workflows-and-roles-overview)
 4. [Further Reading](#further-reading)
 
@@ -16,16 +16,16 @@ After spinning up the containers following the [Quick Start Guide](./Quick%20Sta
 
 Navigating to the **Swagger UI** endpoints:
 
-- **CloudAPI-Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
-- **CloudAPI-Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
-- **CloudAPI-Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
-- **CloudAPI-Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
+- **Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
+- **Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
+- **Tenant** (Acting as a tenant) -> [http://cloudapi.127.0.0.1.nip.io/tenant/docs](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
+- **Public** (Interface to read the trust registry) -> [http://cloudapi.127.0.0.1.nip.io/public/docs](http://cloudapi.127.0.0.1.nip.io/public/docs)
 
 provides a good overview of the intended functionalities.
 You'll find endpoints for admin actions (managing wallets) and tenant actions (for holders, issuers and verifiers).
 Additionally, there are [trust registry](./Trust%20Registry.md) and [webhooks](./Webhooks.md) endpoints.
 
-> NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned
+> NOTE: Regardless of the multitude of containers and mechanisms running in **acapy-cloud**, its aforementioned
 > Swagger UI's are the main interaction points intended between clients and the stack. This should be the only
 > endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly
 > interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing
@@ -51,7 +51,7 @@ You can find the container name in the docker-compose.yaml.
 
 ### Authentication
 
-Authentication is handled by the CloudAPI, and from a client perspective it's kept simple and convenient. Either, via
+Authentication is handled by acapy-cloud, and from a client perspective it's kept simple and convenient. Either, via
 the Swagger UI auth (padlock button in UI) or via the header data of your client specifying an `x-api-key`. Regardless
 of whether you use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
 
@@ -61,7 +61,7 @@ This means the header has the format `'x-api-key: {role}.{key/token}`, which wou
 e.g., `'x-api-key: governance.adminApiKey'` or `'x-api-key: tenant.ey..'` (JWT token).
 
 The first part, `role`, specifies the role on the surface and targets the correct endpoints and authentication
-mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for
+mechanisms under the hood. acapy-cloud knows how to interpret the roles and will produce the correct target URLs for
 the ACA-Py agent (`tenant` and `tenant-admin` target the multitenant agent, and `governance` targets the governance
 agent) with the correct headers expected by the agent.
 
@@ -79,7 +79,7 @@ obtain a `Bearer {TOKEN}` header passed to the multitenant agent.
 
 The definitions and capabilities of the three roles are as follows:
 
-### CloudAPI Roles
+### acapy-cloud Roles
 
 #### Governance Role
 
@@ -145,7 +145,7 @@ write it to the ledger.
 
 The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be
 the preferred way, because schemas can exist on the ledger but have been invalidated on the trust registry.
-This will be checked by the CloudAPI and only valid schemas are allowed for use.
+This will be checked by acapy-cloud and only valid schemas are allowed for use.
 
 #### Credentials
 
@@ -182,8 +182,8 @@ In summary, we have:
 - Proposed a credential to a prospective holder from an issuer
 - Accepted and stored an offered credential
 
-Please note that when creating/issuing a credential, endorsing, and verifying credentials, the CloudAPI checks whether
-the requested instructions are valid against the trust registry.
+Please note that when creating/issuing a credential, endorsing, and verifying credentials, acapy-cloud checks
+whether the requested instructions are valid against the trust registry.
 
 #### Requesting a proof/using a credential
 
@@ -203,7 +203,7 @@ creation returns the wallet creation response, including the wallet id and JWT f
 
 ## Further Reading
 
-- [Aries Cloud API Architecture Overview](./Aries%20Cloud%20API%20Architecture.md)
+- [acapy-cloud Architecture Overview](./Aries%20Cloud%20API%20Architecture.md)
 - [Quick Start Guide](./Quick%20Start%20Guide.md)
 - [Bootstrap the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
 - [Common Steps](./Common%20Steps.md)

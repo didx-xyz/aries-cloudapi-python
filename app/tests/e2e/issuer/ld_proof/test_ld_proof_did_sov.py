@@ -18,6 +18,9 @@ from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 WALLET = wallet_router.prefix
@@ -73,7 +76,6 @@ credential_ = SendCredential(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_credential_sov(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -138,7 +140,6 @@ async def test_send_jsonld_credential_sov(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_oob_sov(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -208,7 +209,6 @@ async def test_send_jsonld_oob_sov(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_jsonld_request_sov(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -286,7 +286,6 @@ async def test_send_jsonld_request_sov(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_issue_jsonld_sov(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,

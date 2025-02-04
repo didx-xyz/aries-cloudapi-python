@@ -113,6 +113,7 @@
     "pyproject",
     "pypy",
     "pytest",
+    "pytestmark",
     "PYTHONPATH",
     "pyyaml",
     "redoc",

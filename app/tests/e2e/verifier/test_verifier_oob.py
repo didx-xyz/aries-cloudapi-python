@@ -19,13 +19,16 @@ from app.util.string import base64_to_json
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
+
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 OOB_BASE_PATH = oob_router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_proof_request_oob(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
@@ -124,7 +127,6 @@ async def test_accept_proof_request_oob(
     TestMode.regression_run in TestMode.fixture_params,
     reason="Verifier trust registry OOB connection already tested in test_verifier",
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_proof_request_verifier_oob_connection(
     credential_definition_id: str,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument

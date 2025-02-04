@@ -11,12 +11,14 @@ from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_credential_oob(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -82,7 +84,6 @@ async def test_send_credential_oob(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_credential(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -125,7 +126,6 @@ async def test_send_credential(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_create_offer(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
@@ -166,7 +166,6 @@ async def test_create_offer(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_send_credential_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -242,7 +241,6 @@ async def test_send_credential_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,

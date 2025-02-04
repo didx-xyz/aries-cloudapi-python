@@ -12,12 +12,15 @@ from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
+
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 CREDENTIALS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [None, False, True])
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
@@ -112,7 +115,6 @@ async def test_issue_credential_with_save_exchange_record(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [None, False, True])
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_request_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
@@ -207,7 +209,6 @@ async def test_request_credential_with_save_exchange_record(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_cred_exchange_records(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

@@ -6,11 +6,14 @@ from app.routes.connections import router
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
+
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 CONNECTIONS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_use_public_did(
     faber_client: RichAsyncClient,  # issuer has public did
     meld_co_client: RichAsyncClient,  # also has public did
@@ -55,7 +58,6 @@ async def test_accept_use_public_did(
 
 
 @pytest.mark.anyio
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did

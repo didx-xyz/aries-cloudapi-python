@@ -9,6 +9,10 @@ from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
+
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
+
 REVOCATION_BASE_PATH = router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
@@ -20,7 +24,6 @@ skip_regression_test_reason = "Skip publish-revocations in regression mode"
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_clear_pending_revokes(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -82,7 +85,6 @@ async def test_clear_pending_revokes(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_clear_pending_revokes_no_map(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -113,7 +115,6 @@ async def test_clear_pending_revokes_no_map(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_clear_pending_revokes_bad_payload(
     faber_client: RichAsyncClient,
 ):
@@ -151,7 +152,6 @@ async def test_clear_pending_revokes_bad_payload(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_publish_all_revocations_for_rev_reg_id(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -180,7 +180,6 @@ async def test_publish_all_revocations_for_rev_reg_id(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_publish_all_revocations_no_payload(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -215,7 +214,6 @@ async def check_revocation_status(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_publish_one_revocation(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -265,7 +263,6 @@ async def test_publish_one_revocation(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_publish_revocations_bad_payload(
     faber_client: RichAsyncClient,
 ):
@@ -303,7 +300,6 @@ async def test_publish_revocations_bad_payload(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_pending_revocations(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -346,7 +342,6 @@ async def test_get_pending_revocations(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_pending_revocations_bad_payload(
     faber_client: RichAsyncClient,
 ):
@@ -371,7 +366,6 @@ async def test_get_pending_revocations_bad_payload(
         ("bad_format", 422),
     ],
 )
-@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_fix_rev_reg_bad_id(
     faber_client: RichAsyncClient, rev_reg_id: str, status_code: int
 ):

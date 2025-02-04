@@ -13,14 +13,14 @@ Ensure that you meet the system requirements and have the necessary prerequisite
 
 ## System Requirements & Prerequisites
 
-To successfully set up and run the project, your system should meet the following requirements and have the necessary
+To successfully set up and run the project, your system should meet the following requirements and have the following
 prerequisites installed:
 
 ### Requirements
 
 - **Memory:** 16GB of RAM
 - **CPU:** Intel i5 (minimum 4 cores) or equivalent
-- **Disk Space:** Approximately 25GB of free space for Docker images and data
+- **Disk Space:** Approximately 32GB of free space for Docker images and data
 
 ### Prerequisites
 
@@ -162,17 +162,13 @@ Once the project is running, access various services via their Swagger interface
 
 ## Customization
 
-Customize each Docker container's environment parameters by editing its corresponding `.env` file
-located within the `environments` directory. For example, to change the `auto-provision` setting for
-the ACA-Py multitenant instance from `true` to `false`, modify the `ACAPY_AUTO_PROVISION` value in
-`environments/governance-multitenant/aca-py-agent.default.env`.
+Customize each Docker container's environment parameters by editing its corresponding `.yaml` file
+located within the `helm/acapy-cloud/conf/local` directory. For example, to change the `auto-provision` setting for
+the ACA-Py multitenant instance from `true` to `false`, modify the `ACAPY_AUTO_PROVISION` value under the `env` section
+in `helm/acapy-cloud/conf/local/multitenant-agent.yaml`.
+To configure log levels, search for `LOG_LEVEL` and set to your desired level.
 
 ## Next Steps
-
-1. **[Bootstrap Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md):** First, set up your trust ecosystem by
-    bootstrapping the governance agent. This is a required step to enable writing to the local ledger.
-
-After bootstrapping, you can explore:
 
 - **[Common Steps](./Common%20Steps.md):** Understand the general capabilities of the project once it's up and running.
 - **[Example Flows](./Example%20Flows.md):** Learn how to perform specific SSI flows.

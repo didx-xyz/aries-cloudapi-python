@@ -504,6 +504,7 @@ jobs:
           helmfile-plugins: https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           image-tag: ${{ needs.build.outputs.image_version }}
+          namespace: acapy-cloud-dev
           pytest-completions: 1
           run-regression-tests: ${{ github.event.inputs.run-regression-tests || false }}
           run-tests: ${{ github.event.inputs.run-tests || false }}

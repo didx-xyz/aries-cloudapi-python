@@ -24,6 +24,9 @@ inputs:
   image-tag:
     description: "The tag of the Docker image to deploy"
     required: true
+  namespace:
+    description: "The Kubernetes namespace to deploy to"
+    required: true
   pytest-completions:
     description: "How many completions to run"
     required: false
@@ -58,7 +61,8 @@ runs:
             --set fullnameOverride=acapy-test-regression \
             --set env.RUN_REGRESSION_TESTS=${{ inputs.run-regression-tests }} \
             --set env.FAIL_ON_RECREATING_FIXTURES=${{ inputs.clean-start != 'true' }} \
-            --state-values-set regressionEnabled=${{ inputs.run-regression-tests }}
+            --state-values-set regressionEnabled=${{ inputs.run-regression-tests }} \
+            --state-values-set namespace=${{ inputs.namespace }}
         helm-plugins: ${{ inputs.helmfile-plugins }}
         helmfile-version: ${{ inputs.helmfile-version }}
         helm-version: ${{ inputs.helm-version }}
@@ -77,7 +81,8 @@ runs:
             --set image.registry=ghcr.io/${{ github.repository_owner }} \
             --set completions=${{ inputs.pytest-completions }} \
             --state-values-set release=acapy-test \
-            --set fullnameOverride=acapy-test
+            --set fullnameOverride=acapy-test \
+            --state-values-set namespace=${{ inputs.namespace }}
         helm-plugins: ${{ inputs.helmfile-plugins }}
         helmfile-version: ${{ inputs.helmfile-version }}
         helm-version: ${{ inputs.helm-version }}
@@ -278,7 +283,8 @@ runs:
           destroy \
             --environment ${{ inputs.environment }} \
             -f ./helm/acapy-test.yaml.gotmpl \
-            --state-values-set release=acapy-test-regression
+            --state-values-set release=acapy-test-regression \
+            --state-values-set namespace=${{ inputs.namespace }}
         helm-plugins: ${{ inputs.helmfile-plugins }}
         helmfile-version: ${{ inputs.helmfile-version }}
         helm-version: ${{ inputs.helm-version }}

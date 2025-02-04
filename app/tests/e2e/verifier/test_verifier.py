@@ -468,7 +468,7 @@ async def test_get_credentials_for_request(
 @pytest.mark.parametrize(
     "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
-@pytest.mark.xdist_group(name="issuer_test_group_3")
+@pytest.mark.xdist_group(name="issuer_test_group_4")
 async def test_accept_proof_request_verifier_has_issuer_role(
     meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     meld_co_credential_definition_id: str,

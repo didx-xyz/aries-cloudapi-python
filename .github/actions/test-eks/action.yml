@@ -101,7 +101,7 @@ runs:
               echo "Job $JOB_NAME has completed."
               break
           else
-              echo "Waiting for job to complete..."
+              echo "Waiting for $JOB_NAME to complete..."
               sleep 10
           fi
         done
@@ -134,7 +134,7 @@ runs:
               echo "Job $JOB_NAME has completed."
               break
           else
-              echo "Waiting for job to complete..."
+              echo "Waiting for $JOB_NAME to complete..."
               sleep 10
           fi
         done

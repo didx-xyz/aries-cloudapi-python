@@ -1,6 +1,6 @@
-# ACA-Py Cloud Helm Chart
+# acapy-cloud Helm Chart
 
-This Helm chart deploys a complete stack of ACA-Py (Aries Cloud Agent Python) components for managing decentralized
+This Helm chart deploys a complete stack of ACA-Py related components for managing decentralized
 identities and verifiable credentials.
 
 ## Overview
@@ -35,8 +35,8 @@ To install the chart from the local repository:
 
 ```bash
 # Clone the repository
-git clone https://github.com/didx-xyz/aries-cloudapi-python.git
-cd aries-cloudapi-python/helm/acapy-cloud
+git clone https://github.com/didx-xyz/acapy-cloud.git
+cd acapy-cloud/helm/acapy-cloud
 
 # Install a specific component
 helm install my-release . -f ./conf/local/<component>.yaml

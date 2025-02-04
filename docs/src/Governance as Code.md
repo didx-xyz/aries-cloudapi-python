@@ -36,7 +36,7 @@ Creating new tenants in the multi-tenant environment for the various tenant type
 
 ### Issuers
 
-Tenants are custodial wallets created within the Trust Ecosystem's multitenant AcaPy agent. To create new tenants
+Tenants are custodial wallets created within the Trust Ecosystem's multitenant ACA-Py agent. To create new tenants
 for your trust ecosystem, follow the steps below:
 
 1. Access the API through the [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs).
@@ -71,7 +71,7 @@ An example of a successful response to create a new Issuer Tenant:
 
 ### Verifiers
 
-Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant AcaPy agent.
+Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant ACA-Py agent.
 Follow the steps below to create new tenants for your trust ecosystem:
 
 1. Access the API through [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
@@ -108,7 +108,7 @@ Follow the steps below to create new tenants for your trust ecosystem:
 
 ### Holders
 
-Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant AcaPy agent.
+Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant ACA-Py agent.
 Follow these steps to create new Holders for your trust ecosystem:
 
 1. Access the API through [CloudAPI-Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)

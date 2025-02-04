@@ -40,7 +40,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 ## 4. Accept Transaction Author Agreement
 
-1. Connect to AcaPy [Governance Agent API](http://governance-agent.cloudapi.127.0.0.1.nip.io/api/doc)
+1. Connect to ACA-Py [Governance Agent API](http://governance-agent.cloudapi.127.0.0.1.nip.io/api/doc)
 2. Authenticate by setting the `x-api-key` header with the API Key of the Governance Agent via Swagger/Postman/Insomnia
 3. Get the TAA from the following endpoint `/ledger/taa`. An example response would be like this:
 

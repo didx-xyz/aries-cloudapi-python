@@ -1,10 +1,10 @@
-# Aca-Py Test Helm Chart
+# acapy-cloud Test Helm Chart
 
-A Helm chart for deploying AcaPy Cloud containerized tests in a Kubernetes environment.
+A Helm chart for deploying acapy-cloud containerized tests in a Kubernetes environment.
 
 ## Overview
 
-This Helm chart deploys a test environment for AcaPy Cloud, facilitating automated testing through pytest.
+This Helm chart deploys a test environment for acapy-cloud, facilitating automated testing through pytest.
 It supports both standard test runs and regression testing scenarios.
 
 ## Prerequisites
@@ -19,8 +19,8 @@ To install the chart with the release name `my-release`:
 
 ```bash
 # Clone the repository
-git clone https://github.com/didx-xyz/aries-cloudapi-python.git
-cd aries-cloudapi-python/helm/acapy-test
+git clone https://github.com/didx-xyz/acapy-cloud.git
+cd acapy-cloud/helm/acapy-test
 
 helm install my-release .
 ```

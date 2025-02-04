@@ -145,7 +145,7 @@ def setup_redpanda_connect_cloud(namespace):
     resource_name = "connect-cloud"
     project_root = os.getcwd()
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    values_file = project_root + "helm/acapy-cloud/conf/local/connect-cloud.yaml"
+    values_file = project_root + "/helm/acapy-cloud/conf/local/connect-cloud.yaml"
 
     helm_repo(
         name="redpanda",

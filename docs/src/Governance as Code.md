@@ -32,12 +32,12 @@ An example of a successful response to generate a DID:
 
 ## 2. Creating Tenants
 
-Creating new tenants in the multi-tenant environment for the various tenant types in the Trust Ecosystem:
+In the multi-tenant environment, you can set up issuers, verifiers, and holders.
+Each tenant gets their own wallet, and the different roles have different privileges.
 
 ### Issuers
 
-Tenants are custodial wallets created within the Trust Ecosystem's multitenant ACA-Py agent. To create new tenants
-for your trust ecosystem, follow the steps below:
+To create an issuer tenant for your trust ecosystem, follow the steps below:
 
 1. Access the API through the [Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs).
 2. Authenticate with `tenant-admin.` + `APIKEY` role.
@@ -62,8 +62,8 @@ An example of a successful response to create a new Issuer Tenant:
   "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
   "wallet_label": "Demo Issuer",
   "wallet_name": "Faber",
-  "created_at": "2023-11-16T09:49:13.067595Z",
-  "updated_at": "2023-11-16T09:49:13.111843Z",
+  "created_at": "2025-01-16T09:49:13.067595Z",
+  "updated_at": "2025-01-16T09:49:13.111843Z",
   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
   "group_id": "API demo"
 }
@@ -71,8 +71,7 @@ An example of a successful response to create a new Issuer Tenant:
 
 ### Verifiers
 
-Tenants, functioning as custodial wallets, are established within the Trust Ecosystem's multitenant ACA-Py agent.
-Follow the steps below to create new tenants for your trust ecosystem:
+To create a verifier, follow these steps:
 
 1. Access the API through [Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 2. Authenticate using the `tenant-admin.`+`APIKEY` role
@@ -99,8 +98,8 @@ Follow the steps below to create new tenants for your trust ecosystem:
      "wallet_id": "05618362-b024-46c5-b83c-6c6b8c7792d8",
      "wallet_label": "Demo Verifier",
      "wallet_name": "Acme",
-     "created_at": "2023-11-16T09:49:13.067595Z",
-     "updated_at": "2023-11-16T09:49:13.111843Z",
+     "created_at": "2025-01-16T09:49:13.067595Z",
+     "updated_at": "2025-01-16T09:49:13.111843Z",
      "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
      "group_id": "API demo"
    }
@@ -108,13 +107,13 @@ Follow the steps below to create new tenants for your trust ecosystem:
 
 ### Holders
 
-Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem's multitenant ACA-Py agent.
-Follow these steps to create new Holders for your trust ecosystem:
+Holders are regular tenants without any additional privileges in the Trust Ecosystem. They are created in the same way,
+without any `roles` in the create request
 
 1. Access the API through [Multitenant-Admin](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 2. Authenticate using `tenant-admin.`+`APIKEY` role
 3. Generate a new tenant with a `POST` to the API endpoint `/tenant-admin/v1/admin/tenants/` using the request body
-4. in the example below
+   in the example below
 
    ```json
    {
@@ -125,7 +124,7 @@ Follow these steps to create new Holders for your trust ecosystem:
    }
    ```
 
-5. Here is an example of a successful response to creating a new Holder Tenant:
+4. Here is an example of a successful response to creating a new Holder Tenant:
 
    ```json
    {
@@ -133,8 +132,8 @@ Follow these steps to create new Holders for your trust ecosystem:
      "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
      "wallet_label": "Demo Holder",
      "wallet_name": "Alice",
-     "created_at": "2023-11-16T07:22:02.086605Z",
-     "updated_at": "2023-11-16T07:22:02.105980Z",
+     "created_at": "2025-01-16T07:22:02.086605Z",
+     "updated_at": "2025-01-16T07:22:02.105980Z",
      "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
      "group_id": "API demo"
    }
@@ -155,7 +154,7 @@ follow the steps below:
 1. Access the [Tenant Swagger UI](http://cloudapi.127.0.0.1.nip.io/tenant/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` x-api-key
 3. Create a new schema with a `POST` to the API endpoint `/v1/definitions/credentials` using the request body
-4. illustrated in the example below.
+   illustrated in the example below.
 
    > NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry
 
@@ -166,7 +165,7 @@ follow the steps below:
    }
    ```
 
-5. Below is an example of a successful response to writing a credential definition:
+4. Below is an example of a successful response to writing a credential definition:
 
    ```json
    {

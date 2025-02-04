@@ -495,7 +495,6 @@ jobs:
           namespace: acapy-cloud-dev
 
       - name: Run Tests
-        if: github.event.inputs.run-tests == true || github.event.inputs.run-regression-tests == true
         uses: ./.github/actions/test-eks
         with:
           clean-start: ${{ github.event.inputs.run-reset-deployments || false }}

@@ -9,9 +9,9 @@ from fastapi.responses import ORJSONResponse
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.main import (
     OPENAPI_NAME,
-    app,
     acapy_cloud_description,
     acapy_cloud_docs_description,
+    app,
     create_app,
     default_docs_description,
     read_openapi_yaml,

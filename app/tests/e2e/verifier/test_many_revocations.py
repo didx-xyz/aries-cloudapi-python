@@ -12,10 +12,6 @@ from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
-
-# Apply the marker to all tests in this module
-pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
-
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
@@ -23,6 +19,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 @pytest.mark.anyio
 @pytest.mark.skip("This test exists for local testing")
 @pytest.mark.parametrize("revoke_many", ["auto_publish_true"], indirect=True)
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_revoke_many_credentials(
     revoke_many: List[  # pylint: disable=unused-argument, redefined-outer-name
         CredentialExchange

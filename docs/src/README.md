@@ -203,7 +203,7 @@ creation returns the wallet creation response, including the wallet id and JWT f
 
 ## Further Reading
 
-- [acapy-cloud Architecture Overview](./Aries%20Cloud%20API%20Architecture.md)
+- [acapy-cloud Architecture Overview](./acapy-cloud%20Architecture.md)
 - [Quick Start Guide](./Quick%20Start%20Guide.md)
 - [Bootstrap the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
 - [Common Steps](./Common%20Steps.md)

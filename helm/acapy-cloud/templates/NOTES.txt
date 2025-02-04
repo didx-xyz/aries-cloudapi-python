@@ -1,5 +1,5 @@
 
-[ didx:cloud ]
+[ acapy-cloud ]
 
 Installed as: {{ .Release.Name }}
 Namespace: {{ .Release.Namespace }}

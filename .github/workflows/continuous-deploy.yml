@@ -432,7 +432,7 @@ jobs:
   deploy:
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     if: github.actor != 'dependabot[bot]'
-    name: Deploy to EKS
+    name: Deploy and Test EKS
     runs-on: ubuntu-latest
 
     environment:
@@ -447,7 +447,7 @@ jobs:
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
 
     concurrency:
-      group: deploy-test-eks-${{ github.ref_name }}
+      group: deploy-test-eks
       cancel-in-progress: false
 
     timeout-minutes: 30
@@ -474,13 +474,6 @@ jobs:
               | cut -d' ' -f2 \
               >> "$GITHUB_ENV"
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: af-south-1
-          role-to-assume: arn:aws:iam::402177810328:role/cicd
-          role-session-name: github-cicd
-
       - uses: tailscale/github-action@main
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
@@ -492,14 +485,14 @@ jobs:
           aws-region: af-south-1
           aws-role-arn: arn:aws:iam::402177810328:role/cicd
           aws-role-session-name: github-cicd
-          clean-start: ${{ github.event.inputs.run-reset-deployments }}
+          clean-start: ${{ github.event.inputs.run-reset-deployments || false }}
           cluster-name: cloudapi-dev
           environment: ${{ vars.ENVIRONMENT }}
           helm-version: ${{ env.HELM_VERSION }}
           helmfile-plugins: https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
           image-tag: ${{ needs.build.outputs.image_version }}
-          namespace: acapy-cloud-${{ vars.ENVIRONMENT }}
+          namespace: acapy-cloud-dev
 
   test-eks:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false

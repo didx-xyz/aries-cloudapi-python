@@ -5,9 +5,9 @@ and verifying credentials. More detailed descriptions of the different steps can
 [Example Flows](./Example%20Flows.md) document.
 
 > **Note:** It is always helpful to inspect the Swagger UIs to understand
-the available endpoints, their expected inputs, and the corresponding outputs.
-If requests fail, check the Swagger UI to ensure you've called the correct
-endpoint with the correct data. The Swagger UIs are accessible, under a vanilla setup, at:
+> the available endpoints, their expected inputs, and the corresponding outputs.
+> If requests fail, check the Swagger UI to ensure you've called the correct
+> endpoint with the correct data. The Swagger UIs are accessible, under a vanilla setup, at:
 >
 > - **Multitenant-Admin** (Managing tenants) -> [http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs](http://cloudapi.127.0.0.1.nip.io/tenant-admin/docs)
 > - **Governance** (Acting as governance) -> [http://cloudapi.127.0.0.1.nip.io/governance/docs](http://cloudapi.127.0.0.1.nip.io/governance/docs)
@@ -29,9 +29,9 @@ admin role. The permissions and routing to the correct ACA-Py instance are
 handled by acapy-cloud under the hood. You need to provide two things:
 
 1. Authorization in the header: `{"x-api-key": "tenant-admin.APIKEY"}`, where
-`tenant-admin` is a fixed term representing the role, and `APIKEY` is the auth
-token you must know and provide.
-_Note: This auth string is separated by a dot, so keep that in there._
+   `tenant-admin` is a fixed term representing the role, and `APIKEY` is the auth
+   token you must know and provide.
+   _Note: This auth string is separated by a dot, so keep that in there._
 
 2. The wallet payload (body) of the wallet you want to create, e.g.,
 
@@ -96,30 +96,32 @@ them on the trust registry, use the governance role:
 1. Register a schema (see above)
 2. Register an issuer (create a wallet passing "issuer" as a role - see above)
 3. Issuer creates credential definition
-4. Create a connection between the issuer and prospect holder
+4. Create a connection between the issuer and prospective holder
 
-   1. Create an invitation using either the issuer or the holder using the
-   `/v1/connections/create-invitation` endpoint of the
+   A connection can be created using the
+   `/v1/connections/did-exchange/create-request` endpoint of the
    [Tenant URL](http://cloudapi.127.0.0.1.nip.io/tenant/docs).
    Here, you will also need to authenticate via the header, e.g., using
 
-      ```json
-      { "x-api-key": "tenant.WALLET_TOKEN" }
-      ```
+   ```json
+   { "x-api-key": "tenant.WALLET_TOKEN" }
+   ```
 
-      where the `WALLET_TOKEN` is the bearer token you get from the create
-      wallet response for a tenant wallet.
+   where the `WALLET_TOKEN` is the bearer token you get from the create
+   wallet response for a tenant wallet.
 
-   2. Copy the content of the `invitation` field from the create invitation response
-   and use it as the payload in the `/v1/connections/accept-invitation` endpoint.
-   Post to the tenant URL using the other entity. To illustrate, if you used the issuer
-   to create the invitation, use the holder for this call and vice versa. Again,
-   authenticate using the appropriate headers.
+   Use the issuer's public DID as the `their_public_did` parameter in the request.
+
+   This will automatically establish a connection between the issuer and the holder, and can
+   be verified by checking the connection records (`GET /v1/connections`) for either party.
+
+   Alternatively, an OOB invitation can be used to create a connection.
+   Please see [this example docs](./examples/4.%20Create%20Connection%20with%20Issuer.md) for more details.
 
 5. Issue a credential from issuer to prospect holder
 
    1. Create and send a credential authenticating with the issuer. The credential
-   has the form:
+      has the form:
 
    ```json
    {
@@ -140,30 +142,30 @@ them on the trust registry, use the governance role:
 
 6. Accept and store the credential in the holder wallet
 7. Using the holder (authenticating with the holder auth header), issue a GET
-request against the `/v1/issuer/credentials` endpoint, providing the connection
-ID of the connection established above. _Note: The connection IDs are unique for
-each entity, so the connection between the issuer and the holder is one
-connection with two separate connection IDs - one for the issuer and one for the
-holder._ This will provide you with a credential record that should be in the
-state of being offered. Providing the connection ID again, you can now use the
-holder to store the credential by posting to
-`/v1/issuer/credentials/{credential_exchange_id}/store`
+   request against the `/v1/issuer/credentials` endpoint, providing the connection
+   ID of the connection established above. _Note: The connection IDs are unique for
+   each entity, so the connection between the issuer and the holder is one
+   connection with two separate connection IDs - one for the issuer and one for the
+   holder._ This will provide you with a credential record that should be in the
+   state of being offered. Providing the connection ID again, you can now use the
+   holder to store the credential by posting to
+   `/v1/issuer/credentials/{credential_exchange_id}/store`
 8. (Optional) Get yor credentials from your wallet (`wallet/credentials`) check
-whether the credential is actually stored. You can also check this via waypoint.
+   whether the credential is actually stored. You can also check this via waypoint.
 
 ## Verifying a Credential
 
 1. Ensure you followed **Issuing a Credential** steps to have a wallet with a
-credential (prover)
+   credential (prover)
 2. Register an entity as a verifier (verifier)
    1. In other words, create or update a wallet, passing the role "verifier"
 3. Create a connection between 1. prover and 2. verifier the same way as in
-**Issuing a Credential**
+   **Issuing a Credential**
 4. Create a proof request (`/v1/verifier/create-request`) using the verifier and
-send it to the prover. Consult the Swagger `verifier` endpoints. POST to
-`/v1/verifier/send-request` with a payload of the following form, replacing the
-values accordingly (and ensuring they can be covered by the previously created
-schema and issued credential):
+   send it to the prover. Consult the Swagger `verifier` endpoints. POST to
+   `/v1/verifier/send-request` with a payload of the following form, replacing the
+   values accordingly (and ensuring they can be covered by the previously created
+   schema and issued credential):
 
    ```json
    {
@@ -196,14 +198,14 @@ schema and issued credential):
 5. Send the proof request.
 
    1. From the prover, get the proof records using `/v1/verifier/proofs` and
-   create a proof request you want to send, just as above (same payload format
-   and endpoint).
+      create a proof request you want to send, just as above (same payload format
+      and endpoint).
 
 6. Accept the proof request.
 
    1. From the verifier, you can now accept (or reject; see
-   `/v1/verifier/reject-request` on Swagger for payload) by POSTing to
-   `/v1/verifier/send-request`, adjusting the payload to:
+      `/v1/verifier/reject-request` on Swagger for payload) by POSTing to
+      `/v1/verifier/send-request`, adjusting the payload to:
 
    ```json
    {
@@ -231,8 +233,8 @@ schema and issued credential):
    ```
 
 7. (Optional) Wait for the prover and verifier's webhook, using waypoint, and see that the
-presentation is acknowledged. Alternatively, GET the proof records and check the
-`state` field.
+   presentation is acknowledged. Alternatively, GET the proof records and check the
+   `state` field.
 
 _Note: There are multiple flows to this "dance". For further details, you may want to refer
 to the [official Aries-RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)._

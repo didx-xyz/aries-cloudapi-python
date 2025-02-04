@@ -210,7 +210,7 @@ jobs:
           - id: "4"
             test: app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py
           - id: "5" # all other e2e tests
-            test: |
+            test: >-
               app/tests/e2e/ \
                 --ignore=app/tests/e2e/issuer/ \
                 --ignore=app/tests/e2e/verifier/ \

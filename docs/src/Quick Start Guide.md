@@ -1,15 +1,11 @@
 # Quick Start Guide
 
-This guide will walk you through the essential steps to get your project up and running smoothly.
-Ensure you meet the system requirements and have the necessary prerequisites installed.
+This guide will walk you through the steps to get acapy-cloud up and running smoothly.
+
+Ensure that you meet the system requirements and have the necessary prerequisites installed.
 
 - [Quick Start Guide](#quick-start-guide)
   - [System Requirements \& Prerequisites](#system-requirements--prerequisites)
-    - [Requirements](#requirements)
-    - [Prerequisites](#prerequisites)
-    - [Installing Docker](#installing-docker)
-    - [Installing Docker Compose](#installing-docker-compose)
-    - [Setting up Mise](#setting-up-mise)
   - [Project Setup](#project-setup)
   - [Accessing Services](#accessing-services)
   - [Customization](#customization)

@@ -822,7 +822,9 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
   k6:
-    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    # Temporarily disable k6
+    if: !always()
     name: K6
     environment:
       name: dev

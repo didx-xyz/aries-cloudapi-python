@@ -1,0 +1,42 @@
+environments:
+  local:
+    values:
+      - release: acapy-test
+        namespace: cloudapi
+        lifecycle: spot
+        tag: master
+        ddInjectEnabled: false
+        regressionEnabled: false
+  dev:
+    values:
+      - release: acapy-test
+        namespace: acapy-cloud-dev
+        lifecycle: spot
+        tag: master
+        ddInjectEnabled: false
+        regressionEnabled: false
+---
+releases:
+- name: {{ .Values.release }}
+  namespace: {{ .Values.namespace }}
+  chart: ./acapy-test
+  values:
+    - ./acapy-test/conf/{{ .Environment.Name }}/values.yaml
+    {{- if .Values.regressionEnabled }}
+    - ./acapy-test/conf/{{ .Environment.Name }}/regression.yaml
+    {{- end }}
+    - labels:
+        tags.datadoghq.com/env: {{ .Environment.Name }}
+      podLabels:
+        admission.datadoghq.com/enabled: {{ quote .Values.ddInjectEnabled }}
+        tags.datadoghq.com/env: {{ .Environment.Name }}
+  set:
+    - name: image.tag
+      value: {{ .Values.tag }}
+---
+helmDefaults:
+  timeout: 180
+  wait: true
+  atomic: true
+  cleanupOnFail: true
+  createNamespace: false

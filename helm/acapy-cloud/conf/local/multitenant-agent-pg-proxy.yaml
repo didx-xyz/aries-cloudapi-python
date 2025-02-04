@@ -1,0 +1,3 @@
+secretData:
+  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_idle_count":10, "url":"cloudapi-pgpool:5432" }'
+  WALLET_DB_HOST: cloudapi-pgpool

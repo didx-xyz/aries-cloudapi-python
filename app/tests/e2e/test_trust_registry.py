@@ -12,6 +12,7 @@ CLOUDAPI_TRUST_REGISTRY_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_schemas(
     schema_definition: CredentialSchema,  # pylint: disable=unused-argument
     schema_definition_alt: CredentialSchema,  # pylint: disable=unused-argument
@@ -27,6 +28,7 @@ async def test_get_schemas(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_schema_by_id(
     schema_definition: CredentialSchema, trust_registry_client: RichAsyncClient
 ):
@@ -47,6 +49,7 @@ async def test_get_schema_by_id(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_actors(
     faber_issuer: CreateTenantResponse,
     faber_acapy_client: AcaPyClient,
@@ -118,6 +121,7 @@ async def test_get_actors_x(trust_registry_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_get_issuers(
     faber_issuer: CreateTenantResponse,  # pylint: disable=unused-argument
     trust_registry_client: RichAsyncClient,

@@ -10,6 +10,7 @@ environments:
         default: false
         overrides: {}
       deployLedger: true
+      natsReplicaCount: 1
       nodeSelector: {}
       pgProxyEnabled: false
       pgAdmin:
@@ -31,6 +32,7 @@ environments:
           # multitenant-web: true
           # tenant-web: true
       deployLedger: true
+      natsReplicaCount: 3
       nodeSelector: {}
       pgProxyEnabled: false
       pgAdmin:
@@ -159,7 +161,7 @@ releases:
     values:
       - ./nats/values.yaml
       - nats:
-          replicaCount: 1
+          replicaCount: {{ default 1 .Values.natsReplicaCount }}
 
   # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
   - name: postgres

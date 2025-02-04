@@ -151,6 +151,7 @@ secretData:
   WALLET_DB_USER: mediator
 
 env:
+  ACAPY_LOG_LEVEL: info
   ACAPY_LABEL: Aca-Py Mediator
   ACAPY_WALLET_NAME: mediator
   # Mediator does not use a ledger
@@ -173,7 +174,6 @@ env:
   ACAPY_CONNECTIONS_INVITE: true
 
   ACAPY_WALLET_STORAGE_TYPE: postgres_storage
-  ACAPY_LOG_LEVEL: info
 
   ACAPY_EMIT_NEW_DIDCOMM_PREFIX: true
   ACAPY_EMIT_NEW_DIDCOMM_MIME_TYPE: true

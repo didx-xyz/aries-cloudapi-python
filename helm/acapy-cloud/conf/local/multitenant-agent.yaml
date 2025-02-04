@@ -138,6 +138,7 @@ secretData:
   WALLET_DB_USER: multitenant
 
 env:
+  ACAPY_LOG_LEVEL: info
   # NATS related
   NATS_CREDS_FILE: "" # NATS in Local dev has no auth
   NATS_SERVER: nats://nats:4222
@@ -153,7 +154,6 @@ env:
 
   ACAPY_WALLET_TYPE: askar
   ACAPY_WALLET_STORAGE_TYPE: postgres_storage
-  ACAPY_LOG_LEVEL: info
   ACAPY_AUTO_PROVISION: true
   # Ledger
   ACAPY_GENESIS_URL: http://ledger-browser:8000/genesis

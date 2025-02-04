@@ -74,9 +74,9 @@ secretData:
   POSTGRES_DATABASE_URL: postgresql://trust-registry:trust-registry@cloudapi-postgresql:5432/trust-registry?sslmode=prefer
 
 env:
+  LOG_LEVEL: warning
   PYTHONPATH: /
   OPENAPI_NAME: Trustregistry
-  LOG_LEVEL: warning
   POSTGRES_POOL_SIZE: 10
   POSTGRES_MAX_OVERFLOW: 20
   POSTGRES_POOL_RECYCLE: 600 # 10 minutes

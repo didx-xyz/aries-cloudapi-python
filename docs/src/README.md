@@ -25,11 +25,8 @@ You'll find endpoints for admin actions (managing wallets) and tenant actions (f
 Additionally, there are [trust registry](./Trust%20Registry.md) and [webhooks](./Webhooks.md) endpoints.
 
 > NOTE: Regardless of the multitude of containers and mechanisms running in **acapy-cloud**, its aforementioned
-> Swagger UI's are the main interaction points intended between clients and the stack. This should be the only
-> endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly
-> interact with the trust registry container. For a production deployment or a close-to-production/smoke-testing
-> deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed
-> to the outside world.
+> Swagger UI's are the main interaction points intended between clients and the stack. These should be the only
+> endpoints that clients should interact with.
 
 ### Using the Swagger UI
 
@@ -45,7 +42,7 @@ It can be handy to follow the logs of a specific container. A convenient way to 
 kubectl logs -f $(kubectl get pods -l app.kubernetes.io/instance=YOUR_CONTAINER_NAME -o jsonpath="{.items[0].metadata.name}")
 ```
 
-And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., governance-endorser-web).
+And replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (e.g., endorser-web).
 You can find the container name in the docker-compose.yaml.
 
 ### Authentication
@@ -130,7 +127,7 @@ Authentication header: `'x-api-key: tenant.<TENANT JWT>'`
     - holder only
     - can:
       - make connections
-      - manage own wallet (holder)
+      - manage own wallet
       - receive and store credentials
       - respond to/create proof request
       - send basic messages
@@ -157,13 +154,14 @@ In order to issue a credential one must first:
 - Create a schema and
 - Register the schema with the trust registry.
 
-via the governance agent.
+via the governance agent. **Only the governance agent can register a schema on the ledger.**
 
 Then:
 
-- Register an issuer (on the trust registry) with a tenant admin controller.
+- Register an issuer with a tenant admin controller. This automatically registers them on the trust registry.
 
-The registered issuer can then issue a credential and related schema on the trust registry with the following steps:
+The registered issuer can then issue a credential, using the related schema on the trust registry,
+with the following steps:
 
 - Create a connection between the issuer and some other entity that you want to hold a credential
 - Once a connection is established, use the connection ID to create and issue a credential (have a look at the models

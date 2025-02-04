@@ -52,7 +52,7 @@ To enable this, the project includes essential supporting services:
 For detailed documentation, please refer to the [docs folder](docs/src/README.md). We recommend:
 
 - [Quick Start Guide](docs/src/Quick%20Start%20Guide.md) - Get up and running quickly
-- [Governance as Code](docs/src/Governance%20as%20Code.md) - Understand the governance and trust registry model
+- [Main Documentation](docs/src/README.md) - Detail on the different services, roles, authentication, and further reading
 - [Common Steps](docs/src/Common%20Steps.md) - Quick steps for creating tenants, issuing credentials, and requesting proofs
 - [Example Flows](docs/src/Example%20Flows.md) - More involved, step-by-step examples
 

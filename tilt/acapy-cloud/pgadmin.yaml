@@ -30,8 +30,9 @@ ingress:
 persistentVolume:
   enabled: false
 
-podAnnotations:
-  sidecar.istio.io/proxyCPU: 10m
+podAnnotations: {}
+podlabels:
+  sidecar.istio.io/inject: "false"
 
 readinessProbe:
   initialDelaySeconds: 1

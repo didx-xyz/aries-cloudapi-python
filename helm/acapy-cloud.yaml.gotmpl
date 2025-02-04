@@ -32,7 +32,7 @@ environments:
           # multitenant-web: true
           # tenant-web: true
       deployLedger: true
-      natsReplicaCount: 3
+      natsReplicaCount: 1
       nodeSelector: {}
       pgProxyEnabled: false
       pgAdmin:
@@ -172,12 +172,6 @@ releases:
     version: 15.1.7
     values:
       - ../tilt/acapy-cloud/postgres.yaml
-      - postgresql:
-        {{- if not .Values.pgProxyEnabled }}
-          replicaCount: 1
-        {{- else }}
-          replicaCount: 3
-      {{- end }}
 
   # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
   - name: pgadmin

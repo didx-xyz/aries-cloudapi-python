@@ -12,7 +12,6 @@ from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
-
 # Apply the marker to all tests in this module
 pytestmark = pytest.mark.xdist_group(name="issuer_test_group")
 

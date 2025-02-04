@@ -176,6 +176,7 @@ async def test_create_tenant_member_w_wallet_name(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
+@pytest.mark.xdist_group(name="issuer_test_group_5")
 async def test_create_tenant_issuer(
     tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -320,6 +321,7 @@ async def test_create_tenant_verifier(
     TestMode.regression_run in TestMode.fixture_params,
     reason=skip_regression_test_reason,
 )
+@pytest.mark.xdist_group(name="issuer_test_group_5")
 async def test_update_tenant_verifier_to_issuer(
     tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,

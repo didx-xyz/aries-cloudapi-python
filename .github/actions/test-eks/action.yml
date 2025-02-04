@@ -44,9 +44,9 @@ runs:
   using: composite
 
   steps:
-    - name: Helmfile regression tests
+    - name: Helmfile run regression tests
       if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && inputs.run-regression-tests == 'true') }}
-      id: pytest-run-regression
+      id: pytest-regression
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
       with:
@@ -121,7 +121,7 @@ runs:
         NAMESPACE: ${{ inputs.namespace }}
 
     - name: Wait for pytest regression and print logs
-      if: steps.pytest-run-regression.outcome == 'success'
+      if: steps.pytest-regression.outcome == 'success'
       shell: bash
       run: |
         while true; do
@@ -154,7 +154,7 @@ runs:
         PYTEST_COMPLETIONS: ${{ inputs.pytest-completions }}
 
     - name: Copy k8s pytest results
-      if: steps.pytest.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
+      if: steps.pytest.outcome == 'success' || steps.pytest-regression.outcome == 'success'
       shell: bash
       run: |
         echo "apiVersion: v1
@@ -228,7 +228,7 @@ runs:
         hide-comment: ${{ github.event_name != 'pull_request' }}
 
     - name: Pytest regression coverage comment
-      if: steps.pytest-run-regression.outcome == 'success'
+      if: steps.pytest-regression.outcome == 'success'
       # https://github.com/MishaKav/pytest-coverage-comment
       uses: MishaKav/pytest-coverage-comment@v1.1.53
       with:
@@ -253,7 +253,7 @@ runs:
 
     - name: Publish Pytest Regression Report
       uses: mikepenz/action-junit-report@v5
-      if: steps.pytest-run-regression.outcome == 'success'
+      if: steps.pytest-regression.outcome == 'success'
       with:
         check_name: JUnit Test Report Regression
         report_paths: "./pytest-regression/test_output.xml"

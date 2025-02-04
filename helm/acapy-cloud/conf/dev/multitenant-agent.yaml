@@ -109,7 +109,7 @@ persistence:
   enabled: true
   mountPath: /home/aries/.indy_client
   capacity: 1Gi
-  storageClassName: standard
+  storageClassName: efs
   accessMode: ReadWriteOnce
 
 autoscaling:

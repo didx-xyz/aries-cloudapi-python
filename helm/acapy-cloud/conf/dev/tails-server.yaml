@@ -55,7 +55,7 @@ persistence:
   enabled: true
   mountPath: /tails-server-db
   capacity: 10Gi
-  storageClassName: standard
+  storageClassName: efs
   accessMode: ReadWriteOnce
 
 podSecurityContext:

@@ -10,9 +10,11 @@ environments:
         default: false
         overrides: {}
       deployLedger: true
-      deployPgAdmin: true
       nodeSelector: {}
       pgProxyEnabled: false
+      pgAdmin:
+        enabled: true
+        ingress: {}
       tolerations: []
   dev:
     values:
@@ -29,9 +31,17 @@ environments:
           # multitenant-web: true
           # tenant-web: true
       deployLedger: true
-      deployPgAdmin: true
       nodeSelector: {}
       pgProxyEnabled: false
+      pgAdmin:
+        enabled: true
+        ingress:
+          ingressClassName: nginx-internal
+          hosts:
+            - host: pgadmin-acapy-cloud.dev.didxtech.com
+              paths:
+                - path: /
+                  pathType: Prefix
       tolerations: []
 ---
 {{- $releases := list
@@ -174,9 +184,13 @@ releases:
     namespace: {{ .Values.namespace }}
     chart: runix/pgadmin4
     version: 1.34.0
-    installed: {{ .Values.deployPgAdmin }}
+    installed: {{ .Values.pgAdmin.enabled }}
     values:
       - ../tilt/acapy-cloud/pgadmin.yaml
+      {{- with .Values.pgAdmin.ingress }}
+      - ingress:
+          {{ toYaml . | nindent 10 }}
+      {{- end }}
 ---
 repositories:
   - name: redpanda

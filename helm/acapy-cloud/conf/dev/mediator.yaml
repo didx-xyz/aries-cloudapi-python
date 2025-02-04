@@ -141,7 +141,7 @@ secretData:
   ACAPY_ADMIN_API_KEY: adminApiKey
   ACAPY_WALLET_KEY: verySecureMediatorWalletKey
 
-  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_idle_count":10, "url":"cloudapi-postgresql:5432" }'
+  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_connections":1, "url":"cloudapi-postgresql:5432" }'
   ACAPY_WALLET_STORAGE_CREDS: '{ "account":"mediator", "admin_account":"mediator", "admin_password":"mediator", "password":"mediator" }'
   WALLET_DB_ADMIN_PASS: mediator
   WALLET_DB_ADMIN_USER: mediator

@@ -127,7 +127,7 @@ secretData:
   ACAPY_WALLET_NAME: multitenant
   ACAPY_MULTITENANCY_CONFIGURATION: '{ "wallet_type":"single-wallet-askar", "wallet_name":"multitenant" }'
 
-  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_idle_count":10, "url":"cloudapi-postgresql:5432" }'
+  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_connections":1, "url":"cloudapi-postgresql:5432" }'
   ACAPY_WALLET_STORAGE_CREDS: '{ "account":"multitenant", "admin_account":"multitenant", "admin_password":"multitenant", "password":"multitenant" }'
   WALLET_DB_ADMIN_PASS: multitenant
   WALLET_DB_ADMIN_USER: multitenant

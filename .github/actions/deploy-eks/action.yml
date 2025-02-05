@@ -54,7 +54,10 @@ runs:
 
     - name: Update Kubeconfig
       shell: bash
-      run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
+      run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+      env:
+        CLUSTER_NAME: ${{ inputs.cluster-name }}
+        REGION: ${{ inputs.aws-region }}
 
     - name: Helmfile Destroy
       if: inputs.clean-start == 'true'
@@ -79,8 +82,10 @@ runs:
           --from-file=./resources/connect-processors/cloud/streams/state-monitoring.yaml \
           --dry-run=client \
           -o yaml \
-          -n ${{ inputs.namespace }} | kubectl apply -f -
-        kubectl -n ${{ inputs.namespace }} rollout restart deploy/connect-cloud || true
+          -n $NAMESPACE | kubectl apply -f -
+        kubectl -n $NAMESPACE rollout restart deploy/connect-cloud || true
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
 
     - name: Helmfile Apply
       # https://github.com/helmfile/helmfile-action

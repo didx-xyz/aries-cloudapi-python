@@ -12,7 +12,7 @@ podLabels:
   admission.datadoghq.com/enabled: "true"
 
 image:
-  name: d-cloud/endorser
+  name: acapy-cloud/endorser
   pullPolicy: Always
   tag: master
 

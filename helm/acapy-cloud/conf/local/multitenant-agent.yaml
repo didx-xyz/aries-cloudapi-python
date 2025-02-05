@@ -8,7 +8,7 @@ podAnnotations:
   ad.datadoghq.com/multitenant-agent.logs: '[{"source": "python", "service": "multitenant-agent", "auto_multi_line_detection": true}]'
 
 image:
-  name: d-cloud/multitenant-agent
+  name: acapy-cloud/multitenant-agent
   tag: master
   pullPolicy: Always
 

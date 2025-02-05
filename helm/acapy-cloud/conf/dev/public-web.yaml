@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/public-web.logs: '[{"source": "python.uvicorn", "service": "public-web"}]'
 
 image:
-  name: d-cloud/public-web
+  name: acapy-cloud/app
   pullPolicy: Always
   tag: master
 

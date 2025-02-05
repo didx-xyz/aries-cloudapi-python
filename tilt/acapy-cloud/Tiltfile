@@ -352,7 +352,7 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
         if build_enabled:
             print(color.green("Docker Build of ledger-nodes for compose deployment..."))
             custom_build(
-                registry + "/didx-xyz/d-cloud/ledger-nodes",
+                registry + "/didx-xyz/acapy-cloud/ledger-nodes",
                 "docker build --network=host -t $EXPECTED_REF "
                 + "--platform=linux/amd64 "
                 + "--file="
@@ -449,7 +449,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -484,7 +484,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -503,7 +503,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -522,7 +522,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),

@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/multitenant-web.logs: '[{"source": "python.uvicorn", "service": "multitenant-web"}]'
 
 image:
-  name: d-cloud/multitenant-web
+  name: acapy-cloud/app
   pullPolicy: Always
   tag: master
 

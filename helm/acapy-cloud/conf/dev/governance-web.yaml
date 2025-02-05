@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/governance-web.logs: '[{"source": "python.uvicorn", "service": "governance-web"}]'
 
 image:
-  name: d-cloud/governance-web
+  name: acapy-cloud/app
   pullPolicy: Always
   tag: master
 

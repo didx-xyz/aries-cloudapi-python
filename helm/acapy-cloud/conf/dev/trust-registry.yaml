@@ -9,7 +9,7 @@ podLabels:
   admission.datadoghq.com/enabled: "true"
 
 image:
-  name: d-cloud/trust-registry
+  name: acapy-cloud/trust-registry
   pullPolicy: Always
   tag: master
 

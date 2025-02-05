@@ -42,7 +42,7 @@ The following table lists the configurable parameters of the chart and their def
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `image.registry` | Image registry | `ghcr.io/didx-xyz` |
-| `image.name` | Image name | `d-cloud/pytest` |
+| `image.name` | Image name | `acapy-cloud/pytest` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
 | `imagePullSecrets` | Image pull secrets | `[]` |

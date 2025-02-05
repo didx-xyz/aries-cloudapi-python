@@ -4,7 +4,7 @@ fullnameOverride: acapy-test
 replicaCount: 1
 
 image:
-  name: d-cloud/pytest
+  name: acapy-cloud/pytest
   registry: ghcr.io/didx-xyz
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.

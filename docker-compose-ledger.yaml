@@ -2,7 +2,7 @@
 
 services:
   ledger-browser:
-    image: ${REGISTRY:-ghcr.io/didx-xyz}/d-cloud/ledger-nodes:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-ghcr.io/didx-xyz}/acapy-cloud/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-browser
     platform: linux/amd64
     command: "bash -c './scripts/start_webserver.sh'"
@@ -35,7 +35,7 @@ services:
       ledger-nodes:
         condition: service_healthy
   ledger-nodes:
-    image: ${REGISTRY:-ghcr.io/didx-xyz}/d-cloud/ledger-nodes:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-ghcr.io/didx-xyz}/acapy-cloud/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-nodes
     platform: linux/amd64
     command: "bash -c './scripts/start_nodes.sh'"

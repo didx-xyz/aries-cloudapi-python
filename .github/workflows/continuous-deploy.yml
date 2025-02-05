@@ -226,6 +226,7 @@ jobs:
             --numprocesses 2 \
             --dist loadgroup \
             --durations=0 \
+            --ignore ./tilt \
             --cov | tee test_output.txt
 
           EXIT_CODE=${PIPESTATUS[0]}

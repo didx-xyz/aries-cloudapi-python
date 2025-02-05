@@ -60,7 +60,7 @@ from shared.util.mock_agent_controller import (
 
 @pytest.fixture(scope="session")
 def anyio_backend():
-    return "asyncio"
+    return ("asyncio", {"use_uvloop": True})
 
 
 @pytest.fixture(autouse=True)

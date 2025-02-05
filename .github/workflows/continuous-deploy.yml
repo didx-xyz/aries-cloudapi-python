@@ -190,7 +190,7 @@ jobs:
               >> "$GITHUB_ENV"
 
       - name: Run unit tests
-        run: mise run pytest:unit
+        run: mise run test:unit
   build:
     name: Build
     permissions:

@@ -27,7 +27,6 @@ class SchemaPublisher:
                 body=schema_request,
                 # create_transaction_for_endorser=False,
             )
-            self._logger.info(result)
         except CloudApiException as e:
             # TODO fix for anoncreds_schemas
             if "already exist" in e.detail and e.status_code == 400:

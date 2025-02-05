@@ -53,6 +53,11 @@ jobs:
   style:
     name: style
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: style-check-${{ github.ref_name }}
+      cancel-in-progress: true
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,6 +98,11 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: lint-${{ github.ref_name }}
+      cancel-in-progress: true
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -156,6 +166,10 @@ jobs:
   unit:
     name: Unit Tests
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: unit-test-${{ github.ref_name }}
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v4

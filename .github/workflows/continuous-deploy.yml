@@ -409,10 +409,9 @@ jobs:
               exit $EXIT_CODE
           fi
 
-      - name: Install coverage
-        run: uv pip install coverage
-      - name: Generate coverage report
+      - name: Install coverage and generate report
         run: |
+          uv pip install coverage
           coverage report
           coverage xml
       - name: Upload coverage to Codacy

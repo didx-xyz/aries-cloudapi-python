@@ -6,7 +6,7 @@ from aries_cloudcontroller import AcaPyClient, EndorseTransactionApi, SchemaApi
 
 @pytest.fixture(scope="session")
 def anyio_backend():
-    return "asyncio"
+    return ("asyncio", {"use_uvloop": True})
 
 
 @pytest.fixture

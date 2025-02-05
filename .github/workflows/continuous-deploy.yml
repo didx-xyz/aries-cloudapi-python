@@ -438,6 +438,7 @@ jobs:
           uv pip install coverage
           coverage report
           coverage xml
+          sudo rm -rf tilt/docker
       - name: Upload coverage to Codacy
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         env:

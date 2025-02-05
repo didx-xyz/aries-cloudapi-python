@@ -101,7 +101,7 @@ poetry run pytest . --ignore ./tilt $@
 [tasks."tests:unit"]
 description = "Run unit tests"
 depends = ["poetry:install"]
-run = "poetry run pytest app --ignore=app/tests/e2e $@"
+run = "poetry run pytest -n 4 -o 'norecursedirs=e2e' $@"
 
 [tasks."tests:e2e"]
 description = "Run e2e tests"
@@ -111,7 +111,7 @@ run = """
 cp .env.example .env
 source .env
 # pytest app/tests/e2e
-poetry run pytest --dist loadfile app/tests/e2e $@
+poetry run pytest --dist loadgroup app/tests/e2e $@
 """
 
 [tasks.fmt]

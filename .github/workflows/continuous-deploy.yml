@@ -180,7 +180,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Mise
@@ -233,8 +232,6 @@ jobs:
           set -e
           echo "Exit code: $EXIT_CODE"
 
-          mv .coverage
-
           # very hacky way to get around the fact that teardown fails even if tests pass
           TEARDOWN_ERROR=false
           SINGLE_ERROR=false
@@ -267,7 +264,7 @@ jobs:
           fi
 
       - name: Install coverage
-        run: pip install coverage
+        run: uv pip install coverage
       - name: Generate coverage report
         run: |
           coverage report

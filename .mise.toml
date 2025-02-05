@@ -101,7 +101,7 @@ poetry run pytest . --ignore ./tilt $@
 [tasks."tests:unit"]
 description = "Run unit tests"
 depends = ["poetry:install"]
-run = "poetry run pytest -n 4 -o 'norecursedirs=e2e' $@"
+run = "poetry run pytest -n auto --dist loadgroup -o 'norecursedirs=e2e' $@"
 
 [tasks."tests:e2e"]
 description = "Run e2e tests"
@@ -110,8 +110,7 @@ run = """
 #!/bin/bash
 cp .env.example .env
 source .env
-# pytest app/tests/e2e
-poetry run pytest --dist loadgroup app/tests/e2e $@
+poetry run pytest -n auto --dist loadgroup $(find . -type d -path '*/tests/e2e' -not -path './tilt*')$@
 """
 
 [tasks.fmt]

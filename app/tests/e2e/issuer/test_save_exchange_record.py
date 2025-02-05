@@ -17,6 +17,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [None, False, True])
+@pytest.mark.xdist_group(name="issuer_test_group_3")
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
@@ -111,6 +112,7 @@ async def test_issue_credential_with_save_exchange_record(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [None, False, True])
+@pytest.mark.xdist_group(name="issuer_test_group_4")
 async def test_request_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
@@ -205,6 +207,7 @@ async def test_request_credential_with_save_exchange_record(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group_3")
 async def test_get_cred_exchange_records(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

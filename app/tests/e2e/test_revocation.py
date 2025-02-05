@@ -9,6 +9,9 @@ from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group_2")
+
 REVOCATION_BASE_PATH = router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
@@ -168,16 +171,7 @@ async def test_publish_all_revocations_for_rev_reg_id(
         json={"revocation_registry_credential_map": {rev_reg_id: []}},
     )
 
-    for cred in revoke_alice_creds:
-        rev_record = (
-            await faber_client.get(
-                f"{REVOCATION_BASE_PATH}/revocation/record"
-                + "?credential_exchange_id="
-                + cred.credential_exchange_id
-            )
-        ).json()
-
-        assert rev_record["state"] == "revoked"
+    await check_revocation_status(faber_client, revoke_alice_creds, "revoked")
 
 
 @pytest.mark.anyio
@@ -194,16 +188,24 @@ async def test_publish_all_revocations_no_payload(
         json={"revocation_registry_credential_map": {}},
     )
 
-    for cred in revoke_alice_creds:
+    await check_revocation_status(faber_client, revoke_alice_creds, "revoked")
+
+
+async def check_revocation_status(
+    client: RichAsyncClient,
+    credentials: List[CredentialExchange],
+    expected_state: str,
+):
+    for cred in credentials:
         rev_record = (
-            await faber_client.get(
+            await client.get(
                 f"{REVOCATION_BASE_PATH}/revocation/record"
                 + "?credential_exchange_id="
                 + cred.credential_exchange_id
             )
         ).json()
 
-        assert rev_record["state"] == "revoked"
+        assert rev_record["state"] == expected_state
 
 
 @pytest.mark.anyio

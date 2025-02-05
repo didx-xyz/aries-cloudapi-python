@@ -29,6 +29,7 @@ TENANTS_BASE_PATH = tenants_router.prefix
         (None, None, True),
     ],
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_create_did_exchange_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
@@ -113,6 +114,7 @@ async def test_create_did_exchange_request(
     "This test works in isolation. Should be refactored to run in parallel."
 )
 @pytest.mark.parametrize("use_public_did", [False])
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_accept_did_exchange_invitation(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,

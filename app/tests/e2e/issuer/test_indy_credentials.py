@@ -11,6 +11,9 @@ from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group_2")
+
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 

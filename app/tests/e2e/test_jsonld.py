@@ -53,6 +53,7 @@ signed_doc = {
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_sign_jsonld(
     faber_acapy_client: AcaPyClient,
     faber_client: RichAsyncClient,
@@ -126,6 +127,7 @@ async def test_sign_jsonld(
 
 @pytest.mark.skip("Model validation is overly strict again. To be reviewed")
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_verify_jsonld(
     alice_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,

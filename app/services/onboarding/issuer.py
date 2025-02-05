@@ -32,7 +32,9 @@ async def onboard_issuer(
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
         issuer_label (str): alias for the issuer
     """
-    bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
+    bound_logger = logger.bind(
+        body={"issuer_label": issuer_label, "issuer_wallet_id": issuer_wallet_id}
+    )
     bound_logger.debug("Onboarding issuer")
 
     try:
@@ -92,7 +94,9 @@ async def onboard_issuer_no_public_did(
     Returns:
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
-    bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
+    bound_logger = logger.bind(
+        body={"issuer_label": issuer_label, "issuer_wallet_id": issuer_wallet_id}
+    )
     bound_logger.debug("Onboarding issuer that has no public DID")
 
     try:

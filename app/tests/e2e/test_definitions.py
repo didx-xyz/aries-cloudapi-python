@@ -155,6 +155,7 @@ async def test_get_credential_definition(
         "but it fails when run a 2nd time in regression mode"
     ),
 )
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,

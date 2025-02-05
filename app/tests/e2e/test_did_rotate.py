@@ -15,6 +15,7 @@ CONNECTIONS_BASE_PATH = connections_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("did_method", ["did:peer:2", "did:peer:4"])
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_rotate_did(
     alice_member_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
@@ -55,6 +56,7 @@ async def test_rotate_did(
 
 
 @pytest.mark.anyio
+@pytest.mark.xdist_group(name="issuer_test_group")
 async def test_hangup_did_rotation(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,

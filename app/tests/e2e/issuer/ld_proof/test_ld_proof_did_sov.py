@@ -2,15 +2,9 @@ import asyncio
 from copy import deepcopy
 
 import pytest
-from aries_cloudcontroller import (
-    AcaPyClient,
-    Credential,
-    LDProofVCDetail,
-    LDProofVCOptions,
-)
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
-from app.models.issuer import SendCredential
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.wallet.dids import router as wallet_router
@@ -18,58 +12,16 @@ from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 
+from .util import create_credential
+
+# Apply the marker to all tests in this module
+pytestmark = pytest.mark.xdist_group(name="issuer_test_group_3")
+
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 WALLET = wallet_router.prefix
 
-credential_ = SendCredential(
-    type="ld_proof",
-    connection_id="",
-    ld_credential_detail=LDProofVCDetail(
-        credential=Credential(
-            context=[
-                "https://www.w3.org/2018/credentials/v1",
-                "https://www.w3.org/2018/credentials/examples/v1",
-            ],
-            type=["VerifiableCredential", "UniversityDegreeCredential"],
-            credentialSubject={
-                "degree": {
-                    "type": "BachelorDegree",
-                    "name": "Bachelor of Science and Arts",
-                },
-                "college": "Faber College",
-            },
-            issuanceDate="2021-04-12",
-            issuer="",
-        ),
-        options=LDProofVCOptions(proofType="Ed25519Signature2018"),
-    ),
-).model_dump(by_alias=True, exclude_unset=True)
-
-# This is the json of the above credential
-# {
-#     "type": "ld_proof",
-#     "connection_id": "",
-#     "ld_credential_detail": {
-#         "credential": {
-#             "@context": [
-#                 "https://www.w3.org/2018/credentials/v1",
-#                 "https://www.w3.org/2018/credentials/examples/v1",
-#             ],
-#             "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-#             "credentialSubject": {
-#                 "degree": {
-#                     "type": "BachelorDegree",
-#                     "name": "Bachelor of Science and Arts",
-#                 },
-#                 "college": "Faber College",
-#             },
-#             "issuanceDate": "2021-04-12",
-#             "issuer": "",
-#         },
-#         "options": "",
-#     },
-# }
+credential_ = create_credential("Ed25519Signature2018")
 
 
 @pytest.mark.anyio
@@ -98,13 +50,12 @@ async def test_send_jsonld_credential_sov(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
 
     try:
         thread_id = data["thread_id"]
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
         assert await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
@@ -162,13 +113,12 @@ async def test_send_jsonld_oob_sov(
     )
 
     data = response.json()
+    assert_that(data).contains("credential_exchange_id")
+    assert_that(data).has_state("offer-sent")
     cred_ex_id = data["credential_exchange_id"]
-    thread_id = data["thread_id"]
 
     try:
-        assert_that(data).contains("credential_exchange_id")
-        assert_that(data).has_state("offer-sent")
-
+        thread_id = data["thread_id"]
         invitation_response = await faber_client.post(
             OOB_BASE_PATH + "/create-invitation",
             json={

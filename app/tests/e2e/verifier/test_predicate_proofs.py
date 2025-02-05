@@ -15,6 +15,7 @@ VERIFIER_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("predicate", ["<", ">", "<=", ">="])
+@pytest.mark.xdist_group(name="issuer_test_group_3")
 async def test_predicate_proofs(
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,

@@ -352,41 +352,6 @@ jobs:
         if: always()
         run: mise run tilt:down:destroy
 
-  # status-check:
-  #   name: Status Check
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   if: always()
-
-  #   steps:
-  #     - name: Check if any test failed
-  #       run: exit 1
-  #       if: needs.test.outputs.test_success == 'false'
-
-  # upload-coverage:
-  #   name: Coverage
-  #   runs-on: ubuntu-latest
-  #   needs: status-check
-
-  #   steps:
-  #     - name: Install coverage
-  #       run: pip install coverage
-  #     - name: Download all .coverage artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: coverage
-  #         pattern: coverage
-  #     - name: Move coverage file to top-level directory
-  #       run: mv coverage/.coverage .
-  #     - name: Generate coverage report
-  #       run: |
-  #         coverage report
-  #         coverage xml
-  #     - name: Upload coverage to Codacy
-  #       run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-  #       env:
-  #         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-
   deploy-test-eks:
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     if: github.actor != 'dependabot[bot]'
@@ -465,42 +430,3 @@ jobs:
           pytest-completions: 1
           run-regression-tests: ${{ github.event.inputs.run-regression-tests || true }}
           run-tests: ${{ github.event.inputs.run-tests || true }}
-  # k6:
-  #   if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
-  #   name: K6
-  #   environment:
-  #     name: dev
-  #   needs:
-  #     - build
-  #     - deploy
-  #   runs-on: ubuntu-latest
-
-  #   timeout-minutes: 10
-
-  #   steps:
-  #     - name: Check out code
-  #       uses: actions/checkout@v4
-  #       with:
-  #         persist-credentials: false
-
-  #     - name: Prepare output directory
-  #       run: mkdir -p ${{ github.workspace }}/scripts/k6/output && chmod 777 ${{ github.workspace }}/scripts/k6/output
-
-  #     - name: Run k6 tests
-  #       run: |
-  #         docker run --rm \
-  #           -v ${{ github.workspace }}/scripts/k6:/scripts \
-  #           -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
-  #           -e GOVERNANCE_CLIENT_ID=${{ secrets.GOVERNANCE_CLIENT_ID }} \
-  #           -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
-  #           -e GOVERNANCE_CLIENT_SECRET=${{ secrets.GOVERNANCE_CLIENT_SECRET }} \
-  #           -e CLOUDAPI_URL=${{ secrets.CLOUDAPI_URL }} \
-  #           -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
-  #           -e GOVERNANCE_OAUTH_ENDPOINT=${{ secrets.GOVERNANCE_OAUTH_ENDPOINT }} \
-  #           --workdir /scripts \
-  #           --entrypoint /bin/sh \
-  #           ghcr.io/${{ github.repository_owner }}/acapy-cloud/xk6:${VERSION} \
-  #           /scripts/run_tests.sh
-  #       shell: bash
-  #       env:
-  #         VERSION: ${{ needs.build.outputs.image_version }}

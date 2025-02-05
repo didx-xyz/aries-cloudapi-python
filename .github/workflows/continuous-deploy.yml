@@ -236,11 +236,6 @@ jobs:
         run: mise run poetry:install
         env:
           MISE_JOBS: 1
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
       - name: Start Test Harness
         run: mise run tilt:ci
         shell: bash

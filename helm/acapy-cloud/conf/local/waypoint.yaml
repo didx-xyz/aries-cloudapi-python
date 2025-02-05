@@ -38,7 +38,7 @@ initContainers:
       - sh
       - -c
       - |
-        until nats --server $NATS_SERVER str info $NATS_STREAM; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
     env:
       - name: NATS_SERVER
         value: "{{ .Values.env.NATS_SERVER }}"

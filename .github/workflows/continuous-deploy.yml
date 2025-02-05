@@ -413,6 +413,7 @@ jobs:
 
       - name: Install coverage and generate report
         run: |
+          source .venv/bin/activate
           uv pip install coverage
           coverage report
           coverage xml

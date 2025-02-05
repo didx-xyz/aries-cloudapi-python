@@ -79,6 +79,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true
           install: true
@@ -135,6 +136,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true
           install: true
@@ -179,6 +181,7 @@ jobs:
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
+          version: ${{ env.MISE_VERSION }}
           cache: true
           experimental: true
           install: true

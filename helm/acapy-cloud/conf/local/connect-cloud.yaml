@@ -16,6 +16,7 @@ http:
 
 streams:
   enabled: true
+  streamsConfigMap: connect-cloud-streams
 
 deployment:
   podLabels:

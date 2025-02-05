@@ -424,7 +424,7 @@ jobs:
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
-  deploy:
+  deploy-test-eks:
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     if: github.actor != 'dependabot[bot]'
     name: Deploy and Test EKS

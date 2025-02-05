@@ -1,3 +1,4 @@
+# https://github.com/redpanda-data/helm-charts/tree/main/charts/connect
 image:
   tag: 4
 updateStrategy:
@@ -23,3 +24,26 @@ deployment:
 env:
   - name: GOVERNANCE_ACAPY_LABEL
     value: Governance
+
+initContainers:
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server nats://nats:4222 str info acapy_events; do
+          echo waiting for nats acapy_events stream;
+          sleep 2;
+        done
+        until nats --server nats://nats:4222 str info cloudapi_aries_events; do
+          echo waiting for nats cloudapi_aries_events stream;
+          sleep 2;
+        done
+        until nats --server nats://nats:4222 str info cloudapi_aries_state_monitoring; do
+          echo waiting for nats cloudapi_aries_state_monitoring stream;
+          sleep 2;
+        done

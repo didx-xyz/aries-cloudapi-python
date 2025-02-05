@@ -165,43 +165,24 @@ jobs:
           platforms: ${{ matrix.platforms }}
 
   test:
-    name: Test
+    name: Local Test
     needs:
       - build
     runs-on: ubuntu-latest
 
     concurrency:
-      group: local-test-${{ matrix.module.id }}-${{ github.ref_name }}
+      group: local-test-${{ github.ref_name }}
       cancel-in-progress: true
 
     outputs:
       test_success: ${{ steps.test.outputs.test_success }}
-
-    strategy:
-      fail-fast: true
-      matrix:
-        module:
-          - id: "1" # fast tests, ignore e2e
-            test: app/tests/ endorser trustregistry waypoint --ignore=app/tests/e2e/
-          - id: "2" # then some individual, slower e2e tests
-            test: app/tests/e2e/issuer/
-          - id: "3"
-            test: app/tests/e2e/verifier/
-          - id: "4"
-            test: app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py
-          - id: "5" # all other e2e tests
-            test: >-
-              app/tests/e2e/ \
-                --ignore=app/tests/e2e/issuer/ \
-                --ignore=app/tests/e2e/verifier/ \
-                --ignore=app/tests/e2e/test_definitions.py \
-                --ignore=app/tests/e2e/test_revocation.py
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
@@ -221,12 +202,14 @@ jobs:
         run: mise run poetry:install
         env:
           MISE_JOBS: 1
+
       - name: Start Test Harness
         run: mise run tilt:ci
         shell: bash
         env:
           REGISTRY: ghcr.io/${{ github.repository_owner }}
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
       - name: Test with pytest
         id: test
         run: |
@@ -239,14 +222,17 @@ jobs:
           # Any portforwards will not be active after `tilt ci` has exited.
           kubectl port-forward svc/ledger-browser 9000:8000 -n cloudapi &
 
-          poetry run pytest -n 2 --dist loadgroup --durations=0 ${{ matrix.module.test }} \
+          poetry run pytest \
+            --numprocesses 2 \
+            --dist loadgroup \
+            --durations=0 \
             --cov | tee test_output.txt
+
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"
 
-          mkdir -p coverage-files
-          mv .coverage coverage-files/.coverage.${{ matrix.module.id }}
+          mv .coverage
 
           # very hacky way to get around the fact that teardown fails even if tests pass
           TEARDOWN_ERROR=false
@@ -278,11 +264,22 @@ jobs:
               fi
               exit $EXIT_CODE
           fi
-      - name: Upload .coverage files as artifact
+
+      - name: Install coverage
+        run: pip install coverage
+      - name: Generate coverage report
+        run: |
+          coverage report
+          coverage xml
+      - name: Upload coverage to Codacy
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      - name: Upload coverage file as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-files-${{ matrix.module.id }}
-          path: coverage-files/.coverage.${{ matrix.module.id }}
+          name: coverage
+          path: .coverage
           include-hidden-files: true
 
       - name: Get Docker Containers
@@ -357,51 +354,40 @@ jobs:
         if: always()
         run: mise run tilt:down:destroy
 
-  status-check:
-    name: Status Check
-    runs-on: ubuntu-latest
-    needs: test
-    if: always()
+  # status-check:
+  #   name: Status Check
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   if: always()
 
-    steps:
-      - name: Check if any test failed
-        run: exit 1
-        if: needs.test.outputs.test_success == 'false'
+  #   steps:
+  #     - name: Check if any test failed
+  #       run: exit 1
+  #       if: needs.test.outputs.test_success == 'false'
 
-  combine-coverage:
-    if: github.event.pull_request.draft == false
-    name: Coverage
-    runs-on: ubuntu-latest
-    needs: status-check
+  # upload-coverage:
+  #   name: Coverage
+  #   runs-on: ubuntu-latest
+  #   needs: status-check
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Install dependencies
-        run: pip install coverage
-      - name: Download all .coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage-files
-          pattern: "coverage-*"
-      - name: Move coverage files to top-level directory
-        run: |
-          for dir in coverage-files/coverage-files-*; do
-            mv "$dir"/.coverage.* .
-          done
-      - name: Combine coverage files
-        run: |
-          coverage combine
-          coverage report
-      - name: Generate XML coverage report
-        run: |
-          coverage xml
-      - name: Upload coverage to Codacy
-        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+  #   steps:
+  #     - name: Install coverage
+  #       run: pip install coverage
+  #     - name: Download all .coverage artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: coverage
+  #         pattern: coverage
+  #     - name: Move coverage file to top-level directory
+  #       run: mv coverage/.coverage .
+  #     - name: Generate coverage report
+  #       run: |
+  #         coverage report
+  #         coverage xml
+  #     - name: Upload coverage to Codacy
+  #       run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+  #       env:
+  #         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   deploy-test-eks:
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false

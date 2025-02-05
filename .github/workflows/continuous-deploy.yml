@@ -501,8 +501,7 @@ jobs:
         run: mise run tilt:down:destroy
 
   deploy-test-eks:
-    # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: Deploy and Test EKS
     runs-on: ubuntu-latest
 

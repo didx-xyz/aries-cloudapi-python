@@ -74,6 +74,12 @@ jobs:
           depends = ["poetry:install:*"]
           EOF
 
+      - name: Cache Python venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
+
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:

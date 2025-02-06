@@ -92,80 +92,6 @@ jobs:
             black --check --diff "$file"
           done
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: lint-${{ github.ref_name }}
-      cancel-in-progress: true
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Overwrite .mise.toml # Simplify mise in this workflow
-        run: |
-          cat <<EOF > .mise.toml
-          [tools]
-          poetry = "2.0"
-          python = "3.12"
-
-          [settings]
-          experimental = true
-          pipx_uvx = true
-          python_compile = false
-
-          [env]
-          # Use Python/Mise managed virtual environment
-          POETRY_VIRTUALENVS_CREATE = "false"
-          # Setup Python Virtual Environment
-          _.python.venv = { path = ".venv", create = true }
-
-          [tasks."poetry:install"]
-          description = "Poetry Install dependencies for all submodules"
-          depends = ["poetry:install:*"]
-          EOF
-
-      - name: Cache Python venv
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
-
-      - name: Set up Mise
-        uses: jdx/mise-action@v2
-        with:
-          version: ${{ env.MISE_VERSION }}
-          cache: true
-          experimental: true
-          install: true
-      - name: Load Mise env
-        run: |
-          mise env -s bash \
-              | grep -v 'export PATH=' \
-              | cut -d' ' -f2 \
-              >> "$GITHUB_ENV"
-
-      - name: Install dependencies with Poetry
-        run: mise run poetry:install
-        env:
-          MISE_JOBS: 1
-
-      - name: Run Pylint
-        run: |
-          poetry run pylint \
-            app/ \
-            endorser/ \
-            shared/ \
-            trustregistry/ \
-            waypoint/ \
-            --rcfile=.pylintrc \
-            -r n \
-            --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
-            --exit-zero | tee pylintreport.txt
-
   unit:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -211,7 +137,6 @@ jobs:
 
     needs:
       - format
-      - lint
       - unit
 
     concurrency:

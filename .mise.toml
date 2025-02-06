@@ -23,7 +23,7 @@ python_compile = false
 
 [env]
 DOCKER_HOST_OVERRIDE = "unix:///var/run/docker.sock"
-KIND_CLUSTER_NAME = "aries-cloudapi"
+KIND_CLUSTER_NAME = "acapy-cloud"
 KIND_K8S_CONTEXT = "kind-{{env.KIND_CLUSTER_NAME}}"
 KIND_DOCKER_CACHE = "docker-cache"
 KIND_DOCKER_REGISTRY = "docker-registry"

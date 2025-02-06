@@ -149,12 +149,15 @@ jobs:
               >> "$GITHUB_ENV"
 
       - name: Install dependencies with Poetry
-        run: mise run poetry:install
+        run: |
+          source .venv/bin/activate
+          mise run poetry:install
         env:
           MISE_JOBS: 1
 
       - name: Run Pylint
         run: |
+          source .venv/bin/activate
           poetry run pylint \
             app/ \
             endorser/ \
@@ -202,7 +205,9 @@ jobs:
               >> "$GITHUB_ENV"
 
       - name: Run unit tests
-        run: mise run tests:unit
+        run: |
+          source .venv/bin/activate
+          mise run tests:unit
   build:
     name: Build
     permissions:

@@ -311,7 +311,7 @@ jobs:
           kubectl port-forward svc/ledger-browser 9000:8000 -n cloudapi &
 
           poetry run pytest \
-            --numprocesses 2 \
+            --numprocesses 4 \
             --dist loadgroup \
             --durations=0 \
             --ignore ./tilt \

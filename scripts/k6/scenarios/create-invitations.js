@@ -37,10 +37,10 @@ export const options = {
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": ["max>=0"],
-    "http_reqs{scenario:default}": ["count >= 0"],
-    "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
-    "iteration_duration{scenario:default}": ["max>=0"],
+    // "http_req_duration{scenario:default}": ["max>=0"],
+    // "http_reqs{scenario:default}": ["count >= 0"],
+    // "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
+    // "iteration_duration{scenario:default}": ["max>=0"],
     checks: ["rate==1"],
     'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
@@ -53,9 +53,9 @@ export const options = {
 };
 
 const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+// const mainIterationDuration = new Trend("main_iteration_duration");
 
-const inputFilepath = `../output/${outputPrefix}-create-holders.json`;
+const inputFilepath = `../output/${holderPrefix}-create-holders.json`;
 const inputFilepathIssuer = `../output/${issuerPrefix}-create-issuers.json`;
 const data = open(inputFilepath, "r");
 const dataIssuer = open(inputFilepathIssuer, "r");
@@ -155,7 +155,7 @@ export default function (data) {
     sseUrlPath: "connections/connection_id",
     topic: "connections",
     expectedState: "completed",
-    // maxDuration: 60,
+    maxDuration: 60,
     // maxRetries: 30,
     // retryDelay: 2,
     // lookBack: 20,
@@ -197,5 +197,5 @@ export default function (data) {
   const end = Date.now();
   const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
+  // mainIterationDuration.add(duration);
 }

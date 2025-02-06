@@ -5,11 +5,12 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-  export VUS=40
-  export ITERATIONS=250
-  export ISSUER_PREFIX="k6_issuer_tmodelg"
-  export HOLDER_PREFIX="k6_holder_tmodelg"
+  export VUS=30
+  export ITERATIONS=100
+  export ISSUER_PREFIX="issuer_acc"
+  export HOLDER_PREFIX="holderg_10k"
   export NUM_ISSUERS=2
+  export SCHEMA_NAME="model_acc"
 }
 
 init() {
@@ -17,7 +18,7 @@ init() {
 }
 
 scenario_create_holders() {
-  export SLEEP_DURATION=0.02
+  export SLEEP_DURATION=0.01
   # local iterations=$((ITERATIONS * VUS))
   # local vus=1
   # xk6 run ./scenarios/create-holders.js -e ITERATIONS=${iterations} -e VUS=${vus}
@@ -57,14 +58,14 @@ run_collection() {
   local deployments="$1"
 
   config
-  # init
-  # scenario_create_holders
-  # run_ha_iterations "${deployments}" senario_create_invitations
-  # export VUS=25
-  # export ITERATIONS=400
-  # run_ha_iterations "${deployments}" scemario_create_credentials
-  export VUS=40
-  export ITERATIONS=250
+  init
+  scenario_create_holders
+  run_ha_iterations "${deployments}" senario_create_invitations
+  export VUS=15
+  export ITERATIONS=200
+  run_ha_iterations "${deployments}" scemario_create_credentials
+  export VUS=30
+  export ITERATIONS=100
   run_ha_iterations "${deployments}" scenario_create_proof_verified
 
   # cleanup

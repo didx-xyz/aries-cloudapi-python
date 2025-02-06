@@ -149,15 +149,12 @@ jobs:
               >> "$GITHUB_ENV"
 
       - name: Install dependencies with Poetry
-        run: |
-          source .venv/bin/activate
-          mise run poetry:install
+        run: mise run poetry:install
         env:
           MISE_JOBS: 1
 
       - name: Run Pylint
         run: |
-          source .venv/bin/activate
           poetry run pylint \
             app/ \
             endorser/ \
@@ -186,7 +183,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: python-${{ hashFiles('**/poetry.lock') }}
+          key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
 
       - name: Set up Mise
         uses: jdx/mise-action@v2
@@ -205,9 +202,7 @@ jobs:
               >> "$GITHUB_ENV"
 
       - name: Run unit tests
-        run: |
-          source .venv/bin/activate
-          mise run tests:unit
+        run: mise run tests:unit
   build:
     name: Build
     permissions:
@@ -349,7 +344,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: python-${{ hashFiles('**/poetry.lock') }}
+          key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
 
       - name: Set up Mise
         uses: jdx/mise-action@v2

@@ -79,15 +79,17 @@ async def test_get_schema(
     ),
 )
 @pytest.mark.xdist_group(name="issuer_test_group")
-async def test_create_credential_definition_issuer_tenant(
+async def test_create_credential_definition(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,
     faber_client: RichAsyncClient,
     support_revocation: bool,
 ):
+    schema_id = schema_definition.id
+    tag = random_string(5)
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_definition.id,
-        tag=random_string(5),
+        schema_id=schema_id,
+        tag=tag,
         support_revocation=support_revocation,
     )
 
@@ -102,12 +104,20 @@ async def test_create_credential_definition_issuer_tenant(
     ).model_dump()
 
     faber_public_did = await get_public_did(faber_acapy_client)
-    schema = await faber_acapy_client.schema.get_schema(schema_id=schema_definition.id)
+    schema = await faber_acapy_client.schema.get_schema(schema_id=schema_id)
 
     assert_that(result).has_id(
-        f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{credential_definition.tag}"
+        f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{tag}"
     )
-    assert_that(result).has_tag(credential_definition.tag)
+    assert_that(result).has_tag(tag)
+    assert_that(result).has_schema_id(schema_id)
+
+    get_cred_def_result = (
+        await definitions.get_credential_definition_by_id(result["id"], auth)
+    ).model_dump()
+
+    assert_that(get_cred_def_result).has_tag(tag)
+    assert_that(get_cred_def_result).has_schema_id(schema_id)
 
     if support_revocation:
         cred_def_id = result["id"]

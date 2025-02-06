@@ -16,44 +16,8 @@ from app.routes.definitions import (
 from app.services.acapy_wallet import get_public_did
 from app.services.trust_registry.util.schema import registry_has_schema
 from app.tests.util.regression_testing import TestMode
-from app.tests.util.trust_registry import register_issuer
 from app.util.string import random_string
 from shared import RichAsyncClient
-
-
-@pytest.mark.anyio
-@pytest.mark.skipif(
-    TestMode.regression_run in TestMode.fixture_params,
-    reason="Don't create new schemas in regression mode",
-)
-async def test_create_credential_definition(
-    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
-):
-    # given
-    schema = CreateSchema(
-        name=random_string(15), version="0.1", attribute_names=["average"]
-    )
-
-    schema_result = (
-        await definitions.create_schema(schema, mock_governance_auth)
-    ).model_dump()
-    schema_id = schema_result["id"]
-
-    await register_issuer(governance_client, schema_id)
-    credential_definition = CreateCredentialDefinition(
-        schema_id=schema_id, tag=random_string(5), support_revocation=False
-    )
-
-    # when
-    result = (
-        await definitions.create_credential_definition(
-            credential_definition=credential_definition, auth=mock_governance_auth
-        )
-    ).model_dump()
-
-    assert_that(result).has_tag(credential_definition.tag)
-    assert_that(result).has_schema_id(credential_definition.schema_id)
-    assert_that(result["id"]).is_not_empty()
 
 
 @pytest.mark.anyio
@@ -64,7 +28,6 @@ async def test_create_credential_definition(
 async def test_create_schema(
     governance_public_did: str, mock_governance_auth: AcaPyAuthVerified
 ):
-    # given
     send = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
@@ -107,46 +70,6 @@ async def test_get_schema(
 
 
 @pytest.mark.anyio
-@pytest.mark.skipif(
-    TestMode.regression_run in TestMode.fixture_params,
-    reason="Don't create new schemas in regression mode",
-)
-async def test_get_credential_definition(
-    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
-):
-    # given
-    schema_send = CreateSchema(
-        name=random_string(15), version="0.1", attribute_names=["average"]
-    )
-
-    schema_result = (
-        await definitions.create_schema(schema_send, mock_governance_auth)
-    ).model_dump()
-
-    await register_issuer(governance_client, schema_result["id"])
-    credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=random_string(5)
-    )
-
-    # when
-    create_result = (
-        await definitions.create_credential_definition(
-            credential_definition=credential_definition, auth=mock_governance_auth
-        )
-    ).model_dump()
-
-    result = (
-        await definitions.get_credential_definition_by_id(
-            create_result["id"], mock_governance_auth
-        )
-    ).model_dump()
-
-    assert_that(result).has_tag(credential_definition.tag)
-    assert_that(result).has_schema_id(credential_definition.schema_id)
-    assert_that(result["id"]).is_not_empty()
-
-
-@pytest.mark.anyio
 @pytest.mark.parametrize("support_revocation", [False, True])
 @pytest.mark.skipif(
     TestMode.regression_run in TestMode.fixture_params,
@@ -156,15 +79,17 @@ async def test_get_credential_definition(
     ),
 )
 @pytest.mark.xdist_group(name="issuer_test_group")
-async def test_create_credential_definition_issuer_tenant(
+async def test_create_credential_definition(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,
     faber_client: RichAsyncClient,
     support_revocation: bool,
 ):
+    schema_id = schema_definition.id
+    tag = random_string(5)
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_definition.id,
-        tag=random_string(5),
+        schema_id=schema_id,
+        tag=tag,
         support_revocation=support_revocation,
     )
 
@@ -179,12 +104,20 @@ async def test_create_credential_definition_issuer_tenant(
     ).model_dump()
 
     faber_public_did = await get_public_did(faber_acapy_client)
-    schema = await faber_acapy_client.schema.get_schema(schema_id=schema_definition.id)
+    schema = await faber_acapy_client.schema.get_schema(schema_id=schema_id)
 
     assert_that(result).has_id(
-        f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{credential_definition.tag}"
+        f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{tag}"
     )
-    assert_that(result).has_tag(credential_definition.tag)
+    assert_that(result).has_tag(tag)
+    assert_that(result).has_schema_id(schema_id)
+
+    get_cred_def_result = (
+        await definitions.get_credential_definition_by_id(result["id"], auth)
+    ).model_dump()
+
+    assert_that(get_cred_def_result).has_tag(tag)
+    assert_that(get_cred_def_result).has_schema_id(schema_id)
 
     if support_revocation:
         cred_def_id = result["id"]

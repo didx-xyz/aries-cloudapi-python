@@ -3,37 +3,11 @@ from random import random
 from typing import AsyncGenerator
 
 from app.routes.wallet.dids import router as wallet_router
-from app.services.trust_registry.actors import (
-    fetch_actor_by_did,
-    register_actor,
-    remove_actor_by_id,
-)
-from app.services.trust_registry.schemas import register_schema
-from app.services.trust_registry.util.schema import registry_has_schema
+from app.services.trust_registry.actors import register_actor, remove_actor_by_id
 from shared import RichAsyncClient
 from shared.models.trustregistry import Actor
 
 WALLET_BASE_PATH = wallet_router.prefix
-
-
-async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
-    pub_did_res = await issuer_client.get(f"{WALLET_BASE_PATH}/public")
-    did = pub_did_res.json()["did"]
-
-    if not await registry_has_schema(schema_id=schema_id):
-        await register_schema(schema_id)
-
-    if not await fetch_actor_by_did(f"did:sov:{did}"):
-        rand = random()
-        await register_actor(
-            Actor(
-                id=f"test-actor-{rand}",
-                name=f"Test Actor-{rand}",
-                roles=["issuer"],
-                did=f"did:sov:{did}",
-                didcomm_invitation=None,
-            )
-        )
 
 
 @asynccontextmanager

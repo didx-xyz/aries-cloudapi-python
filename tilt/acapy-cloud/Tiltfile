@@ -106,7 +106,7 @@ def setup_nats(namespace):
         ]
     local_resource(
         name="build-nats",
-        cmd="cd " + chart_dir + " && helm dep build --skip-refresh",
+        cmd="helm dep build --skip-refresh " + chart_dir,
         labels=["10-helm-repos"],
         allow_parallel=True,
     )

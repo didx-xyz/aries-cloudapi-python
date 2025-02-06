@@ -70,10 +70,6 @@ jobs:
           "pipx:black" = "25.1"
           "pipx:isort" = "6.0"
           python = "3.12"
-          uv = "0.5"
-
-          [settings]
-          pipx_uvx = true
           EOF
 
       - name: Set up Mise
@@ -115,7 +111,6 @@ jobs:
           [tools]
           poetry = "2.0"
           python = "3.12"
-          uv = "0.5"
 
           [settings]
           experimental = true

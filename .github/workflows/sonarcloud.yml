@@ -35,15 +35,17 @@ on:
     branches: [master]
   workflow_dispatch:
 
-permissions:
-  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+permissions: {}
 
 jobs:
-  Analysis:
+  analysis:
+    name: Analysis
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
     steps:
-      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -56,11 +58,9 @@ jobs:
           [tools]
           poetry = "2.0"
           python = "3.12"
-          uv = "0.5"
 
           [settings]
           experimental = true
-          pipx_uvx = true
           python_compile = false
 
           [env]
@@ -81,7 +81,6 @@ jobs:
           experimental: true
           install: true
 
-      # Install dependencies
       - name: Install dependencies with Poetry
         run: mise run poetry:install
         env:

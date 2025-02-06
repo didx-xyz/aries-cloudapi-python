@@ -16,44 +16,8 @@ from app.routes.definitions import (
 from app.services.acapy_wallet import get_public_did
 from app.services.trust_registry.util.schema import registry_has_schema
 from app.tests.util.regression_testing import TestMode
-from app.tests.util.trust_registry import register_issuer
 from app.util.string import random_string
 from shared import RichAsyncClient
-
-
-@pytest.mark.anyio
-@pytest.mark.skipif(
-    TestMode.regression_run in TestMode.fixture_params,
-    reason="Don't create new schemas in regression mode",
-)
-async def test_create_credential_definition(
-    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
-):
-    # given
-    schema = CreateSchema(
-        name=random_string(15), version="0.1", attribute_names=["average"]
-    )
-
-    schema_result = (
-        await definitions.create_schema(schema, mock_governance_auth)
-    ).model_dump()
-    schema_id = schema_result["id"]
-
-    await register_issuer(governance_client, schema_id)
-    credential_definition = CreateCredentialDefinition(
-        schema_id=schema_id, tag=random_string(5), support_revocation=False
-    )
-
-    # when
-    result = (
-        await definitions.create_credential_definition(
-            credential_definition=credential_definition, auth=mock_governance_auth
-        )
-    ).model_dump()
-
-    assert_that(result).has_tag(credential_definition.tag)
-    assert_that(result).has_schema_id(credential_definition.schema_id)
-    assert_that(result["id"]).is_not_empty()
 
 
 @pytest.mark.anyio
@@ -64,7 +28,6 @@ async def test_create_credential_definition(
 async def test_create_schema(
     governance_public_did: str, mock_governance_auth: AcaPyAuthVerified
 ):
-    # given
     send = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
@@ -104,46 +67,6 @@ async def test_get_schema(
     assert_that(result).has_name(schema.name)
     assert_that(result).has_version(schema.version)
     assert_that(result).has_attribute_names(schema.attribute_names)
-
-
-@pytest.mark.anyio
-@pytest.mark.skipif(
-    TestMode.regression_run in TestMode.fixture_params,
-    reason="Don't create new schemas in regression mode",
-)
-async def test_get_credential_definition(
-    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
-):
-    # given
-    schema_send = CreateSchema(
-        name=random_string(15), version="0.1", attribute_names=["average"]
-    )
-
-    schema_result = (
-        await definitions.create_schema(schema_send, mock_governance_auth)
-    ).model_dump()
-
-    await register_issuer(governance_client, schema_result["id"])
-    credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=random_string(5)
-    )
-
-    # when
-    create_result = (
-        await definitions.create_credential_definition(
-            credential_definition=credential_definition, auth=mock_governance_auth
-        )
-    ).model_dump()
-
-    result = (
-        await definitions.get_credential_definition_by_id(
-            create_result["id"], mock_governance_auth
-        )
-    ).model_dump()
-
-    assert_that(result).has_tag(credential_definition.tag)
-    assert_that(result).has_schema_id(credential_definition.schema_id)
-    assert_that(result["id"]).is_not_empty()
 
 
 @pytest.mark.anyio

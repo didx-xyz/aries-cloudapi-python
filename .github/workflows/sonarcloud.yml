@@ -112,7 +112,7 @@ jobs:
         with:
           # Additional arguments for the SonarCloud scanner
           args: >
-            -Dsonar.projectKey=didx-xyz_acapy-cloud
+            -Dsonar.projectKey=didx-xyz_aries-cloudapi-python
             -Dsonar.organization=didx-xyz
             -Dsonar.coverage.exclusions=**/tests/**
             -Dsonar.python.coverage.reportPaths=coverage.xml

@@ -246,7 +246,7 @@ jobs:
     name: Local Test
     needs:
       - build
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
 
     concurrency:
       group: local-test-${{ github.ref_name }}
@@ -261,7 +261,7 @@ jobs:
           persist-credentials: false
 
       - name: Cache Python venv
-        uses: actions/cache@v4
+        uses: useblacksmith/cache@v5
         with:
           path: .venv
           key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
@@ -270,7 +270,7 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           version: ${{ env.MISE_VERSION }}
-          cache: true
+          cache: false
           experimental: true # Required for mise tasks
           install: true
         env:

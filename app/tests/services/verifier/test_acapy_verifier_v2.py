@@ -26,9 +26,7 @@ from app.tests.services.verifier.utils import (
     v20_presentation_exchange_records,
 )
 from app.tests.util.mock import to_async
-from shared.models.presentation_exchange import (
-    PresentationExchange,
-)
+from shared.models.presentation_exchange import PresentationExchange
 from shared.models.presentation_exchange import (
     presentation_record_to_model as record_to_model,
 )

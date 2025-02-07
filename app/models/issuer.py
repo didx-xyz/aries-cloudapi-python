@@ -12,17 +12,23 @@ class CredentialType(str, Enum):
     INDY: str = "indy"
     JWT: str = "jwt"
     LD_PROOF: str = "ld_proof"
+    ANONCREDS: str = "anoncreds"
 
 
 class IndyCredential(BaseModel):
     credential_definition_id: str
     attributes: Dict[str, str]
 
+class AnonCredsCredential(BaseModel):
+    credential_definition_id: str
+    issuer_id: str
+    attributes: Dict[str, str]
 
 class CredentialBase(SaveExchangeRecordField):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
+    anoncreds_credential_detail: Optional[AnonCredsCredential] = None
 
     @field_validator("indy_credential_detail", mode="before")
     @classmethod

@@ -1,0 +1,203 @@
+environments:
+  local:
+    values:
+    - namespace: cloudapi
+      image:
+        registry: ghcr.io/didx-xyz
+        tag: master
+      ddInjectEnabled: false
+      ddProfilingEnabled:
+        default: false
+        overrides: {}
+      deployLedger: true
+      natsReplicaCount: 1
+      nodeSelector: {}
+      pgProxyEnabled: false
+      pgAdmin:
+        enabled: true
+        ingress: {}
+      tolerations: []
+  dev:
+    values:
+    - namespace: acapy-cloud-dev
+      image:
+        registry: ghcr.io/didx-xyz
+        tag: master
+      ddInjectEnabled: false
+      ddProfilingEnabled:
+        default: false
+        overrides: {}
+          # multitenant-agent: true
+          # governance-agent: true
+          # multitenant-web: true
+          # tenant-web: true
+      deployLedger: true
+      natsReplicaCount: 1
+      nodeSelector: {}
+      pgProxyEnabled: false
+      pgAdmin:
+        enabled: true
+        ingress:
+          ingressClassName: nginx-internal
+          hosts:
+            - host: pgadmin-acapy-cloud.dev.didxtech.com
+              paths:
+                - path: /
+                  pathType: Prefix
+      tolerations: []
+---
+{{- $releases := list
+  "endorser"
+  "governance-agent"
+  "governance-web"
+  "mediator"
+  "multitenant-agent"
+  "multitenant-web"
+  "public-web"
+  "tails-server"
+  "tenant-web"
+  "trust-registry"
+  "waypoint"
+}}
+
+releases:
+{{- range $index, $release := $releases }}
+  - name: {{ $release }}
+    labels:
+      app: {{ $release }}
+    namespace: {{ $.Values.namespace }}
+    chart: ./acapy-cloud
+    version: 0.2.0
+    values:
+      - ./acapy-cloud/conf/{{ $.Environment.Name }}/{{ $release }}.yaml
+      {{- if $.Values.pgProxyEnabled -}}
+      {{- if or (eq $release "governance-agent") (eq $release "multitenant-agent") }}
+      - ./acapy-cloud/conf/{{ $.Environment.Name }}/{{ $release }}-pg-proxy.yaml
+      {{- end }}
+      {{- end }}
+      - deploymentLabels:
+          tags.datadoghq.com/env: {{ $.Environment.Name }}
+        podLabels:
+          admission.datadoghq.com/enabled: {{ quote $.Values.ddInjectEnabled }}
+          tags.datadoghq.com/env: {{ $.Environment.Name }}
+      - nodeSelector: {{ toYaml $.Values.nodeSelector | nindent 10 }}
+        tolerations: {{ toYaml $.Values.tolerations | nindent 10 }}
+    set:
+      {{- if not (eq $release "mediator") }}
+      - name: image.registry
+        value: {{ $.Values.image.registry }}
+      - name: image.tag
+        value: {{ $.Values.image.tag }}
+      {{- end }}
+      - name: env.DD_PROFILING_ENABLED
+        value: {{ index $.Values.ddProfilingEnabled.overrides $release | default $.Values.ddProfilingEnabled.default }}
+{{- end }}
+{{- if .Values.deployLedger }}
+  - name: ledger-nodes
+    labels:
+      app: ledger-nodes
+    namespace: {{ .Values.namespace }}
+    chart: ./ledger-nodes
+    version: 0.2.0
+    values:
+      - ./ledger-nodes/conf/{{ .Environment.Name }}/values.yaml
+      - deploymentLabels:
+          tags.datadoghq.com/env: {{ .Environment.Name }}
+        podLabels:
+          admission.datadoghq.com/enabled: "false"
+          tags.datadoghq.com/env: {{ .Environment.Name }}
+          sidecar.istio.io/inject: "false"
+      - nodeSelector: {{ toYaml .Values.nodeSelector | nindent 10 }}
+        tolerations: {{ toYaml .Values.tolerations | nindent 10 }}
+    set:
+      - name: image.registry
+        value: {{ .Values.image.registry }}
+      - name: image.tag
+        value: {{ .Values.image.tag }}
+  - name: ledger-browser
+    labels:
+      app: ledger-browser
+    namespace: {{ .Values.namespace }}
+    chart: ./acapy-cloud
+    version: 0.2.0
+    values:
+      - ./acapy-cloud/conf/{{ .Environment.Name }}/ledger-browser.yaml
+      - deploymentLabels:
+          tags.datadoghq.com/env: {{ .Environment.Name }}
+        podLabels:
+          admission.datadoghq.com/enabled: "false"
+          tags.datadoghq.com/env: {{ .Environment.Name }}
+      - nodeSelector: {{ toYaml .Values.nodeSelector | nindent 10 }}
+        tolerations: {{ toYaml .Values.tolerations | nindent 10 }}
+    set:
+      - name: image.registry
+        value: {{ .Values.image.registry }}
+      - name: image.tag
+        value: {{ .Values.image.tag }}
+{{- end }}
+  # https://github.com/redpanda-data/helm-charts/tree/main/charts/connect
+  - name: connect-cloud
+    labels:
+      app: connect-cloud
+    namespace: {{ .Values.namespace }}
+    chart: redpanda/connect
+    version: 3.0.3
+    values:
+      - ./acapy-cloud/conf/{{ $.Environment.Name }}/connect-cloud.yaml
+      - fullnameOverride: connect-cloud
+        deployment:
+          podLabels:
+            admission.datadoghq.com/enabled: "false"
+            tags.datadoghq.com/env: {{ .Environment.Name }}
+          podAnnotations:
+            ad.datadoghq.com/logs_exclude: "true" # Disable datadog log shipping
+            sidecar.istio.io/inject: "false"
+
+  # https://github.com/bitnami/charts/tree/main/bitnami/nats
+  - name: nats
+    labels:
+      app: nats
+    namespace: {{ .Values.namespace }}
+    chart: ./nats
+    values:
+      - ./nats/values.yaml
+      - nats:
+          replicaCount: {{ default 1 .Values.natsReplicaCount }}
+
+  # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
+  - name: postgres
+    labels:
+      app: postgres
+    namespace: {{ .Values.namespace }}
+    chart: oci://registry-1.docker.io/bitnamicharts/postgresql-ha
+    version: 15.1.7
+    values:
+      - ../tilt/acapy-cloud/postgres.yaml
+
+  # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
+  - name: pgadmin
+    labels:
+      app: pgadmin
+    namespace: {{ .Values.namespace }}
+    chart: runix/pgadmin4
+    version: 1.34.0
+    installed: {{ .Values.pgAdmin.enabled }}
+    values:
+      - ../tilt/acapy-cloud/pgadmin.yaml
+      {{- with .Values.pgAdmin.ingress }}
+      - ingress:
+          {{ toYaml . | nindent 10 }}
+      {{- end }}
+---
+repositories:
+  - name: redpanda
+    url: https://charts.redpanda.com
+  - name: runix
+    url: https://rowanruseler.github.io/helm-charts
+---
+helmDefaults:
+  timeout: 600
+  wait: true
+  atomic: true
+  cleanupOnFail: true
+  createNamespace: false

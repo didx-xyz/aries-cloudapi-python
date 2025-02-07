@@ -106,7 +106,7 @@ services:
     container_name: governance-multitenant-web
     build:
       context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
+      dockerfile: ./dockerfiles/app/Dockerfile
     ports:
       - 0.0.0.0:8100:8000
     volumes:
@@ -134,7 +134,7 @@ services:
     container_name: governance-ga-web
     build:
       context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
+      dockerfile: ./dockerfiles/app/Dockerfile
     ports:
       - 0.0.0.0:8200:8000
     volumes:
@@ -160,7 +160,7 @@ services:
     container_name: governance-tenant-web
     build:
       context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
+      dockerfile: ./dockerfiles/app/Dockerfile
     ports:
       - 0.0.0.0:8300:8000
     volumes:
@@ -188,7 +188,7 @@ services:
     container_name: governance-public-web
     build:
       context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
+      dockerfile: ./dockerfiles/app/Dockerfile
     ports:
       - 0.0.0.0:8400:8000
     volumes:

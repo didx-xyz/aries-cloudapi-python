@@ -151,7 +151,7 @@ For local development:
 3. Install using Helm:
 
 ```bash
-helm install my-release . -f values-<component>.yaml
+helm install my-release . -f ./conf/local/<component>.yaml
 ```
 
 ## Additional Notes

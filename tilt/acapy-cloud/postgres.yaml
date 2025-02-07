@@ -40,6 +40,7 @@ pgpool:
     passwords: trust-registry;governance;multitenant;mediator
   adminUsername: admin
   adminPassword: admin
+  maxPool: 1000
   # https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   resourcesPreset: none
   tls:

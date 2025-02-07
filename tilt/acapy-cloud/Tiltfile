@@ -3,7 +3,7 @@ load("ext://color", "color")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
-postgres_version = "15.1.6"
+postgres_version = "15.1.7"
 # https://github.com/rowanruseler/helm-charts/tree/main/charts/pgadmin4
 pgadmin_version = "1.34.0"
 
@@ -93,7 +93,7 @@ def setup_pgadmin(namespace, ingress_domain):
 def setup_nats(namespace):
     print(color.green("Installing NATS..."))
 
-    chart_dir = "./tilt/acapy-cloud/nats"
+    chart_dir = "./helm/nats"
     values_file = chart_dir + "/values.yaml"
 
     ## Setup NATS
@@ -106,7 +106,7 @@ def setup_nats(namespace):
         ]
     local_resource(
         name="build-nats",
-        cmd="cd " + chart_dir + " && helm dep build --skip-refresh",
+        cmd="helm dep build --skip-refresh " + chart_dir,
         labels=["10-helm-repos"],
         allow_parallel=True,
     )
@@ -145,7 +145,7 @@ def setup_redpanda_connect_cloud(namespace):
     resource_name = "connect-cloud"
     project_root = os.getcwd()
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    values_file = current_dir + "/connect-cloud.yaml"
+    values_file = project_root + "/helm/acapy-cloud/conf/local/connect-cloud.yaml"
 
     helm_repo(
         name="redpanda",
@@ -190,7 +190,8 @@ def setup_redpanda_connect_cloud(namespace):
         resource_deps=["cloudapi-ns"],
     )
 
-    # Create helm release
+    ## Create helm release
+    # https://github.com/redpanda-data/helm-charts/tree/main/charts/connect
     helm_resource(
         name=resource_name,
         chart="redpanda/connect",
@@ -202,11 +203,9 @@ def setup_redpanda_connect_cloud(namespace):
             "--values",
             values_file,
             "--set",
-            "logger.static_fields.@service=" + resource_name,
-            "--set",
-            "streams.enabled=true",
-            "--set",
             "streams.streamsConfigMap=" + resource_name + "-streams",
+            "--version",
+            "3.0.3",
         ],
         labels=["03-streaming"],
         resource_deps=[
@@ -353,7 +352,7 @@ def setup_ledger(namespace, build_enabled, ingress_domain):
         if build_enabled:
             print(color.green("Docker Build of ledger-nodes for compose deployment..."))
             custom_build(
-                registry + "/didx-xyz/d-cloud/ledger-nodes",
+                registry + "/didx-xyz/acapy-cloud/ledger-nodes",
                 "docker build --network=host -t $EXPECTED_REF "
                 + "--platform=linux/amd64 "
                 + "--file="
@@ -450,7 +449,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -485,7 +484,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -504,7 +503,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),
@@ -523,7 +522,7 @@ def setup_cloudapi(build_enabled, expose):
                 ),
             ],
             "image": {
-                "dockerfile": "./dockerfiles/fastapi/Dockerfile",
+                "dockerfile": "./dockerfiles/app/Dockerfile",
                 "live_update": add_live_update(
                     [
                         ("./app", "/app"),

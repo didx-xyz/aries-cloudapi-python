@@ -4,7 +4,7 @@
 replicaCount: 4
 
 image:
-  name: d-cloud/ledger-nodes
+  name: acapy-cloud/ledger-nodes
   registry: ghcr.io/didx-xyz
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest

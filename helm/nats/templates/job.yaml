@@ -17,6 +17,10 @@ spec:
         {{- with .Values.nats.podAnnotations }}
         {{- tpl (toYaml .) $ | nindent 8 }}
         {{- end }}
+      labels:
+        {{- with .Values.nats.podLabels }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+        {{- end }}
     spec:
       restartPolicy: {{ default "Never" .Values.postInstall.restartPolicy }}
       initContainers:

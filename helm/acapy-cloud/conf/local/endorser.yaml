@@ -12,9 +12,26 @@ podLabels:
   admission.datadoghq.com/enabled: "true"
 
 image:
-  name: d-cloud/endorser
+  name: acapy-cloud/endorser
   pullPolicy: Always
   tag: master
+
+initContainers:
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+    env:
+      - name: NATS_SERVER
+        value: "{{ .Values.env.NATS_SERVER }}"
+      - name: NATS_STREAM
+        value: "{{ .Values.env.NATS_STREAM }}"
 
 command:
   - poetry
@@ -68,6 +85,12 @@ env:
 
   GOVERNANCE_ACAPY_LABEL: Governance
   ENABLE_SERIALIZE_LOGS: "FALSE"
+
+  NATS_CREDS_FILE: ""
+  NATS_SERVER: nats://nats:4222
+  NATS_SUBJECT: cloudapi.aries.events
+  NATS_STREAM: cloudapi_aries_events
+  ENDORSER_DURABLE_CONSUMER: endorser
 
 podSecurityContext:
   fsGroup: 65534

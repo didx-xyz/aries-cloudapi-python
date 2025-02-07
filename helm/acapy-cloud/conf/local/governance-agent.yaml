@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/governance-agent.logs: '[{"source": "python", "service": "governance-agent", "auto_multi_line_detection": true}]'
 
 image:
-  name: d-cloud/governance-agent
+  name: acapy-cloud/governance-agent
   pullPolicy: Always
   tag: master
 
@@ -122,6 +122,21 @@ initContainers:
         echo "Failed to register DID. Status code: $STATUS"
         exit 1
       fi
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+    env:
+      - name: NATS_SERVER
+        value: "{{ .Values.env.NATS_SERVER }}"
+      - name: NATS_STREAM
+        value: "{{ .Values.env.NATS_STREAM }}"
 
 persistence:
   enabled: false
@@ -141,7 +156,7 @@ secretData:
   ACAPY_WALLET_NAME: governance
   ACAPY_WALLET_SEED: verySecretPaddedWalletSeedPadded
 
-  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections": 10, "min_idle_count": 10, "url": "cloudapi-postgresql:5432" }'
+  ACAPY_WALLET_STORAGE_CONFIG: '{ "max_connections":10, "min_idle_count":10, "url":"cloudapi-postgresql:5432" }'
   ACAPY_WALLET_STORAGE_CREDS: '{ "account": "governance", "admin_account": "governance", "admin_password": "governance", "password": "governance" }'
   WALLET_DB_ADMIN_PASS: governance
   WALLET_DB_ADMIN_USER: governance
@@ -174,7 +189,7 @@ env:
   # ## DO NOT CHANGE VARIABLES BELOW
   # ## Unless you know exactly what you are doing
   # ## Changes will probably break CloudAPI
-  # Optional Helper Configurations - See https://github.com/hyperledger/aries-cloudagent-python/blob/main/aries_cloudagent/config/argparse.py
+  # Optional Helper Configurations - See https://github.com/openwallet-foundation/acapy/blob/main/acapy_agent/config/argparse.py
   ACAPY_AUTO_ACCEPT_INVITES: false
   ACAPY_AUTO_ACCEPT_REQUESTS: false
   ACAPY_AUTO_PING_CONNECTION: true

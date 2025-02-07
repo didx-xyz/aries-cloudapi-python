@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/governance-web.logs: '[{"source": "python.uvicorn", "service": "governance-web"}]'
 
 image:
-  name: d-cloud/governance-web
+  name: acapy-cloud/app
   pullPolicy: Always
   tag: master
 
@@ -77,16 +77,6 @@ initContainers:
       - |
         until curl -s http://governance-agent:3020 -o /dev/null; do
           echo "waiting for governance-agent to be healthy"
-          sleep 2
-        done
-  - name: wait-governance-multitenant-agent
-    image: curlimages/curl
-    command:
-      - sh
-      - -c
-      - |
-        until curl -s http://multitenant-agent:3020; do
-          echo "waiting for multitenant-agent to be healthy"
           sleep 2
         done
 

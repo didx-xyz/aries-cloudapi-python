@@ -1,0 +1,157 @@
+fullnameOverride: waypoint
+
+replicaCount: 1
+
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+  ad.datadoghq.com/waypoint.logs: '[{"source": "python.uvicorn", "service": "waypoint"}]'
+  proxy.istio.io/config: |-
+    proxyMetadata:
+      ISTIO_META_IDLE_TIMEOUT: 0s
+podLabels:
+  admission.datadoghq.com/enabled: "true"
+
+image:
+  name: acapy-cloud/waypoint
+  pullPolicy: Always
+  tag: master
+
+command:
+  - poetry
+  - run
+  - uvicorn
+  - waypoint.main:app
+  - --log-config=/tmp/log_conf.yaml
+  - --reload
+  - --host
+  - 0.0.0.0
+  - --port
+  - 3010
+
+initContainers:
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+    env:
+      - name: NATS_SERVER
+        value: "{{ .Values.env.NATS_SERVER }}"
+      - name: NATS_STREAM
+        value: "{{ .Values.env.NATS_STATE_STREAM }}"
+
+ingressDomain: acapy-cloud.dev.didxtech.com
+ingress:
+  internal:
+    enabled: true
+    className: nginx-internal
+    rules:
+      - host: waypoint-{{ .Values.ingressDomain }}
+        paths:
+          - path: /
+
+service:
+  # if set, will run Pods on Node Network
+  appProtocol: http
+  hostNetwork: false
+  port: 3010
+  containerPort: 3010
+
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: "{{ trunc 15 .Release.Name }}"
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: "{{ trunc 15 .Release.Name }}"
+
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - sleep 15
+
+# resources:
+#   requests:
+#     cpu: 50m
+#     memory: 384Mi
+#   limits:
+#     cpu: 250m
+#     memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+env:
+  LOG_LEVEL: info
+  OPENAPI_NAME: waypoint
+  PYTHONPATH: "/"
+  ENABLE_SERIALIZE_LOGS: "TRUE"
+  NATS_CREDS_FILE: "" # NATS in Local dev has no auth
+  NATS_SERVER: nats://nats:4222
+  NATS_STATE_SUBJECT: cloudapi.aries.state_monitoring
+  NATS_STATE_STREAM: cloudapi_aries_state_monitoring
+
+podSecurityContext:
+  fsGroup: 65534
+securityContext:
+  runAsUser: 0
+
+extraVolumes:
+  - name: logs
+    emptyDir: {}
+extraVolumeMounts:
+  - name: logs
+    mountPath: /logs
+
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: soft
+  key: node.kubernetes.io/lifecycle
+  values:
+    - spot
+
+configFiles:
+  log_conf.yaml:
+    path: /tmp/log_conf.yaml
+    content: |-
+      version: 1
+      disable_existing_loggers: False
+      formatters:
+        default:
+          "()": uvicorn.logging.DefaultFormatter
+          format: '%(asctime)s %(name)s %(levelname)s %(message)s'
+          use_colors: null
+        access:
+          "()": uvicorn.logging.AccessFormatter
+          format: '%(asctime)s %(name)s %(levelname)s %(client_addr)s - "%(request_line)s" %(status_code)s'
+      handlers:
+        default:
+          formatter: default
+          class: logging.StreamHandler
+          stream: ext://sys.stderr
+        access:
+          formatter: access
+          class: logging.StreamHandler
+          stream: ext://sys.stdout
+      loggers:
+        uvicorn:
+          level: INFO
+          handlers:
+            - default
+          propagate: no
+        uvicorn.error:
+          level: INFO
+        uvicorn.access:
+          level: INFO
+          handlers:
+            - access
+          propagate: no

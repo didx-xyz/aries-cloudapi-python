@@ -10,7 +10,7 @@ podLabels:
   admission.datadoghq.com/enabled: "true"
 
 image:
-  name: d-cloud/tails-server
+  name: acapy-cloud/tails-server
   # registry: ghcr.io/bcgov
   # tag: 1.1
   pullPolicy: Always

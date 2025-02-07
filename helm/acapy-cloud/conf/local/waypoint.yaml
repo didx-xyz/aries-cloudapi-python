@@ -12,7 +12,7 @@ podLabels:
   admission.datadoghq.com/enabled: "true"
 
 image:
-  name: d-cloud/waypoint
+  name: acapy-cloud/waypoint
   pullPolicy: Always
   tag: master
 
@@ -27,6 +27,23 @@ command:
   - 0.0.0.0
   - --port
   - 3010
+
+initContainers:
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+    env:
+      - name: NATS_SERVER
+        value: "{{ .Values.env.NATS_SERVER }}"
+      - name: NATS_STREAM
+        value: "{{ .Values.env.NATS_STATE_STREAM }}"
 
 ingressDomain: cloudapi.127.0.0.1.nip.io
 ingress:

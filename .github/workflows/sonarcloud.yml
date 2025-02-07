@@ -35,15 +35,17 @@ on:
     branches: [master]
   workflow_dispatch:
 
-permissions:
-  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+permissions: {}
 
 jobs:
-  Analysis:
+  analysis:
+    name: Analysis
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
     steps:
-      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -56,12 +58,9 @@ jobs:
           [tools]
           poetry = "2.0"
           python = "3.12"
-          uv = "0.5"
 
           [settings]
           experimental = true
-          jobs = 1
-          pipx_uvx = true
           python_compile = false
 
           [env]
@@ -75,6 +74,12 @@ jobs:
           depends = ["poetry:install:*"]
           EOF
 
+      - name: Cache Python venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: python-${{ hashFiles('**/poetry.lock', '.mise.toml') }}
+
       - name: Set up Mise
         uses: jdx/mise-action@v2
         with:
@@ -82,9 +87,10 @@ jobs:
           experimental: true
           install: true
 
-      # Install dependencies
       - name: Install dependencies with Poetry
         run: mise run poetry:install
+        env:
+          MISE_JOBS: 1
 
       # Run tests and generate coverage report
       - name: Run Tests with Coverage
@@ -106,7 +112,7 @@ jobs:
         with:
           # Additional arguments for the SonarCloud scanner
           args: >
-            -Dsonar.projectKey=didx-xyz_aries-cloudapi-python
+            -Dsonar.projectKey=didx-xyz_acapy-cloud
             -Dsonar.organization=didx-xyz
             -Dsonar.coverage.exclusions=**/tests/**
             -Dsonar.python.coverage.reportPaths=coverage.xml

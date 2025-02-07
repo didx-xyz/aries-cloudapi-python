@@ -25,8 +25,8 @@ update_settings(
     max_parallel_updates=5,
 )
 
-# Restrict to `kind-aries-cloudapi` kube context
-kind_cluster_name = "kind-aries-cloudapi"
+# Restrict to `kind-acapy-cloud` kube context
+kind_cluster_name = "kind-acapy-cloud"
 allow_k8s_contexts([kind_cluster_name])
 
 if config.tilt_subcommand in ("up", "ci"):
@@ -86,7 +86,7 @@ expose = cfg.get("expose")
 setup_cloudapi(build_enabled, expose)
 
 if config.tilt_subcommand not in ("down"):
-    # _FORCE_ Kube Context to `kind-aries-cloudapi`
+    # _FORCE_ Kube Context to `kind-acapy-cloud`
     local(
         "kubectl config use-context " + kind_cluster_name, dir=os.path.dirname(__file__)
     )

@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/tenant-web.logs: '[{"source": "python.uvicorn", "service": "tenant-web"}]'
 
 image:
-  name: d-cloud/tenant-web
+  name: acapy-cloud/app
   pullPolicy: Always
   tag: master
 

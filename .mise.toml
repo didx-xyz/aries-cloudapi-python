@@ -11,7 +11,6 @@ pre-commit = "4.1"
 python = "3.12"
 tilt = "0.33"
 usage = "latest"
-uv = "0.5"
 
 [settings]
 experimental = true
@@ -19,14 +18,12 @@ experimental = true
 # Prevents `poetry install` from running in parallel which
 #   results in multiple threads trying to write to the same file.
 jobs = 1
-# Use UV instead of pipx for installing Python binaries
-pipx_uvx = true
 # Install precompiled python binary
 python_compile = false
 
 [env]
 DOCKER_HOST_OVERRIDE = "unix:///var/run/docker.sock"
-KIND_CLUSTER_NAME = "aries-cloudapi"
+KIND_CLUSTER_NAME = "acapy-cloud"
 KIND_K8S_CONTEXT = "kind-{{env.KIND_CLUSTER_NAME}}"
 KIND_DOCKER_CACHE = "docker-cache"
 KIND_DOCKER_REGISTRY = "docker-registry"
@@ -101,7 +98,7 @@ poetry run pytest . --ignore ./tilt $@
 [tasks."tests:unit"]
 description = "Run unit tests"
 depends = ["poetry:install"]
-run = "poetry run pytest app --ignore=app/tests/e2e $@"
+run = "poetry run pytest -n auto --dist loadgroup -o 'norecursedirs=e2e' $@"
 
 [tasks."tests:e2e"]
 description = "Run e2e tests"
@@ -110,8 +107,7 @@ run = """
 #!/bin/bash
 cp .env.example .env
 source .env
-# pytest app/tests/e2e
-poetry run pytest --dist loadfile app/tests/e2e $@
+poetry run pytest -n auto --dist loadgroup $(find . -type d -path '*/tests/e2e' -not -path './tilt*')$@
 """
 
 [tasks.fmt]

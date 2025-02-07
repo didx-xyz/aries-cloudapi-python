@@ -8,7 +8,7 @@ podAnnotations:
   ad.datadoghq.com/multitenant-agent.logs: '[{"source": "python", "service": "multitenant-agent", "auto_multi_line_detection": true}]'
 
 image:
-  name: d-cloud/multitenant-agent
+  name: acapy-cloud/multitenant-agent
   tag: master
   pullPolicy: Always
 
@@ -104,6 +104,21 @@ initContainers:
           echo "waiting for ledger-browser to be healthy"
           sleep 2
         done
+  - name: nc-nats
+    image: busybox
+    command: ['sh', '-c', 'until nc -z nats 4222; do echo waiting for nats; sleep 2; done;']
+  - name: nats-check
+    image: bitnami/natscli
+    command:
+      - sh
+      - -c
+      - |
+        until nats --server $NATS_SERVER str info $NATS_STREAM >/dev/null 2>&1; do echo waiting for nats stream >/dev/null 2>&1; sleep 2; done;
+    env:
+      - name: NATS_SERVER
+        value: "{{ .Values.env.NATS_SERVER }}"
+      - name: NATS_STREAM
+        value: "{{ .Values.env.NATS_STREAM }}"
 
 persistence:
   enabled: true
@@ -165,7 +180,7 @@ env:
   # ## DO NOT CHANGE VARIABLES BELOW
   # ## Unless you know exactly what you are doing
   # ## Changes will probably break CloudAPI
-  # Optional Helper Configurations - See https://github.com/hyperledger/aries-cloudagent-python/blob/main/aries_cloudagent/config/argparse.py
+  # Optional Helper Configurations - See https://github.com/openwallet-foundation/acapy/blob/main/acapy_agent/config/argparse.py
   ACAPY_AUTO_ACCEPT_INVITES: true
   ACAPY_AUTO_ACCEPT_REQUESTS: true
   ACAPY_AUTO_PING_CONNECTION: true

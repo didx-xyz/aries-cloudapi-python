@@ -223,7 +223,7 @@ secretData: {}
 ### Istio
 istio:
   peerAuth:
-    enabled: false
+    enabled: true
     labels: {}
     annotations: {}
     conf:
@@ -231,7 +231,7 @@ istio:
         mode: PERMISSIVE
 
   sidecar:
-    enabled: false
+    enabled: true
     labels: {}
     annotations: {}
     conf:

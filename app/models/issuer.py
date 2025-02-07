@@ -19,10 +19,12 @@ class IndyCredential(BaseModel):
     credential_definition_id: str
     attributes: Dict[str, str]
 
+
 class AnonCredsCredential(BaseModel):
     credential_definition_id: str
     issuer_id: str
     attributes: Dict[str, str]
+
 
 class CredentialBase(SaveExchangeRecordField):
     type: CredentialType = CredentialType.INDY

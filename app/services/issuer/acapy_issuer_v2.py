@@ -6,12 +6,12 @@ from aries_cloudcontroller import (
     V20CredExFree,
     V20CredExRecord,
     V20CredFilter,
+    V20CredFilterAnoncreds,
     V20CredFilterIndy,
     V20CredOfferConnFreeRequest,
     V20CredPreview,
     V20CredRequestRequest,
     V20CredStoreRequest,
-    V20CredFilterAnoncreds
 )
 
 from app.exceptions import (

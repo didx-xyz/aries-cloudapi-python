@@ -9,6 +9,7 @@ from aries_cloudcontroller import (
     TAAInfo,
     TAARecord,
     TxnOrRegisterLedgerNymResponse,
+    GetSchemaResult
 )
 
 from app.exceptions import CloudApiException, handle_acapy_call
@@ -192,13 +193,13 @@ async def schema_id_from_credential_definition_id(
     seq_no = tokens[3]
 
     bound_logger.debug("Fetching schema using sequence number: `{}`", seq_no)
-    schema: SchemaGetResult = await handle_acapy_call(
-        logger=logger, acapy_call=controller.schema.get_schema, schema_id=seq_no
+    schema: GetSchemaResult = await handle_acapy_call(
+        logger=logger, acapy_call=controller.anoncreds_schemas.get_schema, schema_id=seq_no
     )
 
-    if not schema.var_schema or not schema.var_schema.id:
+    if not schema.schema_id :
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
         raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
     bound_logger.debug("Successfully obtained schema id from credential definition.")
-    return schema.var_schema.id
+    return schema.schema_id

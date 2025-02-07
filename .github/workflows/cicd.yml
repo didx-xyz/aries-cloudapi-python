@@ -270,7 +270,8 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           version: ${{ env.MISE_VERSION }}
-          cache: false
+          cache: true
+          cache_key_prefix: mise-bsmith
           experimental: true # Required for mise tasks
           install: true
         env:

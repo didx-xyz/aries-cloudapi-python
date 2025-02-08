@@ -125,7 +125,6 @@ def setup_nats(namespace):
         resource_deps=[
             "cloudapi-ns",
             "build-nats",
-            "istio",
         ],
         port_forwards=[
             port_forward(8222, name="monitoring"),

@@ -7,7 +7,7 @@ podAnnotations:
   ad.datadoghq.com/governance-agent.logs: '[{"source": "python", "service": "governance-agent", "auto_multi_line_detection": true}]'
 
 image:
-  name: acapy-cloud/governance-agent
+  name: acapy-cloud/agent
   pullPolicy: Always
   tag: master
 

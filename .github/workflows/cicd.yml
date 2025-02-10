@@ -150,16 +150,19 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - acapy-cloud/agent
           - acapy-cloud/app
           - acapy-cloud/endorser
-          - acapy-cloud/governance-agent
           - acapy-cloud/ledger-nodes
-          - acapy-cloud/multitenant-agent
           - acapy-cloud/pytest
           - acapy-cloud/tails-server
           - acapy-cloud/trust-registry
           - acapy-cloud/waypoint
         include:
+          - image: acapy-cloud/agent
+            context: .
+            file: dockerfiles/agents/Dockerfile
+            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: acapy-cloud/app
             context: .
             file: dockerfiles/app/Dockerfile
@@ -168,18 +171,10 @@ jobs:
             context: .
             file: dockerfiles/endorser/Dockerfile
             platforms: linux/amd64,linux/arm64
-          - image: acapy-cloud/governance-agent
-            context: .
-            file: dockerfiles/agents/Dockerfile.agent
-            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: acapy-cloud/ledger-nodes
             context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
             platforms: linux/amd64
-          - image: acapy-cloud/multitenant-agent
-            context: .
-            file: dockerfiles/agents/Dockerfile.author.agent
-            platforms: linux/amd64 # Pending BBS - linux/arm64
           - image: acapy-cloud/pytest
             context: .
             file: dockerfiles/tests/Dockerfile

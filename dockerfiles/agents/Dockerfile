@@ -15,6 +15,10 @@ RUN chmod +x ./startup.sh
 USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
-CMD [ "--wallet-type", "askar", "--auto-promote-author-did", \
-  "--plugin", "acapy_wallet_groups_plugin", \
-  "--plugin", "nats_events.v1_0.nats_queue.events", "--plugin-config-value", "nats_queue.connection.connection_url=\"nats://nats-1:4222\""]
+## Governance Agent
+CMD [ "--wallet-type", "askar", \
+  "--plugin", "nats_events.v1_0.nats_queue.events", \
+  ## Multitenant Agent
+  #   "--auto-promote-author-did", \
+  #   "--plugin", "acapy_wallet_groups_plugin", \
+  "--plugin-config-value", "nats_queue.connection.connection_url=\"nats://nats-1:4222\""]

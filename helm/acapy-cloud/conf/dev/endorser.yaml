@@ -39,7 +39,8 @@ command:
   - uvicorn
   - endorser.main:app
   - --log-config=/tmp/log_conf.yaml
-  - --reload
+  - --workers
+  - 1
   - --host
   - 0.0.0.0
   - --port

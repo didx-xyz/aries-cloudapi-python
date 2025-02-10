@@ -106,6 +106,20 @@ readinessProbe:
 #     memory: 384Mi
 
 initContainers:
+  - name: nc-postgres
+    image: busybox
+    command: ['sh', '-c', 'until nc -z $(PG_HOST) $(PG_PORT); do echo waiting for postgres; sleep 2; done;']
+    env:
+      - name: PG_HOST
+        valueFrom:
+          secretKeyRef:
+            name: '{{ include "acapy-cloud.fullname" . }}-env'
+            key: WALLET_DB_HOST
+      - name: PG_PORT
+        valueFrom:
+          secretKeyRef:
+            name: '{{ include "acapy-cloud.fullname" . }}-env'
+            key: WALLET_DB_PORT
   - name: wait-governance-agent
     image: curlimages/curl
     command:

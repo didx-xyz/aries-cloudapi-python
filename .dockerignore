@@ -6,10 +6,9 @@
 !app/
 !shared/
 !endorser/
+!scripts/
 !trustregistry/
 !waypoint/
-!scripts/
-!configuration/
 !LICENSE
 
 **/__pycache__/

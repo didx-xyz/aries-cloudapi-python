@@ -240,7 +240,7 @@ def build_cloudapi_service(service, image={}):
         deps=["./"],
         live_update=image.get("live_update", []),
         skips_local_docker=True,
-        ignore=["**/__pycache__/**", "**/tests/**"],
+        ignore=["**/tests/**"] + image.get("ignore", []),
     )
     return [registry + "/" + service]
 
@@ -422,6 +422,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "app/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "governance-agent": {
@@ -434,6 +440,13 @@ def setup_cloudapi(build_enabled, expose):
             ],
             "image": {
                 "dockerfile": "./dockerfiles/agents/Dockerfile.agent",
+                "ignore": [
+                    "app/**",
+                    "endorser/**",
+                    "shared/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "governance-web": {
@@ -457,6 +470,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "endorser/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "multitenant-agent": {
@@ -469,6 +488,13 @@ def setup_cloudapi(build_enabled, expose):
             ],
             "image": {
                 "dockerfile": "./dockerfiles/agents/Dockerfile.author.agent",
+                "ignore": [
+                    "app/**",
+                    "endorser/**",
+                    "shared/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "multitenant-web": {
@@ -492,6 +518,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "endorser/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "tenant-web": {
@@ -511,6 +543,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "endorser/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "public-web": {
@@ -530,6 +568,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "endorser/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                    "waypoint/**",
+                ],
             },
         },
         "trust-registry": {
@@ -552,6 +596,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "app/**",
+                    "endorser/**",
+                    "scripts/**",
+                    "waypoint/**",
+                ],
             },
         },
         "waypoint": {
@@ -568,6 +618,12 @@ def setup_cloudapi(build_enabled, expose):
                     ],
                     enabled=build_enabled,
                 ),
+                "ignore": [
+                    "app/**",
+                    "endorser/**",
+                    "scripts/**",
+                    "trustregistry/**",
+                ],
             },
         },
         "ledger-browser": {

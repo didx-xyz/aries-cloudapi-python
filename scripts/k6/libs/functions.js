@@ -384,14 +384,14 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
     }
     // Throw an error if no match is found
     throw new Error(
-      `No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(
+      `VU ${__VU}: Iteration ${__ITER}: No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(
         responseData,
         null,
         2
       )}`
     );
   } catch (error) {
-    console.error("Error in getCredentialIdByThreadId:", error);
+    console.error(`VU ${__VU}: Iteration ${__ITER}: Error in getCredentialIdByThreadId:`, error);
     throw error; // Re-throw the error to propagate it to the caller
   }
 }
@@ -784,149 +784,103 @@ export function checkRevoked(issuerAccessToken, credentialExchangeId) {
 
 // TODO: refactor the maxDuration logic. It's not being used properly. Actually relies on server-side timeout.
 
-export function genericWaitForSSEEvent(config) {
-  const {
-      accessToken,
-      walletId,
-      threadId,
-      eventType,
-      sseUrlPath,
-      topic,
-      expectedState,
-      lookBack = 5,
-      maxDuration, // this does nothing...
-      maxRetries = 3,
-      retryDelay = 1,
-  } = config;
-
+export function genericWaitForSSEEvent({
+  accessToken,
+  walletId,
+  threadId,
+  eventType,
+  sseUrlPath,
+  topic,
+  expectedState,
+  lookBack = 5,
+  maxRetries = 3,
+  retryDelay = 1,
+  maxEmptyPings = 1,
+  sseTag
+}) {
   const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${walletId}/${sseUrlPath}/${threadId}/${eventType}?look_back=${lookBack}`;
-  const headers = {
-      "x-api-key": accessToken,
-  };
-  let retryCount = 0;
 
-  function connectSSE() {
-      return new Promise((resolve, reject) => {
-          let timeoutId;
-
-          // Create a timeout Promise
-          const timeoutPromise = new Promise((_, timeoutReject) => {
-              timeoutId = setTimeout(() => {
-                  console.error(`Max duration ${maxDuration}s exceeded for this attempt`);
-                  timeoutReject(new Error("TIMEOUT"));
-              }, maxDuration * 1000);
-          });
-
-          const ssePromise = new Promise((sseResolve, sseReject) => {
-              const response = sse.open(
-                  sseUrl,
-                  {
-                      headers,
-                      tags: config.sseTag ? { k6_sse_tag: config.sseTag } : undefined,
-                  },
-                  (client) => {
-                      client.on("event", (event) => {
-                          if (!event.data || event.data.trim() === "") {
-                              console.warn("Received empty event data (ping)");
-                              return; // Continue waiting
-                          }
-                          let eventData;
-                          try {
-                              eventData = JSON.parse(event.data);
-                          } catch (error) {
-                              console.warn(`Error parsing event data: ${error.message}`);
-                              client.close();
-                              clearTimeout(timeoutId);
-                              sseReject(new Error("Failed to parse event data"));
-                              return;
-                          }
-                          if (
-                              typeof eventData === "object" &&
-                              eventData.topic === topic &&
-                              eventData.payload &&
-                              eventData.payload.state === expectedState
-                          ) {
-                              check(eventData, {
-                                  "Event received": (e) => e.payload.state === expectedState,
-                              });
-                              // console.log(`VU ${__VU}: Iteration ${__ITER}: Received expected event: ${JSON.stringify(eventData)}`);
-                              client.close();
-                              clearTimeout(timeoutId);
-                              sseResolve(true);
-                          } else {
-                              console.error(`Received unexpected event: ${JSON.stringify(eventData)}`);
-                              client.close();
-                              clearTimeout(timeoutId);
-                              sseResolve(false);
-                          }
-                      });
-
-                      client.on("error", (e) => {
-                          console.warn("SSE connection error: ", e.error());
-                          client.close();
-                          clearTimeout(timeoutId);
-                          sseReject(new Error("SSE connection error"));
-                      });
-
-                      client.on("end", () => {
-                          console.log("SSE connection closed");
-                          clearTimeout(timeoutId);
-                          sseReject(new Error("SSE connection closed unexpectedly"));
-                      });
-                  }
-              );
-
-              if (!response || response.status !== 200) {
-                  clearTimeout(timeoutId);
-                  sseReject(new Error("Failed to establish initial SSE connection"));
-                  return;
-              }
-              check(response, {
-                  "SSE connection established": (r) => r && r.status === 200,
-              });
-          });
-
-          // Race between the SSE connection and the timeout
-          Promise.race([ssePromise, timeoutPromise])
-              .then(resolve)
-              .catch(error => {
-                  if (error.message === "TIMEOUT") {
-                      resolve(false);  // Timeout case
-                  } else {
-                      reject(error);  // Other errors
-                  }
-              });
-      });
-  }
-
-  async function attemptConnection() {
-      while (retryCount <= maxRetries) {
-          try {
-              if (retryCount > 0) {
-                  console.warn(`VU ${__VU}: Iteration ${__ITER}: Attempting SSE reconnection (attempt ${retryCount}/${maxRetries})`);
-              }
-              const result = await connectSSE();
-              if (!result) {
-                  console.error("SSE connection attempt failed");
-                  return false;
-              }
-              return true;
-          } catch (error) {
-              console.warn(`Connection attempt failed: ${error.message}`);
-              if (retryCount < maxRetries) {
-                  retryCount++;
-                  console.log(`Retrying in ${retryDelay} seconds...`);
-                  sleep(retryDelay);
-              } else {
-                  console.error("Max retries exceeded without successful connection");
-                  return false;
-              }
-          }
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (attempt > 0) {
+          console.warn(`VU ${__VU}: Iteration ${__ITER}: Retry attempt ${attempt}/${maxRetries}`);
+          sleep(retryDelay);
       }
-      return false;
+
+      let succeeded = false;
+      let failed = false;
+      let emptyPingCount = 0;
+
+      const response = sse.open(
+          sseUrl,
+          {
+              headers: { "x-api-key": accessToken },
+              tags: sseTag ? { k6_sse_tag: sseTag } : undefined
+          },
+          (client) => {
+              client.on("event", (event) => {
+                  if (!event.data || event.data.trim() === "") {
+                      emptyPingCount++;
+                      if (emptyPingCount >= maxEmptyPings) {
+                          console.error(`VU ${__VU}: Iteration ${__ITER}: Failed after ${maxEmptyPings} empty pings`);
+                          client.close();
+                          failed = true;
+                          return false;  // Signal to exit the whole function
+                      }
+                      return;
+                  }
+
+                  try {
+                      const eventData = JSON.parse(event.data);
+                      if (eventData &&
+                          eventData.topic === topic &&
+                          eventData.payload &&
+                          eventData.payload.state === expectedState) {
+                          client.close();
+                          succeeded = true;
+                      }
+                  } catch (error) {
+                      console.error(`VU ${__VU}: Iteration ${__ITER}: Failed to parse event: ${error.message}`);
+                      client.close();
+                      failed = true;
+                  }
+              });
+
+              client.on("error", (error) => {
+                  console.error(`VU ${__VU}: Iteration ${__ITER}: SSE connection error: ${error.error()}`);
+                  client.close();
+                  failed = true;
+              });
+          }
+      );
+
+      if (!response || response.status !== 200) {
+          console.error(`VU ${__VU}: Iteration ${__ITER}: Failed to connect: ${response ? response.status : 'no response'}`);
+          continue;
+      }
+
+      while (!succeeded && !failed && attempt < maxRetries) {
+          sleep(0.1);
+      }
+
+      // If we failed due to empty pings, exit immediately
+      if (failed && emptyPingCount >= maxEmptyPings) {
+          return false;
+      }
+
+      if (succeeded) {
+          if (attempt > 0) {
+              console.log(`VU ${__VU}: Iteration ${__ITER}: Reconnection attempt ${attempt} was successful`);
+          }
+          return true;
+      }
+
+      if (failed) {
+          continue;
+      }
   }
 
-  return attemptConnection();
+  console.error(`VU ${__VU}: Iteration ${__ITER}: SSE connection failed after ${maxRetries} retries for event type: ${eventType}, state: ${expectedState}, topic: ${topic}, threadId: ${threadId}`);
+  return false;
 }
 
 // {

@@ -120,16 +120,9 @@ export default function (data) {
   const sseEventError = "SSE event was not received successfully";
   const sseCheckMessage = "SSE Event received successfully: request-recevied";
 
-  waitForSSEEventReceivedResponse.then(result => {
-      check(result, {
-          [sseCheckMessage]: (r) => {
-              if (!r) {
-                  throw new Error(sseEventError);
-              }
-              return true;
-          },
-      });
-  });
+  check(waitForSSEEventReceivedResponse, {
+    [sseCheckMessage]: (r) => r === true
+});
 
   // check(waitForSSEEventReceivedResponse, {
   //   "SSE Event received successfully: request-recevied": (r) => {
@@ -179,16 +172,9 @@ export default function (data) {
   const sseEventErrorProofDone = "SSE event was not received successfully";
   const sseCheckMessageProofDone = "SSE Event received successfully: request-recevied";
 
-  waitForSSEProofDoneRequest.then(result => {
-      check(result, {
-          [sseCheckMessageProofDone]: (r) => {
-              if (!r) {
-                  throw new Error(sseEventErrorProofDone);
-              }
-              return true;
-          },
-      });
-  });
+  check(waitForSSEProofDoneRequest, {
+    [sseCheckMessageProofDone]: (r) => r === true
+});
 
   // check(waitForSSEProofDoneRequest, {
   //   "SSE Proof Request state: done": (r) => {

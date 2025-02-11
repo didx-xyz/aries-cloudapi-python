@@ -165,16 +165,9 @@ export default function (data) {
   const sseEventError = "SSE event was not received successfully";
   const sseCheckMessage = "SSE Event received successfully: connection-ready";
 
-  waitForSSEEventResponse.then(result => {
-      check(result, {
-          [sseCheckMessage]: (r) => {
-              if (!r) {
-                  throw new Error(sseEventError);
-              }
-              return true;
-          },
-      });
-  });
+  check(waitForSSEEventResponse, {
+    [sseCheckMessage]: (r) => r === true
+});
 
   testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 

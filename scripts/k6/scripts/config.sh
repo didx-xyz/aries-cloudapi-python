@@ -7,17 +7,18 @@ export INTIAL_VUS=5
 export INITIAL_ITERATIONS=2
 export VUS=$INTIAL_VUS
 export ITERATIONS=$INITIAL_ITERATIONS
-export WEBS="governance-ga-web governance-multitenant-web governance-tenant-web governance-public-web"
-export AGENT="governance-ga-agent governance-multitenant-agent"
-export SERVICE="governance-endorser tails-server governance-trust-registry waypoint"
+export WEBS="governance-web multitenant-web tenant-web public-web"
+export AGENT="governance-agent multitenant-agent"
+export SERVICE="endorser tails-server trust-registry waypoint"
 export AUTH="inquisitor"
+export STS="keycloak nats"
 export INVALID=""
 export HA_TEST_ITERATIONS=1 # Configurable number of HA test iterations
 export RESTART_ITERATIONS=1 # Configurable number of restart iterations
 export NUM_ISSUERS=1
 
 # Combine all stacks into one variable
-ALL="$WEBS $AGENT $SERVICE $AUTH"
+ALL="$WEBS $AGENT $SERVICE $AUTH $STS"
 # Remove INVALID deployments from ALL
 for invalid in $INVALID; do
   ALL=${ALL//$invalid/}

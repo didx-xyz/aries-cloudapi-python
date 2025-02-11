@@ -5,10 +5,10 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-  export VUS=5
-  export ITERATIONS=50
-  export HOLDER_PREFIX="k6_holder_invitation"
-  export ISSUER_PREFIX="k6_issuer_invitation"
+  export VUS=10
+  export ITERATIONS=10
+  export HOLDER_PREFIX="k6_holder_invitation1"
+  export ISSUER_PREFIX="k6_issuer_invitation1"
   export NUM_ISSUERS=1
 }
 
@@ -26,7 +26,7 @@ scenario() {
 cleanup() {
   log "Cleaning up..."
   xk6 run ./scenarios/delete-holders.js
-  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
+  # xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {

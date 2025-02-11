@@ -16,6 +16,7 @@ const data = open(inputFilepath, "r");
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const testFunctionReqs = new Counter("test_function_reqs");
+const sleepDuration = Number.parseInt(__ENV.SLEEP_DURATION, 0);
 
 export const options = {
   scenarios: {
@@ -87,6 +88,6 @@ export default function (data) {
       return true;
     },
   });
-  sleep(2);
+  sleep(sleepDuration);
   testFunctionReqs.add(1);
 }

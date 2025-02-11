@@ -17,9 +17,11 @@ import { bootstrapIssuer } from "../libs/setup.js";
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const issuerPrefix = __ENV.ISSUER_PREFIX;
+const holderPrefix = __ENV.HOLDER_PREFIX;
 const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
 const numIssuers = __ENV.NUM_ISSUERS;
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -35,12 +37,12 @@ export const options = {
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": ["max>=0"],
-    "http_reqs{scenario:default}": ["count >= 0"],
-    "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
-    "iteration_duration{scenario:default}": ["max>=0"],
+    // "http_req_duration{scenario:default}": ["max>=0"],
+    // "http_reqs{scenario:default}": ["count >= 0"],
+    // "http_reqs{my_custom_tag:specific_function}": ["count>=0"],
+    // "iteration_duration{scenario:default}": ["max>=0"],
     checks: ["rate==1"],
-    // 'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
+    'test_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     // 'test_function_reqs{scenario:default}': ['count>=0'],
     // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
   },
@@ -51,30 +53,33 @@ export const options = {
 };
 
 const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+// const mainIterationDuration = new Trend("main_iteration_duration");
 
-const inputFilepath = "../output/create-holders.json";
+const inputFilepath = `../output/${holderPrefix}-create-holders.json`;
+const inputFilepathIssuer = `../output/${issuerPrefix}-create-issuers.json`;
 const data = open(inputFilepath, "r");
-const outputFilepath = "output/create-invitation.json";
+const dataIssuer = open(inputFilepathIssuer, "r");
+const outputFilepath = `output/${outputPrefix}-create-invitation.json`;
 
 export function setup() {
   const bearerToken = getBearerToken();
   const holders = data.trim().split("\n").map(JSON.parse);
+  const issuers = dataIssuer.trim().split("\n").map(JSON.parse);
   file.writeString(outputFilepath, "");
 
   const walletName = issuerPrefix;
-  const credDefTag = walletName;
-  const issuers = bootstrapIssuer(
-    numIssuers,
-    walletName,
-    credDefTag,
-    schemaName,
-    schemaVersion
-  );
+  // const credDefTag = walletName;
+  // const issuers = bootstrapIssuer(
+  //   numIssuers,
+  //   walletName,
+  //   credDefTag,
+  //   schemaName,
+  //   schemaVersion
+  // );
 
-  if (!issuers || issuers.length === 0) {
-    console.error("Failed to bootstrap issuers.");
-  }
+  // if (!issuers || issuers.length === 0) {
+  //   console.error("Failed to bootstrap issuers.");
+  // }
 
   return { bearerToken, issuers, holders };
 }
@@ -84,13 +89,12 @@ function getIssuerIndex(vu, iter) {
   return (vu + iter - 2) % numIssuers;
 }
 
-const vuStartTimes = {};
-const vuEndTimes = {};
+// const vuStartTimes = {};
 
 export default function (data) {
-  if (__ITER === 0) {
-    vuStartTimes[__VU] = Date.now();
-  }
+  // if (__ITER === 0) {
+  //   vuStartTimes[__VU] = Date.now();
+  // }
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
@@ -143,7 +147,7 @@ export default function (data) {
     acceptInvitationResponse.body
   );
 
-  const waitForSSEEventConnectionResponse = genericWaitForSSEEvent({
+  const waitForSSEEventResponse = genericWaitForSSEEvent({
     accessToken: wallet.access_token,
     walletId: wallet.wallet_id,
     threadId: holderInvitationConnectionId,
@@ -151,20 +155,21 @@ export default function (data) {
     sseUrlPath: "connections/connection_id",
     topic: "connections",
     expectedState: "completed",
-    maxDuration: 10,
+    maxDuration: 60,
+    // maxRetries: 30,
+    // retryDelay: 2,
+    // lookBack: 20,
     sseTag: "connection_ready",
   });
 
-  check(waitForSSEEventConnectionResponse, {
-    "SSE Event received successfully: connection-ready": (r) => {
-      if (!r) {
-        throw new Error("SSE connection event was not received successfully");
-      }
-      return true;
-    },
-  });
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE Event received successfully: connection-ready";
 
-  // testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+  check(waitForSSEEventResponse, {
+    [sseCheckMessage]: (r) => r === true
+});
+
+  testFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
 
   testFunctionReqs.add(1);
 
@@ -185,5 +190,5 @@ export default function (data) {
   const end = Date.now();
   const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
+  // mainIterationDuration.add(duration);
 }

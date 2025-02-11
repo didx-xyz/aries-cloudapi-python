@@ -1,7 +1,7 @@
 /* global __ENV, __ITER, __VU */
 /* eslint-disable no-undefined, no-console, camelcase */
 
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import {
@@ -16,6 +16,9 @@ import {
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
+const holderPrefix = __ENV.HOLDER_PREFIX;
+const issuerPrefix = __ENV.ISSUER_PREFIX;
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -31,11 +34,11 @@ export const options = {
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": ["max>=0"],
-    "http_reqs{scenario:default}": ["count >= 0"],
-    "iteration_duration{scenario:default}": ["max>=0"],
-    checks: ["rate==1"],
+    // "http_req_duration{scenario:default}": ["max>=0"],
+    // "http_reqs{scenario:default}": ["count >= 0"],
+    // "iteration_duration{scenario:default}": ["max>=0"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
+    checks: ["rate==1"],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
@@ -44,11 +47,13 @@ export const options = {
   },
 };
 
-const inputFilepath = "../output/create-invitation.json";
+const testFunctionReqs = new Counter("test_function_reqs");
+
+const inputFilepath = `../output/${outputPrefix}-create-invitation.json`;
 const data = open(inputFilepath, "r");
 
 // const specificFunctionReqs = new Counter('specific_function_reqs');
-const testFunctionReqs = new Counter("test_function_reqs");
+
 // const mainIterationDuration = new Trend('main_iteration_duration');
 
 function shuffleArray(array) {
@@ -111,14 +116,24 @@ export default function (data) {
     maxDuration: 10,
     sseTag: "proof_request_received",
   });
+
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE Event received successfully: request-recevied";
+
   check(waitForSSEEventReceivedResponse, {
-    "SSE Event received successfully: request-recevied": (r) => {
-      if (!r) {
-        throw new Error("SSE event was not received successfully");
-      }
-      return true;
-    },
-  });
+    [sseCheckMessage]: (r) => r === true
+});
+
+  // check(waitForSSEEventReceivedResponse, {
+  //   "SSE Event received successfully: request-recevied": (r) => {
+  //     if (!r) {
+  //       throw new Error("SSE event was not received successfully");
+  //     }
+  //     return true;
+  //   },
+  // });
+
+  // sleep(2);
 
   // TODO: return object and add check for the response
   const proofId = getProofIdByThreadId(wallet.access_token, threadId);
@@ -141,6 +156,7 @@ export default function (data) {
     },
   });
 
+  // console.log(`Initiate wait for SSE event: done`);
   const waitForSSEProofDoneRequest = genericWaitForSSEEvent({
     accessToken: wallet.issuer_access_token,
     walletId: wallet.issuer_wallet_id,
@@ -153,14 +169,21 @@ export default function (data) {
     sseTag: "proof_done",
   });
 
+  const sseEventErrorProofDone = "SSE event was not received successfully";
+  const sseCheckMessageProofDone = "SSE Event received successfully: request-recevied";
+
   check(waitForSSEProofDoneRequest, {
-    "SSE Proof Request state: done": (r) => {
-      if (!r) {
-        throw new Error("SSE proof done was not successful");
-      }
-      return true;
-    },
-  });
+    [sseCheckMessageProofDone]: (r) => r === true
+});
+
+  // check(waitForSSEProofDoneRequest, {
+  //   "SSE Proof Request state: done": (r) => {
+  //     if (!r) {
+  //       throw new Error("SSE proof done was not successful");
+  //     }
+  //     return true;
+  //   },
+  // });
 
   // const getProofResponse = getProof(issuer.accessToken, wallet.issuer_connection_id, threadId );
   let getProofResponse;

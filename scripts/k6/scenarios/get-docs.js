@@ -38,7 +38,7 @@ export const options = {
 };
 
 const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+// const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {

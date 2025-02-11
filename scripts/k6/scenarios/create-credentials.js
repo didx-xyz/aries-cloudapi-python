@@ -15,6 +15,9 @@ import {
 
 const vus = Number.parseInt(__ENV.VUS, 10);
 const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
+const holderPrefix = __ENV.HOLDER_PREFIX;
+const issuerPrefix = __ENV.ISSUER_PREFIX;
+const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
 
 export const options = {
   scenarios: {
@@ -43,9 +46,9 @@ export const options = {
   },
 };
 
-const inputFilepath = "../output/create-invitation.json";
+const inputFilepath = `../output/${outputPrefix}-create-invitation.json`;
 const data = open(inputFilepath, "r");
-const outputFilepath = "output/create-credentials.json";
+const outputFilepath = `output/${outputPrefix}-create-credentials.json`;
 
 // Helper function to get the issuer index using pre-calculated assignments
 function getIssuerIndex(vu, iter) {
@@ -126,16 +129,14 @@ export default function (data) {
     sseTag: "credential_offer_received",
   });
 
+  const sseEventError = "SSE event was not received successfully";
+  const sseCheckMessage = "SSE request received successfully: offer-received";
+
   check(waitForSSEEventResponse, {
-    "SSE request received successfully: offer-received": (r) => {
-      if (!r) {
-        throw new Error("SSE event was not received successfully");
-      }
-      return true;
-    },
+      [sseCheckMessage]: (r) => r === true
   });
 
-  // sleep(1);
+  // console.log(`VU ${__VU}: Iteration ${__ITER}: Accepting credential for thread ID: ${threadId}`);
 
   const credentialId = getCredentialIdByThreadId(wallet.access_token, threadId);
 

@@ -5,15 +5,16 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 config() {
-  export VUS=10
-  export ITERATIONS=25
-  export ISSUER_PREFIX="k6_issuer_credential_ops"
-  export HOLDER_PREFIX="k6_holder_credential_ops"
+  export VUS=30
+  export ITERATIONS=100
+  export ISSUER_PREFIX="issuer_acc"
+  export HOLDER_PREFIX="holderg_10k"
   export NUM_ISSUERS=2
+  export SCHEMA_NAME="model_acc"
 }
 
 init() {
-  xk6 run ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
+  xk6 run --out statsd ./scenarios/bootstrap-issuer.js -e ITERATIONS=1 -e VUS=1
 }
 
 scenario_create_holders() {
@@ -21,7 +22,7 @@ scenario_create_holders() {
   # local iterations=$((ITERATIONS * VUS))
   # local vus=1
   # xk6 run ./scenarios/create-holders.js -e ITERATIONS=${iterations} -e VUS=${vus}
-  xk6 run ./scenarios/create-holders.js
+  xk6 run --out statsd ./scenarios/create-holders.js
 }
 
 senario_create_invitations() {
@@ -39,7 +40,7 @@ scenario_create_proof_verified() {
 scenario_revoke_credentials() {
   local iterations=$((ITERATIONS * VUS))
   local vus=1
-  xk6 run ./scenarios/revoke-credentials.js -e ITERATIONS=${iterations} -e VUS=${vus}
+  xk6 run --out statsd ./scenarios/revoke-credentials.js -e ITERATIONS=${iterations} -e VUS=${vus}
 }
 
 scenario_create_proof_unverified() {
@@ -49,8 +50,8 @@ scenario_create_proof_unverified() {
 
 cleanup() {
   log "Cleaning up..."
-  xk6 run ./scenarios/delete-holders.js
-  xk6 run ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
+  xk6 run --out statsd ./scenarios/delete-holders.js
+  # xk6 run --out statsd ./scenarios/delete-issuers.js -e ITERATIONS="${NUM_ISSUERS}" -e VUS=1
 }
 
 run_collection() {
@@ -59,12 +60,13 @@ run_collection() {
   config
   init
   scenario_create_holders
-  # run_ha_iterations "${deployments}" scenario_create_holders
   run_ha_iterations "${deployments}" senario_create_invitations
+  export VUS=15
+  export ITERATIONS=200
   run_ha_iterations "${deployments}" scemario_create_credentials
+  export VUS=30
+  export ITERATIONS=100
   run_ha_iterations "${deployments}" scenario_create_proof_verified
-  run_ha_iterations "${deployments}" scenario_revoke_credentials
-  run_ha_iterations "${deployments}" scenario_create_proof_unverified
 
-  cleanup
+  # cleanup
 }

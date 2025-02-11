@@ -40,7 +40,7 @@ export const options = {
 };
 
 const specificFunctionReqs = new Counter("specific_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+// const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
@@ -288,7 +288,7 @@ export default function (data) {
   const end = Date.now();
   const duration = end - start;
   console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
+  // mainIterationDuration.add(duration);
 }
 
 export function teardown(data) {

@@ -33,9 +33,10 @@ export const options = {
   maxRedirects: 4,
   thresholds: {
     // https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
-    "http_req_duration{scenario:default}": ["max>=0"],
-    "http_reqs{scenario:default}": ["count >= 0"],
-    "iteration_duration{scenario:default}": ["max>=0"],
+    // "http_req_duration{scenario:default}": ["max>=0"],
+    // "http_reqs{scenario:default}": ["count >= 0"],
+    // "iteration_duration{scenario:default}": ["max>=0"],
+    'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     checks: ["rate==1"],
   },
   tags: {
@@ -45,7 +46,7 @@ export const options = {
 };
 
 const testFunctionReqs = new Counter("test_function_reqs");
-const mainIterationDuration = new Trend("main_iteration_duration");
+// const mainIterationDuration = new Trend("main_iteration_duration");
 
 // Seed data: Generating a list of options.iterations unique wallet names
 const wallets = new SharedArray("wallets", () => {
@@ -127,7 +128,7 @@ export default function (data) {
   const end = Date.now();
   const duration = end - start;
   // console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
-  mainIterationDuration.add(duration);
+  // mainIterationDuration.add(duration);
   testFunctionReqs.add(1);
   // sleep(1);
 }

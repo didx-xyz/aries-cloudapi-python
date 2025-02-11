@@ -3,40 +3,44 @@ description: Run Tests against EKS
 
 inputs:
   clean-start:
-    description: "Whether this is a clean start or not"
+    description: Whether this is a clean start or not
     required: false
     default: "false"
   environment:
-    description: "The environment to deploy to"
+    description: The environment to deploy to
     required: true
   helm-version:
-    description: "The version of Helm to use"
+    description: The version of Helm to use
     required: false
     default: v3.17.0
   helmfile-plugins:
-    description: "The Helmfile plugins to install"
+    description: The Helmfile plugins to install
     required: false
     default: https://github.com/databus23/helm-diff
   helmfile-version:
-    description: "The version of Helmfile to use"
+    description: The version of Helmfile to use
     required: false
     default: v0.170.1
   image-tag:
-    description: "The tag of the Docker image to deploy"
+    description: The tag of the Docker image to deploy
     required: true
+  mise-version:
+    description: "The version of Mise to use"
+    required: false
+    default: "2025.2.3"
   namespace:
-    description: "The Kubernetes namespace to deploy to"
+    description: The Kubernetes namespace to deploy to
     required: true
   pytest-completions:
-    description: "How many completions to run"
+    description: How many completions to run
     required: false
     default: "1"
-  run-regression-tests:
-    description: "Whether to run regression tests"
+  regression-tests:
+    description: Whether to run regression tests
     required: false
     default: "true"
   run-tests:
-    description: "Whether to run tests"
+    description: Whether to run tests
     required: false
     default: "true"
 
@@ -44,8 +48,24 @@ runs:
   using: composite
 
   steps:
+    - name: Set up Mise
+      uses: jdx/mise-action@v2
+      with:
+        version: ${{ inputs.mise-version }}
+        cache: true
+        experimental: true # Required for mise tasks
+        install: true
+      env:
+        MISE_JOBS: 4
+    - name: Load Mise env
+      shell: bash
+      run: |
+        mise env -s bash \
+            | grep -v 'export PATH=' \
+            | cut -d' ' -f2 \
+            >> "$GITHUB_ENV"
     - name: Helmfile run regression tests
-      if: inputs.run-regression-tests == 'true'
+      if: inputs.regression-tests == 'true'
       id: pytest-regression
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
@@ -59,9 +79,9 @@ runs:
             --set completions=${{ inputs.pytest-completions }} \
             --state-values-set release=acapy-test-regression \
             --set fullnameOverride=acapy-test-regression \
-            --set env.RUN_REGRESSION_TESTS=${{ inputs.run-regression-tests }} \
+            --set env.RUN_REGRESSION_TESTS=${{ inputs.regression-tests }} \
             --set env.FAIL_ON_RECREATING_FIXTURES=${{ inputs.clean-start != 'true' }} \
-            --state-values-set regressionEnabled=${{ inputs.run-regression-tests }} \
+            --state-values-set regressionEnabled=${{ inputs.regression-tests }} \
             --state-values-set namespace=${{ inputs.namespace }}
         helm-plugins: ${{ inputs.helmfile-plugins }}
         helmfile-version: ${{ inputs.helmfile-version }}

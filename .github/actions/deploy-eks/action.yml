@@ -3,41 +3,41 @@ description: Deploy to EKS
 
 inputs:
   aws-region:
-    description: "The AWS region where the EKS cluster is located"
+    description: The AWS region where the EKS cluster is located
     required: true
   aws-role-arn:
-    description: "The ARN of the AWS role to assume"
+    description: The ARN of the AWS role to assume
     required: true
   aws-role-session-name:
-    description: "The name of the AWS role session"
+    description: The name of the AWS role session
     required: true
   clean-start:
-    description: "Whether to clean up the EKS cluster before deploying"
+    description: Whether to clean up the EKS cluster before deploying
     required: false
     default: "false"
   cluster-name:
-    description: "The name of the EKS cluster"
+    description: The name of the EKS cluster
     required: true
   environment:
-    description: "The environment to deploy to"
+    description: The environment to deploy to
     required: true
   helm-version:
-    description: "The version of Helm to use"
+    description: The version of Helm to use
     required: false
     default: v3.17.0
   helmfile-plugins:
-    description: "The Helmfile plugins to install"
+    description: The Helmfile plugins to install
     required: false
     default: https://github.com/databus23/helm-diff
   helmfile-version:
-    description: "The version of Helmfile to use"
+    description: The version of Helmfile to use
     required: false
     default: v0.170.1
   image-tag:
-    description: "The tag of the Docker image to deploy"
+    description: The tag of the Docker image to deploy
     required: true
   namespace:
-    description: "The Kubernetes namespace to deploy to"
+    description: The Kubernetes namespace to deploy to
     required: true
 
 runs:

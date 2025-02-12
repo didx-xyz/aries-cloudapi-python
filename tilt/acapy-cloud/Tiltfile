@@ -153,21 +153,20 @@ def setup_redpanda_connect_cloud(namespace):
         labels=["10-helm-repos"],
     )
 
-    stream_config_dir = project_root + "/resources/connect-processors/cloud/streams"
-    stream_config_files = [
-        stream_config_dir + "/cloud-events.yaml",
-        stream_config_dir + "/state-monitoring.yaml",
-    ]
-    from_file_args = " ".join(["--from-file=" + f for f in stream_config_files])
+    pipeline_config_dir = project_root + "/resources/connect-processors/cloud/pipelines"
+    pipeline_config_files = str(local('find ' + pipeline_config_dir + ' -type f -name "*.yaml"', quiet=True)).splitlines()
+    print(color.green("Pipeline config files: " + str(pipeline_config_files)))
+    from_file_args = " ".join(["--from-file=" + f for f in pipeline_config_files])
+
     # Create ConfigMap using kubectl but output only the YAML
     k8s_context = os.environ.get("KIND_K8S_CONTEXT")
     local_resource(
-        name=resource_name + "-streams",
+        name=resource_name + "-pipelines",
         cmd="kubectl --context="
         + k8s_context
         + " create configmap "
         + resource_name
-        + "-streams"
+        + "-pipelines"
         + " "
         + from_file_args
         + " --dry-run=client -o yaml"
@@ -183,7 +182,7 @@ def setup_redpanda_connect_cloud(namespace):
         + " -l 'app.kubernetes.io/instance="
         + resource_name
         + "' --ignore-not-found=true",
-        deps=stream_config_files,
+        deps=pipeline_config_files,
         labels=["03-streaming"],
         allow_parallel=True,
         resource_deps=["cloudapi-ns"],

@@ -7,9 +7,9 @@ import { Counter } from "k6/metrics";
 import { getBearerToken } from "../libs/auth.js";
 import { deleteTenant, getWalletIdByWalletName } from "../libs/functions.js";
 
-const vus = Number.parseInt(__ENV.VUS, 10);
-const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
-const holderPrefix = __ENV.HOLDER_PREFIX;
+const vus = Number(__ENV.VUS || 1);
+const iterations = Number(__ENV.ITERATIONS || 1);
+const holderPrefix = __ENV.HOLDER_PREFIX || "holder";
 
 export const options = {
   scenarios: {

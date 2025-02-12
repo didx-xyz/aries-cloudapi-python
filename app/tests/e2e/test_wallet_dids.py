@@ -18,6 +18,9 @@ from app.tests.util.ledger import create_public_did, post_to_ledger
 from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 
+# Tests can conflict if they run in parallel, e.g. test_set_did_endpoint during test_list_dids changes expected response
+pytestmark = pytest.mark.xdist_group(name="sequential_test_group")
+
 WALLET_BASE_PATH = router.prefix
 
 # The setting public did test should be skipped in prod.

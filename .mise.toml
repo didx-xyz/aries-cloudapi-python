@@ -107,7 +107,7 @@ run = """
 #!/bin/bash
 cp .env.example .env
 source .env
-poetry run pytest -n auto --dist loadgroup $(find . -type d -path '*/tests/e2e' -not -path './tilt*')$@
+poetry run pytest -n auto --dist loadgroup $(find . -type d -path '*/tests/e2e' -not -path './tilt*') $@
 """
 
 [tasks.fmt]

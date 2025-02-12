@@ -77,9 +77,8 @@ runs:
       shell: bash
       # https://docs.redpanda.com/redpanda-connect/get-started/quickstarts/helm-chart/#run-multiple-pipelines-in-streams-mode
       run: |
-        kubectl create configmap connect-cloud-streams \
-          --from-file=./resources/connect-processors/cloud/streams/cloud-events.yaml \
-          --from-file=./resources/connect-processors/cloud/streams/state-monitoring.yaml \
+        kubectl create configmap connect-cloud-pipelines \
+          --from-file=./resources/connect-processors/cloud/pipelines/ \
           --dry-run=client \
           -o yaml \
           -n $NAMESPACE | kubectl apply -f -

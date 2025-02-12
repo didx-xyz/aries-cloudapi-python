@@ -12,4 +12,4 @@ if kubectl get pods -n istio-system | grep -q istiod; then
 fi
 
 # Install Istio
-istioctl install -f ./tilt/istio/istio.yaml --skip-confirmation
+istioctl install -f  $(pwd)/tilt/istio/istio.yaml --skip-confirmation

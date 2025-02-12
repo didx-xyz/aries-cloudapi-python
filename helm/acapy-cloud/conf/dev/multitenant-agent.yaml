@@ -4,7 +4,20 @@ replicaCount: 1
 
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
-  ad.datadoghq.com/multitenant-agent.logs: '[{"source": "python", "service": "multitenant-agent", "auto_multi_line_detection": true}]'
+  ad.datadoghq.com/multitenant-agent.logs: >-
+    [{
+      "source": "python",
+      "service": "multitenant-agent",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /status/(live|ready) HTTP/1\\.1.*\"response_status\": 200\\b"
+      }]
+    }]
+  proxy.istio.io/config: >-
+    {
+      "terminationDrainDuration": "35s"
+    }
 
 image:
   name: acapy-cloud/agent
@@ -166,7 +179,7 @@ secretData:
   WALLET_DB_USER: multitenant
 
 env:
-  ACAPY_LOG_LEVEL: info
+  ACAPY_LABEL: Multitenant
   # NATS related
   NATS_CREDS_FILE: "" # NATS in Local dev has no auth
   NATS_SERVER: nats://nats:4222
@@ -217,10 +230,8 @@ env:
   ACAPY_EMIT_NEW_DIDCOMM_PREFIX: true
   ACAPY_EMIT_NEW_DIDCOMM_MIME_TYPE: true
 
-  # ## From mt-agent-env secret
-  # ACAPY_MULTITENANCY_CONFIGURATION: '{"wallet_type":"askar-profile","wallet_name":"xxx"}'
-
-  # ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
+  ACAPY_LOG_LEVEL: info
+  ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
 
 podAntiAffinityPreset: soft
 nodeAffinityPreset:

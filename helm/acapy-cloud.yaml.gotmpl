@@ -11,12 +11,10 @@ environments:
         overrides: {}
       deployLedger: true
       natsReplicaCount: 1
-      nodeSelector: {}
       pgProxyEnabled: false
       pgAdmin:
         enabled: true
         ingress: {}
-      tolerations: []
   dev:
     values:
     - namespace: acapy-cloud-dev
@@ -33,7 +31,6 @@ environments:
           # tenant-web: true
       deployLedger: true
       natsReplicaCount: 1
-      nodeSelector: {}
       pgProxyEnabled: false
       pgAdmin:
         enabled: true
@@ -44,7 +41,6 @@ environments:
               paths:
                 - path: /
                   pathType: Prefix
-      tolerations: []
 ---
 {{- $releases := list
   "endorser"
@@ -107,8 +103,6 @@ releases:
           admission.datadoghq.com/enabled: "false"
           tags.datadoghq.com/env: {{ .Environment.Name }}
           sidecar.istio.io/inject: "false"
-      - nodeSelector: {{ toYaml .Values.nodeSelector | nindent 10 }}
-        tolerations: {{ toYaml .Values.tolerations | nindent 10 }}
     set:
       - name: image.registry
         value: {{ .Values.image.registry }}
@@ -128,8 +122,6 @@ releases:
           admission.datadoghq.com/enabled: "false"
           tags.datadoghq.com/env: {{ .Environment.Name }}
           sidecar.istio.io/inject: "false"
-      - nodeSelector: {{ toYaml .Values.nodeSelector | nindent 10 }}
-        tolerations: {{ toYaml .Values.tolerations | nindent 10 }}
     set:
       - name: image.registry
         value: {{ .Values.image.registry }}

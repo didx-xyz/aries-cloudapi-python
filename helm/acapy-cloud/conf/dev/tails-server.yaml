@@ -55,7 +55,7 @@ persistence:
   mountPath: /tails-server-db
   capacity: 10Gi
   storageClassName: efs
-  accessMode: ReadWriteOnce
+  accessMode: ReadWriteMany
 
 podSecurityContext:
   fsGroup: 65534

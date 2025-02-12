@@ -1,5 +1,6 @@
 import asyncio
 import os
+import tracemalloc
 from contextlib import asynccontextmanager
 
 from dependency_injector.wiring import Provide, inject
@@ -16,6 +17,8 @@ from waypoint.services.nats_service import NatsEventsProcessor
 set_event_loop_policy()
 
 logger = get_logger(__name__)
+
+tracemalloc.start()
 
 
 @asynccontextmanager

@@ -13,7 +13,7 @@ podAnnotations:
         "name": "exclude_health_probes",
         "pattern": "GET /docs HTTP/\\d\\.\\d\"\\s+200\\s+OK"
       }]
-    }]]'
+    }]
 
 image:
   name: acapy-cloud/app

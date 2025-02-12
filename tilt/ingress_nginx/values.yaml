@@ -34,7 +34,7 @@ controller:
       https: 443
   admissionWebhooks:
     patch:
-      podAnnotations:
+      podLabels:
         sidecar.istio.io/inject: "false"
 defaultBackend:
   enabled: false

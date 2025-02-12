@@ -30,8 +30,18 @@ ingress:
 persistentVolume:
   enabled: false
 
-podAnnotations: {}
-podlabels:
+podAnnotations:
+  ad.datadoghq.com/pgadmin4.logs: >-
+    [{
+      "source": "pgadmin4",
+      "service": "pgadmin4",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /misc/ping HTTP/1\\.1\" 200"
+      }]
+    }]
+podLabels:
   sidecar.istio.io/inject: "false"
 
 readinessProbe:

@@ -150,9 +150,9 @@ releases:
           podLabels:
             admission.datadoghq.com/enabled: "false"
             tags.datadoghq.com/env: {{ .Environment.Name }}
+            sidecar.istio.io/inject: "false"
           podAnnotations:
             ad.datadoghq.com/logs_exclude: "true" # Disable datadog log shipping
-            sidecar.istio.io/inject: "false"
 
   # https://github.com/bitnami/charts/tree/main/bitnami/nats
   - name: nats

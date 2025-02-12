@@ -4,7 +4,16 @@ replicaCount: 1
 
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
-  ad.datadoghq.com/mediator.logs: '[{"source": "python", "service": "mediator", "auto_multi_line_detection": true}]'
+  ad.datadoghq.com/mediator.logs: >-
+    [{
+      "source": "python",
+      "service": "mediator",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /status/(live|ready) HTTP/1\\.1.*\"response_status\": 200\\b"
+      }]
+    }]
 
 image:
   registry: ghcr.io/openwallet-foundation
@@ -165,7 +174,6 @@ secretData:
   WALLET_DB_USER: mediator
 
 env:
-  ACAPY_LOG_LEVEL: info
   ACAPY_LABEL: Aca-Py Mediator
   ACAPY_WALLET_NAME: mediator
   # Mediator does not use a ledger
@@ -192,7 +200,8 @@ env:
   ACAPY_EMIT_NEW_DIDCOMM_PREFIX: true
   ACAPY_EMIT_NEW_DIDCOMM_MIME_TYPE: true
 
-  # ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
+  ACAPY_LOG_LEVEL: info
+  ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
 
 podAntiAffinityPreset: soft
 nodeAffinityPreset:

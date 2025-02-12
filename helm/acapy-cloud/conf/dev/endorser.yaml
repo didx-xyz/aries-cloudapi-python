@@ -4,7 +4,16 @@ replicaCount: 1
 
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
-  ad.datadoghq.com/endorser.logs: '[{"source": "python.uvicorn", "service": "endorser"}]'
+  ad.datadoghq.com/endorser.logs: >-
+    [{
+      "source": "python.uvicorn",
+      "service": "endorser",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /health/(ready|live) HTTP/\\d\\.\\d\"\\s+200\\s+OK"
+      }]
+    }]
   proxy.istio.io/config: |-
     proxyMetadata:
       ISTIO_META_IDLE_TIMEOUT: 0s

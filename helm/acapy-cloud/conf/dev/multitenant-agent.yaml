@@ -165,7 +165,6 @@ secretData:
   ACAPY_ADMIN_API_KEY: adminApiKey
   ACAPY_MULTITENANT_JWT_SECRET: verySecretMultitenantJwtSecret
   ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
-  ACAPY_LABEL: Multitenant
   ACAPY_WALLET_NAME: multitenant
   ACAPY_MULTITENANCY_CONFIGURATION: '{ "wallet_type":"single-wallet-askar", "wallet_name":"multitenant" }'
 

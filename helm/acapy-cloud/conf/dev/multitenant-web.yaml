@@ -4,7 +4,16 @@ replicaCount: 1
 
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
-  ad.datadoghq.com/multitenant-web.logs: '[{"source": "python.uvicorn", "service": "multitenant-web"}]'
+  ad.datadoghq.com/multitenant-web.logs: >-
+    [{
+      "source": "python.uvicorn",
+      "service": "multitenant-web",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /docs HTTP/\\d\\.\\d\"\\s+200\\s+OK"
+      }]
+    }]
 
 image:
   name: acapy-cloud/app

@@ -4,7 +4,16 @@ replicaCount: 1
 
 podAnnotations:
   sidecar.istio.io/proxyCPU: 10m
-  ad.datadoghq.com/governance-agent.logs: '[{"source": "python", "service": "governance-agent", "auto_multi_line_detection": true}]'
+  ad.datadoghq.com/governance-agent.logs: >-
+    [{
+      "source": "python",
+      "service": "governance-agent",
+      "log_processing_rules": [{
+        "type": "exclude_at_match",
+        "name": "exclude_health_probes",
+        "pattern": "GET /status/(live|ready) HTTP/1\\.1.*\"response_status\": 200\\b"
+      }]
+    }]
 
 image:
   name: acapy-cloud/agent
@@ -180,7 +189,6 @@ secretData:
   WALLET_DB_USER: governance
 
 env:
-  ACAPY_LOG_LEVEL: info
   # NATS related
   NATS_CREDS_FILE: "" # NATS in Local dev has no auth
   NATS_SERVER: nats://nats:4222
@@ -224,7 +232,8 @@ env:
   ACAPY_EMIT_NEW_DIDCOMM_PREFIX: true
   ACAPY_EMIT_NEW_DIDCOMM_MIME_TYPE: true
 
-  # ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
+  ACAPY_LOG_LEVEL: info
+  ACAPY_LOG_CONFIG: /home/aries/logging_config.yaml
 
 podAntiAffinityPreset: soft
 nodeAffinityPreset:

@@ -25,6 +25,10 @@ inputs:
     description: The version of Helm to use
     required: false
     default: v3.17.0
+  helmfile-path:
+    description: The path to the Helmfile to use
+    required: false
+    default: ./helm/acapy-cloud.yaml.gotmpl
   helmfile-plugins:
     description: The Helmfile plugins to install
     required: false
@@ -63,42 +67,42 @@ runs:
         CLUSTER_NAME: ${{ inputs.cluster-name }}
         REGION: ${{ inputs.aws-region }}
 
-    - name: Helmfile Destroy
-      if: inputs.clean-start == 'true'
-      # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
-      with:
-        helmfile-args: |
-          destroy \
-            --environment ${{ inputs.environment }} \
-            -f ./helm/acapy-cloud.yaml.gotmpl \
-            --state-values-set namespace=${{ inputs.namespace }}
-        helm-plugins: ${{ inputs.helmfile-plugins }}
-        helmfile-version: ${{ inputs.helmfile-version }}
-        helm-version: ${{ inputs.helm-version }}
+    # - name: Helmfile Destroy
+    #   if: inputs.clean-start == 'true'
+    #   # https://github.com/helmfile/helmfile-action
+    #   uses: helmfile/helmfile-action@v2.0.2
+    #   with:
+    #     helmfile-args: |
+    #       destroy \
+    #         --environment ${{ inputs.environment }} \
+    #         -f ${{ inputs.helmfile-path }} \
+    #         --state-values-set namespace=${{ inputs.namespace }}
+    #     helm-plugins: ${{ inputs.helmfile-plugins }}
+    #     helmfile-version: ${{ inputs.helmfile-version }}
+    #     helm-version: ${{ inputs.helm-version }}
 
-    - name: Create Redpanda Connect Stream ConfigMap
-      shell: bash
-      # https://docs.redpanda.com/redpanda-connect/get-started/quickstarts/helm-chart/#run-multiple-pipelines-in-streams-mode
-      run: |
-        kubectl create configmap connect-cloud-pipelines \
-          --from-file=$PIPELINES_DIR \
-          --dry-run=client \
-          -o yaml \
-          -n $NAMESPACE | kubectl apply -f -
-        kubectl -n $NAMESPACE rollout restart deploy/connect-cloud || true
-      env:
-        NAMESPACE: ${{ inputs.namespace }}
-        PIPELINES_DIR: ${{ inputs.pipelines-dir }}
+    # - name: Create Redpanda Connect Stream ConfigMap
+    #   shell: bash
+    #   # https://docs.redpanda.com/redpanda-connect/get-started/quickstarts/helm-chart/#run-multiple-pipelines-in-streams-mode
+    #   run: |
+    #     kubectl create configmap connect-cloud-pipelines \
+    #       --from-file=$PIPELINES_DIR \
+    #       --dry-run=client \
+    #       -o yaml \
+    #       -n $NAMESPACE | kubectl apply -f -
+    #     kubectl -n $NAMESPACE rollout restart deploy/connect-cloud || true
+    #   env:
+    #     NAMESPACE: ${{ inputs.namespace }}
+    #     PIPELINES_DIR: ${{ inputs.pipelines-dir }}
 
     - name: Helmfile Apply
       # https://github.com/helmfile/helmfile-action
       uses: helmfile/helmfile-action@v2.0.2
       with:
         helmfile-args: |
-          apply \
+          diff \
             --environment ${{ inputs.environment }} \
-            -f ./helm/acapy-cloud.yaml.gotmpl \
+            -f ${{ inputs.helmfile-path }} \
             --state-values-set image.tag=${{ inputs.image-tag }} \
             --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
             --state-values-set pgProxyEnabled=${{ inputs.clean-start == 'false' }} \

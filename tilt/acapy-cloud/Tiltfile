@@ -154,7 +154,9 @@ def setup_redpanda_connect_cloud(namespace):
     )
 
     pipeline_config_dir = project_root + "/resources/connect-processors/cloud/pipelines"
-    pipeline_config_files = str(local('find ' + pipeline_config_dir + ' -type f -name "*.yaml"', quiet=True)).splitlines()
+    pipeline_config_files = str(
+        local("find " + pipeline_config_dir + ' -type f -name "*.yaml"', quiet=True)
+    ).splitlines()
     print(color.green("Pipeline config files: " + str(pipeline_config_files)))
     from_file_args = " ".join(["--from-file=" + f for f in pipeline_config_files])
 

@@ -148,10 +148,10 @@ export function deleteTenant(bearerToken, walletId) {
     const response = http.del(url, null, params);
     const responseBody = response.body;
 
-    if (response.status === 204 || response.status === 200) {
+    if (response.status === 204 && response.status === 200) {
       // Request was successful
       if (responseBody === null) {
-        // console.log(`Wallet ${walletId} deleted successfully.`);
+        console.log(`Wallet ${walletId} deleted successfully.`);
       } else {
         console.error(
           `Failed to delete wallet ${walletId}. Response body: ${responseBody}`

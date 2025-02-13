@@ -3,16 +3,11 @@ FROM ghcr.io/didx-xyz/acapy-agent${BBS_SUFFIX}:py3.12-1.2.1-20250213
 
 USER root
 
-# Install git for testing (acapy agent no longer includes git)
-RUN apt-get update && \
-    apt-get install -y git && \
-    rm -rf /var/lib/apt/lists/*
-
 # Install Google Protobuf and Python packages
 ARG PROTOBUF_VERSION=5.29.3
 RUN pip install --no-cache-dir protobuf==${PROTOBUF_VERSION} \
-    git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@fb0ed39 \
-    git+https://github.com/didx-xyz/acapy-plugins@16062c227#subdirectory=nats_events
+  git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@fb0ed39 \
+  git+https://github.com/didx-xyz/acapy-plugins@16062c227#subdirectory=nats_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

@@ -11,7 +11,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "~3.12.8"
 
-aries-cloudcontroller = { version = "==1.2.1.post20250213", source = "testpypi" }
+aries-cloudcontroller = "==1.2.1.post20250213"
 dependency-injector = "~=4.45.0"
 fastapi = "~0.115.0"
 httpx = "~0.28.0"
@@ -48,8 +48,3 @@ profile = "black"
 [tool.pytest.ini_options]
 addopts = "--junitxml=junit.xml -p no:cacheprovider --cov-report=xml --cov-report=term"
 junit_family = "xunit2"
-
-[[tool.poetry.source]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-priority = "supplemental"

@@ -17,9 +17,12 @@ COPY --from=builder /app/xk6 /usr/local/bin/xk6
 ENV TINI_VERSION v0.19.0
 RUN apk add --no-cache tini
 
-ENTRYPOINT ["/sbin/tini", "--"]
+ADD scripts /k6/scripts
+ADD scenarios /k6/scenarios
+ADD libs /k6/libs
+ADD env.sh /k6/env.sh
+
+ENTRYPOINT ["/bin/bash"]
+WORKDIR /k6
 
 USER nobody
-
-# Run your program under Tini
-CMD ["xk6"]

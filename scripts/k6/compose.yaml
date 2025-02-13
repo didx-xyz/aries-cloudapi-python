@@ -8,11 +8,10 @@ services:
       datadog:
         condition: service_healthy
     volumes:
-      - ./output:/output
-      - ./../k6:/k6
-    working_dir: /k6
+      - ./output:/k6/output
+      - .env.local:/k6/.env.local
     entrypoint: /bin/bash
-    command: ./scripts/main.sh -c batch
+    command: ./scripts/main.sh -c batch -C
     environment:
       - K6_STATSD_ADDR=datadog:8125
       - K6_CONSOLE_OUTPUT_FANCY=true

@@ -181,14 +181,14 @@ trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "aries-cloudcontroller"
-version = "1.2.0.post20241205"
+version = "1.2.1.post20250213"
 description = "A simple python client for controlling an ACA-Py agent"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aries_cloudcontroller-1.2.0.post20241205-py3-none-any.whl", hash = "sha256:981adef02b774481ce7a79d2eb69db6f0d7a240cf917d23c956386ad3613bc66"},
-    {file = "aries_cloudcontroller-1.2.0.post20241205.tar.gz", hash = "sha256:b3c31e13bad3f8e48e392dfa6163a2d22cd5db7fe9fa4e194f8cf09a4d84df35"},
+    {file = "aries_cloudcontroller-1.2.1.post20250213-py3-none-any.whl", hash = "sha256:ab3e73efdf5f5b746d893812095b449119f1d7bda2774e92f6876f0b5caa6ee4"},
+    {file = "aries_cloudcontroller-1.2.1.post20250213.tar.gz", hash = "sha256:0674b017d5fd73a264e894a4e6f5e0f663029cdd02cc67fa524e8f812b387cab"},
 ]
 
 [package.dependencies]
@@ -199,6 +199,11 @@ pydantic = ">=2.6,<3.0"
 python-dateutil = ">=2"
 typing-extensions = ">=4,<5.0"
 urllib3 = ">=2.1,<3"
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
 
 [[package]]
 name = "astroid"
@@ -1969,4 +1974,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.12.8"
-content-hash = "cdc46aa2bb10c3cec34fcc66e20be8c7a24ec69173aaf977f723d609a137314a"
+content-hash = "cca1e40a4890ddc60653905b7f0e5e066fcee1c8988436c21117a47dd103249b"

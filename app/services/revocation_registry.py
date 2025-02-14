@@ -5,15 +5,15 @@ from aries_cloudcontroller import (
     AcaPyClient,
     ClearPendingRevocationsRequest,
     CredRevRecordResult,
+    CredRevRecordResultSchemaAnoncreds,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     PublishRevocations,
+    PublishRevocationsSchemaAnoncreds,
     RevokeRequest,
+    RevokeRequestSchemaAnoncreds,
     RevRegResult,
     TxnOrPublishRevocationsResult,
-    RevokeRequestSchemaAnoncreds,
-    CredRevRecordResultSchemaAnoncreds,
-    PublishRevocationsSchemaAnoncreds
 )
 
 from app.exceptions import (
@@ -194,7 +194,9 @@ async def publish_pending_revocations(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.anoncreds_revocation.publish_revocations,
-            body=PublishRevocationsSchemaAnoncreds(rrid2crid=revocation_registry_credential_map),
+            body=PublishRevocationsSchemaAnoncreds(
+                rrid2crid=revocation_registry_credential_map
+            ),
         )
         bound_logger.info(result)
     except CloudApiException as e:

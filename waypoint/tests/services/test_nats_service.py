@@ -28,7 +28,9 @@ async def mock_nats_client():
 
 @pytest.fixture
 async def mock_consumer_info():
-    consumer_info = ConsumerInfo(name="consumer_name", stream_name="stream_name", config="SomeConfig")
+    consumer_info = ConsumerInfo(
+        name="consumer_name", stream_name="stream_name", config="SomeConfig"
+    )
     mock_consumer_info = AsyncMock(return_value=consumer_info)
     return mock_consumer_info
 
@@ -107,7 +109,9 @@ async def test_nats_events_processor_subscribe_error(
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "group_id"])
 async def test_process_events(
-    mock_nats_client, mock_consumer_info, group_id  # pylint: disable=redefined-outer-name
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+    mock_consumer_info,  # pylint: disable=redefined-outer-name
+    group_id,
 ):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock()

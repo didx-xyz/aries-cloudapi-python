@@ -93,9 +93,9 @@ class NatsEventsProcessor:
                 subscription = await self.js_context.pull_subscribe(
                     config=config, **subscribe_kwargs
                 )
+
                 not_ready = True
                 while not_ready:
-                    # Wait for the consumer to be ready: Cluade/GPT suggestion
                     consumer_info = await subscription.consumer_info()
                     if isinstance(consumer_info, ConsumerInfo):
                         bound_logger.trace(
@@ -104,6 +104,7 @@ class NatsEventsProcessor:
                             consumer_info.stream_name,
                         )
                         not_ready = False
+
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription
             except BadSubscriptionError as e:

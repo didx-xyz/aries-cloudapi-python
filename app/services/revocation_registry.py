@@ -11,6 +11,9 @@ from aries_cloudcontroller import (
     RevokeRequest,
     RevRegResult,
     TxnOrPublishRevocationsResult,
+    RevokeRequestSchemaAnoncreds,
+    CredRevRecordResultSchemaAnoncreds,
+    PublishRevocationsSchemaAnoncreds
 )
 
 from app.exceptions import (
@@ -99,7 +102,7 @@ async def revoke_credential(
 
     request_body = handle_model_with_validation(
         logger=bound_logger,
-        model_class=RevokeRequest,
+        model_class=RevokeRequestSchemaAnoncreds,
         cred_ex_id=strip_protocol_prefix(credential_exchange_id),
         publish=auto_publish_to_ledger,
     )
@@ -109,6 +112,7 @@ async def revoke_credential(
             acapy_call=controller.anoncreds_revocation.revoke,
             body=request_body,
         )
+        bound_logger.info(revoke_result)
     except CloudApiException as e:
         raise CloudApiException(
             f"Failed to revoke credential: {e.detail}", e.status_code
@@ -190,8 +194,9 @@ async def publish_pending_revocations(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.anoncreds_revocation.publish_revocations,
-            body=PublishRevocations(rrid2crid=revocation_registry_credential_map),
+            body=PublishRevocationsSchemaAnoncreds(rrid2crid=revocation_registry_credential_map),
         )
+        bound_logger.info(result)
     except CloudApiException as e:
         raise CloudApiException(
             f"Failed to publish pending revocations: {e.detail}", e.status_code
@@ -301,7 +306,7 @@ async def get_credential_revocation_record(
             f"Failed to get revocation status: {e.detail}", e.status_code
         ) from e
 
-    if not isinstance(result, CredRevRecordResult):
+    if not isinstance(result, CredRevRecordResultSchemaAnoncreds):
         bound_logger.error(
             "Unexpected type returned from get_revocation_status: `{}`.", result
         )

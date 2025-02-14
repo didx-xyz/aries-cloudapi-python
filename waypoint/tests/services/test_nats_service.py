@@ -31,7 +31,7 @@ async def mock_consumer_info():
     consumer_info = ConsumerInfo(
         name="consumer_name", stream_name="stream_name", config="SomeConfig"
     )
-    mock_consumer_info = AsyncMock( # pylint: disable=redefined-outer-name
+    mock_consumer_info = AsyncMock(  # pylint: disable=redefined-outer-name
         return_value=consumer_info
     )
     return mock_consumer_info

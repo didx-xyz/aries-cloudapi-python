@@ -59,7 +59,7 @@ scenario_create_credentials() {
   local original_vus=${BASE_VUS}
   local original_iters=${BASE_ITERATIONS}
 
-  calculate_create_creds_load ${original_vus} ${original_iters}
+  calculate_create_creds_load "${original_vus}" "${original_iters}"
 
   run_test ./scenarios/create-credentials.js
 }

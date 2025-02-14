@@ -23,7 +23,7 @@ cp env.local .env.local
 
 ### Shipping local k6 metrics to Datadog
 
-```
+```sh
 DOCKER_CONTENT_TRUST=1 \
 docker run -d \
     --name datadog \

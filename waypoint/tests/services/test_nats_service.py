@@ -31,9 +31,7 @@ async def mock_consumer_info():
     consumer_info = ConsumerInfo(
         name="consumer_name", stream_name="stream_name", config="SomeConfig"
     )
-    mock_con_info = AsyncMock(
-        return_value=consumer_info
-    )
+    mock_con_info = AsyncMock(return_value=consumer_info)
     return mock_con_info
 
 

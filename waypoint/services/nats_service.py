@@ -6,7 +6,7 @@ from typing import Optional
 
 import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
-from nats.js.api import ConsumerConfig, DeliverPolicy, ConsumerInfo
+from nats.js.api import ConsumerConfig, ConsumerInfo, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
 from tenacity import (
@@ -98,8 +98,8 @@ class NatsEventsProcessor:
                     # Wait for the consumer to be ready: Cluade/GPT suggestion
                     consumer_info = await subscription.consumer_info()
                     if isinstance(consumer_info, ConsumerInfo):
-                            print("Consumer is ready.")
-                            not_ready = False
+                        print("Consumer is ready.")
+                        not_ready = False
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription
             except BadSubscriptionError as e:

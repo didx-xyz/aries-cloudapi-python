@@ -47,32 +47,38 @@ async def test_init_nats_client_error(exception):
                 pass
 
 
-# # @pytest.mark.anyio
-# # async def test_nats_events_processor_subscribe(
-# #     mock_nats_client,  # pylint: disable=redefined-outer-name
-# # ):
-# #     processor = NatsEventsProcessor(mock_nats_client)
-# #     mock_nats_client.pull_subscribe.return_value = AsyncMock(
-# #         spec=JetStreamContext.PullSubscription
-# #     )
-# #     with patch("waypoint.services.nats_service.ConsumerConfig") as mock_config:
-# #         mock_config.return_value = ConsumerConfig(
-# #             deliver_policy=DeliverPolicy.BY_START_TIME,
-# #             opt_start_time="2024-10-24T09:17:17.998149541Z",
-# #         )
-# #         subscription = await processor._subscribe(  # pylint: disable=protected-access
-# #             group_id="group_id",
-# #             wallet_id="wallet_id",
-# #             topic="proofs",
-# #             state="done",
-# #             start_time="2024-10-24T09:17:17.998149541Z",
-# #         )
-# #         mock_nats_client.pull_subscribe.assert_called_once_with(
-# #             subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
-# #             stream=NATS_STATE_STREAM,
-# #             config=mock_config.return_value,
-# #         )
-# #         assert isinstance(subscription, JetStreamContext.PullSubscription)
+@pytest.mark.anyio
+async def test_nats_events_processor_subscribe(
+    mock_nats_client,  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock(spec=JetStreamContext.PullSubscription)
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+    consumer_info = ConsumerInfo(name="consumer_name", stream_name="stream_name", config="SomeConfig")
+    mock_consumer_info = AsyncMock(consumer_info)
+    mock_subscription.consumer_info.return_value = mock_consumer_info
+
+    with patch("waypoint.services.nats_service.ConsumerConfig") as mock_config:
+        mock_config.return_value = ConsumerConfig(
+            deliver_policy=DeliverPolicy.BY_START_TIME,
+            opt_start_time="2024-10-24T09:17:17.998149541Z",
+        )
+
+        subscription = await processor._subscribe(  # pylint: disable=protected-access
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="proofs",
+            state="done",
+            start_time="2024-10-24T09:17:17.998149541Z",
+        )
+
+        mock_nats_client.pull_subscribe.assert_called_once_with(
+            subject=f"{NATS_STATE_SUBJECT}.group_id.wallet_id.proofs.done",
+            stream=NATS_STATE_STREAM,
+            config=mock_config.return_value,
+        )
+        mock_subscription.consumer_info.assert_called_once()
+        assert isinstance(subscription, JetStreamContext.PullSubscription)
 
 
 @pytest.mark.anyio

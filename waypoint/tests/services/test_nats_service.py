@@ -26,6 +26,13 @@ async def mock_nats_client():
         yield mock_jetstream
 
 
+@pytest.fixture
+async def mock_consumer_info():
+    consumer_info = ConsumerInfo(name="consumer_name", stream_name="stream_name", config="SomeConfig")
+    mock_consumer_info = AsyncMock(return_value=consumer_info)
+    return mock_consumer_info
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize("nats_creds_file", [None, "some_file"])
 async def test_init_nats_client(nats_creds_file):
@@ -49,14 +56,12 @@ async def test_init_nats_client_error(exception):
 
 @pytest.mark.anyio
 async def test_nats_events_processor_subscribe(
-    mock_nats_client,  # pylint: disable=redefined-outer-name
+    mock_nats_client, mock_consumer_info  # pylint: disable=redefined-outer-name
 ):
     processor = NatsEventsProcessor(mock_nats_client)
     mock_subscription = AsyncMock(spec=JetStreamContext.PullSubscription)
     mock_nats_client.pull_subscribe.return_value = mock_subscription
-    consumer_info = ConsumerInfo(name="consumer_name", stream_name="stream_name", config="SomeConfig")
-    mock_consumer_info = AsyncMock(consumer_info)
-    mock_subscription.consumer_info.return_value = mock_consumer_info
+    mock_subscription.consumer_info = mock_consumer_info
 
     with patch("waypoint.services.nats_service.ConsumerConfig") as mock_config:
         mock_config.return_value = ConsumerConfig(
@@ -99,102 +104,108 @@ async def test_nats_events_processor_subscribe_error(
         )
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize("group_id", [None, "group_id"])
-# async def test_process_events(
-#     mock_nats_client, group_id  # pylint: disable=redefined-outer-name
-# ):
-#     processor = NatsEventsProcessor(mock_nats_client)
-#     mock_subscription = AsyncMock()
-#     mock_nats_client.pull_subscribe.return_value = mock_subscription
+@pytest.mark.anyio
+@pytest.mark.parametrize("group_id", [None, "group_id"])
+async def test_process_events(
+    mock_nats_client, mock_consumer_info, group_id  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+    mock_subscription.consumer_info = mock_consumer_info
 
-#     mock_message = AsyncMock()
-#     mock_message.headers = {"event_topic": "test_topic"}
-#     mock_message.data = json.dumps(
-#         {
-#             "wallet_id": "some_wallet_id",
-#             "group_id": "group_id",
-#             "origin": "multitenant",
-#             "topic": "some_topic",
-#             "payload": {"field": "value", "state": "state"},
-#         }
-#     )
-#     mock_subscription.fetch.return_value = [mock_message]
+    mock_message = AsyncMock()
+    mock_message.headers = {"event_topic": "test_topic"}
+    mock_message.data = json.dumps(
+        {
+            "wallet_id": "some_wallet_id",
+            "group_id": "group_id",
+            "origin": "multitenant",
+            "topic": "some_topic",
+            "payload": {"field": "value", "state": "state"},
+        }
+    )
+    mock_subscription.fetch.return_value = [mock_message]
 
-#     stop_event = asyncio.Event()
-#     async with processor.process_events(
-#         group_id=group_id,
-#         wallet_id="wallet_id",
-#         topic="test_topic",
-#         state="state",
-#         stop_event=stop_event,
-#         duration=0.5,
-#     ) as event_generator:
-#         events = []
-#         async for event in event_generator:
-#             events.append(event)
-#             stop_event.set()
+    stop_event = asyncio.Event()
+    async with processor.process_events(
+        group_id=group_id,
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=0.5,
+    ) as event_generator:
+        events = []
+        async for event in event_generator:
+            events.append(event)
+            stop_event.set()
 
-#     assert len(events) == 1
-#     assert isinstance(events[0], CloudApiWebhookEventGeneric)
-#     assert events[0].payload["field"] == "value"
+    assert len(events) == 1
+    assert isinstance(events[0], CloudApiWebhookEventGeneric)
+    assert events[0].payload["field"] == "value"
 
-#     mock_subscription.fetch.assert_called()
-#     mock_message.ack.assert_called_once()
-
-
-# @pytest.mark.anyio
-# async def test_process_events_cancelled_error(
-#     mock_nats_client,  # pylint: disable=redefined-outer-name
-# ):
-#     processor = NatsEventsProcessor(mock_nats_client)
-#     mock_subscription = AsyncMock()
-#     mock_nats_client.pull_subscribe.return_value = mock_subscription
-
-#     stop_event = asyncio.Event()
-
-#     with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
-#         async with processor.process_events(
-#             group_id="group_id",
-#             wallet_id="wallet_id",
-#             topic="test_topic",
-#             state="state",
-#             stop_event=stop_event,
-#             duration=0.5,
-#         ) as event_generator:
-#             events = []
-#             async for event in event_generator:
-#                 events.append(event)
-
-#     assert len(events) == 0
-#     assert stop_event.is_set()
+    mock_subscription.fetch.assert_called()
+    mock_message.ack.assert_called_once()
+    mock_subscription.consumer_info.assert_called_once()
 
 
-# @pytest.mark.anyio
-# async def test_process_events_fetch_timeout_error(
-#     mock_nats_client,  # pylint: disable=redefined-outer-name
-# ):
-#     processor = NatsEventsProcessor(mock_nats_client)
-#     mock_subscription = AsyncMock()
-#     mock_nats_client.pull_subscribe.return_value = mock_subscription
+@pytest.mark.anyio
+async def test_process_events_cancelled_error(
+    mock_nats_client, mock_consumer_info  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+    mock_subscription.consumer_info = mock_consumer_info
 
-#     mock_subscription.fetch.side_effect = FetchTimeoutError
+    stop_event = asyncio.Event()
 
-#     stop_event = asyncio.Event()
-#     async with processor.process_events(
-#         group_id="group_id",
-#         wallet_id="wallet_id",
-#         topic="test_topic",
-#         state="state",
-#         stop_event=stop_event,
-#         duration=0.5,
-#     ) as event_generator:
-#         events = []
-#         async for event in event_generator:
-#             events.append(event)
+    with patch.object(mock_subscription, "fetch", side_effect=asyncio.CancelledError):
+        async with processor.process_events(
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="test_topic",
+            state="state",
+            stop_event=stop_event,
+            duration=0.5,
+        ) as event_generator:
+            events = []
+            async for event in event_generator:
+                events.append(event)
 
-#     assert len(events) == 0
-#     assert stop_event.is_set()
+    assert len(events) == 0
+    assert stop_event.is_set()
+    mock_subscription.consumer_info.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_process_events_fetch_timeout_error(
+    mock_nats_client, mock_consumer_info  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+    mock_subscription.consumer_info = mock_consumer_info
+
+    mock_subscription.fetch.side_effect = FetchTimeoutError
+
+    stop_event = asyncio.Event()
+    async with processor.process_events(
+        group_id="group_id",
+        wallet_id="wallet_id",
+        topic="test_topic",
+        state="state",
+        stop_event=stop_event,
+        duration=0.5,
+    ) as event_generator:
+        events = []
+        async for event in event_generator:
+            events.append(event)
+
+    assert len(events) == 0
+    assert stop_event.is_set()
+    mock_subscription.consumer_info.assert_called_once()
 
 
 @pytest.mark.anyio

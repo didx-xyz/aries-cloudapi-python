@@ -12,7 +12,7 @@ declare -A ENDPOINTS=(
 )
 
 # Directory to store downloaded files
-OUTPUT_DIR="openapi"
+OUTPUT_DIR="docs/openapi"
 mkdir -p "$OUTPUT_DIR"
 
 # Loop through endpoints and download each file

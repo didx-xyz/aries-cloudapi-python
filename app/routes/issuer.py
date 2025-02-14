@@ -228,7 +228,7 @@ async def request_credential(
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching records")
         record = await IssuerV2.get_record(aries_controller, credential_exchange_id)
-
+        bound_logger.info(record)
         schema_id = None
         if record.type == "indy":
             if not record.credential_definition_id or not record.schema_id:
@@ -244,6 +244,9 @@ async def request_credential(
             schema_id = record.schema_id
         elif record.type == "ld_proof":
             issuer_did = record.did
+        elif record.type == "anoncreds":
+            issuer_did = record.did
+
         else:
             raise CloudApiException("Could not resolve record type")
 

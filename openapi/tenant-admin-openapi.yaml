@@ -1,24 +1,24 @@
 openapi: 3.1.0
 info:
   title: CloudAPI Multitenant Admin
-  description: "
+  description: '
 
-    Welcome to the Aries CloudAPI Python project!
+    Welcome to CloudAPI Multitenant Admin!
 
 
     For detailed guidance on using the API, please visit our official documentation:
 
-    https://www.didx.co.za/ssi-dev-portal/docs/Welcome.
+    https://www.didx.co.za/acapy-cloud/index.html
 
-    "
-  version: 1.0.0
+    '
+  version: 4.2.0
 servers:
-  - url: /tenant-admin
+- url: /tenant-admin
 paths:
   /v1/tenants:
     post:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Create New Tenant
       description: "Create a New Tenant\n---\n\nUse this endpoint to create a new\
         \ Tenant, which is the same as creating a new Wallet.\n\nThe `wallet_label`\
@@ -53,29 +53,29 @@ paths:
         \        updated_at: str\n        access_token: str"
       operationId: create_tenant_v1_tenants_post
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateTenantRequest"
+              $ref: '#/components/schemas/CreateTenantRequest'
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateTenantResponse"
-        "422":
+                $ref: '#/components/schemas/CreateTenantResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
     get:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Fetch Tenants
       description: "Fetch all Tenants (paginated), or Fetch by Wallet Name\n---\n\n\
         Use this endpoint to fetch all tenants (using pagination), or filter by wallet\
@@ -91,72 +91,72 @@ paths:
         \        image_url: Optional[str]\n        group_id: Optional[str]"
       operationId: get_tenants_v1_tenants_get
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_name
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: "null"
-            title: Wallet Name
-        - name: limit
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: integer
-                maximum: 10000
-                minimum: 1
-              - type: "null"
-            description: Number of results to return
-            default: 1000
-            title: Limit
+      - name: wallet_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Wallet Name
+      - name: limit
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 10000
+            minimum: 1
+          - type: 'null'
           description: Number of results to return
-        - name: offset
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: integer
-                minimum: 0
-              - type: "null"
-            description: Offset for pagination
-            default: 0
-            title: Offset
+          default: 1000
+          title: Limit
+        description: Number of results to return
+      - name: offset
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
           description: Offset for pagination
-        - name: descending
-          in: query
-          required: false
-          schema:
-            type: boolean
-            description: Whether to return results in descending order. Results are
-              ordered by record created time.
-            default: true
-            title: Descending
-          description: Whether to return results in descending order. Results are ordered
-            by record created time.
+          default: 0
+          title: Offset
+        description: Offset for pagination
+      - name: descending
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Whether to return results in descending order. Results are
+            ordered by record created time.
+          default: true
+          title: Descending
+        description: Whether to return results in descending order. Results are ordered
+          by record created time.
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Tenant"
+                  $ref: '#/components/schemas/Tenant'
                 title: Response Get Tenants V1 Tenants Get
-        "422":
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /v1/tenants/{wallet_id}:
     delete:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Delete a Tenant by Wallet ID
       description: "Delete Tenant by ID\n---\n\nUse this endpoint to delete a Tenant\
         \ by its Wallet ID. This action will remove the Tenant's Wallet,\nalong with\
@@ -166,26 +166,26 @@ paths:
         \ Tenant to delete.\n\nResponse body:\n---\n    status_code: 204 No Content"
       operationId: delete_tenant_by_id_v1_tenants__wallet_id__delete
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
       responses:
-        "204":
+        '204':
           description: Successful Response
-        "422":
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
     put:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Update Tenant by Wallet ID
       description: "Update Tenant by Wallet ID\n---\n\nUpdate a Tenant's details based\
         \ on their Wallet ID.\n\nIssuers or verifiers can be promoted to hold both\
@@ -205,36 +205,36 @@ paths:
         \        group_id: Optional[str]"
       operationId: update_tenant_v1_tenants__wallet_id__put
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateTenantRequest"
+              $ref: '#/components/schemas/UpdateTenantRequest'
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Tenant"
-        "422":
+                $ref: '#/components/schemas/Tenant'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
     get:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Get Tenant by Wallet ID
       description: "Fetch Tenant info by ID\n---\n\nUse this endpoint to fetch Tenant\
         \ info by Wallet ID.\n\nRequest parameters:\n---\n    wallet_id: str\n   \
@@ -244,31 +244,31 @@ paths:
         \ Optional[str]\n        group_id: Optional[str]"
       operationId: get_tenant_v1_tenants__wallet_id__get
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Tenant"
-        "422":
+                $ref: '#/components/schemas/Tenant'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /v1/tenants/{wallet_id}/access-token:
     get:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: (Deprecated) Rotate and Get New Access Token for Wallet
       description: "(Deprecated) Rotate and get access token for Wallet\n---\n\nCalling\
         \ this endpoint will invalidate the previous access token for the Wallet,\
@@ -279,30 +279,30 @@ paths:
       operationId: get_wallet_auth_token_v1_tenants__wallet_id__access_token_get
       deprecated: true
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TenantAuth"
-        "422":
+                $ref: '#/components/schemas/TenantAuth'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
-        - "admin: tenants"
+      - 'admin: tenants'
       summary: Rotate and Get New Access Token for Wallet
       description: "Rotate and get new access token for Wallet\n---\n\nCalling this\
         \ endpoint will invalidate the previous access token for the Wallet, and return\
@@ -312,31 +312,31 @@ paths:
         \   The new access token for the Wallet."
       operationId: post_wallet_auth_token_v1_tenants__wallet_id__access_token_post
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TenantAuth"
-        "422":
+                $ref: '#/components/schemas/TenantAuth'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /v1/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}:
     get:
       tags:
-        - sse
+      - sse
       summary: Subscribe To A Wallet Event By Topic, Field, And Desired State
       description: "Subscribe to SSE events wait for a desired state with a field\
         \ filter.\n---\n***This endpoint can't be called on the swagger UI, as it\
@@ -355,58 +355,58 @@ paths:
         \ to look back for events before subscribing."
       operationId: Subscribe_to_a_Wallet_Event_by_Topic__Field__and_Desired_State_v1_sse__wallet_id___topic___field___field_id___desired_state__get
       security:
-        - APIKeyHeader: []
+      - APIKeyHeader: []
       parameters:
-        - name: wallet_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Wallet Id
-        - name: topic
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Topic
-        - name: field
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Field
-        - name: field_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Field Id
-        - name: desired_state
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Desired State
-        - name: look_back
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: integer
-              - type: "null"
-            description: Number of seconds to look back for events
-            default: 60
-            title: Look Back
+      - name: wallet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Id
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Topic
+      - name: field
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Field
+      - name: field_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Field Id
+      - name: desired_state
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Desired State
+      - name: look_back
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
           description: Number of seconds to look back for events
+          default: 60
+          title: Look Back
+        description: Number of seconds to look back for events
       responses:
-        "200":
+        '200':
           description: Successful Response
-        "422":
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     CreateTenantRequest:
@@ -414,73 +414,73 @@ components:
         wallet_label:
           type: string
           title: Wallet Label
-          description: "A required alias for the tenant, publicized to other agents
+          description: 'A required alias for the tenant, publicized to other agents
             when forming a connection. If the tenant is an issuer or verifier, this
             label will be displayed on the trust registry and must be unique. Allowable
-            special characters: .!@$*()~_-"
+            special characters: .!@$*()~_-'
           examples:
-            - Tenant Label
+          - Tenant Label
         wallet_name:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Wallet Name
           description: An optional wallet name. Useful with `get_tenants` to fetch
             wallets by wallet name. If selected, must be unique. Otherwise, randomly
             generated.
           examples:
-            - Unique name
+          - Unique name
         roles:
           anyOf:
-            - items:
-                type: string
-                enum:
-                  - issuer
-                  - verifier
-              type: array
-            - type: "null"
+          - items:
+              type: string
+              enum:
+              - issuer
+              - verifier
+            type: array
+          - type: 'null'
           title: Roles
         group_id:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Group Id
           description: An optional group identifier. Useful with `get_tenants` to
             fetch wallets by group id.
           examples:
-            - Some Group Id
+          - Some Group Id
         image_url:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Image Url
           examples:
-            - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
+          - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
         extra_settings:
           anyOf:
-            - additionalProperties:
-                type: boolean
-              propertyNames:
-                enum:
-                  - ACAPY_INVITE_PUBLIC
-                  - ACAPY_PUBLIC_INVITES
-                  - ACAPY_AUTO_ACCEPT_INVITES
-                  - ACAPY_AUTO_ACCEPT_REQUESTS
-                  - ACAPY_AUTO_PING_CONNECTION
-                  - ACAPY_AUTO_RESPOND_MESSAGES
-                  - ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER
-                  - ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST
-                  - ACAPY_AUTO_VERIFY_PRESENTATION
-              type: object
-            - type: "null"
+          - additionalProperties:
+              type: boolean
+            propertyNames:
+              enum:
+              - ACAPY_INVITE_PUBLIC
+              - ACAPY_PUBLIC_INVITES
+              - ACAPY_AUTO_ACCEPT_INVITES
+              - ACAPY_AUTO_ACCEPT_REQUESTS
+              - ACAPY_AUTO_PING_CONNECTION
+              - ACAPY_AUTO_RESPOND_MESSAGES
+              - ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER
+              - ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST
+              - ACAPY_AUTO_VERIFY_PRESENTATION
+            type: object
+          - type: 'null'
           title: Extra Settings
           description: Optional per-tenant settings to configure wallet behaviour
             for advanced users.
           examples:
-            - ACAPY_AUTO_ACCEPT_INVITES: false
+          - ACAPY_AUTO_ACCEPT_INVITES: false
       type: object
       required:
-        - wallet_label
+      - wallet_label
       title: CreateTenantRequest
     CreateTenantResponse:
       properties:
@@ -488,59 +488,59 @@ components:
           type: string
           title: Access Token
           examples:
-            - ey...
+          - ey...
         wallet_id:
           type: string
           title: Wallet Id
           examples:
-            - 545135a4-ecbc-4400-8594-bdb74c51c88d
+          - 545135a4-ecbc-4400-8594-bdb74c51c88d
         wallet_label:
           type: string
           title: Wallet Label
           examples:
-            - Alice
+          - Alice
         wallet_name:
           type: string
           title: Wallet Name
           examples:
-            - SomeWalletName
+          - SomeWalletName
         created_at:
           type: string
           title: Created At
         updated_at:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Updated At
         image_url:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Image Url
           examples:
-            - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
+          - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
         group_id:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Group Id
           description: An optional group identifier. Useful with `get_tenants` to
             fetch wallets by group id.
           examples:
-            - Some Group Id
+          - Some Group Id
       type: object
       required:
-        - access_token
-        - wallet_id
-        - wallet_label
-        - wallet_name
-        - created_at
+      - access_token
+      - wallet_id
+      - wallet_label
+      - wallet_name
+      - created_at
       title: CreateTenantResponse
     HTTPValidationError:
       properties:
         detail:
           items:
-            $ref: "#/components/schemas/ValidationError"
+            $ref: '#/components/schemas/ValidationError'
           type: array
           title: Detail
       type: object
@@ -551,47 +551,47 @@ components:
           type: string
           title: Wallet Id
           examples:
-            - 545135a4-ecbc-4400-8594-bdb74c51c88d
+          - 545135a4-ecbc-4400-8594-bdb74c51c88d
         wallet_label:
           type: string
           title: Wallet Label
           examples:
-            - Alice
+          - Alice
         wallet_name:
           type: string
           title: Wallet Name
           examples:
-            - SomeWalletName
+          - SomeWalletName
         created_at:
           type: string
           title: Created At
         updated_at:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Updated At
         image_url:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Image Url
           examples:
-            - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
+          - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
         group_id:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Group Id
           description: An optional group identifier. Useful with `get_tenants` to
             fetch wallets by group id.
           examples:
-            - Some Group Id
+          - Some Group Id
       type: object
       required:
-        - wallet_id
-        - wallet_label
-        - wallet_name
-        - created_at
+      - wallet_id
+      - wallet_label
+      - wallet_name
+      - created_at
       title: Tenant
     TenantAuth:
       properties:
@@ -599,63 +599,63 @@ components:
           type: string
           title: Access Token
           examples:
-            - ey...
+          - ey...
       type: object
       required:
-        - access_token
+      - access_token
       title: TenantAuth
     UpdateTenantRequest:
       properties:
         wallet_label:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Wallet Label
-          description: "A required alias for the tenant, publicized to other agents
+          description: 'A required alias for the tenant, publicized to other agents
             when forming a connection. If the tenant is an issuer or verifier, this
             label will be displayed on the trust registry and must be unique. Allowable
-            special characters: .!@$*()~_-"
+            special characters: .!@$*()~_-'
           examples:
-            - Tenant Label
+          - Tenant Label
         roles:
           anyOf:
-            - items:
-                type: string
-                enum:
-                  - issuer
-                  - verifier
-              type: array
-            - type: "null"
+          - items:
+              type: string
+              enum:
+              - issuer
+              - verifier
+            type: array
+          - type: 'null'
           title: Roles
         image_url:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Image Url
           examples:
-            - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
+          - https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png
         extra_settings:
           anyOf:
-            - additionalProperties:
-                type: boolean
-              propertyNames:
-                enum:
-                  - ACAPY_INVITE_PUBLIC
-                  - ACAPY_PUBLIC_INVITES
-                  - ACAPY_AUTO_ACCEPT_INVITES
-                  - ACAPY_AUTO_ACCEPT_REQUESTS
-                  - ACAPY_AUTO_PING_CONNECTION
-                  - ACAPY_AUTO_RESPOND_MESSAGES
-                  - ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER
-                  - ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST
-                  - ACAPY_AUTO_VERIFY_PRESENTATION
-              type: object
-            - type: "null"
+          - additionalProperties:
+              type: boolean
+            propertyNames:
+              enum:
+              - ACAPY_INVITE_PUBLIC
+              - ACAPY_PUBLIC_INVITES
+              - ACAPY_AUTO_ACCEPT_INVITES
+              - ACAPY_AUTO_ACCEPT_REQUESTS
+              - ACAPY_AUTO_PING_CONNECTION
+              - ACAPY_AUTO_RESPOND_MESSAGES
+              - ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER
+              - ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST
+              - ACAPY_AUTO_VERIFY_PRESENTATION
+            type: object
+          - type: 'null'
           title: Extra Settings
           description: Optional per-tenant settings to configure wallet behaviour
             for advanced users.
           examples:
-            - ACAPY_AUTO_ACCEPT_INVITES: false
+          - ACAPY_AUTO_ACCEPT_INVITES: false
       type: object
       title: UpdateTenantRequest
     ValidationError:
@@ -663,8 +663,8 @@ components:
         loc:
           items:
             anyOf:
-              - type: string
-              - type: integer
+            - type: string
+            - type: integer
           type: array
           title: Location
         msg:
@@ -675,9 +675,9 @@ components:
           title: Error Type
       type: object
       required:
-        - loc
-        - msg
-        - type
+      - loc
+      - msg
+      - type
       title: ValidationError
   securitySchemes:
     APIKeyHeader:

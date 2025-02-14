@@ -23,8 +23,7 @@ inputs:
     required: true
   helm-version:
     description: The version of Helm to use
-    required: false
-    default: v3.17.0
+    required: true
   helmfile-path:
     description: The path to the Helmfile to use
     required: false
@@ -35,8 +34,7 @@ inputs:
     default: https://github.com/databus23/helm-diff
   helmfile-version:
     description: The version of Helmfile to use
-    required: false
-    default: v0.170.1
+    required: true
   image-tag:
     description: The tag of the Docker image to deploy
     required: true

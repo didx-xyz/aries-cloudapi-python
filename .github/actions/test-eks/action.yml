@@ -11,23 +11,20 @@ inputs:
     required: true
   helm-version:
     description: The version of Helm to use
-    required: false
-    default: v3.17.0
+    required: true
   helmfile-plugins:
     description: The Helmfile plugins to install
     required: false
     default: https://github.com/databus23/helm-diff
   helmfile-version:
     description: The version of Helmfile to use
-    required: false
-    default: v0.170.1
+    required: true
   image-tag:
     description: The tag of the Docker image to deploy
     required: true
   mise-version:
     description: "The version of Mise to use"
-    required: false
-    default: "2025.2.3"
+    required: true
   namespace:
     description: The Kubernetes namespace to deploy to
     required: true

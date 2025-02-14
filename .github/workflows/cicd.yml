@@ -512,8 +512,8 @@ jobs:
       REPO_NAME: didx-cloud
 
     steps:
-      - name: Generate token
-        id: generate_token
+      - name: Log in to DIDx DevOps
+        id: devops_login
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.DEVOPS_APP_ID }}
@@ -524,7 +524,7 @@ jobs:
       - name: Trigger didx:cloud
         uses: actions/github-script@v7
         with:
-          github-token: ${{ steps.generate_token.outputs.token }}
+          github-token: ${{ steps.devops_login.outputs.token }}
           script: >-
             try {
               const result = await github.rest.actions.createWorkflowDispatch({

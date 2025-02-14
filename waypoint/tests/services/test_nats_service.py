@@ -292,41 +292,42 @@ async def test_process_events_bad_subscription_error_on_unsubscribe(
     assert mock_resubscribe.called
 
 
-# @pytest.mark.anyio
-# async def test_process_events_base_exception(
-#     mock_nats_client,  # pylint: disable=redefined-outer-name
-# ):
-#     processor = NatsEventsProcessor(mock_nats_client)
-#     mock_subscription = AsyncMock()
-#     mock_nats_client.pull_subscribe.return_value = mock_subscription
+@pytest.mark.anyio
+async def test_process_events_base_exception(
+    mock_nats_client, mock_consumer_info  # pylint: disable=redefined-outer-name
+):
+    processor = NatsEventsProcessor(mock_nats_client)
+    mock_subscription = AsyncMock()
+    mock_nats_client.pull_subscribe.return_value = mock_subscription
+    mock_subscription.consumer_info = mock_consumer_info
 
-#     # Mock fetch to raise a generic exception
-#     mock_subscription.fetch.side_effect = Exception("Test base exception")
+    # Mock fetch to raise a generic exception
+    mock_subscription.fetch.side_effect = Exception("Test base exception")
 
-#     stop_event = asyncio.Event()
+    stop_event = asyncio.Event()
 
-#     # Process events
-#     with pytest.raises(Exception):
-#         async with processor.process_events(
-#             group_id="group_id",
-#             wallet_id="wallet_id",
-#             topic="test_topic",
-#             state="state",
-#             stop_event=stop_event,
-#             duration=0.5,
-#         ) as event_generator:
-#             events = []
-#             async for event in event_generator:
-#                 events.append(event)
+    # Process events
+    with pytest.raises(Exception):
+        async with processor.process_events(
+            group_id="group_id",
+            wallet_id="wallet_id",
+            topic="test_topic",
+            state="state",
+            stop_event=stop_event,
+            duration=0.5,
+        ) as event_generator:
+            events = []
+            async for event in event_generator:
+                events.append(event)
 
-#     # Assert no events are yielded due to the base exception
-#     assert len(events) == 0
+    # Assert no events are yielded due to the base exception
+    assert len(events) == 0
 
-#     # Verify unsubscribe was attempted
-#     mock_subscription.unsubscribe.assert_called_once()
+    # Verify unsubscribe was attempted
+    mock_subscription.unsubscribe.assert_called_once()
 
-#     # Verify fetch was called once before raising the exception
-#     assert mock_subscription.fetch.call_count == 1
+    # Verify fetch was called once before raising the exception
+    assert mock_subscription.fetch.call_count == 1
 
 
 @pytest.mark.anyio

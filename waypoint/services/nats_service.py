@@ -98,7 +98,7 @@ class NatsEventsProcessor:
                     # Wait for the consumer to be ready: Cluade/GPT suggestion
                     consumer_info = await subscription.consumer_info()
                     if isinstance(consumer_info, ConsumerInfo):
-                        print("Consumer is ready.")
+                        bound_logger.trace("Consumer is ready {}, {}", consumer_info.name, consumer_info.stream_name)
                         not_ready = False
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription

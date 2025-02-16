@@ -37,6 +37,7 @@ class NatsEventsProcessor:
 
     def __init__(self, jetstream: JetStreamContext):
         self.js_context: JetStreamContext = jetstream
+        self._resubscribe_lock = asyncio.Lock()  # Add lock for resubscribe operations
 
     async def _subscribe(
         self,
@@ -168,7 +169,9 @@ class NatsEventsProcessor:
                         break
 
                     try:
-                        messages = await subscription.fetch(batch=1, timeout=0.5)
+                        messages = await subscription.fetch(
+                            batch=1, timeout=0.5, heartbeat=0.2
+                        )
                         for message in messages:
                             event = orjson.loads(message.data)
                             bound_logger.trace("Received event: {}", event)
@@ -177,31 +180,39 @@ class NatsEventsProcessor:
 
                     except FetchTimeoutError:
                         # Fetch timeout, continue
-                        bound_logger.trace("Timeout fetching messages continuing...")
+                        bound_logger.debug("Timeout fetching messages continuing...")
                         await asyncio.sleep(0.1)
 
                     except TimeoutError:
                         # Timeout error, resubscribe
-                        bound_logger.warning(
-                            "Subscription lost connection, attempting to resubscribe..."
-                        )
-                        try:
-                            await subscription.unsubscribe()
-                        except BadSubscriptionError as e:
-                            # If we can't unsubscribe, log the error and continue
-                            bound_logger.warning(
-                                "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
-                                e,
+                        if self._resubscribe_lock.locked():
+                            bound_logger.debug(
+                                "Resubscribe already in progress, skipping..."
                             )
+                            await asyncio.sleep(0.1)
+                            continue
 
-                        subscription = await self._subscribe(
-                            group_id=group_id,
-                            wallet_id=wallet_id,
-                            topic=topic,
-                            state=state,
-                            start_time=start_time,
-                        )
-                        bound_logger.debug("Successfully resubscribed to NATS.")
+                        async with self._resubscribe_lock:
+                            bound_logger.warning(
+                                "Subscription lost connection, attempting to resubscribe..."
+                            )
+                            try:
+                                await subscription.unsubscribe()
+                                bound_logger.debug("Unsubscribed.")
+                            except BadSubscriptionError as e:
+                                bound_logger.warning(
+                                    "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
+                                    e,
+                                )
+
+                            subscription = await self._subscribe(
+                                group_id=group_id,
+                                wallet_id=wallet_id,
+                                topic=topic,
+                                state=state,
+                                start_time=start_time,
+                            )
+                            bound_logger.debug("Successfully resubscribed to NATS.")
 
                     except Exception:  # pylint: disable=W0718
                         bound_logger.exception("Unexpected error in event generator")
@@ -229,7 +240,7 @@ class NatsEventsProcessor:
         finally:
             if subscription:
                 try:
-                    bound_logger.trace("Closing subscription...")
+                    bound_logger.debug("Closing subscription...")
                     # Get consumer info before unsubscribing
                     try:
                         consumer_info = await subscription.consumer_info()

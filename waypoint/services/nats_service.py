@@ -168,9 +168,7 @@ class NatsEventsProcessor:
                         break
 
                     try:
-                        messages = await subscription.fetch(
-                            batch=5, timeout=0.5, heartbeat=0.2
-                        )
+                        messages = await subscription.fetch(batch=5, timeout=0.5)
                         for message in messages:
                             event = orjson.loads(message.data)
                             bound_logger.trace("Received event: {}", event)
@@ -192,7 +190,8 @@ class NatsEventsProcessor:
                         except BadSubscriptionError as e:
                             # If we can't unsubscribe, log the error and continue
                             bound_logger.warning(
-                                "BadSubscriptionError unsubscribing from NATS: {}", e
+                                "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
+                                e,
                             )
 
                         subscription = await self._subscribe(

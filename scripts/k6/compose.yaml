@@ -8,13 +8,18 @@ services:
       datadog:
         condition: service_healthy
     volumes:
-      - ./output:/k6/output
-      - .env.local:/k6/.env.local
+      # - ./output:/k6/output
+      # - .env.local:/k6/.env.local
+      - ../k6:/k6
+
     entrypoint: /bin/bash
-    command: ./scripts/main.sh -c batch -C
+    command: ./scripts/main.sh -c batch
     environment:
       - K6_STATSD_ADDR=datadog:8125
       - K6_CONSOLE_OUTPUT_FANCY=true
+      - BASE_HOLDER_PREFIX=local5
+      - BASE_VUS=2
+      - BASE_ITERATIONS=10
 
   datadog:
     image: datadog/agent:latest

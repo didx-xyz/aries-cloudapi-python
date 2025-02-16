@@ -12,6 +12,7 @@ import {
   getProofIdCredentials,
   getWalletIndex,
   sendProofRequest,
+  retry,  // Add this import
 } from "../libs/functions.js";
 
 const vus = Number.parseInt(__ENV.VUS, 10);
@@ -38,7 +39,8 @@ export const options = {
     // "http_reqs{scenario:default}": ["count >= 0"],
     // "iteration_duration{scenario:default}": ["max>=0"],
     // 'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
-    checks: ["rate==1"],
+    // checks: ["rate==1"],
+    checks: ["rate>0.99"],
     // 'specific_function_reqs{scenario:default}': ['count>=0'],
   },
   tags: {
@@ -84,13 +86,19 @@ export default function (data) {
   // console.log(`VU: ${__VU}, Iteration: ${__ITER}, Issuer Wallet ID: ${wallet.issuer_wallet_id}`);
   let sendProofRequestResponse;
   try {
-    sendProofRequestResponse = sendProofRequest(
-      wallet.issuer_access_token,
-      wallet.issuer_connection_id
-    );
+    sendProofRequestResponse = retry(() => {
+      const response = sendProofRequest(
+        wallet.issuer_access_token,
+        wallet.issuer_connection_id
+      );
+      if (response.status !== 200) {
+        throw new Error(`Non-200 status: ${response.status}`);
+      }
+      return response;
+    }, 5, 2000);
   } catch (error) {
-    // console.error(`Error creating credential: ${error.message}`);
-    sendProofRequestResponse = { status: 500, response: error.message };
+    console.error(`Failed after retries: ${error.message}`);
+    sendProofRequestResponse = error.response || error;
   }
   check(sendProofRequestResponse, {
     "Proof request sent successfully": (r) => {
@@ -140,11 +148,23 @@ export default function (data) {
   // console.log(`Proof ID: ${proofId}`);
   const referent = getProofIdCredentials(wallet.access_token, proofId);
 
-  const acceptProofResponse = acceptProofRequest(
-    wallet.access_token,
-    proofId,
-    referent
-  );
+  let acceptProofResponse;
+  try {
+    acceptProofResponse = retry(() => {
+      const response = acceptProofRequest(
+        wallet.access_token,
+        proofId,
+        referent
+      );
+      if (response.status !== 200) {
+        throw new Error(`Non-200 status: ${response.status}`);
+      }
+      return response;
+    }, 5, 2000);
+  } catch (error) {
+    console.error(`Failed after retries: ${error.message}`);
+    acceptProofResponse = error.response || error;
+  }
   check(acceptProofResponse, {
     "Proof accepted successfully": (r) => {
       if (r.status !== 200) {

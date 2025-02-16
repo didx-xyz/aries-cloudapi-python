@@ -168,7 +168,7 @@ class NatsEventsProcessor:
                         break
 
                     try:
-                        messages = await subscription.fetch(batch=1, timeout=0.1)
+                        messages = await subscription.fetch(batch=1, timeout=0.5)
                         for message in messages:
                             event = orjson.loads(message.data)
                             bound_logger.trace("Received event: {}", event)
@@ -230,6 +230,18 @@ class NatsEventsProcessor:
             if subscription:
                 try:
                     bound_logger.trace("Closing subscription...")
+                    # Get consumer info before unsubscribing
+                    try:
+                        consumer_info = await subscription.consumer_info()
+                        # Delete the consumer first
+                        await self.js_context.delete_consumer(
+                            NATS_STATE_STREAM, consumer_info.name
+                        )
+                        bound_logger.debug("Consumer deleted: {}", consumer_info.name)
+                    except Exception as e:
+                        bound_logger.warning("Failed to delete consumer: {}", e)
+
+                    # Then unsubscribe
                     await subscription.unsubscribe()
                     bound_logger.debug("Subscription closed")
                 except BadSubscriptionError as e:

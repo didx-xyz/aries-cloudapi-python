@@ -151,7 +151,7 @@ async def test_process_events(
 
     mock_subscription.fetch.assert_called()
     mock_message.ack.assert_called_once()
-    mock_subscription.consumer_info.assert_called_once()
+    assert mock_subscription.consumer_info.call_count == 2
 
 
 @pytest.mark.anyio
@@ -180,7 +180,7 @@ async def test_process_events_cancelled_error(
 
     assert len(events) == 0
     assert stop_event.is_set()
-    mock_subscription.consumer_info.assert_called_once()
+    assert mock_subscription.consumer_info.call_count == 2
 
 
 @pytest.mark.anyio
@@ -209,7 +209,7 @@ async def test_process_events_fetch_timeout_error(
 
     assert len(events) == 0
     assert stop_event.is_set()
-    mock_subscription.consumer_info.assert_called_once()
+    assert mock_subscription.consumer_info.call_count == 2
 
 
 @pytest.mark.anyio

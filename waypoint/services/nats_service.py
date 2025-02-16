@@ -168,7 +168,7 @@ class NatsEventsProcessor:
                         break
 
                     try:
-                        messages = await subscription.fetch(batch=5, timeout=2)
+                        messages = await subscription.fetch(batch=1, timeout=2)
                         for message in messages:
                             event = orjson.loads(message.data)
                             bound_logger.trace("Received event: {}", event)

@@ -77,6 +77,7 @@ async def test_nats_events_processor_subscribe(
             topic="proofs",
             state="done",
             start_time="2024-10-24T09:17:17.998149541Z",
+            state_uuid="state_uuid",
         )
 
         mock_nats_client.pull_subscribe.assert_called_once_with(
@@ -103,6 +104,7 @@ async def test_nats_events_processor_subscribe_error(
             topic="proofs",
             state="done",
             start_time="2024-10-24T09:17:17.998149541Z",
+            state_uuid="state_uuid",
         )
 
 

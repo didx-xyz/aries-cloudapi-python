@@ -1,9 +1,10 @@
 import asyncio
 import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Optional
-import uuid
+
 import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
 from nats.js.api import ConsumerConfig, ConsumerInfo, DeliverPolicy
@@ -46,7 +47,7 @@ class NatsEventsProcessor:
         topic: str,
         state: str,
         start_time: str,
-        state_uuid: uuid.UUID
+        state_uuid: uuid.UUID,
     ) -> JetStreamContext.PullSubscription:
         bound_logger = logger.bind(
             body={
@@ -55,7 +56,7 @@ class NatsEventsProcessor:
                 "topic": topic,
                 "state": state,
                 "start_time": start_time,
-                "uuid": state_uuid
+                "uuid": state_uuid,
             }
         )
 
@@ -205,7 +206,7 @@ class NatsEventsProcessor:
                             topic=topic,
                             state=state,
                             start_time=start_time,
-                            state_uuid=state_uuid
+                            state_uuid=state_uuid,
                         )
                         bound_logger.debug("Successfully resubscribed to NATS.")
 
@@ -237,7 +238,7 @@ class NatsEventsProcessor:
                 topic=topic,
                 state=state,
                 start_time=start_time,
-                state_uuid=state_uuid
+                state_uuid=state_uuid,
             )
             yield event_generator(subscription=subscription)
         except Exception as e:  # pylint: disable=W0718

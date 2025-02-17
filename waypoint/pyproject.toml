@@ -40,7 +40,7 @@ pytest-mock = "~3.14.0"
 pytest-xdist = "^3.6.1"
 
 [build-system]
-requires = ["poetry-core>=2.0.1"]
+requires = ["poetry-core>=2.1.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.run]

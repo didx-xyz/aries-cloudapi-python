@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acapy-cloud-trust-registry"
-version = "4.2.0"
+version = "4.3.0"
 description = "Trust Registry submodule for acapy-cloud"
 authors = [
   "Mourits de Beer <mourits.debeer@didx.co.za>",

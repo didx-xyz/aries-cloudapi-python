@@ -37,7 +37,6 @@ class NatsEventsProcessor:
 
     def __init__(self, jetstream: JetStreamContext):
         self.js_context: JetStreamContext = jetstream
-        self._resubscribe_lock = asyncio.Lock()  # Add lock for resubscribe operations
 
     async def _subscribe(
         self,
@@ -184,35 +183,27 @@ class NatsEventsProcessor:
                         await asyncio.sleep(0.1)
 
                     except TimeoutError:
-                        # Timeout error, resubscribe
-                        if self._resubscribe_lock.locked():
-                            bound_logger.debug(
-                                "Resubscribe already in progress, skipping..."
-                            )
-                            await asyncio.sleep(0.1)
-                            continue
 
-                        async with self._resubscribe_lock:
+                        bound_logger.warning(
+                            "Subscription lost connection, attempting to resubscribe..."
+                        )
+                        try:
+                            await subscription.unsubscribe()
+                            bound_logger.debug("Unsubscribed.")
+                        except BadSubscriptionError as e:
                             bound_logger.warning(
-                                "Subscription lost connection, attempting to resubscribe..."
+                                "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
+                                e,
                             )
-                            try:
-                                await subscription.unsubscribe()
-                                bound_logger.debug("Unsubscribed.")
-                            except BadSubscriptionError as e:
-                                bound_logger.warning(
-                                    "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
-                                    e,
-                                )
 
-                            subscription = await self._subscribe(
-                                group_id=group_id,
-                                wallet_id=wallet_id,
-                                topic=topic,
-                                state=state,
-                                start_time=start_time,
-                            )
-                            bound_logger.debug("Successfully resubscribed to NATS.")
+                        subscription = await self._subscribe(
+                            group_id=group_id,
+                            wallet_id=wallet_id,
+                            topic=topic,
+                            state=state,
+                            start_time=start_time,
+                        )
+                        bound_logger.debug("Successfully resubscribed to NATS.")
 
                     except Exception:  # pylint: disable=W0718
                         bound_logger.exception("Unexpected error in event generator")
@@ -222,6 +213,17 @@ class NatsEventsProcessor:
             except asyncio.CancelledError:
                 bound_logger.debug("Event generator cancelled")
                 stop_event.set()
+
+            finally:
+                bound_logger.debug("Closing subscription...")
+                if subscription:
+                    try:
+                        await subscription.unsubscribe()
+                        bound_logger.debug("Subscription closed")
+                    except BadSubscriptionError as e:
+                        bound_logger.warning(
+                            "BadSubscriptionError unsubscribing from NATS: {}", e
+                        )
 
         subscription = None
         try:
@@ -237,28 +239,28 @@ class NatsEventsProcessor:
             bound_logger.exception("Unexpected error processing events")
             raise e
 
-        finally:
-            if subscription:
-                try:
-                    bound_logger.debug("Closing subscription...")
-                    # Get consumer info before unsubscribing
-                    try:
-                        consumer_info = await subscription.consumer_info()
-                        # Delete the consumer first
-                        await self.js_context.delete_consumer(
-                            NATS_STATE_STREAM, consumer_info.name
-                        )
-                        bound_logger.debug("Consumer deleted: {}", consumer_info.name)
-                    except Exception as e:
-                        bound_logger.warning("Failed to delete consumer: {}", e)
+        # finally:
+        #     if subscription:
+        #         try:
+        #             bound_logger.debug("Closing subscription...")
+        #             # Get consumer info before unsubscribing
+        #             try:
+        #                 consumer_info = await subscription.consumer_info()
+        #                 # Delete the consumer first
+        #                 await self.js_context.delete_consumer(
+        #                     NATS_STATE_STREAM, consumer_info.name
+        #                 )
+        #                 bound_logger.debug("Consumer deleted: {}", consumer_info.name)
+        #             except Exception as e:
+        #                 bound_logger.warning("Failed to delete consumer: {}", e)
 
-                    # Then unsubscribe
-                    await subscription.unsubscribe()
-                    bound_logger.debug("Subscription closed")
-                except BadSubscriptionError as e:
-                    bound_logger.warning(
-                        "BadSubscriptionError unsubscribing from NATS: {}", e
-                    )
+        #             # Then unsubscribe
+        #             await subscription.unsubscribe()
+        #             bound_logger.debug("Subscription closed")
+        #         except BadSubscriptionError as e:
+        #             bound_logger.warning(
+        #                 "BadSubscriptionError unsubscribing from NATS: {}", e
+        #             )
 
     async def check_jetstream(self):
         try:

@@ -97,16 +97,13 @@ class NatsEventsProcessor:
                     config=config, **subscribe_kwargs
                 )
 
-                not_ready = True
-                while not_ready:
-                    consumer_info = await subscription.consumer_info()
-                    if isinstance(consumer_info, ConsumerInfo):
-                        bound_logger.trace(
-                            "Consumer is ready {}, {}",
-                            consumer_info.name,
-                            consumer_info.stream_name,
-                        )
-                        not_ready = False
+                consumer_info = await subscription.consumer_info()
+                if isinstance(consumer_info, ConsumerInfo):
+                    bound_logger.trace(
+                        "Consumer is ready {}, {}",
+                        consumer_info.name,
+                        consumer_info.stream_name,
+                    )
 
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription
@@ -244,29 +241,6 @@ class NatsEventsProcessor:
         except Exception as e:  # pylint: disable=W0718
             bound_logger.exception("Unexpected error processing events")
             raise e
-
-        # finally:
-        #     if subscription:
-        #         try:
-        #             bound_logger.debug("Closing subscription...")
-        #             # Get consumer info before unsubscribing
-        #             try:
-        #                 consumer_info = await subscription.consumer_info()
-        #                 # Delete the consumer first
-        #                 await self.js_context.delete_consumer(
-        #                     NATS_STATE_STREAM, consumer_info.name
-        #                 )
-        #                 bound_logger.debug("Consumer deleted: {}", consumer_info.name)
-        #             except Exception as e:
-        #                 bound_logger.warning("Failed to delete consumer: {}", e)
-
-        #             # Then unsubscribe
-        #             await subscription.unsubscribe()
-        #             bound_logger.debug("Subscription closed")
-        #         except BadSubscriptionError as e:
-        #             bound_logger.warning(
-        #                 "BadSubscriptionError unsubscribing from NATS: {}", e
-        #             )
 
     async def check_jetstream(self):
         try:

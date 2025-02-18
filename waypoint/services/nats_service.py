@@ -185,6 +185,7 @@ class NatsEventsProcessor:
 
                     except TimeoutError:
 
+                        bound_logger.exception("<><><> TimeoutError <><><>")
                         bound_logger.warning(
                             "Subscription lost connection, attempting to resubscribe..."
                         )

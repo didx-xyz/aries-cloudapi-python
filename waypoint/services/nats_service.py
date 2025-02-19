@@ -171,7 +171,7 @@ class NatsEventsProcessor:
 
                     try:
                         messages = await subscription.fetch(
-                            batch=5, timeout=0.5, heartbeat=0.2
+                            batch=5, timeout=0.5, heartbeat=0.01
                         )
                         for message in messages:
                             event = orjson.loads(message.data)
@@ -185,6 +185,7 @@ class NatsEventsProcessor:
                         await asyncio.sleep(0.1)
 
                     except TimeoutError:
+                        bound_logger.error("<><><>TimeoutError<><><>")
                         if nr_of_timeout_errors == 5:
                             bound_logger.warning(
                                 "Subscription lost connection, attempting to resubscribe..."

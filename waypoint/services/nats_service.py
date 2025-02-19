@@ -159,6 +159,7 @@ class NatsEventsProcessor:
 
         async def event_generator(*, subscription: JetStreamContext.PullSubscription):
             try:
+                nr_of_timeout_errors = 0
                 end_time = time.time() + duration
                 while not stop_event.is_set():
                     remaining_time = end_time - time.time()
@@ -184,29 +185,40 @@ class NatsEventsProcessor:
                         await asyncio.sleep(0.1)
 
                     except TimeoutError:
-
-                        bound_logger.exception("<><><> TimeoutError <><><>")
-                        bound_logger.warning(
-                            "Subscription lost connection, attempting to resubscribe..."
-                        )
-                        try:
-                            await subscription.unsubscribe()
-                            bound_logger.debug("Unsubscribed.")
-                        except BadSubscriptionError as e:
+                        if nr_of_timeout_errors == 5:
                             bound_logger.warning(
-                                "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
-                                e,
+                                "Subscription lost connection, attempting to resubscribe..."
                             )
+                            try:
+                                await subscription.unsubscribe()
+                                bound_logger.debug("Unsubscribed.")
+                            except BadSubscriptionError as e:
+                                bound_logger.warning(
+                                    "BadSubscriptionError unsubscribing from NATS after subscription lost: {}",
+                                    e,
+                                )
 
-                        subscription = await self._subscribe(
-                            group_id=group_id,
-                            wallet_id=wallet_id,
-                            topic=topic,
-                            state=state,
-                            start_time=start_time,
-                            state_uuid=state_uuid,
-                        )
-                        bound_logger.debug("Successfully resubscribed to NATS.")
+                            subscription = await self._subscribe(
+                                group_id=group_id,
+                                wallet_id=wallet_id,
+                                topic=topic,
+                                state=state,
+                                start_time=start_time,
+                                state_uuid=state_uuid,
+                            )
+                            bound_logger.debug("Successfully resubscribed to NATS.")
+                            nr_of_timeout_errors = 0
+
+                            continue
+
+                        bound_logger.debug("TimeoutError, retrying...")
+                        nr_of_timeout_errors += 1
+                        await asyncio.sleep(0.1)
+
+                    except Error as e:
+                        bound_logger.error("Nats error in event generator: {}", e)
+                        stop_event.set()
+                        raise
 
                     except Exception:  # pylint: disable=W0718
                         bound_logger.exception("Unexpected error in event generator")

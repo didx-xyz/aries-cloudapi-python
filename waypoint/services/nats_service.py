@@ -7,7 +7,7 @@ from typing import Optional
 
 import orjson
 from nats.errors import BadSubscriptionError, Error, TimeoutError
-from nats.js.api import ConsumerConfig, ConsumerInfo, DeliverPolicy
+from nats.js.api import ConsumerConfig, DeliverPolicy
 from nats.js.client import JetStreamContext
 from nats.js.errors import FetchTimeoutError
 from tenacity import (

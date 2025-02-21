@@ -97,13 +97,9 @@ class NatsEventsProcessor:
                     config=config, **subscribe_kwargs
                 )
 
-                consumer_info = await subscription.consumer_info()
-                if isinstance(consumer_info, ConsumerInfo):
-                    bound_logger.trace(
-                        "Consumer is ready {}, {}",
-                        consumer_info.name,
-                        consumer_info.stream_name,
-                    )
+                # Get consumer info to verify that the subscription was successful
+                # TODO test if this is necessary
+                await subscription.consumer_info()
 
                 bound_logger.debug("Successfully subscribed to JetStream")
                 return subscription

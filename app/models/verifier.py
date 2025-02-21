@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Union
 
-from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
+from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec, AnoncredsPresentationRequest
 from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
@@ -13,6 +13,7 @@ class ProofRequestType(str, Enum):
     INDY: str = "indy"
     JWT: str = "jwt"
     LD_PROOF: str = "ld_proof"
+    ANONCREDS: str = "anoncreds"
 
 
 class IndyProofRequest(AcaPyIndyProofRequest):
@@ -24,6 +25,7 @@ class ProofRequestBase(BaseModel):
     type: ProofRequestType = ProofRequestType.INDY
     indy_proof_request: Optional[IndyProofRequest] = None
     dif_proof_request: Optional[DIFProofRequest] = None
+    anoncreds_proof_request: Optional[AnoncredsPresentationRequest] = None
 
     @model_validator(mode="before")
     @classmethod

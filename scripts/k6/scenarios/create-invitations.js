@@ -23,6 +23,7 @@ const schemaName = __ENV.SCHEMA_NAME;
 const schemaVersion = __ENV.SCHEMA_VERSION;
 const numIssuers = __ENV.NUM_ISSUERS;
 const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
+const version = __ENV.VERSION;
 
 export const options = {
   scenarios: {
@@ -47,6 +48,7 @@ export const options = {
   tags: {
     test_run_id: "phased-issuance",
     test_phase: "create-invitation",
+    version: `${version}`,
   },
 };
 

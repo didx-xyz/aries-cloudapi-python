@@ -13,7 +13,19 @@ config() {
   export SCHEMA_NAME="didx_acc"
   export BASE_HOLDER_PREFIX=${BASE_HOLDER_PREFIX:-"demoholder"}
   export TOTAL_BATCHES=${TOTAL_BATCHES:-2}  # New configuration parameter
-  export issuers=("didxissuer_pop" "didxissuer_acc")
+  # Default issuers if none are provided
+  default_issuers=("local_pop" "local_acc")
+
+  # Check if ISSUERS environment variable is set
+  if [ -n "${ISSUERS}" ]; then
+    # Split the string into an array using space as delimiter
+    IFS=' ' read -ra issuers <<< "${ISSUERS}"
+  else
+    # Use defaults
+    issuers=("${default_issuers[@]}")
+  fi
+
+  export issuers
 }
 
 calculate_create_creds_load() {

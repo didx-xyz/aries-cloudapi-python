@@ -14,6 +14,7 @@ const holderPrefix = __ENV.HOLDER_PREFIX || "holder";
 const issuerPrefix = __ENV.ISSUER_PREFIX || "issuer";
 const sleepDuration = Number(__ENV.SLEEP_DURATION || 0);
 const outputPrefix = `${holderPrefix}`;
+const version = __ENV.VERSION;
 
 export const options = {
   scenarios: {
@@ -40,6 +41,7 @@ export const options = {
   tags: {
     test_run_id: "phased-issuance",
     test_phase: "create-holders",
+    version: `${version}`,
   },
 };
 

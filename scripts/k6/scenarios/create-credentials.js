@@ -19,6 +19,7 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
+const version = __ENV.VERSION;
 
 export const options = {
   scenarios: {
@@ -44,6 +45,7 @@ export const options = {
   tags: {
     test_run_id: "phased-issuance",
     test_phase: "create-credentials",
+    version: `${version}`,
   },
 };
 

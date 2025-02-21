@@ -20,6 +20,7 @@ const iterations = Number.parseInt(__ENV.ITERATIONS, 10);
 const holderPrefix = __ENV.HOLDER_PREFIX;
 const issuerPrefix = __ENV.ISSUER_PREFIX;
 const outputPrefix = `${issuerPrefix}-${holderPrefix}`;
+const version = __ENV.VERSION;
 
 export const options = {
   scenarios: {
@@ -46,6 +47,7 @@ export const options = {
   tags: {
     test_run_id: "phased-issuance",
     test_phase: "create-proofs",
+    version: `${version}`,
   },
 };
 
@@ -178,8 +180,8 @@ export default function (data) {
 
   // console.log(`Initiate wait for SSE event: done`);
   const waitForSSEProofDoneRequest = genericWaitForSSEEvent({
-    accessToken: wallet.issuer_access_token,
-    walletId: wallet.issuer_wallet_id,
+    accessToken: wallet.access_token,
+    walletId: wallet.wallet_id,
     threadId: threadId,
     eventType: "done",
     sseUrlPath: "proofs/thread_id",

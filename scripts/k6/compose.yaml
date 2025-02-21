@@ -17,9 +17,12 @@ services:
     environment:
       - K6_STATSD_ADDR=datadog:8125
       - K6_CONSOLE_OUTPUT_FANCY=true
-      - BASE_HOLDER_PREFIX=local5
-      - BASE_VUS=2
+      - BASE_HOLDER_PREFIX=dev9
+      - BASE_VUS=20
       - BASE_ITERATIONS=10
+      - TOTAL_BATCHES=5
+      - VERSION=latest
+      - ISSUERS=issuer1
 
   datadog:
     image: datadog/agent:latest

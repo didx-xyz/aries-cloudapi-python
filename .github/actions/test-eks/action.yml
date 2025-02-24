@@ -45,22 +45,6 @@ runs:
   using: composite
 
   steps:
-    - name: Set up Mise
-      uses: jdx/mise-action@v2
-      with:
-        version: ${{ inputs.mise-version }}
-        cache: true
-        experimental: true # Required for mise tasks
-        install: true
-      env:
-        MISE_JOBS: 4
-    - name: Load Mise env
-      shell: bash
-      run: |
-        mise env -s bash \
-            | grep -v 'export PATH=' \
-            | cut -d' ' -f2 \
-            >> "$GITHUB_ENV"
     - name: Helmfile run regression tests
       if: inputs.regression-tests == 'true'
       id: pytest-regression

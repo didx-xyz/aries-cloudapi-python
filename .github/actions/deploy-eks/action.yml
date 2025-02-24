@@ -68,7 +68,7 @@ runs:
     # - name: Helmfile Destroy
     #   if: inputs.clean-start == 'true'
     #   # https://github.com/helmfile/helmfile-action
-    #   uses: helmfile/helmfile-action@v2.0.2
+    #   uses: helmfile/helmfile-action@v2
     #   with:
     #     helmfile-args: |
     #       destroy \
@@ -95,7 +95,7 @@ runs:
 
     - name: Helmfile Apply
       # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
+      uses: helmfile/helmfile-action@v2
       with:
         helmfile-args: |
           diff \

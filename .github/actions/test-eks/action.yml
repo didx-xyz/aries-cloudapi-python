@@ -65,7 +65,7 @@ runs:
       if: inputs.regression-tests == 'true'
       id: pytest-regression
       # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
+      uses: helmfile/helmfile-action@v2
       with:
         helmfile-args: |
           apply \
@@ -88,7 +88,7 @@ runs:
       if: inputs.run-tests != 'false'
       id: pytest
       # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
+      uses: helmfile/helmfile-action@v2
       with:
         helmfile-args: |
           apply \
@@ -234,7 +234,7 @@ runs:
     - name: Pytest coverage comment
       if: steps.pytest.outcome == 'success'
       # https://github.com/MishaKav/pytest-coverage-comment
-      uses: MishaKav/pytest-coverage-comment@v1.1.53
+      uses: MishaKav/pytest-coverage-comment@v1
       with:
         pytest-coverage-path: ./pytest/test_coverage.txt
         junitxml-path: ./pytest/test_output.xml
@@ -247,7 +247,7 @@ runs:
     - name: Pytest regression coverage comment
       if: steps.pytest-regression.outcome == 'success'
       # https://github.com/MishaKav/pytest-coverage-comment
-      uses: MishaKav/pytest-coverage-comment@v1.1.53
+      uses: MishaKav/pytest-coverage-comment@v1
       with:
         pytest-coverage-path: ./pytest-regression/test_coverage.txt
         junitxml-path: ./pytest-regression/test_output.xml
@@ -280,7 +280,7 @@ runs:
 
     - name: Helmfile destroy pytest
       # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
+      uses: helmfile/helmfile-action@v2
       if: always()
       with:
         helmfile-args: |
@@ -294,7 +294,7 @@ runs:
 
     - name: Helmfile destroy pytest regression
       # https://github.com/helmfile/helmfile-action
-      uses: helmfile/helmfile-action@v2.0.2
+      uses: helmfile/helmfile-action@v2
       if: always()
       with:
         helmfile-args: |

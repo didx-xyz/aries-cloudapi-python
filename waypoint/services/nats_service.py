@@ -98,7 +98,7 @@ class NatsEventsProcessor:
                 )
 
                 # Get consumer info to verify that the subscription was successful
-                # TODO test if this is necessary
+                # TODO test if this is necessary/helps
                 await subscription.consumer_info()
 
                 bound_logger.debug("Successfully subscribed to JetStream")

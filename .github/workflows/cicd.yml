@@ -552,8 +552,8 @@ jobs:
             }
         env:
           ACAPY_CLOUD_REF: ${{ github.event.after }}
-          IMAGE_TAG: latest
-          # IMAGE_TAG: ${{ needs.deploy-test-eks.outputs.image_version }}
+          IMAGE_TAG: ${{ needs.deploy-test-eks.outputs.image_version }}
           REGRESSION_TESTS: ${{ github.event.inputs.regression-tests || true }}
-          RESET_DEPLOYMENTS: ${{ github.event.inputs.reset-deployments || false }}
+          RESET_DEPLOYMENTS: true
+          # RESET_DEPLOYMENTS: ${{ github.event.inputs.reset-deployments || false }}
           RUN_TESTS: ${{ github.event.inputs.run-tests || true }}

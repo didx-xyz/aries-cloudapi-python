@@ -76,8 +76,6 @@ releases:
         podLabels:
           admission.datadoghq.com/enabled: {{ quote $.Values.ddInjectEnabled }}
           tags.datadoghq.com/env: {{ $.Environment.Name }}
-      - nodeSelector: {{ toYaml $.Values.nodeSelector | nindent 10 }}
-        tolerations: {{ toYaml $.Values.tolerations | nindent 10 }}
     set:
       {{- if not (eq $release "mediator") }}
       - name: image.registry

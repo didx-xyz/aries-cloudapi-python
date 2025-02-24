@@ -502,8 +502,8 @@ jobs:
 
     # if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
 
-    # needs:
-    #   - build
+    needs:
+      - build
       # - deploy-test-eks
       # - test
 

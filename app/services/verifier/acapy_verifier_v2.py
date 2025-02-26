@@ -138,6 +138,11 @@ class VerifierV2(Verifier):
             presentation_spec = V20PresSpecByFormatRequest(
                 auto_remove=auto_remove, dif=accept_proof_request.dif_presentation_spec
             )
+        elif accept_proof_request.type == ProofRequestType.ANONCREDS:
+            presentation_spec = V20PresSpecByFormatRequest(
+                auto_remove=auto_remove,
+                anoncreds=accept_proof_request.anoncreds_presentation_spec,
+            )
         else:
             raise CloudApiException(
                 f"Unsupported credential type: {accept_proof_request.type.value}",

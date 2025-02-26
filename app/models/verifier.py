@@ -34,7 +34,7 @@ class ProofRequestBase(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def check_indy_proof_request(cls, values: Union[dict, "ProofRequestBase"]):
+    def check_proof_request(cls, values: Union[dict, "ProofRequestBase"]):
         # pydantic v2 removed safe way to get key, because `values` can be a dict or this type
         if not isinstance(values, dict):
             values = values.__dict__
@@ -42,6 +42,7 @@ class ProofRequestBase(BaseModel):
         proof_type = values.get("type")
         indy_proof = values.get("indy_proof_request")
         dif_proof = values.get("dif_proof_request")
+        anoncreds_proof = values.get("anoncreds_proof_request")
 
         if proof_type == ProofRequestType.INDY and indy_proof is None:
             raise CloudApiValueError(
@@ -53,14 +54,24 @@ class ProofRequestBase(BaseModel):
                 "dif_proof_request must be populated if `ld_proof` type is selected"
             )
 
-        if proof_type == ProofRequestType.INDY and dif_proof is not None:
+        if proof_type == ProofRequestType.ANONCREDS and anoncreds_proof is None:
             raise CloudApiValueError(
-                "dif_proof_request must not be populated if `indy` type is selected"
+                "anoncreds_proof_request must be populated if `anoncreds` type is selected"
             )
 
-        if proof_type == ProofRequestType.LD_PROOF and indy_proof is not None:
+        if proof_type == ProofRequestType.INDY and (dif_proof is not None or anoncreds_proof is not None):
             raise CloudApiValueError(
-                "indy_proof_request must not be populated if `ld_proof` type is selected"
+                "dif_proof_request and anoncreds_proof_request must not be populated if `indy` type is selected"
+            )
+
+        if proof_type == ProofRequestType.LD_PROOF and (indy_proof is not None or anoncreds_proof is not None):
+            raise CloudApiValueError(
+                "indy_proof_request and anoncreds_proof_request must not be populated if `ld_proof` type is selected"
+            )
+
+        if proof_type == ProofRequestType.ANONCREDS and (indy_proof is not None or dif_proof is not None):
+            raise CloudApiValueError(
+                "indy_proof_request and dif_proof_request must not be populated if `anoncreds` type is selected"
             )
 
         return values
@@ -88,6 +99,7 @@ class AcceptProofRequest(ProofId, SaveExchangeRecordField):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
+    anoncreds_presentation_spec: Optional[dict] = None
 
     @field_validator("indy_presentation_spec", mode="before")
     @classmethod
@@ -104,6 +116,15 @@ class AcceptProofRequest(ProofId, SaveExchangeRecordField):
         if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise CloudApiValueError(
                 "dif_presentation_spec must be populated if `ld_proof` type is selected"
+            )
+        return value
+
+    @field_validator("anoncreds_presentation_spec", mode="before")
+    @classmethod
+    def check_anoncreds_presentation_spec(cls, value, values: ValidationInfo):
+        if values.data.get("type") == ProofRequestType.ANONCREDS and value is None:
+            raise CloudApiValueError(
+                "anoncreds_presentation_spec must be populated if `anoncreds` type is selected"
             )
         return value
 

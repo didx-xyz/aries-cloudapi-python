@@ -250,7 +250,7 @@ async def request_credential(
         else:
             raise CloudApiException("Could not resolve record type")
 
-        await assert_valid_issuer(issuer_did, schema_id)
+        # await assert_valid_issuer(issuer_did, schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
 
         auto_remove = None

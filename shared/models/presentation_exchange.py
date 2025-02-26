@@ -1,6 +1,11 @@
 from typing import Literal, Optional
 
-from aries_cloudcontroller import IndyProof, IndyProofRequest, V20PresExRecord, AnoncredsPresentationRequest
+from aries_cloudcontroller import (
+    IndyProof,
+    IndyProofRequest,
+    V20PresExRecord,
+    AnoncredsPresentationRequest,
+)
 from pydantic import BaseModel
 
 from shared.log_config import get_logger
@@ -46,24 +51,24 @@ class PresentationExchange(BaseModel):
 def presentation_record_to_model(record: V20PresExRecord) -> PresentationExchange:
     if isinstance(record, V20PresExRecord):
         try:
-            keys = list(record.by_format.pres_request.keys()) if record.by_format.pres_request else []
+            keys = (
+                list(record.by_format.pres_request.keys())
+                if record.by_format.pres_request
+                else []
+            )
         except Exception:
             keys = []
 
         try:
             presentation = (
-                record.by_format.pres[keys[0]]
-                if record.by_format.pres
-                else None
+                record.by_format.pres[keys[0]] if record.by_format.pres else None
             )
         except AttributeError:
             logger.info("Presentation record has no indy presentation")
             presentation = None
 
         try:
-            presentation_request = (
-                record.by_format.pres_request[keys[0]]
-            )
+            presentation_request = record.by_format.pres_request[keys[0]]
         except AttributeError:
             logger.info("Presentation record has no indy presentation request")
             presentation_request = None

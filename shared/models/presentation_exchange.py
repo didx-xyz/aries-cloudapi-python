@@ -1,10 +1,10 @@
 from typing import Literal, Optional
 
 from aries_cloudcontroller import (
+    AnoncredsPresentationRequest,
     IndyProof,
     IndyProofRequest,
     V20PresExRecord,
-    AnoncredsPresentationRequest,
 )
 from pydantic import BaseModel
 
